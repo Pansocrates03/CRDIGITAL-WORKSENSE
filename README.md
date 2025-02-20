@@ -9,8 +9,18 @@ Enhanced with the power of AI, worksense aims to boost productivity, including s
 What a great question!
 
 ## About us
-- Hugo Ochoa Lopez Portillo A00835999
-- Jorge Andres Palacios Plascencia A01722533
-- Luis Manuel Gonzalez Martinez A01722501
-- Santiago Sanchez Reyes A00837763
-- Esteban Sierra Baccio A00836286
+
+
+| ID | Name | Role |
+| --------- | --------------------------------- | --------- |
+| A00835999 | Hugo Ochoa Lopez Portillo         | developer |
+| A01722533 | Jorge Andres Palacios Plascencia  | developer |
+| A01722501 | Luis Manuel Gonzalez Martinez     | developer |
+| A00837763 | Santiago Sanchez Reyes            | developer |
+| A00836286 | Esteban Sierra Baccio             | developer |
+
+- 
+- 
+- 
+- 
+- 
