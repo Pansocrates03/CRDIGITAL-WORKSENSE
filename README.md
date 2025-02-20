@@ -6,10 +6,22 @@ Enhanced with the power of AI, worksense aims to boost productivity, including s
 - User roles
 
 ## How to run the app
-What a great question!
+1. Clone this repo
+```
+git clone https://github.com/Pansocrates03/CRDIGITAL-WORKSENSE
+```
+2. Install dependencies
+```
+npm i
+```
+3. Start the app
+```
+npm start
+```
+
 
 ## About us
-
+Partnered with *Tec de Monterrey*, CR DiGITAL works with *Softtek* to create the *Worksense* project.
 
 | ID | Name | Role |
 | --------- | --------------------------------- | --------- |
@@ -18,9 +30,3 @@ What a great question!
 | A01722501 | Luis Manuel Gonzalez Martinez     | developer |
 | A00837763 | Santiago Sanchez Reyes            | developer |
 | A00836286 | Esteban Sierra Baccio             | developer |
-
-- 
-- 
-- 
-- 
-- 
