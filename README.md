@@ -25,8 +25,8 @@ Partnered with *Tec de Monterrey*, CR DiGITAL works with *Softtek* to create the
 
 | ID | Name | Role |
 | --------- | --------------------------------- | --------- |
-| A00835999 | Hugo Ochoa Lopez Portillo         | developer |
-| A01722533 | Jorge Andres Palacios Plascencia  | developer |
-| A01722501 | Luis Manuel Gonzalez Martinez     | developer |
-| A00837763 | Santiago Sanchez Reyes            | developer |
-| A00836286 | Esteban Sierra Baccio             | developer |
+| A00835999 | Hugo Ochoa Lopez Portillo         | Developer |
+| A01722533 | Jorge Andres Palacios Plascencia  | Developer |
+| A01722501 | Luis Manuel Gonzalez Martinez     | Product Owner |
+| A00837763 | Santiago Sanchez Reyes            | Scrum Master |
+| A00836286 | Esteban Sierra Baccio             | Developer |
