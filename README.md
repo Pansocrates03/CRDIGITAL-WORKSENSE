@@ -30,3 +30,4 @@ Partnered with *Tec de Monterrey*, CR DiGITAL works with *Softtek* to create the
 | A01722501 | Luis Manuel Gonzalez Martinez     | Product Owner |
 | A00837763 | Santiago Sanchez Reyes            | Scrum Master |
 | A00836286 | Esteban Sierra Baccio             | Developer |
+| A01641402 | Enrique Macías López              | Developer |
