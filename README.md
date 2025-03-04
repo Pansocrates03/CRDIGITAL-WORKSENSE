@@ -5,6 +5,8 @@ Enhanced with the power of AI, worksense aims to boost productivity, including s
 - Backlog
 - User roles
 
+[Our Wiki](https://sharp-tangerine-946.notion.site/19acb9f9e1968081a87ac03a05c4111d?v=19acb9f9e19680cc9579000cded570a9) 
+
 ## How to run the app
 1. Clone this repo
 ```
