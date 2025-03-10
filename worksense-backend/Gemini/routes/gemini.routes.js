@@ -5,10 +5,13 @@ const router = express.Router();
 
 console.log("✅ Ruta de Gemini cargada correctamente");
 
-router.get("/gemini", (req, res, next) => {
+router.get(
+  "/gemini",
+  (req, res, next) => {
     console.log("📌 Se recibió una solicitud a /api/gemini");
     next();
-}, getGeminiResponse);
+  },
+  getGeminiResponse
+);
 
 export default router;
-
