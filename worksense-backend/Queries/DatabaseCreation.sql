@@ -1,0 +1,9 @@
+CREATE DATABASE CRDigital;
+GO
+
+USE CRDigital;
+GO
+
+CREATE TABLE test (
+    text VARCHAR(255) NOT NULL
+);
