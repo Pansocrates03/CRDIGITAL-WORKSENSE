@@ -5,7 +5,7 @@ import AIMessage from "./components/AIMessage";
 import ProjectInfo from "./components/ProjectInfo";
 
 // URL base del backend
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "http://localhost:5050";
 
 function App() {
   // Estados para manejar los datos que vendrán de los endpoints
@@ -19,9 +19,7 @@ function App() {
     name: "Proyecto de Prueba",
   });
 
-  const [aiMessage, setAiMessage] = useState(
-    "¡Bienvenido al sistema! Los endpoints están en preparación."
-  );
+  const [aiMessage, setAiMessage] = useState("Cargando mensaje de IA...");
 
   // Funciones para obtener datos de los endpoints
   const fetchUserData = async () => {
@@ -70,9 +68,37 @@ function App() {
     }
   };
 
-  // TODO: Implementar cuando el endpoint de IA esté disponible
-  const fetchAIMessage = () => {
-    setAiMessage("Endpoint de IA en desarrollo");
+  // Implementación del endpoint de Gemini
+  const fetchAIMessage = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/gemini`);
+
+      if (!response.ok) {
+        throw new Error(
+          `Error en la respuesta del servidor: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+
+      // Extraer el texto de la respuesta de Gemini según la estructura del backend
+      if (
+        data &&
+        data.candidates &&
+        data.candidates[0] &&
+        data.candidates[0].content &&
+        data.candidates[0].content.parts &&
+        data.candidates[0].content.parts[0] &&
+        data.candidates[0].content.parts[0].text
+      ) {
+        setAiMessage(data.candidates[0].content.parts[0].text);
+      } else {
+        setAiMessage("No se pudo obtener una respuesta clara de la IA");
+      }
+    } catch (error) {
+      console.error("Error al obtener mensaje de Gemini:", error);
+      setAiMessage("Error al conectar con el servicio de IA: " + error.message);
+    }
   };
 
   // useEffect para cargar datos cuando el componente se monte
