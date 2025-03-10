@@ -19,9 +19,7 @@ function App() {
     name: "Proyecto de Prueba",
   });
 
-  const [aiMessage, setAiMessage] = useState(
-    "¡Bienvenido al sistema! Los endpoints están en preparación."
-  );
+  const [aiMessage, setAiMessage] = useState("Cargando mensaje de IA...");
 
   // Funciones para obtener datos de los endpoints
   const fetchUserData = async () => {
@@ -70,9 +68,37 @@ function App() {
     }
   };
 
-  // TODO: Implementar cuando el endpoint de IA esté disponible
-  const fetchAIMessage = () => {
-    setAiMessage("Endpoint de IA en desarrollo");
+  // Implementación del endpoint de Gemini
+  const fetchAIMessage = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/gemini`);
+
+      if (!response.ok) {
+        throw new Error(
+          `Error en la respuesta del servidor: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+
+      // Extraer el texto de la respuesta de Gemini según la estructura del backend
+      if (
+        data &&
+        data.candidates &&
+        data.candidates[0] &&
+        data.candidates[0].content &&
+        data.candidates[0].content.parts &&
+        data.candidates[0].content.parts[0] &&
+        data.candidates[0].content.parts[0].text
+      ) {
+        setAiMessage(data.candidates[0].content.parts[0].text);
+      } else {
+        setAiMessage("No se pudo obtener una respuesta clara de la IA");
+      }
+    } catch (error) {
+      console.error("Error al obtener mensaje de Gemini:", error);
+      setAiMessage("Error al conectar con el servicio de IA: " + error.message);
+    }
   };
 
   // useEffect para cargar datos cuando el componente se monte
@@ -87,7 +113,11 @@ function App() {
       className="App"
       style={{ backgroundColor: "var(--background-color)", minHeight: "100vh" }}
     >
-      <UserInfo username={userData.firstName} />
+      <UserInfo
+        firstName={userData.firstName}
+        lastName={userData.lastName}
+        email={userData.email}
+      />
       <div style={{ padding: "20px" }}>
         <AIMessage message={aiMessage} />
         <ProjectInfo project={projectData} />
