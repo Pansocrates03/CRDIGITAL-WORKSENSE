@@ -26,6 +26,22 @@
   font-size: 1.2rem;
 }
 
+.user-info h2 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.user-info .email {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
 .ai-message {
   background-color: white;
   border-radius: 8px;

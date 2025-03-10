@@ -87,7 +87,11 @@ function App() {
       className="App"
       style={{ backgroundColor: "var(--background-color)", minHeight: "100vh" }}
     >
-      <UserInfo username={userData.firstName} />
+      <UserInfo
+        firstName={userData.firstName}
+        lastName={userData.lastName}
+        email={userData.email}
+      />
       <div style={{ padding: "20px" }}>
         <AIMessage message={aiMessage} />
         <ProjectInfo project={projectData} />
