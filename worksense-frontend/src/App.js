@@ -49,7 +49,7 @@ function App() {
       }
       const data = await response.json();
       setProjectData({
-        name: data.text || "Proyecto no encontrado",
+        name: data.test || "Proyecto no encontrado",
       });
     } catch (error) {
       console.error("Error al obtener datos del proyecto:", error);
@@ -76,7 +76,7 @@ function App() {
       className="App"
       style={{ backgroundColor: "var(--background-color)", minHeight: "100vh" }}
     >
-      <UserInfo username={userData.username} />
+      <UserInfo username={userData.firstName} />
       <div style={{ padding: "20px" }}>
         <AIMessage message={aiMessage} />
         <ProjectInfo project={projectData} />
