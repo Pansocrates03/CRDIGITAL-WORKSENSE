@@ -17,13 +17,11 @@ const UserInfo = ({ firstName, lastName, email }) => {
         setGreeting("¡Buenas noches");
       }
     };
-
     updateGreeting();
     const interval = setInterval(() => {
       setCurrentTime(new Date());
       updateGreeting();
     }, 60000); // Actualizar cada minuto
-
     return () => clearInterval(interval);
   }, []);
 
