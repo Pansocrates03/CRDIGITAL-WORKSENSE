@@ -1,13 +1,14 @@
-// Express JS
-
-// Firebase Admin
 const admin = require("firebase-admin");
+const express = require("express");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 // Cargar credenciales de Firebase
 const serviceAccount = require("./firebaseServiceAccount.json");
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
 });
 
 const db = admin.firestore();
@@ -27,14 +28,3 @@ app.get("/test", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
-
-const express = require('express');
-const app = express();
-
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
-
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-})
