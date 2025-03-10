@@ -71,7 +71,7 @@ function App() {
   // Implementación del endpoint de Gemini
   const fetchAIMessage = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/gemini`);
+      const response = await fetch(`${API_BASE_URL}/api/gemini`);
 
       if (!response.ok) {
         throw new Error(
