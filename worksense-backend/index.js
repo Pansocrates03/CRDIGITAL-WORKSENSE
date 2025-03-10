@@ -1,30 +1,17 @@
-const admin = require("firebase-admin");
-const express = require("express");
+import express from "express";
+import cors from "cors";
+import morgan from "morgan";
+
+import sqlRoutes from "./SQL/routes/sql.routes.js"
+import firebaseRoutes from "./Firebase/routes/firebase.routes.js"
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Cargar credenciales de Firebase
-const serviceAccount = require("./firebaseServiceAccount.json");
+app.use(cors());
+app.use(morgan("dev"));
+app.use(express.json());
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+app.use(sqlRoutes);
+app.use(firebaseRoutes);
 
-const db = admin.firestore();
-
-// Rutas de prueba
-app.get("/", (req, res) => {
-  res.send("Servidor funcionando con Firebase");
-});
-
-app.get("/test", async (req, res) => {
-  const snapshot = await db.collection("testCollection").get();
-  const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  res.json(docs);
-});
-
-// Iniciar el servidor
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+app.listen(5000, console.log("http://localhost:5000"));
