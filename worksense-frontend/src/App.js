@@ -10,7 +10,9 @@ const API_BASE_URL = "http://localhost:5000";
 function App() {
   // Estados para manejar los datos que vendrán de los endpoints
   const [userData, setUserData] = useState({
-    username: "Usuario de Prueba",
+    firstName: "Usuario de Prueba",
+    lastName: "",
+    email: "",
   });
 
   const [projectData, setProjectData] = useState({
@@ -29,14 +31,20 @@ function App() {
         throw new Error("Error en la respuesta del servidor");
       }
       const data = await response.json();
-      // Asumiendo que la respuesta tiene un formato específico
-      setUserData({
-        username: data[0]?.nombre || "Usuario no encontrado",
-      });
+      // La respuesta es un array de usuarios, tomamos el primero
+      if (data && data.length > 0) {
+        setUserData({
+          firstName: data[0].firstName || "Usuario",
+          lastName: data[0].lastName || "",
+          email: data[0].email || "",
+        });
+      }
     } catch (error) {
       console.error("Error al obtener datos del usuario:", error);
       setUserData({
-        username: "Error al cargar usuario",
+        firstName: "Error al cargar usuario",
+        lastName: "",
+        email: "",
       });
     }
   };
@@ -48,9 +56,12 @@ function App() {
         throw new Error("Error en la respuesta del servidor");
       }
       const data = await response.json();
-      setProjectData({
-        name: data.test || "Proyecto no encontrado",
-      });
+      // La respuesta es un array con un objeto que tiene la propiedad text
+      if (data && data.length > 0) {
+        setProjectData({
+          name: data[0].text || "Proyecto no encontrado",
+        });
+      }
     } catch (error) {
       console.error("Error al obtener datos del proyecto:", error);
       setProjectData({
