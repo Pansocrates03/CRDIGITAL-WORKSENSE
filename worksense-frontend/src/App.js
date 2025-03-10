@@ -5,7 +5,7 @@ import AIMessage from "./components/AIMessage";
 import ProjectInfo from "./components/ProjectInfo";
 
 // URL base del backend
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "http://localhost:5050";
 
 function App() {
   // Estados para manejar los datos que vendrán de los endpoints
