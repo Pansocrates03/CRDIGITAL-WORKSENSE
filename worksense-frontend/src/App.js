@@ -3,12 +3,11 @@ import "./styles/global.css";
 import UserInfo from "./components/UserInfo";
 import AIMessage from "./components/AIMessage";
 import ProjectInfo from "./components/ProjectInfo";
+import EpicStories from "./components/SofttekAPITest"; 
 
-// URL base del backend
 const API_BASE_URL = "http://localhost:5050";
 
 function App() {
-  // Estados para manejar los datos que vendrán de los endpoints
   const [userData, setUserData] = useState({
     firstName: "Usuario de Prueba",
     lastName: "",
@@ -21,7 +20,6 @@ function App() {
 
   const [aiMessage, setAiMessage] = useState("Cargando mensaje de IA...");
 
-  // Funciones para obtener datos de los endpoints
   const fetchUserData = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/usuarios`);
@@ -29,7 +27,6 @@ function App() {
         throw new Error("Error en la respuesta del servidor");
       }
       const data = await response.json();
-      // La respuesta es un array de usuarios, tomamos el primero
       if (data && data.length > 0) {
         setUserData({
           firstName: data[0].firstName || "Usuario",
@@ -54,7 +51,6 @@ function App() {
         throw new Error("Error en la respuesta del servidor");
       }
       const data = await response.json();
-      // La respuesta es un array con un objeto que tiene la propiedad text
       if (data && data.length > 0) {
         setProjectData({
           name: data[0].text || "Proyecto no encontrado",
@@ -68,20 +64,15 @@ function App() {
     }
   };
 
-  // Implementación del endpoint de Gemini
   const fetchAIMessage = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/gemini`);
-
       if (!response.ok) {
         throw new Error(
           `Error en la respuesta del servidor: ${response.status}`
         );
       }
-
       const data = await response.json();
-
-      // Extraer el texto de la respuesta de Gemini según la estructura del backend
       if (
         data &&
         data.candidates &&
@@ -101,7 +92,6 @@ function App() {
     }
   };
 
-  // useEffect para cargar datos cuando el componente se monte
   useEffect(() => {
     fetchUserData();
     fetchProjectData();
@@ -121,6 +111,7 @@ function App() {
       <div style={{ padding: "20px" }}>
         <AIMessage message={aiMessage} />
         <ProjectInfo project={projectData} />
+        <EpicStories /> {/* Adding the EpicStories component */}
       </div>
     </div>
   );
