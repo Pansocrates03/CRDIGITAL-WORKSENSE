@@ -4,9 +4,9 @@ import "../styles/global.css";
 const AIMessage = ({ message }) => {
   const [displayedMessage, setDisplayedMessage] = useState("");
   const [isTyping, setIsTyping] = useState(true);
-  const [typingSpeed] = useState(30); // milisegundos por caracter
+  const [typingSpeed] = useState(30); // milliseconds per character
 
-  // Efecto de escritura de texto
+  // Text typing effect
   useEffect(() => {
     if (!message) {
       setDisplayedMessage("");
@@ -50,9 +50,9 @@ const AIMessage = ({ message }) => {
               fontWeight: "bold",
             }}
           >
-            IA
+            AI
           </span>
-          Asistente Digital
+          Digital Assistant
         </span>
       </h3>
       <div

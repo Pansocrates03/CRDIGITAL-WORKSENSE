@@ -2,7 +2,7 @@ import React from "react";
 import "../styles/global.css";
 
 const ProjectInfo = ({ project }) => {
-  // Función para convertir el porcentaje de texto a número
+  // Function to convert text percentage to a number
   const getCompletionPercentage = () => {
     if (!project.metrics?.completion) return 0;
     const percentage = parseInt(
@@ -12,11 +12,11 @@ const ProjectInfo = ({ project }) => {
     return isNaN(percentage) ? 0 : percentage;
   };
 
-  // Función para determinar el color según el porcentaje
+  // Function to determine color based on percentage
   const getProgressColor = (percentage) => {
-    if (percentage < 30) return "#e74c3c"; // Rojo
-    if (percentage < 70) return "#f39c12"; // Naranja
-    return "#2ecc71"; // Verde
+    if (percentage < 30) return "#e74c3c"; // Red
+    if (percentage < 70) return "#f39c12"; // Orange
+    return "#2ecc71"; // Green
   };
 
   return (
@@ -40,7 +40,7 @@ const ProjectInfo = ({ project }) => {
           >
             P
           </span>
-          Información del Proyecto
+          Project Information
         </span>
       </h3>
       <div className="project-card">
@@ -94,7 +94,7 @@ const ProjectInfo = ({ project }) => {
               color: "var(--secondary-color)",
             }}
           >
-            <span style={{ marginRight: "0.5rem" }}>Inicio:</span>
+            <span style={{ marginRight: "0.5rem" }}>Start Date:</span>
             <span style={{ fontWeight: "bold" }}>{project.startDate}</span>
           </div>
         )}
@@ -111,7 +111,7 @@ const ProjectInfo = ({ project }) => {
                   }}
                 >
                   <span style={{ fontWeight: "bold" }}>
-                    Progreso del proyecto
+                    Project Progress
                   </span>
                   <span>{project.metrics.completion}</span>
                 </div>
@@ -149,23 +149,14 @@ const ProjectInfo = ({ project }) => {
               }}
             >
               {project.metrics.tasks && (
-                <div
-                  className="metric-card"
-                  style={{
+                <div className="metric-card" style={{
                     padding: "1rem",
                     backgroundColor: "#f8f9fa",
                     borderRadius: "8px",
                     boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "0.9rem",
-                      color: "var(--secondary-color)",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    Tareas
+                  }}>
+                  <div style={{ fontSize: "0.9rem", color: "var(--secondary-color)", marginBottom: "0.5rem" }}>
+                    Tasks
                   </div>
                   <div style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
                     {project.metrics.tasks}
@@ -174,23 +165,14 @@ const ProjectInfo = ({ project }) => {
               )}
 
               {project.metrics.nextMilestone && (
-                <div
-                  className="metric-card"
-                  style={{
+                <div className="metric-card" style={{
                     padding: "1rem",
                     backgroundColor: "#f8f9fa",
                     borderRadius: "8px",
                     boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "0.9rem",
-                      color: "var(--secondary-color)",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    Próximo hito
+                  }}>
+                  <div style={{ fontSize: "0.9rem", color: "var(--secondary-color)", marginBottom: "0.5rem" }}>
+                    Next Milestone
                   </div>
                   <div style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
                     {project.metrics.nextMilestone}

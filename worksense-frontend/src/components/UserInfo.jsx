@@ -5,34 +5,34 @@ const UserInfo = ({ firstName, lastName, email }) => {
   const [greeting, setGreeting] = useState("");
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Actualizar el saludo según la hora del día
+  // Update the greeting based on the time of day
   useEffect(() => {
     const updateGreeting = () => {
       const hour = new Date().getHours();
       if (hour >= 5 && hour < 12) {
-        setGreeting("¡Buenos días");
+        setGreeting("Good morning");
       } else if (hour >= 12 && hour < 18) {
-        setGreeting("¡Buenas tardes");
+        setGreeting("Good afternoon");
       } else {
-        setGreeting("¡Buenas noches");
+        setGreeting("Good evening");
       }
     };
     updateGreeting();
     const interval = setInterval(() => {
       setCurrentTime(new Date());
       updateGreeting();
-    }, 60000); // Actualizar cada minuto
+    }, 60000); // Update every minute
     return () => clearInterval(interval);
   }, []);
 
-  // Generar iniciales para el avatar
+  // Generate initials for the avatar
   const getInitials = () => {
     return `${firstName?.charAt(0) || ""}${
       lastName?.charAt(0) || ""
     }`.toUpperCase();
   };
 
-  // Generar un color basado en el nombre
+  // Generate a color based on the name
   const getAvatarColor = () => {
     const name = firstName + lastName;
     let hash = 0;
