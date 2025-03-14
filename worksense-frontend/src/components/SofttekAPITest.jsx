@@ -12,8 +12,10 @@ function EpicStories() {
     language: "English",
   });
   const [expandedStory, setExpandedStory] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const fetchEpicData = async () => {
+    setLoading(true);
     try {
       const response = await fetch(EPIC_URL, {
         method: "POST",
@@ -36,6 +38,8 @@ function EpicStories() {
     } catch (error) {
       console.error("Error al obtener datos épicos:", error);
       setEpicData([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,14 +100,18 @@ function EpicStories() {
             value={inputData.objective}
             onChange={handleInputChange}
           />
-          <button onClick={fetchEpicData}>Generate</button>
+          <button onClick={fetchEpicData} disabled={loading}>
+            {loading ? "Generating..." : "Generate"}
+          </button>
         </div>
       </div>
 
       <div className="recent-generations">
         <h3>Recent Generations</h3>
         <div className="cards-container">
-          {epicData.length > 0 ? (
+          {loading ? (
+            <p>Loading user stories...</p>
+          ) : epicData.length > 0 ? (
             epicData.map((story, index) => (
               <div key={index} className="story-card">
                 <h4>{story.user_story}</h4>
