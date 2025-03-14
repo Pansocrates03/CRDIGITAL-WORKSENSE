@@ -14,10 +14,6 @@ function App() {
     email: "",
   });
 
-  const [projectData, setProjectData] = useState({
-    name: "Test Project",
-  });
-
   const [aiMessage, setAiMessage] = useState("Loading AI message...");
 
   const fetchUserData = async () => {
@@ -44,33 +40,11 @@ function App() {
     }
   };
 
-  const fetchProjectData = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/sqltest`);
-      if (!response.ok) {
-        throw new Error("Server response error");
-      }
-      const data = await response.json();
-      if (data && data.length > 0) {
-        setProjectData({
-          name: data[0].text || "Project not found",
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching project data:", error);
-      setProjectData({
-        name: "Error loading project",
-      });
-    }
-  };
-
   const fetchAIMessage = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/gemini`);
       if (!response.ok) {
-        throw new Error(
-          `Server response error: ${response.status}`
-        );
+        throw new Error(`Server response error: ${response.status}`);
       }
       const data = await response.json();
       if (
@@ -87,14 +61,13 @@ function App() {
         setAiMessage("Could not retrieve a clear AI response");
       }
     } catch (error) {
-      console.error("Error fetching Gemini message:", error);
+      console.error("Error fetching AI message:", error);
       setAiMessage("Error connecting to AI service: " + error.message);
     }
   };
 
   useEffect(() => {
     fetchUserData();
-    fetchProjectData();
     fetchAIMessage();
   }, []);
 
@@ -109,7 +82,7 @@ function App() {
         {/* Left Side */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "20px" }}>
           <AIMessage message={aiMessage} />
-          <ProjectInfo project={projectData} />
+          <ProjectInfo />
         </div>
         {/* Right Side */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", paddingTop: "30px" }}>

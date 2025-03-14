@@ -69,7 +69,7 @@ const UserInfo = ({ firstName, lastName, email }) => {
           <div className="user-details">
             <div className="greeting-container">
               <h2 className="greeting">
-                {greeting}, {firstName}!
+                {greeting}, {firstName}! (Firebase)
               </h2>
               <span className="time">
                 {currentTime.toLocaleTimeString([], {

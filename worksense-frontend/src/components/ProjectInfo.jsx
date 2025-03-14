@@ -1,23 +1,27 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/global.css";
 
-const ProjectInfo = ({ project }) => {
-  // Function to convert text percentage to a number
-  const getCompletionPercentage = () => {
-    if (!project.metrics?.completion) return 0;
-    const percentage = parseInt(
-      project.metrics.completion.replace("%", ""),
-      10
-    );
-    return isNaN(percentage) ? 0 : percentage;
-  };
+const API_BASE_URL = "http://localhost:5050";
 
-  // Function to determine color based on percentage
-  const getProgressColor = (percentage) => {
-    if (percentage < 30) return "#e74c3c"; // Red
-    if (percentage < 70) return "#f39c12"; // Orange
-    return "#2ecc71"; // Green
-  };
+const ProjectInfo = () => {
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/allprojects`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch projects");
+        }
+        const data = await response.json();
+        setProjects(data);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
+    };
+
+    fetchProjects();
+  }, []);
 
   return (
     <div className="container">
@@ -43,144 +47,42 @@ const ProjectInfo = ({ project }) => {
           Project Information
         </span>
       </h3>
-      <div className="project-card">
-        <h4
-          style={{
-            fontSize: "1.5rem",
-            marginBottom: "0.5rem",
-            color: "var(--primary-color)",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-          }}
-        >
-          {project.name}
-          {project.status && (
-            <span
-              style={{
-                backgroundColor: "var(--primary-color)",
-                color: "white",
-                padding: "0.2rem 0.8rem",
-                borderRadius: "15px",
-                fontSize: "0.8rem",
-                fontWeight: "normal",
-                marginLeft: "auto",
-              }}
-            >
-              {project.status}
-            </span>
-          )}
-        </h4>
 
-        {project.description && (
-          <p
-            style={{
-              fontSize: "1.1rem",
-              marginBottom: "1.5rem",
-              color: "var(--text-color)",
-            }}
-          >
-            {project.description}
-          </p>
-        )}
-
-        {project.startDate && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: "1.5rem",
-              fontSize: "0.9rem",
-              color: "var(--secondary-color)",
-            }}
-          >
-            <span style={{ marginRight: "0.5rem" }}>Start Date:</span>
-            <span style={{ fontWeight: "bold" }}>{project.startDate}</span>
-          </div>
-        )}
-
-        {project.metrics && (
-          <div className="project-metrics">
-            {project.metrics.completion && (
-              <div className="metric-item" style={{ marginBottom: "1.5rem" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  <span style={{ fontWeight: "bold" }}>
-                    Project Progress
-                  </span>
-                  <span>{project.metrics.completion}</span>
-                </div>
-                <div
-                  className="progress-bar-container"
-                  style={{
-                    height: "8px",
-                    backgroundColor: "#e0e0e0",
-                    borderRadius: "4px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    className="progress-bar"
-                    style={{
-                      height: "100%",
-                      width: `${getCompletionPercentage()}%`,
-                      backgroundColor: getProgressColor(
-                        getCompletionPercentage()
-                      ),
-                      borderRadius: "4px",
-                      transition: "width 1s ease-in-out",
-                    }}
-                  ></div>
-                </div>
-              </div>
-            )}
-
+      <div className="project-list" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+        {projects.length > 0 ? (
+          projects.map((project) => (
             <div
-              className="metrics-grid"
+              key={project.id}
+              className="project-card"
               style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "1rem",
+                padding: "1rem",
+                backgroundColor: "#f8f9fa",
+                borderRadius: "8px",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
               }}
             >
-              {project.metrics.tasks && (
-                <div className="metric-card" style={{
-                    padding: "1rem",
-                    backgroundColor: "#f8f9fa",
-                    borderRadius: "8px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  }}>
-                  <div style={{ fontSize: "0.9rem", color: "var(--secondary-color)", marginBottom: "0.5rem" }}>
-                    Tasks
-                  </div>
-                  <div style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
-                    {project.metrics.tasks}
-                  </div>
-                </div>
-              )}
-
-              {project.metrics.nextMilestone && (
-                <div className="metric-card" style={{
-                    padding: "1rem",
-                    backgroundColor: "#f8f9fa",
-                    borderRadius: "8px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  }}>
-                  <div style={{ fontSize: "0.9rem", color: "var(--secondary-color)", marginBottom: "0.5rem" }}>
-                    Next Milestone
-                  </div>
-                  <div style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
-                    {project.metrics.nextMilestone}
-                  </div>
-                </div>
-              )}
+              <h4 style={{ fontSize: "1.2rem", color: "var(--primary-color)", marginBottom: "0.5rem" }}>
+                {project.name}
+              </h4>
+              <p style={{ fontSize: "1rem", color: "var(--text-color)", marginBottom: "1rem" }}>
+                {project.description}
+              </p>
+              <span
+                style={{
+                  backgroundColor: project.status === "Completed" ? "#2ecc71" : "#f39c12",
+                  color: "white",
+                  padding: "0.3rem 0.8rem",
+                  borderRadius: "15px",
+                  fontSize: "0.9rem",
+                  fontWeight: "bold",
+                }}
+              >
+                {project.status}
+              </span>
             </div>
-          </div>
+          ))
+        ) : (
+          <p>No projects found.</p>
         )}
       </div>
     </div>
