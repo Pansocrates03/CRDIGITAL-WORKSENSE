@@ -23,6 +23,18 @@ const ProjectInfo = () => {
     fetchProjects();
   }, []);
 
+  // Function to determine badge color based on status
+  const getStatusColor = (status) => {
+    switch (status.toLowerCase()) {
+      case "completed":
+        return "#2ecc71"; // Green
+      case "in progress":
+        return "#f39c12"; // Yellow
+      default:
+        return "#e74c3c"; // Red for other statuses
+    }
+  };
+
   return (
     <div className="container">
       <h3 className="section-title">
@@ -44,7 +56,7 @@ const ProjectInfo = () => {
           >
             P
           </span>
-          Project Information
+          Project Information (SQL Database)
         </span>
       </h3>
 
@@ -69,7 +81,7 @@ const ProjectInfo = () => {
               </p>
               <span
                 style={{
-                  backgroundColor: project.status === "Completed" ? "#2ecc71" : "#f39c12",
+                  backgroundColor: getStatusColor(project.status),
                   color: "white",
                   padding: "0.3rem 0.8rem",
                   borderRadius: "15px",
