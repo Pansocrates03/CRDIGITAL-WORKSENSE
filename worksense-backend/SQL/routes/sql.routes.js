@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { getText } from "../controllers/sql.controllers.js";
+import { getText, getProjects } from "../controllers/sql.controllers.js";
 
 const router = Router();
 
 router.get("/sqltest/", getText);
+router.get("/allprojects/", getProjects)
 
 export default router;
