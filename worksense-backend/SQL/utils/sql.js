@@ -15,9 +15,8 @@ const sqlConfig = isSqlConfigured
       password: process.env.DB_PWD,
       database: process.env.DB_NAME,
       server: process.env.DB_SERVER,
-      port: 51633,
       options: {
-        encrypt: true, // for azure
+        encrypt: false, // for azure
         trustServerCertificate: true, // change to true for local dev / self-signed certs
       },
     }
