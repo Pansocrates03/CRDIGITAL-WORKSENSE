@@ -1,4 +1,4 @@
-import loginBanner from "@/assets/images/loginBanner.svg";
+import loginBanner2 from "@/assets/images/loginBanner2.svg";
 import { LoginForm } from "@/components/login-form";
 export default function LoginPage() {
   return (
@@ -13,7 +13,7 @@ export default function LoginPage() {
       </div>
       <div className="relative hidden bg-muted lg:block">
         <img
-          src={loginBanner}
+          src={loginBanner2}
           alt="Image"
           className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
         />
