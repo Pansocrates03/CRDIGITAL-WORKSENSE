@@ -1,0 +1,55 @@
+{
+    "projects": {
+        "projectID": {
+            "name": "Project Name",
+            "description": "Project Description",
+            "bugs": {
+                "bugID": {
+                    "title": "Bug Title",
+                    "description": "Bug Description",
+                    "status": "open",
+                    "priority": "high",
+                    "assignee": "memberID"
+                }
+            },
+            "epics": {
+                "epicID": {
+                    "title": "Epic Title",
+                    "description": "Epic Description",
+                    "stories": {
+                        "storyID": {
+                            "story": "Story Title",
+                            "description": "Story Description",
+                            "status": "in-progress",
+                            "priority": "medium",
+                            "size": "3",
+                            "comments": {
+                                "commentID": {
+                                    "text": "Comment text",
+                                    "author": "memberID",
+                                    "timestamp": "2023-10-01T12:00:00Z"
+                                }
+                            },
+                            "tasks": {
+                                "title": "nfdsjlfds",
+                                "description": "Task Description",
+                                "status": "not-started",
+                                "assignee": "memberID",
+                                "acceptanceCriteria": [
+                                    "Acceptance criteria 1",
+                                    "Acceptance criteria 2",
+                                    "Acceptance criteria 3"
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "members": {
+                "memberID": {
+                    "permissions": 12345678
+                }
+            }
+        }
+    }
+}
