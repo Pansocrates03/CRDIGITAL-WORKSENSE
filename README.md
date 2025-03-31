@@ -12,13 +12,16 @@ Enhanced with the power of AI, worksense aims to boost productivity, including s
 ```
 git clone https://github.com/Pansocrates03/CRDIGITAL-WORKSENSE
 ```
-2. Install dependencies
+
+
+### Run the backend
 ```
-npm i
+tsx ./index.ts
 ```
-3. Start the app
+
+### Run the frontend
 ```
-npm start
+npm run dev
 ```
 
 
