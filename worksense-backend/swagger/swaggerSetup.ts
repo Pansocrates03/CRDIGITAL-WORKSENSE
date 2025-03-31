@@ -17,5 +17,5 @@ export const swaggerOptions = {
         },
         ],
     },
-    apis: ['./src/routes/*.js'], // Rutas donde Swagger buscará documentación
+    apis: ['./src/routes/*.ts'], // Rutas donde Swagger buscará documentación
 };

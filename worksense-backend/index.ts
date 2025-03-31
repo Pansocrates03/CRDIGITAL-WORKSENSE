@@ -17,7 +17,7 @@ import { swaggerOptions } from "./swagger/swaggerSetup.js"; // Swagger options
 // Obtain URL
 const PORT = process.env.PORT || 5050;
 const HOST = process.env.HOST || 'localhost';
-const URL = process.env.URL || `http://${HOST}:${PORT}`;
+const URL: string = process.env.URL || `http://${HOST}:${PORT}`;
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 
@@ -32,5 +32,8 @@ app.use(express.json());
 app.use(sqlRoutes);
 app.use(firebaseRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.get('/', (req: any, res: any) => {
+    res.send('API is running...');
+};
 
 app.listen(PORT, console.log(URL));
