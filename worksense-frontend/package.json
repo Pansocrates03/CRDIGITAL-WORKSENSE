@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "lint": "eslint --config ./config/eslint.config.js .",
+    "preview": "vite preview",
+    "typecheck": "tsc --project ./config/tsconfig.json"
   },
   "dependencies": {
     "react": "^19.0.0",
