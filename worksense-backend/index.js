@@ -11,21 +11,19 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import sqlRoutes from "./src/routes/sql.routes.js";
 import firebaseRoutes from "./src/routes/firebase.routes.js"
 
-const app = express();
+// Documenattion Imports
+import { swaggerOptions } from "./swagger/swaggerSetup.js"; // Swagger options
 
+// Obtain URL
 const PORT = process.env.PORT || 5050;
 const HOST = process.env.HOST || 'localhost';
 const URL = process.env.URL || `http://${HOST}:${PORT}`;
 
-
-  
-
-import { swaggerOptions } from "./swagger/swaggerSetup.js";
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 
-// Ruta de la documentación
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+// APP USAGE
+const app = express();
 
 app.use(cors());
 app.use(morgan());
@@ -33,5 +31,6 @@ app.use(express.json());
 
 app.use(sqlRoutes);
 app.use(firebaseRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.listen(PORT, console.log(URL));

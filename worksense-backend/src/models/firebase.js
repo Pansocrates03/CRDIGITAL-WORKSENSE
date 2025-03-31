@@ -5,11 +5,13 @@ dotenv.config();
 
 let db;
 
+const firebaseConfigPath = "./config/firebaseServiceAccount.json";
+
 try {
   // Verificar si el archivo de credenciales existe
-  if (existsSync("./Firebase/utils/firebaseServiceAccount.json")) {
+  if (existsSync(firebaseConfigPath)) {
     const serviceAccount = JSON.parse(
-      readFileSync("./Firebase/utils/firebaseServiceAccount.json", "utf-8")
+      readFileSync(firebaseConfigPath, "utf-8")
     );
 
     admin.initializeApp({
