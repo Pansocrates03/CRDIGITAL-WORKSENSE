@@ -1,10 +1,6 @@
-import { sqlConnect, sql } from "../utils/sql.js";
+import { sqlConnect, sql } from "../models/sqlModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-
-
-// Base de datos simulada
-const users = [];
 
 export const getUsers = (req, res) => {
   res.json([{ text: "Hello from getUsers!" }]);
@@ -47,28 +43,51 @@ export const login = async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).send('Nombre de usuario y contraseña son obligatorios');
+    return res.status(400).json({ 
+      message: 'Nombre de usuario y contraseña son obligatorios' 
+    });
   }
 
   try {
     const pool = await sqlConnect();
     const result = await pool.request()
       .input('username', sql.VarChar, username)
-      .input('password', sql.VarChar, password) // La contraseña proporcionada
+      .input('password', sql.VarChar, password)
       .execute('spValidateCredentials');
 
-    const isValid = result.recordset[0]?.IsValid;
+    const loginData = result.recordset[0];
 
-    if (isValid === 1) {
-      // Generar el JWT
-      const token = jwt.sign({ username }, process.env.TOKEN_SECRET, { expiresIn: '1h' });
-      return res.header('auth-token', token).send({ token });
+    // Validar la contraseña usando bcrypt
+    const isPasswordValid = await bcrypt.compare(password, loginData.PasswordHash);
+
+    if (loginData.IsValid === 1 && isPasswordValid) {
+      // Generar JWT con más información
+      const token = jwt.sign(
+        { 
+          username: username,
+          userId: loginData.UserID,
+          roleId: loginData.RoleID,
+          roleName: loginData.RoleName
+        }, 
+        process.env.TOKEN_SECRET, 
+        { expiresIn: '1h' }
+      );
+
+      return res.status(200).json({ 
+        message: 'Login exitoso',
+        token: token 
+      });
     } else {
-      return res.status(400).send('Usuario no encontrado o contraseña incorrecta');
+      return res.status(401).json({ 
+        message: 'Credenciales inválidas' 
+      });
     }
   } catch (error) {
-    console.error('Error en login:', error.message);
-    res.status(500).send('Error interno del servidor');
+    console.error('Error en login:', error);
+    res.status(500).json({ 
+      message: 'Error interno del servidor',
+      error: error.message 
+    });
   }
 };
 

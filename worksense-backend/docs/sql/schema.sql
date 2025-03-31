@@ -1,3 +1,32 @@
+-- Date: 2025-03-28
+
+CREATE TABLE Roles (
+    RoleID INT IDENTITY(1,1) PRIMARY KEY, -- Identificador único del rol
+    RoleName NVARCHAR(50) NOT NULL UNIQUE -- Nombre único del rol
+);
+
+CREATE TABLE Users (
+    UserID INT IDENTITY(1,1) PRIMARY KEY, -- Identificador único del usuario
+    Username NVARCHAR(50) NOT NULL UNIQUE, -- Nombre de usuario único
+    PasswordHash NVARCHAR(256) NOT NULL, -- Hash de contraseña
+    CreatedAt DATETIME DEFAULT GETDATE(), -- Fecha de creación
+    RoleID INT NOT NULL, -- ID del rol del usuario
+    FOREIGN KEY (RoleID) REFERENCES Roles(RoleID) -- Relación con la tabla Roles
+);
+
+CREATE TABLE RevokedTokens (
+    RevokedID INT IDENTITY(1,1) PRIMARY KEY, -- Identificador único del token revocado
+    Token NVARCHAR(MAX) NOT NULL, -- Token JWT revocado
+    UserID INT NOT NULL, -- ID del usuario al que pertenece el token
+    RevocationDate DATETIME DEFAULT GETDATE(), -- Fecha de revocación
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) -- Relación con la tabla Users
+);
+
+
+-- Stored procedures
+
+GO
+
 -- Un procedimiento para registrar nuevos usuarios en la base de datos.
 CREATE PROCEDURE spUserRegistration 
     @username NVARCHAR(50),
@@ -71,32 +100,39 @@ GO
 
 CREATE PROCEDURE spValidateCredentials
     @username NVARCHAR(50),
-    @password NVARCHAR(256) -- Contraseña proporcionada por el usuario
+    @password NVARCHAR(256)
 AS
 BEGIN
-    -- Busca al usuario y valida la contraseña
+    -- Busca al usuario con su información de rol
     DECLARE @storedHash NVARCHAR(256);
+    DECLARE @userID INT;
+    DECLARE @roleID INT;
+    DECLARE @roleName NVARCHAR(50);
 
-    SELECT @storedHash = passwordHash
-    FROM Users
+    SELECT 
+        @storedHash = PasswordHash,
+        @userID = UserID,
+        @roleID = RoleID
+    FROM Users u
     WHERE Username = @username;
 
     IF @storedHash IS NULL
     BEGIN
         -- Usuario no encontrado
-        SELECT 0 AS IsValid;
+        SELECT 
+            0 AS IsValid, 
+            NULL AS UserID, 
+            NULL AS RoleID, 
+            NULL AS RoleName;
         RETURN;
     END
 
-    -- Comparar hash de la contraseña
-    IF (PWDCOMPARE(@password, @storedHash) = 1)
-    BEGIN
-        -- Credenciales válidas
-        SELECT 1 AS IsValid;
-    END
-    ELSE
-    BEGIN
-        -- Contraseña incorrecta
-        SELECT 0 AS IsValid;
-    END
+    -- Devolver la información para validación en la aplicación
+    SELECT 
+        1 AS IsValid, 
+        @userID AS UserID, 
+        @roleID AS RoleID,
+        (SELECT RoleName FROM Roles WHERE RoleID = @roleID) AS RoleName,
+        @storedHash AS PasswordHash;
 END;
+GO

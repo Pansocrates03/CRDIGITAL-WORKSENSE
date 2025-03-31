@@ -1,4 +1,4 @@
-import { db } from "../utils/firebase.js";
+import { db } from "../models/firebase.js";
 
 // Obtener todos los usuarios de Firebase
 export const getUsuarios = async (req, res) => {
