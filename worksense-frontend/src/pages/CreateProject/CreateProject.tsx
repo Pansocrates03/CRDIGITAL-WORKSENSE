@@ -1,5 +1,5 @@
 // src/pages/CreateProject/CreateProject.tsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import styles from './CreateProject.module.css';
 import { SideBar } from '../../components/SideBar/SideBar';
 import { Header } from '../../components/Header/Header';
@@ -15,6 +15,7 @@ interface Project {
 
 const CreateProject: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [projects, setProjects] = useState<Project[]>([
     {
       id: '1',
@@ -39,6 +40,15 @@ const CreateProject: React.FC = () => {
     }
   ]);
 
+  // Filter projects based on search term
+  const filteredProjects = useMemo(() => {
+    const searchTermLower = searchTerm.toLowerCase();
+    return projects.filter(project => 
+      project.name.toLowerCase().includes(searchTermLower) ||
+      project.region.toLowerCase().includes(searchTermLower)
+    );
+  }, [projects, searchTerm]);
+
   const handleCreateProject = (projectName: string, region: string) => {
     const newProject: Project = {
       id: Date.now().toString(), // In a real app, this would come from the backend
@@ -56,6 +66,10 @@ const CreateProject: React.FC = () => {
     setIsModalOpen(false);
   };
 
+  const handleClearSearch = () => {
+    setSearchTerm('');
+  };
+
   return (
     <div className={styles.pageContainer}>
       <SideBar />
@@ -70,8 +84,20 @@ const CreateProject: React.FC = () => {
               New Project
             </button>
             <div className={styles.searchContainer}>
-              <input className={styles.searchInput} placeholder="Value" />
-              <button className={styles.clearSearch}>✕</button>
+              <input 
+                className={styles.searchInput} 
+                placeholder="Search projects..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <button 
+                  className={styles.clearSearch}
+                  onClick={handleClearSearch}
+                >
+                  ✕
+                </button>
+              )}
             </div>
             <button className={styles.filterButton}>
               <img src='/Filter Button.svg' alt="Filter" />
@@ -80,7 +106,7 @@ const CreateProject: React.FC = () => {
           
           <h3>Victor Ortega's projects</h3>
           <div className={styles.projectCards}>
-            {projects.map((project) => (
+            {filteredProjects.map((project) => (
               <div key={project.id} className={styles.card}>
                 <div className={styles.cardHeader}>
                   <h4>{project.name}</h4>
@@ -95,6 +121,11 @@ const CreateProject: React.FC = () => {
                 </div>
               </div>
             ))}
+            {filteredProjects.length === 0 && searchTerm && (
+              <div className={styles.noResults}>
+                No projects found matching "{searchTerm}"
+              </div>
+            )}
           </div>
         </section>
 

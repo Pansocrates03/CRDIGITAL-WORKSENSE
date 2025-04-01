@@ -282,3 +282,15 @@
     font-size: 0.7rem;
     color: #888;
   }
+  
+  .noResults {
+    width: 100%;
+    text-align: center;
+    padding: 2rem;
+    color: #6B7280;
+    font-size: 0.9rem;
+    background-color: white;
+    border: 1px solid var(--color-gray);
+    border-radius: 8px;
+    margin: 1rem 0;
+  }
