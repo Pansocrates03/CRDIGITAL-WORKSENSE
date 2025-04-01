@@ -1,5 +1,5 @@
-import loginBanner2 from "../../assets/images/loginBanner2.svg";
-import { LoginForm } from "../../components/login-form";
+import loginBanner2 from "@/assets/images/loginBanner2.svg";
+import { LoginForm } from "@/components/login-form";
 export default function LoginPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
