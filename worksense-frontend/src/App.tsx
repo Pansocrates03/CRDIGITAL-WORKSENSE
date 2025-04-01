@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import LoginPage from "./pages/login/login";
-import Dashboard from "./pages/dashboard/Dashboard";
+import CreateProject from "./pages/CreateProject/CreateProject";
 import { useAuth } from "./contexts/AuthContext";
 
 // Componente para proteger rutas
@@ -22,10 +22,10 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route
-            path="/dashboard"
+            path="/create"
             element={
               <PrivateRoute>
-                <Dashboard />
+                <CreateProject />
               </PrivateRoute>
             }
           />

@@ -20,7 +20,8 @@
     "mssql": "^11.0.1",
     "nodemon": "^3.1.9",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "tsx": "^4.19.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
