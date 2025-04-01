@@ -26,7 +26,7 @@ export const createUser = async (req: Request, res: Response) => {
     .input("username", sql.VarChar, username)
     .execute("spCheckUserExists");
   if (data.recordset[0].UserExists === 1)
-    return res.status(400).send("El usuario ya existe");
+    res.status(400).send("El usuario ya existe");
 
   // Encriptar la contraseña
   const hashedPassword = await bcrypt.hash(password, 10);

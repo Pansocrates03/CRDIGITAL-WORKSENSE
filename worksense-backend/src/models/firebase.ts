@@ -1,14 +1,14 @@
 import admin from "firebase-admin";
+import { Firestore } from "firebase-admin/firestore";
 import { readFileSync, existsSync } from "fs";
 import dotenv from "dotenv";
 dotenv.config();
 
-let db;
+let db: Firestore;
 
 const firebaseConfigPath = "./config/firebaseServiceAccount.json";
 
 try {
-  // Verificar si el archivo de credenciales existe
   if (existsSync(firebaseConfigPath)) {
     const serviceAccount = JSON.parse(
       readFileSync(firebaseConfigPath, "utf-8")
@@ -24,23 +24,21 @@ try {
     console.warn(
       "⚠️ Archivo de credenciales de Firebase no encontrado. Funcionando en modo simulado."
     );
-    // Crear un objeto simulado para db
-    db = {
-      collection: (name) => ({
-        get: async () => ({ docs: [] }),
-        add: async (data) => ({ id: "mock-id-" + Date.now() }),
-      }),
-    };
+    db = createMockDB();
   }
 } catch (error) {
   console.error("❌ Error al inicializar Firebase:", error);
-  // Crear un objeto simulado para db en caso de error
-  db = {
-    collection: (name) => ({
+  db = createMockDB();
+}
+
+function createMockDB(): Firestore {
+  return {
+    collection: (name: string) => ({
       get: async () => ({ docs: [] }),
-      add: async (data) => ({ id: "mock-id-" + Date.now() }),
+      add: async (data: any) => ({ id: "mock-id-" + Date.now() }),
     }),
-  };
+    // podrías extender esto para cubrir más métodos si lo necesitas
+  } as unknown as Firestore; // forzamos el tipo
 }
 
 export { db };

@@ -21,7 +21,7 @@ export const getProjectById = async (req: Request, res: Response) => {
     const projectDoc = await db.collection("projects").doc(req.params.id).get();
 
     if (!projectDoc.exists) {
-      return res.status(404).json({ error: "Proyecto no encontrado" });
+      res.status(404).json({ error: "Proyecto no encontrado" });
     }
 
     res.json({ id: req.params.id, ...projectDoc.data() });
@@ -31,13 +31,28 @@ export const getProjectById = async (req: Request, res: Response) => {
   }
 };
 
-// Crear un nuevo proyecto
+// Crear un nuevo proyecto con estructura inicial
 export const createProject = async (req: Request, res: Response) => {
   try {
-    const { name } = req.body;
-    const newProject = await db.collection("projects").add({ name });
-    res.status(201).json({ id: newProject.id, name });
+    const { name, description } = req.body;
+
+    if (!name || !description) {
+      res.status(400).json({ error: "Se requieren 'name' y 'description'" });
+    }
+
+    const newProjectData = {
+      name,
+      description,
+      bugs: {},
+      epics: {},
+      members: {}
+    };
+
+    const newProjectRef = await db.collection("projects").add(newProjectData);
+
+    res.status(201).json({ id: newProjectRef.id, ...newProjectData });
   } catch (error) {
+    console.error("Error al crear el proyecto:", error);
     res.status(500).json({ error: "Error al crear el proyecto" });
   }
 };
