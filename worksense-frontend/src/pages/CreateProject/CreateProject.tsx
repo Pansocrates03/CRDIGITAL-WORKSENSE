@@ -1,10 +1,61 @@
 // src/pages/CreateProject/CreateProject.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './CreateProject.module.css';
 import { SideBar } from '../../components/SideBar/SideBar';
 import { Header } from '../../components/Header/Header';
+import { NewProjectModal } from '../../components/NewProjectModal/NewProjectModal';
+
+interface Project {
+  id: string;
+  name: string;
+  region: string;
+  status: 'WIP' | 'DONE' | 'CANCELLED';
+  lastChange: string;
+}
 
 const CreateProject: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([
+    {
+      id: '1',
+      name: 'Mi proyecto',
+      region: 'aws | us west 1',
+      status: 'DONE',
+      lastChange: 'feb 12, 2024'
+    },
+    {
+      id: '2',
+      name: 'Mi proyecto',
+      region: 'aws | us west 1',
+      status: 'WIP',
+      lastChange: 'feb 12, 2024'
+    },
+    {
+      id: '3',
+      name: 'Mi proyecto',
+      region: 'aws | us west 1',
+      status: 'CANCELLED',
+      lastChange: 'feb 12, 2024'
+    }
+  ]);
+
+  const handleCreateProject = (projectName: string, region: string) => {
+    const newProject: Project = {
+      id: Date.now().toString(), // In a real app, this would come from the backend
+      name: projectName,
+      region: region,
+      status: 'WIP',
+      lastChange: new Date().toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      }).toLowerCase()
+    };
+
+    setProjects([...projects, newProject]);
+    setIsModalOpen(false);
+  };
+
   return (
     <div className={styles.pageContainer}>
       <SideBar />
@@ -12,7 +63,12 @@ const CreateProject: React.FC = () => {
         <Header />
         <section className={styles.projectsSection}>
           <div className={styles.projectsHeader}>
-            <button className={styles.newProjectButton}>New Project</button>
+            <button 
+              className={styles.newProjectButton}
+              onClick={() => setIsModalOpen(true)}
+            >
+              New Project
+            </button>
             <div className={styles.searchContainer}>
               <input className={styles.searchInput} placeholder="Value" />
               <button className={styles.clearSearch}>✕</button>
@@ -24,43 +80,29 @@ const CreateProject: React.FC = () => {
           
           <h3>Victor Ortega's projects</h3>
           <div className={styles.projectCards}>
-            <div className={styles.card}>
-              <div className={styles.cardHeader}>
-                <h4>Mi proyecto</h4>
-                <span className={styles.cardArrow}>&#8250;</span>
+            {projects.map((project) => (
+              <div key={project.id} className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <h4>{project.name}</h4>
+                  <span className={styles.cardArrow}>&#8250;</span>
+                </div>
+                <p className={styles.projectInfo}>{project.region}</p>
+                <span className={`${styles.status} ${styles[project.status.toLowerCase()]}`}>
+                  {project.status}
+                </span>
+                <div className={styles.cardFooter}>
+                  <span className={styles.lastChange}>Last change: {project.lastChange}</span>
+                </div>
               </div>
-              <p className={styles.projectInfo}>aws | us west 1</p>
-              <span className={`${styles.status} ${styles.done}`}>DONE</span>
-              <div className={styles.cardFooter}>
-                <span className={styles.lastChange}>Last change: feb 12, 2024</span>
-              </div>
-            </div>
-            
-            <div className={styles.card}>
-              <div className={styles.cardHeader}>
-                <h4>Mi proyecto</h4>
-                <span className={styles.cardArrow}>&#8250;</span>
-              </div>
-              <p className={styles.projectInfo}>aws | us west 1</p>
-              <span className={`${styles.status} ${styles.wip}`}>WIP</span>
-              <div className={styles.cardFooter}>
-                <span className={styles.lastChange}>Last change: feb 12, 2024</span>
-              </div>
-            </div>
-            
-            <div className={styles.card}>
-              <div className={styles.cardHeader}>
-                <h4>Mi proyecto</h4>
-                <span className={styles.cardArrow}>&#8250;</span>
-              </div>
-              <p className={styles.projectInfo}>aws | us west 1</p>
-              <span className={`${styles.status} ${styles.cancelled}`}>CANCELLED</span>
-              <div className={styles.cardFooter}>
-                <span className={styles.lastChange}>Last change: feb 12, 2024</span>
-              </div>
-            </div>
+            ))}
           </div>
         </section>
+
+        <NewProjectModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleCreateProject}
+        />
       </main>
     </div>
   );

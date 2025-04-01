@@ -1,0 +1,150 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: white;
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #E5E7EB;
+}
+
+.modalHeader {
+  margin-bottom: 32px;
+}
+
+.modalHeader h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-charcoal);
+  margin-bottom: 8px;
+}
+
+.modalDescription {
+  color: #6B7280;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.formGroup {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 24px;
+}
+
+.formGroup label {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-charcoal);
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.inputWrapper {
+  position: relative;
+  flex: 1;
+}
+
+.inputWrapper input {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--color-charcoal);
+  background-color: #F9FAFB;
+}
+
+.inputWrapper input:focus {
+  outline: none;
+  border-color: var(--color-purple);
+  background-color: white;
+}
+
+.clearButton {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9CA3AF;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 12px;
+}
+
+.selectWrapper {
+  flex: 1;
+}
+
+.selectWrapper select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--color-charcoal);
+  background-color: #F9FAFB;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+  padding-right: 32px;
+}
+
+.selectWrapper select:focus {
+  outline: none;
+  border-color: var(--color-purple);
+  background-color: white;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.cancelButton, .startButton {
+  padding: 8px 32px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.cancelButton {
+  background-color: #9CA3AF;
+  color: white;
+}
+
+.cancelButton:hover {
+  background-color: #6B7280;
+}
+
+.startButton {
+  background-color: var(--color-purple);
+  color: white;
+}
+
+.startButton:hover {
+  background-color: #95143F;
+} 
