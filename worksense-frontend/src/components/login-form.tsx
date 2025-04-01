@@ -20,7 +20,7 @@ export function LoginForm({
     e.preventDefault();
     try {
       await login(username, password);
-      navigate("/dashboard"); // Redirige al dashboard después del login exitoso
+      navigate("/create"); // Redirige al create después del login exitoso
     } catch (err) {
       setError(
         "Error en la autenticación. Por favor verifica tus credenciales."
