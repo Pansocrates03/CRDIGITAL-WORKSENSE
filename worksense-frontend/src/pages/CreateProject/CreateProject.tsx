@@ -1,37 +1,15 @@
 // src/pages/CreateProject/CreateProject.tsx
 import React from 'react';
 import styles from './CreateProject.module.css';
+import { SideBar } from '../../components/SideBar/SideBar';
+import { Header } from '../../components/Header/Header';
 
 const CreateProject: React.FC = () => {
   return (
     <div className={styles.pageContainer}>
-      <aside className={styles.sidebar}>
-        <div className={styles.logo}>
-          <img src="/WorkSenseLogo.svg" alt="WorkSense Logo" />
-        </div>
-
-        <nav>
-          <ul>
-            <li className={styles.active}>
-              <span className={styles.icon}><img src="/Book open.png" alt="Projects" /></span> My Projects
-            </li>
-            <li>
-              <span className={styles.icon}><img src="/Home.png" alt="Account" /></span> Account
-            </li>
-          </ul>
-        </nav>
-      </aside>
-
+      <SideBar />
       <main className={styles.mainContent}>
-        <header className={styles.header}>
-          <h2>My Projects</h2>
-          <div className={styles.headerActions}>
-            <div className={styles.avatar}>
-              <img src="/avatar.png" alt="User" />
-            </div>
-          </div>
-        </header>
-
+        <Header />
         <section className={styles.projectsSection}>
           <div className={styles.projectsHeader}>
             <button className={styles.newProjectButton}>New Project</button>
@@ -40,7 +18,7 @@ const CreateProject: React.FC = () => {
               <button className={styles.clearSearch}>✕</button>
             </div>
             <button className={styles.filterButton}>
-              <img src='/Filter Button.png' alt="Filter" />
+              <img src='/Filter Button.svg' alt="Filter" />
             </button>
           </div>
           
