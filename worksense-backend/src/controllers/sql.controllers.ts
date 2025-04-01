@@ -3,6 +3,14 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: any;
+    }
+  }
+}
+
 export const getUsers = (req: Request, res: Response) => {
   res.json([{ text: "Hello from getUsers!" }]);
 };
@@ -68,6 +76,9 @@ export const login = async (req: Request, res: Response) => {
     );
 
     if (loginData.IsValid === 1 && isPasswordValid) {
+      if (!process.env.TOKEN_SECRET) {
+        throw new Error("TOKEN_SECRET no está definido");
+      }
       // Generar JWT con más información
       const token = jwt.sign(
         {
@@ -93,7 +104,7 @@ export const login = async (req: Request, res: Response) => {
     console.error("Error en login:", error);
     res.status(500).json({
       message: "Error interno del servidor",
-      error: error.message,
+      error: error instanceof Error ? error.message : "Error desconocido",
     });
   }
 };
@@ -104,9 +115,12 @@ export function verifyToken(req: Request, res: Response, next: NextFunction) {
   if (!token) return res.status(401).send("Acceso denegado");
 
   try {
+    if (!process.env.TOKEN_SECRET) {
+      throw new Error("TOKEN_SECRET no está definido");
+    }
     const verified = jwt.verify(token, process.env.TOKEN_SECRET);
     req.user = verified;
-    next(); // Continuar con la solicitud
+    next();
   } catch (err) {
     res.status(400).send("Token inválido");
   }
