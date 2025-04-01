@@ -26,7 +26,7 @@ const swaggerDocs = swaggerJsdoc(swaggerOptions);
 const app = express();
 
 app.use(cors());
-app.use(morgan());
+app.use(morgan('dev'));
 app.use(express.json());
 
 app.use(sqlRoutes);
@@ -34,6 +34,6 @@ app.use(firebaseRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get('/', (req: any, res: any) => {
     res.send('API is running...');
-};
+});
 
-app.listen(PORT, console.log(URL));
+app.listen(PORT, () => console.log(URL));
