@@ -40,17 +40,25 @@ export const createProject = async (req: Request, res: Response) => {
       res.status(400).json({ error: "Se requieren 'name' y 'description'" });
     }
 
-    const newProjectData = {
+    // Paso 1: Crear el documento principal sin subcolecciones
+    const projectRef = await db.collection("projects").add({
+      name,
+      description
+    });
+
+    const projectID = projectRef.id;
+
+    // Paso 2: Crear subcolecciones vacías con un doc dummy en cada una
+    await db.collection(`projects/${projectID}/bugs`).add({ init: true });
+    await db.collection(`projects/${projectID}/epics`).add({ init: true });
+    await db.collection(`projects/${projectID}/members`).add({ init: true });
+
+    res.status(201).json({
+      id: projectID,
       name,
       description,
-      bugs: {},
-      epics: {},
-      members: {}
-    };
-
-    const newProjectRef = await db.collection("projects").add(newProjectData);
-
-    res.status(201).json({ id: newProjectRef.id, ...newProjectData });
+      message: "Proyecto creado con subcolecciones reales"
+    });
   } catch (error) {
     console.error("Error al crear el proyecto:", error);
     res.status(500).json({ error: "Error al crear el proyecto" });
