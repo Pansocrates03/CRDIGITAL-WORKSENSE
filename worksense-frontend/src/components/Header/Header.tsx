@@ -27,7 +27,6 @@ export const Header: React.FC = () => {
           
           {isMenuOpen && (
             <div className={styles.dropdownMenu}>
-              <button className={styles.menuItem}>Edit Profile</button>
               <button 
                 className={styles.menuItem}
                 onClick={handleLogout}
