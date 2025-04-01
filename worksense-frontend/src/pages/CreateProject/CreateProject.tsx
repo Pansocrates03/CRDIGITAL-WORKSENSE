@@ -4,6 +4,7 @@ import styles from './CreateProject.module.css';
 import { SideBar } from '../../components/SideBar/SideBar';
 import { Header } from '../../components/Header/Header';
 import { NewProjectModal } from '../../components/NewProjectModal/NewProjectModal';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Project {
   id: string;
@@ -16,6 +17,7 @@ interface Project {
 type SortOption = 'last-change' | 'status' | 'a-z' | 'z-a';
 
 const CreateProject: React.FC = () => {
+  const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -182,7 +184,7 @@ const CreateProject: React.FC = () => {
             </div>
           </div>
           
-          <h3>Victor Ortega's projects</h3>
+          <h3>{user?.username || 'My'} projects</h3>
           <div className={styles.projectCards}>
             {filteredProjects.map((project) => (
               <div key={project.id} className={styles.card}>
