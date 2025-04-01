@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import {
   BrowserRouter as Router,
   Routes,
@@ -33,6 +34,16 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+=======
+import { Routes, Route } from "react-router-dom";
+import CreateProject from "./pages/CreateProject/CreateProject";
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/create" element={<CreateProject />} />
+    </Routes>
+>>>>>>> 4deadda2a8b4b6c73e05b00bce0ef90ef551b2b3
   );
 }
 
