@@ -4,16 +4,16 @@ import styles from './NewProjectModal.module.css';
 interface NewProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (projectName: string, region: string) => void;
+  onSubmit: (projectName: string, description: string) => void;
 }
 
 export const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [projectName, setProjectName] = React.useState('');
-  const [region, setRegion] = React.useState('Guadalajara');
+  const [description, setDescription] = React.useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(projectName, region);
+    onSubmit(projectName, description);
   };
 
   if (!isOpen) return null;
@@ -50,17 +50,22 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClos
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="region">Region</label>
-            <div className={styles.selectWrapper}>
-              <select
-                id="region"
-                value={region}
-                onChange={(e) => setRegion(e.target.value)}
+            <label htmlFor="description">Description</label>
+            <div className={styles.inputWrapper}>
+              <input
+                id="description"
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Project Description"
+              />
+              <button 
+                type="button" 
+                className={styles.clearButton}
+                onClick={() => setDescription('')}
               >
-                <option value="Guadalajara">Guadalajara</option>
-                <option value="Mexico City">Mexico City</option>
-                <option value="Monterrey">Monterrey</option>
-              </select>
+                ✕
+              </button>
             </div>
           </div>
 
