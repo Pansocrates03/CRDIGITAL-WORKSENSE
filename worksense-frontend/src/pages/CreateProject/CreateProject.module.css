@@ -261,7 +261,7 @@
     padding: 1rem;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    width: 300px;
+    width: 340px;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -306,8 +306,9 @@
     font-weight: bold;
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
-    align-self: start;
+    align-self: flex-start;
     text-transform: uppercase;
+    margin-bottom: 0.5rem;
   }
   
   .done {
@@ -328,11 +329,15 @@
   .cardFooter {
     margin-top: auto;
     padding-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
   
   .lastChange {
     font-size: 0.7rem;
     color: #888;
+    padding-left: 0.5rem;
   }
   
   .noResults {
