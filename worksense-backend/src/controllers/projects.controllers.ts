@@ -43,8 +43,8 @@ export const createProject = async (req: Request, res: Response) => {
 
     // Paso 1: Crear un documento principal en la colección "projects"
     const projectRef = await db.collection("projects").add({
-      name: "Project Name",
-      description: "Project Description",
+      name: name,
+      description: description,
     });
 
     // Obtener el ID del proyecto creado
