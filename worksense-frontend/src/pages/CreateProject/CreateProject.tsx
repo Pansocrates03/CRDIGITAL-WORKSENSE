@@ -4,6 +4,7 @@ import styles from './CreateProject.module.css';
 import { SideBar } from '../../components/SideBar/SideBar';
 import { Header } from '../../components/Header/Header';
 import { NewProjectModal } from '../../components/NewProjectModal/NewProjectModal';
+import { Alert } from '../../components/Alert/Alert';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 
@@ -27,7 +28,11 @@ const CreateProject: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState<SortOption>('last-change');
   const [projects, setProjects] = useState<Project[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+  } | null>(null);
 
   // Fetch projects when component mounts
   useEffect(() => {
@@ -36,14 +41,12 @@ const CreateProject: React.FC = () => {
 
   const fetchProjects = async () => {
     try {
-      setError(null);
       const response = await axios.get(`${API_BASE_URL}/projects`);
       console.log('Response data:', response.data); // Debug log
 
       // Check if response.data is an array
       if (!Array.isArray(response.data)) {
         console.error('Response data is not an array:', response.data);
-        setError('Invalid response format from server');
         return;
       }
 
@@ -60,10 +63,8 @@ const CreateProject: React.FC = () => {
       }));
 
       setProjects(projectsData);
-      setError(null);
     } catch (error) {
       console.error('Error fetching projects:', error);
-      setError('Failed to load projects. Please make sure the backend server is running.');
     }
   };
 
@@ -97,13 +98,12 @@ const CreateProject: React.FC = () => {
 
   const handleCreateProject = async (projectName: string, description: string) => {
     try {
-      setError(null);
       const response = await axios.post(`${API_BASE_URL}/projects`, {
         name: projectName,
         description: description
       });
 
-      console.log('Create project response:', response.data); // Debug log
+      console.log('Create project response:', response.data);
 
       const newProject: Project = {
         id: response.data.id || response.data._id || String(Date.now()),
@@ -119,10 +119,18 @@ const CreateProject: React.FC = () => {
 
       setProjects([...projects, newProject]);
       setIsModalOpen(false);
-      setError(null);
+      setAlert({
+        type: 'success',
+        title: 'Project Created Successfully!',
+        message: `Your project "${projectName}" has been created and is ready to use.`
+      });
     } catch (error) {
       console.error('Error creating project:', error);
-      setError('Failed to create project. Please try again.');
+      setAlert({
+        type: 'error',
+        title: 'Something went wrong...',
+        message: 'Please try again!'
+      });
     }
   };
 
@@ -220,11 +228,6 @@ const CreateProject: React.FC = () => {
           </div>
           
           <h3>{user?.username || 'My'} projects</h3>
-          {error && (
-            <div className={styles.errorMessage}>
-              {error}
-            </div>
-          )}
           <div className={styles.projectCards}>
             {filteredProjects.map((project) => (
               <div key={project.id} className={styles.card}>
@@ -254,6 +257,17 @@ const CreateProject: React.FC = () => {
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleCreateProject}
         />
+
+        {alert && (
+          <Alert
+            type={alert.type}
+            title={alert.title}
+            message={alert.message}
+            onClose={() => setAlert(null)}
+            actionLabel={alert.type === 'error' ? 'Try again' : undefined}
+            onAction={alert.type === 'error' ? () => setIsModalOpen(true) : undefined}
+          />
+        )}
       </main>
     </div>
   );

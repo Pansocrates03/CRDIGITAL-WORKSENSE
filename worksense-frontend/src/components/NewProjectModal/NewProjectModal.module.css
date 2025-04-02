@@ -12,139 +12,123 @@
 }
 
 .modalContent {
-  background-color: white;
-  border-radius: 12px;
+  background: white;
+  border-radius: 8px;
   padding: 32px;
   width: 100%;
   max-width: 600px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border: 1px solid #E5E7EB;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .modalHeader {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .modalHeader h2 {
   font-size: 24px;
   font-weight: 600;
-  color: var(--color-charcoal);
-  margin-bottom: 8px;
+  margin: 0 0 8px;
+  color: #1A1A1A;
 }
 
 .modalDescription {
-  color: #6B7280;
-  font-size: 14px;
+  font-size: 16px;
+  color: #666;
+  margin: 0;
   line-height: 1.5;
 }
 
 .formGroup {
-  display: flex;
-  align-items: center;
   margin-bottom: 24px;
-  gap: 24px;
 }
 
 .formGroup label {
-  font-size: 16px;
+  display: block;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--color-charcoal);
-  width: 120px;
-  flex-shrink: 0;
+  color: #1A1A1A;
+  margin-bottom: 8px;
 }
 
-.inputWrapper {
+.inputWrapper, .textareaWrapper {
   position: relative;
-  flex: 1;
+  width: 100%;
 }
 
-.inputWrapper input {
+.inputWrapper input, .textareaWrapper textarea {
   width: 100%;
-  padding: 8px 32px 8px 12px;
+  padding: 12px;
+  padding-right: 40px;
   border: 1px solid #E5E7EB;
   border-radius: 6px;
-  font-size: 14px;
-  color: var(--color-charcoal);
-  background-color: #F9FAFB;
+  font-size: 16px;
+  color: #1A1A1A;
+  transition: border-color 0.2s;
 }
 
-.inputWrapper input:focus {
+.textareaWrapper textarea {
+  min-height: 80px;
+  resize: none;
+  line-height: 1.5;
+  overflow-y: hidden;
+}
+
+.inputWrapper input:focus, .textareaWrapper textarea:focus {
   outline: none;
-  border-color: var(--color-purple);
-  background-color: white;
+  border-color: #B4004E;
 }
 
 .clearButton {
   position: absolute;
-  right: 8px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #9CA3AF;
+  color: #666;
   cursor: pointer;
   padding: 4px;
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.selectWrapper {
-  flex: 1;
-}
-
-.selectWrapper select {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #E5E7EB;
-  border-radius: 6px;
-  font-size: 14px;
-  color: var(--color-charcoal);
-  background-color: #F9FAFB;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 16px;
-  padding-right: 32px;
-}
-
-.selectWrapper select:focus {
-  outline: none;
-  border-color: var(--color-purple);
-  background-color: white;
+.clearButton:hover {
+  color: #1A1A1A;
 }
 
 .modalActions {
   display: flex;
-  justify-content: flex-end;
-  gap: 16px;
+  gap: 12px;
   margin-top: 32px;
 }
 
-.cancelButton, .startButton {
-  padding: 8px 32px;
-  border: none;
+.modalActions button {
+  flex: 1;
+  padding: 12px 24px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  min-width: 120px;
+  transition: background-color 0.2s;
 }
 
 .cancelButton {
-  background-color: #9CA3AF;
-  color: white;
+  background-color: transparent;
+  border: 1px solid #E5E7EB;
+  color: #666;
 }
 
 .cancelButton:hover {
-  background-color: #6B7280;
+  background-color: #F3F4F6;
 }
 
 .startButton {
-  background-color: var(--color-purple);
+  background-color: #B4004E;
+  border: none;
   color: white;
 }
 
 .startButton:hover {
-  background-color: #95143F;
+  background-color: #8E003E;
 } 

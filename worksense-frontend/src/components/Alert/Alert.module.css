@@ -1,0 +1,93 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.alertContainer {
+  background: white;
+  border-radius: 8px;
+  padding: 32px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 300px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.success {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+}
+
+.error {
+  background-color: #FFEBEE;
+  color: #C62828;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: #1A1A1A;
+}
+
+.message {
+  font-size: 16px;
+  color: #666;
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.button {
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  transition: background-color 0.2s;
+}
+
+.closeButton {
+  background-color: #B4004E;
+  color: white;
+}
+
+.closeButton:hover {
+  background-color: #8E003E;
+}
+
+.actionButton {
+  background-color: transparent;
+  color: #B4004E;
+  text-decoration: underline;
+}
+
+.actionButton:hover {
+  background-color: rgba(180, 0, 78, 0.1);
+} 

@@ -16,6 +16,14 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClos
     onSubmit(projectName, description);
   };
 
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value);
+    // Reset height to auto to properly calculate scroll height
+    e.target.style.height = 'auto';
+    // Set new height based on scroll height
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -51,18 +59,25 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClos
 
           <div className={styles.formGroup}>
             <label htmlFor="description">Description</label>
-            <div className={styles.inputWrapper}>
-              <input
+            <div className={styles.textareaWrapper}>
+              <textarea
                 id="description"
-                type="text"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={handleTextareaChange}
                 placeholder="Project Description"
+                rows={3}
+                className={styles.textarea}
               />
               <button 
                 type="button" 
                 className={styles.clearButton}
-                onClick={() => setDescription('')}
+                onClick={() => {
+                  setDescription('');
+                  const textarea = document.getElementById('description') as HTMLTextAreaElement;
+                  if (textarea) {
+                    textarea.style.height = 'auto';
+                  }
+                }}
               >
                 ✕
               </button>
