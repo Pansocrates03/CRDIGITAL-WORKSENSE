@@ -4,16 +4,24 @@ import styles from './NewProjectModal.module.css';
 interface NewProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (projectName: string, region: string) => void;
+  onSubmit: (projectName: string, description: string) => void;
 }
 
 export const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [projectName, setProjectName] = React.useState('');
-  const [region, setRegion] = React.useState('Guadalajara');
+  const [description, setDescription] = React.useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(projectName, region);
+    onSubmit(projectName, description);
+  };
+
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value);
+    // Reset height to auto to properly calculate scroll height
+    e.target.style.height = 'auto';
+    // Set new height based on scroll height
+    e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
   if (!isOpen) return null;
@@ -50,17 +58,29 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClos
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="region">Region</label>
-            <div className={styles.selectWrapper}>
-              <select
-                id="region"
-                value={region}
-                onChange={(e) => setRegion(e.target.value)}
+            <label htmlFor="description">Description</label>
+            <div className={styles.textareaWrapper}>
+              <textarea
+                id="description"
+                value={description}
+                onChange={handleTextareaChange}
+                placeholder="Project Description"
+                rows={3}
+                className={styles.textarea}
+              />
+              <button 
+                type="button" 
+                className={styles.clearButton}
+                onClick={() => {
+                  setDescription('');
+                  const textarea = document.getElementById('description') as HTMLTextAreaElement;
+                  if (textarea) {
+                    textarea.style.height = 'auto';
+                  }
+                }}
               >
-                <option value="Guadalajara">Guadalajara</option>
-                <option value="Mexico City">Mexico City</option>
-                <option value="Monterrey">Monterrey</option>
-              </select>
+                ✕
+              </button>
             </div>
           </div>
 
