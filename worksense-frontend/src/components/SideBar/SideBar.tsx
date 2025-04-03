@@ -34,7 +34,7 @@ export const SideBar: React.FC = () => {
   }, [projectId]);
 
   const projectNavItems: ProjectNavItem[] = [
-    { name: "Project Overview", icon: "/Book open.svg", path: `/project/${projectId}` },
+    { name: "Project Overview", icon: "/homeProject.svg", path: `/project/${projectId}/overview` },
     { name: "Sprint & Workflow", icon: "/sprint.svg", path: `/project/${projectId}/sprint` },
     { name: "User Management", icon: "/users.svg", path: `/project/${projectId}/users` },
     { name: "Bug Tracking", icon: "/bug.svg", path: `/project/${projectId}/bugs` },
@@ -44,7 +44,7 @@ export const SideBar: React.FC = () => {
   ];
 
   const mainNavItems: ProjectNavItem[] = [
-    { name: "My Projects", icon: "/Book open.svg", path: "/create" },
+    { name: "My Projects", icon: "/bookOpen.svg", path: "/create" },
     { name: "Account", icon: "/Home.svg", path: "/account" },
   ];
 
