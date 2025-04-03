@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Header.module.css';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  title: string;
+  showBackButton?: boolean;
+}
+
+export const Header: React.FC<HeaderProps> = ({ title, showBackButton = false }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -13,9 +18,23 @@ export const Header: React.FC = () => {
     navigate('/login');
   };
 
+  const handleBack = () => {
+    navigate('/create');
+  };
+
   return (
     <header className={styles.header}>
-      <h2>My Projects</h2>
+      <div className={styles.headerLeft}>
+        {showBackButton && (
+          <button 
+            className={styles.backButton}
+            onClick={handleBack}
+          >
+            ←
+          </button>
+        )}
+        <h2>{title}</h2>
+      </div>
       <div className={styles.headerActions}>
         <div className={styles.avatarContainer}>
           <button 
