@@ -10,6 +10,7 @@ import swaggerJsdoc from "swagger-jsdoc";
 // Routes Imports
 import sqlRoutes from "./src/routes/sql.routes.js";
 import firebaseRoutes from "./src/routes/firebase.routes.js";
+import membersRoutes from "./src/routes/members.routes.js";
 import projectRoutes from "./src/routes/projects.routes.js";
 
 // Documenattion Imports
@@ -29,8 +30,8 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(sqlRoutes);
-app.use(firebaseRoutes);
 app.use(projectRoutes);
+app.use(membersRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get('/', (req: any, res: any) => {
     res.send('API is running...');

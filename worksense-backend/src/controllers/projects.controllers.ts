@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { db } from "../models/firebase.js";
-import { getFirestore, Timestamp } from 'firebase/firestore';
 
 export const getProjects = async (req: Request, res: Response) => {
   try {

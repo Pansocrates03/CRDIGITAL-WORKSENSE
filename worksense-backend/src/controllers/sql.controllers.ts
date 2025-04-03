@@ -11,8 +11,10 @@ declare global {
   }
 }
 
-export const getUsers = (req: Request, res: Response) => {
-  res.json([{ text: "Hello from getUsers!" }]);
+export const getUsers = async (req: Request, res: Response) => {
+  const pool = await sqlConnect();
+  const result = await pool.request().execute("spGetUsers");
+  res.json(result.recordset);
 };
 
 export const createUser = async (req: Request, res: Response) => {
@@ -23,7 +25,7 @@ export const createUser = async (req: Request, res: Response) => {
   const pool = await sqlConnect();
   const data = await pool
     .request()
-    .input("username", sql.VarChar, username)
+    .input("username", sql.VarChar, username) 
     .execute("spCheckUserExists");
   if (data.recordset[0].UserExists === 1)
     res.status(400).send("El usuario ya existe");
