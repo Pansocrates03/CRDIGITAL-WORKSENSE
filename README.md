@@ -1,13 +1,15 @@
 # CR DIGITAL WORKSENSE
 Worksense is a project made to plan and organize through SCRUM methodologies software projects.
 Enhanced with the power of AI, worksense aims to boost productivity, including several features including:
+
 - User stories creation
 - Backlog
 - User roles
+- Bug Tracking
 
-[Our Wiki](https://sharp-tangerine-946.notion.site/19acb9f9e1968081a87ac03a05c4111d?v=19acb9f9e19680cc9579000cded570a9) 
+Visit [our Wiki](https://sharp-tangerine-946.notion.site/19acb9f9e1968081a87ac03a05c4111d?v=19acb9f9e19680cc9579000cded570a9) 
 
-## How to run the app
+## Run the app!
 1. Clone this repo
 ```
 git clone https://github.com/Pansocrates03/CRDIGITAL-WORKSENSE
@@ -16,11 +18,16 @@ git clone https://github.com/Pansocrates03/CRDIGITAL-WORKSENSE
 
 ### Run the backend
 ```
+cd worksense-backend
+npm i
+npm install -g tsx
 tsx ./index.ts
 ```
 
 ### Run the frontend
 ```
+cd worksense-frontend
+npm i
 npm run dev
 ```
 
