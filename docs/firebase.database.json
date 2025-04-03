@@ -46,10 +46,25 @@
                 }
             },
             "members": {
-                "memberID": {
+                "memberId": {
+                    "userId": "memberID",
+                    "projectId": "projectID",
+                    "roleId": "roleID"
+                }
+            },
+            "roles": {
+                "roleId": {
+                    "name": "Role Name",
                     "permissions": 12345678
                 }
             }
+        }
+    },
+    "users": {
+        "userId": {
+            "name": "User Name",
+            "email": "User Email",
+            "roleId": "roleID"
         }
     }
 }
