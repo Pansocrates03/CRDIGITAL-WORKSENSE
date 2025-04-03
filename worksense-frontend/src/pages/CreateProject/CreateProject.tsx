@@ -30,6 +30,7 @@ const CreateProject: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState<SortOption>('last-change');
   const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [alert, setAlert] = useState<{
     type: 'success' | 'error';
     title: string;
@@ -42,7 +43,11 @@ const CreateProject: React.FC = () => {
   }, []);
 
   const fetchProjects = async () => {
+    setIsLoading(true);
     try {
+      // Simulate loading delay of 5 seconds
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
       const response = await axios.get(`${API_BASE_URL}/projects`);
       console.log('Response data:', response.data); // Debug log
 
@@ -67,6 +72,8 @@ const CreateProject: React.FC = () => {
       setProjects(projectsData);
     } catch (error) {
       console.error('Error fetching projects:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -236,30 +243,53 @@ const CreateProject: React.FC = () => {
           
           <h3>{user?.username || 'My'} projects</h3>
           <div className={styles.projectCards}>
-            {filteredProjects.map((project) => (
-              <div 
-                key={project.id} 
-                className={styles.card}
-                onClick={() => handleProjectClick(project.id)}
-                style={{ cursor: 'pointer' }}
-              >
-                <div className={styles.cardHeader}>
-                  <h4>{project.name}</h4>
-                  <span className={styles.cardArrow}>&#8250;</span>
-                </div>
-                <p className={styles.projectInfo}>{project.description}</p>
-                <span className={`${styles.status} ${styles[project.status.toLowerCase()]}`}>
-                  {project.status}
-                </span>
-                <div className={styles.cardFooter}>
-                  <span className={styles.lastChange}>Last change: {project.lastChange}</span>
-                </div>
+            {isLoading ? (
+              <div className={styles.loadingContainer}>
+                <div className={styles.loadingSpinner} />
+                <div className={styles.loadingText}>Loading projects...</div>
               </div>
-            ))}
-            {filteredProjects.length === 0 && searchTerm && (
-              <div className={styles.noResults}>
-                No projects found matching "{searchTerm}"
-              </div>
+            ) : (
+              <>
+                {filteredProjects.length > 0 ? (
+                  filteredProjects.map((project) => (
+                    <div 
+                      key={project.id} 
+                      className={styles.card}
+                      onClick={() => handleProjectClick(project.id)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className={styles.cardHeader}>
+                        <h4>{project.name}</h4>
+                        <span className={styles.cardArrow}>&#8250;</span>
+                      </div>
+                      <p className={styles.projectInfo}>{project.description}</p>
+                      <span className={`${styles.status} ${styles[project.status.toLowerCase()]}`}>
+                        {project.status}
+                      </span>
+                      <div className={styles.cardFooter}>
+                        <span className={styles.lastChange}>Last change: {project.lastChange}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : searchTerm ? (
+                  <div className={styles.noResults}>
+                    No projects found matching "{searchTerm}"
+                  </div>
+                ) : (
+                  <div className={styles.emptyState}>
+                    <h4 className={styles.emptyStateTitle}>No projects yet</h4>
+                    <p className={styles.emptyStateText}>
+                      Create your first project to start organizing your work and collaborating with your team.
+                    </p>
+                    <button 
+                      className={styles.createFirstButton}
+                      onClick={() => setIsModalOpen(true)}
+                    >
+                      Create your first project
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
