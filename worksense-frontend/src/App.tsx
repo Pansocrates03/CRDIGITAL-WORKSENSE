@@ -35,6 +35,14 @@ function App() {
             path="/project/:id"
             element={
               <PrivateRoute>
+                <Navigate to="overview" replace />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/project/:id/overview"
+            element={
+              <PrivateRoute>
                 <ProjectPage />
               </PrivateRoute>
             }
