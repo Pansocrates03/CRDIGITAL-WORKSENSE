@@ -30,11 +30,77 @@ function App() {
               </PrivateRoute>
             }
           />
+          {/* Project Routes */}
           <Route
             path="/project/:id"
             element={
               <PrivateRoute>
                 <ProjectPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/project/:id/sprint"
+            element={
+              <PrivateRoute>
+                <ProjectPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/project/:id/users"
+            element={
+              <PrivateRoute>
+                <ProjectPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/project/:id/bugs"
+            element={
+              <PrivateRoute>
+                <ProjectPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/project/:id/stories"
+            element={
+              <PrivateRoute>
+                <ProjectPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/project/:id/backlog"
+            element={
+              <PrivateRoute>
+                <ProjectPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/project/:id/leaderboard"
+            element={
+              <PrivateRoute>
+                <ProjectPage />
+              </PrivateRoute>
+            }
+          />
+          {/* Documentation Routes */}
+          <Route
+            path="/guides"
+            element={
+              <PrivateRoute>
+                <div>Guides Page</div>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/api"
+            element={
+              <PrivateRoute>
+                <div>API Reference Page</div>
               </PrivateRoute>
             }
           />
