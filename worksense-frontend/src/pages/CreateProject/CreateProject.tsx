@@ -1,5 +1,6 @@
 // src/pages/CreateProject/CreateProject.tsx
 import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './CreateProject.module.css';
 import { SideBar } from '../../components/SideBar/SideBar';
 import { Header } from '../../components/Header/Header';
@@ -22,6 +23,7 @@ interface Project {
 type SortOption = 'last-change' | 'status' | 'a-z' | 'z-a';
 
 const CreateProject: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -160,11 +162,16 @@ const CreateProject: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Add handleProjectClick function
+  const handleProjectClick = (projectId: string) => {
+    navigate(`/project/${projectId}`);
+  };
+
   return (
     <div className={styles.pageContainer}>
       <SideBar />
       <main className={styles.mainContent}>
-        <Header />
+        <Header title="Projects" />
         <section className={styles.projectsSection}>
           <div className={styles.projectsHeader}>
             <button 
@@ -230,7 +237,12 @@ const CreateProject: React.FC = () => {
           <h3>{user?.username || 'My'} projects</h3>
           <div className={styles.projectCards}>
             {filteredProjects.map((project) => (
-              <div key={project.id} className={styles.card}>
+              <div 
+                key={project.id} 
+                className={styles.card}
+                onClick={() => handleProjectClick(project.id)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className={styles.cardHeader}>
                   <h4>{project.name}</h4>
                   <span className={styles.cardArrow}>&#8250;</span>
