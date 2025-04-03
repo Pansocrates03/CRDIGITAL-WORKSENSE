@@ -26,6 +26,10 @@ export interface Project {
     avatar?: string;
     [key: string]: any;
   }>;
+  progress?: {
+    webDashboard: number;
+    database: number;
+  };
 }
 
 export const projectService = {
