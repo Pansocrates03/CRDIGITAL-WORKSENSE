@@ -110,20 +110,3 @@ export const login = async (req: Request, res: Response) => {
     });
   }
 };
-
-// Middleware para verificar el token JWT
-export function verifyToken(req: Request, res: Response, next: NextFunction) {
-  const token = req.header("auth-token");
-  if (!token) return res.status(401).send("Acceso denegado");
-
-  try {
-    if (!process.env.TOKEN_SECRET) {
-      throw new Error("TOKEN_SECRET no está definido");
-    }
-    const verified = jwt.verify(token, process.env.TOKEN_SECRET);
-    req.user = verified;
-    next();
-  } catch (err) {
-    res.status(400).send("Token inválido");
-  }
-}

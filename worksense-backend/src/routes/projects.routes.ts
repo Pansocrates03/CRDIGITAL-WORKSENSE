@@ -1,10 +1,13 @@
 import { Router } from "express";
 import { getProjects, getProjectById, createProject } from "../controllers/projects.controllers.js";
+import { verifyToken } from "../middlewares/auth.js";
 
 const router = Router();
 
-router.get("/projects", getProjects);         // Obtener todos los proyectos
-router.get("/projects/:id", getProjectById); // Obtener un proyecto por ID
-router.post("/projects", createProject);      // Crear un nuevo proyecto
+router.get("/projects", verifyToken, getProjects);
+
+// router.get("/projects/:id", verifyToken, getProjectById);
+
+router.post("/projects", verifyToken, createProject);
 
 export default router;
