@@ -5,9 +5,16 @@ import styles from './Header.module.css';
 interface HeaderProps {
   title: string;
   showBackButton?: boolean;
+  showBreadcrumb?: boolean;
+  projectId?: string;
 }
 
-export const Header: React.FC<HeaderProps> = ({ title, showBackButton = false }) => {
+export const Header: React.FC<HeaderProps> = ({ 
+  title, 
+  showBackButton = false,
+  showBreadcrumb = false,
+  projectId
+}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -22,6 +29,10 @@ export const Header: React.FC<HeaderProps> = ({ title, showBackButton = false })
     navigate('/create');
   };
 
+  const handleProjectsClick = () => {
+    navigate('/create');
+  };
+
   return (
     <header className={styles.header}>
       <div className={styles.headerLeft}>
@@ -30,10 +41,22 @@ export const Header: React.FC<HeaderProps> = ({ title, showBackButton = false })
             className={styles.backButton}
             onClick={handleBack}
           >
-            ←
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
         )}
-        <h2>{title}</h2>
+        {showBreadcrumb ? (
+          <div className={styles.breadcrumb}>
+            <button onClick={handleProjectsClick} className={styles.breadcrumbLink}>My Projects</button>
+            <span className={styles.breadcrumbSeparator}>/</span>
+            <span className={styles.breadcrumbCurrent}>{title}</span>
+            <span className={styles.breadcrumbSeparator}>/</span>
+            <span className={styles.breadcrumbCurrent}>Project Overview</span>
+          </div>
+        ) : (
+          <h2>{title}</h2>
+        )}
       </div>
       <div className={styles.headerActions}>
         <div className={styles.avatarContainer}>
