@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styles from './Header.module.css';
 
 interface HeaderProps {
@@ -49,6 +49,8 @@ export const Header: React.FC<HeaderProps> = ({
         {showBreadcrumb ? (
           <div className={styles.breadcrumb}>
             <button onClick={handleProjectsClick} className={styles.breadcrumbLink}>My Projects</button>
+            <span className={styles.breadcrumbSeparator}>/</span>
+            <span className={styles.breadcrumbCurrent}>{title}</span>
             <span className={styles.breadcrumbSeparator}>/</span>
             <span className={styles.breadcrumbCurrent}>Project Overview</span>
           </div>

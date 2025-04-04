@@ -45,8 +45,6 @@ const CreateProject: React.FC = () => {
   const fetchProjects = async () => {
     setIsLoading(true);
     try {
-      // Simulate loading delay of 5 seconds
-      await new Promise(resolve => setTimeout(resolve, 2000));
       
       const response = await axios.get(`${API_BASE_URL}/projects`);
       console.log('Response data:', response.data); // Debug log
