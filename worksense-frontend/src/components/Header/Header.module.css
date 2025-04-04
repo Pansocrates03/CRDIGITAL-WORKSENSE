@@ -17,8 +17,7 @@
 .backButton {
   background: none;
   border: none;
-  color: var(--color-purple);
-  font-size: 1.5rem;
+  color: var(--color-charcoal);
   padding: 0.5rem;
   cursor: pointer;
   display: flex;
@@ -89,4 +88,36 @@
 
 .menuItem:hover {
   background-color: var(--color-light-gray);
+}
+
+/* Breadcrumb styles */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.breadcrumbLink {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-gray-dark);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.breadcrumbLink:hover {
+  color: var(--color-purple);
+}
+
+.breadcrumbSeparator {
+  color: var(--color-primary-color);
+  margin: 0 0.25rem;
+}
+
+.breadcrumbCurrent {
+  color: var(--color-charcoal);
+  font-weight: 500;
 } 
