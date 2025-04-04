@@ -1,6 +1,7 @@
-import axios from 'axios';
+import axios from "axios";
+import apiClient from "../api/apiClient"; // Import the configured instance
 
-const API_URL = 'http://localhost:5050'; // Using the same port as the backend
+const API_URL = "http://localhost:5050"; // Using the same port as the backend
 
 export interface Project {
   id: string;
@@ -35,21 +36,21 @@ export interface Project {
 export const projectService = {
   async getProject(id: string): Promise<Project> {
     try {
-      const response = await axios.get(`${API_URL}/projects/${id}`);
+      const response = await apiClient.get(`${API_URL}/projects/${id}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching project:', error);
+      console.error("Error fetching project:", error);
       throw error;
     }
   },
 
   async getAllProjects(): Promise<Project[]> {
     try {
-      const response = await axios.get(`${API_URL}/projects`);
+      const response = await apiClient.get(`${API_URL}/projects`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching projects:', error);
+      console.error("Error fetching projects:", error);
       throw error;
     }
-  }
-}; 
+  },
+};
