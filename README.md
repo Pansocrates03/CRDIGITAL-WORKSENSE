@@ -21,7 +21,7 @@ git clone https://github.com/Pansocrates03/CRDIGITAL-WORKSENSE
 cd worksense-backend
 npm i
 npm install -g tsx
-tsx ./index.ts
+tsx ./index.ts or npx tsx ./index.ts
 ```
 
 ### Run the frontend
