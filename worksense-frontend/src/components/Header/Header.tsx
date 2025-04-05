@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import styles from './Header.module.css';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import styles from "./Header.module.css";
+import { authService } from "@/services/auth";
 
 interface HeaderProps {
   title: string;
@@ -8,6 +9,7 @@ interface HeaderProps {
   showBreadcrumb?: boolean;
   projectId?: string;
 }
+
 
 export const Header: React.FC<HeaderProps> = ({ 
   title, 
@@ -20,13 +22,13 @@ export const Header: React.FC<HeaderProps> = ({
 
   const handleLogout = () => {
     // Clear any auth tokens/state
-    localStorage.removeItem('token');
+    authService.logout();
     // Redirect to login page
-    navigate('/login');
+    navigate("/login");
   };
 
   const handleBack = () => {
-    navigate('/create');
+    navigate("/create");
   };
 
   const handleProjectsClick = () => {
@@ -37,6 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
     <header className={styles.header}>
       <div className={styles.headerLeft}>
         {showBackButton && (
+
           <button 
             className={styles.backButton}
             onClick={handleBack}
@@ -60,19 +63,16 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
       <div className={styles.headerActions}>
         <div className={styles.avatarContainer}>
-          <button 
+          <button
             className={styles.avatar}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             <img src="/avatar.svg" alt="User" />
           </button>
-          
+
           {isMenuOpen && (
             <div className={styles.dropdownMenu}>
-              <button 
-                className={styles.menuItem}
-                onClick={handleLogout}
-              >
+              <button className={styles.menuItem} onClick={handleLogout}>
                 Logout
               </button>
             </div>
@@ -81,4 +81,4 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
     </header>
   );
-}; 
+};
