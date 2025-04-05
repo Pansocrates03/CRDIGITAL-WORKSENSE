@@ -2,7 +2,62 @@ import { Request, Response } from "express";
 import { db } from "../models/firebase.js";
 
 export const getProjects = async (req: Request, res: Response) => {
+  const useMockData = true;
+
   try {
+    if (useMockData) {
+      const mockProjects = [
+        {
+          id: "proj1",
+          name: "Test Project Alpha",
+          description:
+            "A temporary hardcoded project for development purposes.",
+          bugs: [
+            {
+              id: "bug1",
+              title: "Login issue",
+              status: "open",
+              priority: "high",
+            },
+          ],
+          epics: [
+            {
+              id: "epic1",
+              title: "Authentication Module",
+              description: "All stories related to user auth.",
+              stories: [
+                {
+                  id: "story1",
+                  title: "Implement Login",
+                  description:
+                    "User should be able to log in with email and password.",
+                  comments: [
+                    { id: "c1", text: "Make sure to validate input" },
+                    { id: "c2", text: "Check Firebase auth rules" },
+                  ],
+                  tasks: [
+                    { id: "t1", title: "Create login UI", status: "done" },
+                    {
+                      id: "t2",
+                      title: "Connect to Firebase",
+                      status: "in progress",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          members: [
+            { id: "m1", name: "Alice", role: "Frontend Developer" },
+            { id: "m2", name: "Bob", role: "Backend Developer" },
+          ],
+        },
+      ];
+
+      return res.json(mockProjects);
+    }
+
+    // ✅ Lectura real desde Firebase
     const projects = await db.collection("projects").get();
     const list: any[] = [];
 
@@ -10,50 +65,102 @@ export const getProjects = async (req: Request, res: Response) => {
       const projectId = doc.id;
       const data = doc.data();
 
-      // Leer subcolecciones (pueden estar vacías)
-      const bugsSnapshot = await db.collection("projects").doc(projectId).collection("bugs").get();
-      const epicsSnapshot = await db.collection("projects").doc(projectId).collection("epics").get();
-      const membersSnapshot = await db.collection("projects").doc(projectId).collection("members").get();
+      const bugsSnapshot = await db
+        .collection("projects")
+        .doc(projectId)
+        .collection("bugs")
+        .get();
+      const epicsSnapshot = await db
+        .collection("projects")
+        .doc(projectId)
+        .collection("epics")
+        .get();
+      const membersSnapshot = await db
+        .collection("projects")
+        .doc(projectId)
+        .collection("members")
+        .get();
+
+      const epics = epicsSnapshot.empty
+        ? []
+        : await Promise.all(
+            epicsSnapshot.docs.map(async (epicDoc) => {
+              const epicData = epicDoc.data();
+              const epicId = epicDoc.id;
+
+              const storiesSnapshot = await db
+                .collection("projects")
+                .doc(projectId)
+                .collection("epics")
+                .doc(epicId)
+                .collection("stories")
+                .get();
+
+              const stories = storiesSnapshot.empty
+                ? []
+                : await Promise.all(
+                    storiesSnapshot.docs.map(async (storyDoc) => {
+                      const storyData = storyDoc.data();
+                      const storyId = storyDoc.id;
+
+                      const commentsSnapshot = await db
+                        .collection("projects")
+                        .doc(projectId)
+                        .collection("epics")
+                        .doc(epicId)
+                        .collection("stories")
+                        .doc(storyId)
+                        .collection("comments")
+                        .get();
+
+                      const tasksSnapshot = await db
+                        .collection("projects")
+                        .doc(projectId)
+                        .collection("epics")
+                        .doc(epicId)
+                        .collection("stories")
+                        .doc(storyId)
+                        .collection("tasks")
+                        .get();
+
+                      return {
+                        id: storyId,
+                        ...storyData,
+                        comments: commentsSnapshot.empty
+                          ? []
+                          : commentsSnapshot.docs.map((c) => ({
+                              id: c.id,
+                              ...c.data(),
+                            })),
+                        tasks: tasksSnapshot.empty
+                          ? []
+                          : tasksSnapshot.docs.map((t) => ({
+                              id: t.id,
+                              ...t.data(),
+                            })),
+                      };
+                    })
+                  );
+
+              return {
+                id: epicId,
+                ...epicData,
+                stories,
+              };
+            })
+          );
 
       list.push({
         id: projectId,
-        name: data.name || '',
-        description: data.description || '',
-        bugs: bugsSnapshot.empty ? [] : bugsSnapshot.docs.map(b => ({ id: b.id, ...b.data() })),
-        epics: epicsSnapshot.empty ? [] : await Promise.all(epicsSnapshot.docs.map(async (epicDoc) => {
-          const epicData = epicDoc.data();
-          const epicId = epicDoc.id;
-
-          const storiesSnapshot = await db.collection("projects").doc(projectId)
-            .collection("epics").doc(epicId).collection("stories").get();
-
-          const stories = storiesSnapshot.empty ? [] : await Promise.all(storiesSnapshot.docs.map(async (storyDoc) => {
-            const storyData = storyDoc.data();
-            const storyId = storyDoc.id;
-
-            const commentsSnapshot = await db.collection("projects").doc(projectId)
-              .collection("epics").doc(epicId)
-              .collection("stories").doc(storyId).collection("comments").get();
-
-            const tasksSnapshot = await db.collection("projects").doc(projectId)
-              .collection("epics").doc(epicId)
-              .collection("stories").doc(storyId).collection("tasks").get();
-
-            return {
-              id: storyId,
-              ...storyData,
-              comments: commentsSnapshot.empty ? [] : commentsSnapshot.docs.map(c => ({ id: c.id, ...c.data() })),
-              tasks: tasksSnapshot.empty ? [] : tasksSnapshot.docs.map(t => ({ id: t.id, ...t.data() })),
-            };
-          }));
-
-          return {
-            id: epicId,
-            ...epicData,
-            stories
-          };
-        })),
-        members: membersSnapshot.empty ? [] : membersSnapshot.docs.map(m => ({ id: m.id, ...m.data() })),
+        name: data.name || "",
+        description: data.description || "",
+        bugs: bugsSnapshot.empty
+          ? []
+          : bugsSnapshot.docs.map((b) => ({ id: b.id, ...b.data() })),
+        epics,
+        members: membersSnapshot.empty
+          ? []
+          : membersSnapshot.docs.map((m) => ({ id: m.id, ...m.data() })),
       });
     }
 
@@ -76,51 +183,102 @@ export const getProjectById = async (req: Request, res: Response) => {
 
     const data = projectDoc.data();
 
-    const bugsSnapshot = await db.collection("projects").doc(projectId).collection("bugs").get();
-    const epicsSnapshot = await db.collection("projects").doc(projectId).collection("epics").get();
-    const membersSnapshot = await db.collection("projects").doc(projectId).collection("members").get();
+    const bugsSnapshot = await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("bugs")
+      .get();
+    const epicsSnapshot = await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("epics")
+      .get();
+    const membersSnapshot = await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("members")
+      .get();
 
-    const epics = epicsSnapshot.empty ? [] : await Promise.all(epicsSnapshot.docs.map(async (epicDoc) => {
-      const epicData = epicDoc.data();
-      const epicId = epicDoc.id;
+    const epics = epicsSnapshot.empty
+      ? []
+      : await Promise.all(
+          epicsSnapshot.docs.map(async (epicDoc) => {
+            const epicData = epicDoc.data();
+            const epicId = epicDoc.id;
 
-      const storiesSnapshot = await db.collection("projects").doc(projectId)
-        .collection("epics").doc(epicId).collection("stories").get();
+            const storiesSnapshot = await db
+              .collection("projects")
+              .doc(projectId)
+              .collection("epics")
+              .doc(epicId)
+              .collection("stories")
+              .get();
 
-      const stories = storiesSnapshot.empty ? [] : await Promise.all(storiesSnapshot.docs.map(async (storyDoc) => {
-        const storyData = storyDoc.data();
-        const storyId = storyDoc.id;
+            const stories = storiesSnapshot.empty
+              ? []
+              : await Promise.all(
+                  storiesSnapshot.docs.map(async (storyDoc) => {
+                    const storyData = storyDoc.data();
+                    const storyId = storyDoc.id;
 
-        const commentsSnapshot = await db.collection("projects").doc(projectId)
-          .collection("epics").doc(epicId)
-          .collection("stories").doc(storyId).collection("comments").get();
+                    const commentsSnapshot = await db
+                      .collection("projects")
+                      .doc(projectId)
+                      .collection("epics")
+                      .doc(epicId)
+                      .collection("stories")
+                      .doc(storyId)
+                      .collection("comments")
+                      .get();
 
-        const tasksSnapshot = await db.collection("projects").doc(projectId)
-          .collection("epics").doc(epicId)
-          .collection("stories").doc(storyId).collection("tasks").get();
+                    const tasksSnapshot = await db
+                      .collection("projects")
+                      .doc(projectId)
+                      .collection("epics")
+                      .doc(epicId)
+                      .collection("stories")
+                      .doc(storyId)
+                      .collection("tasks")
+                      .get();
 
-        return {
-          id: storyId,
-          ...storyData,
-          comments: commentsSnapshot.empty ? [] : commentsSnapshot.docs.map(c => ({ id: c.id, ...c.data() })),
-          tasks: tasksSnapshot.empty ? [] : tasksSnapshot.docs.map(t => ({ id: t.id, ...t.data() })),
-        };
-      }));
+                    return {
+                      id: storyId,
+                      ...storyData,
+                      comments: commentsSnapshot.empty
+                        ? []
+                        : commentsSnapshot.docs.map((c) => ({
+                            id: c.id,
+                            ...c.data(),
+                          })),
+                      tasks: tasksSnapshot.empty
+                        ? []
+                        : tasksSnapshot.docs.map((t) => ({
+                            id: t.id,
+                            ...t.data(),
+                          })),
+                    };
+                  })
+                );
 
-      return {
-        id: epicId,
-        ...epicData,
-        stories
-      };
-    }));
+            return {
+              id: epicId,
+              ...epicData,
+              stories,
+            };
+          })
+        );
 
     const project = {
       id: projectId,
-      name: data?.name || '',
-      description: data?.description || '',
-      bugs: bugsSnapshot.empty ? [] : bugsSnapshot.docs.map(b => ({ id: b.id, ...b.data() })),
+      name: data?.name || "",
+      description: data?.description || "",
+      bugs: bugsSnapshot.empty
+        ? []
+        : bugsSnapshot.docs.map((b) => ({ id: b.id, ...b.data() })),
       epics,
-      members: membersSnapshot.empty ? [] : membersSnapshot.docs.map(m => ({ id: m.id, ...m.data() })),
+      members: membersSnapshot.empty
+        ? []
+        : membersSnapshot.docs.map((m) => ({ id: m.id, ...m.data() })),
     };
 
     res.json(project);
@@ -129,7 +287,6 @@ export const getProjectById = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Error al obtener el proyecto" });
   }
 };
-
 
 // Crear un nuevo proyecto con estructura inicial
 export const createProject = async (req: Request, res: Response) => {
@@ -158,37 +315,63 @@ export const createProject = async (req: Request, res: Response) => {
 
     // Paso 3: Crear subcolección "epics" dentro del documento del proyecto
     // Aquí creamos la subcolección "epics" agregando un campo vacío
-    const epicsRef = db.collection("projects").doc(projectID).collection("epics");
+    const epicsRef = db
+      .collection("projects")
+      .doc(projectID)
+      .collection("epics");
     await epicsRef.doc("emptyDoc").set({
       placeholder: "empty", // Campo vacío solo para crear la subcolección
     });
 
     // Paso 4: Crear subcolección "stories" dentro de un epic
-    const storiesRef = db.collection("projects").doc(projectID).collection("epics").doc("epicID").collection("stories");
+    const storiesRef = db
+      .collection("projects")
+      .doc(projectID)
+      .collection("epics")
+      .doc("epicID")
+      .collection("stories");
     await storiesRef.doc("emptyDoc").set({
       placeholder: "empty", // Campo vacío solo para crear la subcolección
     });
 
     // Paso 5: Crear subcolección "comments" dentro de una historia
-    const commentsRef = db.collection("projects").doc(projectID).collection("epics").doc("epicID").collection("stories").doc("storyID").collection("comments");
+    const commentsRef = db
+      .collection("projects")
+      .doc(projectID)
+      .collection("epics")
+      .doc("epicID")
+      .collection("stories")
+      .doc("storyID")
+      .collection("comments");
     await commentsRef.doc("emptyDoc").set({
       placeholder: "empty", // Campo vacío solo para crear la subcolección
     });
 
     // Paso 6: Crear subcolección "tasks" dentro de una historia
-    const tasksRef = db.collection("projects").doc(projectID).collection("epics").doc("epicID").collection("stories").doc("storyID").collection("tasks");
+    const tasksRef = db
+      .collection("projects")
+      .doc(projectID)
+      .collection("epics")
+      .doc("epicID")
+      .collection("stories")
+      .doc("storyID")
+      .collection("tasks");
     await tasksRef.doc("emptyDoc").set({
       placeholder: "empty", // Campo vacío solo para crear la subcolección
     });
 
     // Paso 7: Crear subcolección "members" dentro del proyecto
-    const membersRef = db.collection("projects").doc(projectID).collection("members");
+    const membersRef = db
+      .collection("projects")
+      .doc(projectID)
+      .collection("members");
     await membersRef.doc("emptyDoc").set({
       placeholder: "empty", // Campo vacío solo para crear la subcolección
     });
 
-    console.log("Colecciones y subcolecciones creadas correctamente, pero sin documentos reales.");
-
+    console.log(
+      "Colecciones y subcolecciones creadas correctamente, pero sin documentos reales."
+    );
 
     // Paso 3: Responder al cliente con éxito
     res.status(201).json({

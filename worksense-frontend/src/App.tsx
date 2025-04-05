@@ -12,8 +12,38 @@ import { useAuth } from "./contexts/AuthContext";
 
 // Componente para proteger rutas
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  // Get all necessary values from context
+  const { isAuthenticated, loading, user } = useAuth(); // <-- Get loading state
+
+  // Add logging to see its state during render
+  console.log(
+    `%%% [PrivateRoute] Rendering. Loading: ${loading}, Authenticated: ${isAuthenticated}, User:`,
+    user
+  );
+
+  // 1. Check if the authentication status is still loading
+  if (loading) {
+    console.log(
+      "%%% [PrivateRoute] Condition: LOADING. Rendering loading indicator."
+    );
+    // Render a loading indicator, or null, while checking auth status
+    return <div>Loading...</div>; // Or your preferred loading component/null
+  }
+
+  // 2. Once loading is false, check if authenticated
+  if (!isAuthenticated) {
+    console.log(
+      "%%% [PrivateRoute] Condition: NOT Authenticated (Loading is false). REDIRECTING."
+    );
+    // If not authenticated, redirect to login
+    return <Navigate to="/login" replace />;
+  }
+
+  // 3. If loading is false and authenticated, render the actual route's component
+  console.log(
+    "%%% [PrivateRoute] Condition: Authenticated. Rendering children."
+  );
+  return children;
 }
 
 function App() {

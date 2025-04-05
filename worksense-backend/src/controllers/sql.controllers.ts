@@ -25,7 +25,7 @@ export const createUser = async (req: Request, res: Response) => {
   const pool = await sqlConnect();
   const data = await pool
     .request()
-    .input("username", sql.VarChar, username) 
+    .input("username", sql.VarChar, username)
     .execute("spCheckUserExists");
   if (data.recordset[0].UserExists === 1)
     res.status(400).send("El usuario ya existe");
@@ -93,9 +93,18 @@ export const login = async (req: Request, res: Response) => {
         { expiresIn: "1h" }
       );
 
+      const userObject = {
+        username: loginData.UserName || username, // Use correct field from DB result
+        userId: loginData.UserID,
+        roleId: loginData.RoleID,
+        roleName: loginData.RoleName,
+        // Add any other fields your frontend User type expects
+      };
+
       return res.status(200).json({
         message: "Login exitoso",
         token: token,
+        user: userObject,
       });
     } else {
       return res.status(401).json({
