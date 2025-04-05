@@ -1,70 +1,65 @@
 {
     "projects": {
         "projectID": {
-            "name": "Project Name",
-            "description": "Project Description",
-            "bugs": {
-                "bugID": {
-                    "title": "Bug Title",
-                    "description": "Bug Description",
-                    "status": "open",
+            "projectID": "12345678",
+            "name": "My Project",
+            "description": "This is a sample project.",
+            "createdAt": "2023-10-01T12:00:00Z",
+            "updatedAt": "2023-10-01T12:00:00Z",
+            "status": "active",
+            "items": {
+                "itemId": {
+                    "itemID": "987654321",
+                    "name": "Sample Item",
+                    "description": "This is a sample item.",
+                    "tag": "epic",
+                    "status": "active",
                     "priority": "high",
-                    "assignee": "memberID"
-                }
-            },
-            "epics": {
-                "epicID": {
-                    "title": "Epic Title",
-                    "description": "Epic Description",
-                    "stories": {
-                        "storyID": {
-                            "story": "Story Title",
-                            "description": "Story Description",
-                            "status": "in-progress",
-                            "priority": "medium",
-                            "size": "3",
-                            "comments": {
-                                "commentID": {
-                                    "text": "Comment text",
-                                    "author": "memberID",
-                                    "timestamp": "2023-10-01T12:00:00Z"
-                                }
-                            },
-                            "tasks": {
-                                "title": "nfdsjlfds",
-                                "description": "Task Description",
-                                "status": "not-started",
-                                "assignee": "memberID",
-                                "acceptanceCriteria": [
-                                    "Acceptance criteria 1",
-                                    "Acceptance criteria 2",
-                                    "Acceptance criteria 3"
-                                ]
-                            }
+                    "size": "large",
+                    "author": "userId",
+                    "assignee": [
+                        "userId1",
+                        "userId2"
+                    ],
+                    "acceptanceCriteria": [
+                        "Criterion 1",
+                        "Criterion 2"
+                    ],
+                    "sprint": "sprintName",
+                    "items": {},
+                    "comments": {
+                        "commentId": {
+                            "commentID": "123456789",
+                            "text": "This is a comment.",
+                            "author": "userId",
+                            "createdAt": "2023-10-01T12:00:00Z",
+                            "updatedAt": "2023-10-01T12:00:00Z"
                         }
-                    }
-                }
-            },
-            "members": {
-                "memberId": {
-                    "userId": "memberID",
-                    "projectId": "projectID",
-                    "roleId": "roleID"
+                    },
+                    "createdAt": "2023-10-01T12:00:00Z",
+                    "updatedAt": "2023-10-01T12:00:00Z"
                 }
             },
             "roles": {
                 "roleId": {
-                    "name": "Role Name",
-                    "permissions": 12345678
+                    "roleID": "admin",
+                    "name": "Administrator",
+                    "permissions": {
+                        "canEdit": true,
+                        "canDelete": true,
+                        "canView": true,
+                        "canComment": true,
+                        "canAssign": true
+                    }
                 }
             }
         }
     },
     "users": {
         "userId": {
-            "name": "User Name",
-            "email": "User Email",
-            "roleId": "roleID"
+            "userID": "12345679",
+            "name": "John Doe",
+            "email": "john@yahoo.com.mx"
         }
     }
 }

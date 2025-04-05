@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './ProjectView.module.css';
 import { Header } from '../Header/Header';
+import { useParams } from 'react-router-dom';
 
 export interface ProjectViewData {
   id: string;
@@ -34,9 +35,16 @@ interface ProjectViewProps {
 }
 
 export const ProjectView: React.FC<ProjectViewProps> = ({ project }) => {
+  const { id } = useParams<{ id: string }>();
+
   return (
     <div className={styles.projectViewContainer}>
-      <Header title={project.title} showBackButton />
+      <Header 
+        title={project.title} 
+        showBackButton 
+        showBreadcrumb
+        projectId={id}
+      />
       <div className={styles.projectView}>
         {/* Header Section */}
         <div className={styles.header}>
