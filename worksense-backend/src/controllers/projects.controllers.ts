@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { db } from "../models/firebase.js";
 
 export const getProjects = async (req: Request, res: Response) => {
-  const useMockData = true;
+  const useMockData = false;
 
   try {
     if (useMockData) {

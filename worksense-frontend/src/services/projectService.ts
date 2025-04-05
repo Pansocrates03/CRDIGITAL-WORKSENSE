@@ -1,4 +1,3 @@
-import axios from "axios";
 import apiClient from "../api/apiClient"; // Import the configured instance
 
 const API_URL = "http://localhost:5050"; // Using the same port as the backend

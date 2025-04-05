@@ -7,7 +7,6 @@ import { Header } from "../../components/Header/Header";
 import { NewProjectModal } from "../../components/NewProjectModal/NewProjectModal";
 import { Alert } from "../../components/Alert/Alert";
 import { useAuth } from "../../contexts/AuthContext";
-import axios from "axios";
 import apiClient from "@/api/apiClient";
 
 // API base URL

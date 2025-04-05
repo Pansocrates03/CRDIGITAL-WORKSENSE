@@ -5,24 +5,20 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { authService } from "../services/auth";
+import { authService, User } from "../services/auth";
 
 interface AuthContextType {
   user: User | null; // Use your User type or 'any' if necessary
-  // isAuthenticated: boolean; // REMOVE THIS
   loading: boolean;
+  isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// AuthProvider.tsx
-import { User } from "../services/auth"; // Import your User type
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null); // Use User type
-  // const [isAuthenticated, setIsAuthenticated] = useState(false); // REMOVE THIS
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -90,8 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // No need to set isAuthenticated
   };
 
-  // Derive isAuthenticated directly for the context value
-  const isAuthenticated = !!user; // True if user is not null, false otherwise
+  const isAuthenticated = !!user;
 
   return (
     <AuthContext.Provider

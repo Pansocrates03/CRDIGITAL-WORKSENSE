@@ -30,7 +30,6 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     return <div>Loading...</div>; // Or your preferred loading component/null
   }
 
-  // 2. Once loading is false, check if authenticated
   if (!isAuthenticated) {
     console.log(
       "%%% [PrivateRoute] Condition: NOT Authenticated (Loading is false). REDIRECTING."

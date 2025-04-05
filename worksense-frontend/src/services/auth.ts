@@ -1,9 +1,8 @@
 import apiClient from "@/api/apiClient";
-import axios from "axios";
 
 const API_URL = "http://localhost:5050"; // Ajusta esto según tu configuración
 
-interface User {
+export interface User {
   username: string;
 }
 
