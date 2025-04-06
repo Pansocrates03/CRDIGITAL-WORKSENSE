@@ -12,6 +12,7 @@ import sqlRoutes from "./src/routes/sql.routes.js";
 import membersRoutes from "./src/routes/members.routes.js";
 import projectRoutes from "./src/routes/projects.routes.js";
 import epicRoutes from "./src/routes/epics.routes.js"
+import itemsRoutes from "./src/routes/items.routes.js";
 
 // Documenattion Imports
 import { swaggerOptions } from "./swagger/swaggerSetup.js"; // Swagger options
@@ -33,6 +34,7 @@ app.use(sqlRoutes);
 app.use(projectRoutes);
 app.use(membersRoutes);
 app.use(epicRoutes);
+app.use(itemsRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get('/', (req: any, res: any) => {
     res.send('API is running...');
