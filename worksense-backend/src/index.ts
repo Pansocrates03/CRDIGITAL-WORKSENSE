@@ -8,13 +8,13 @@ import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
 
 // Routes Imports
-import sqlRoutes from "./src/routes/sql.routes.js";
-import membersRoutes from "./src/routes/members.routes.js";
-import projectRoutes from "./src/routes/projects.routes.js";
-import epicRoutes from "./src/routes/epics.routes.js"
+import sqlRoutes from "./routes/sql.routes.js";
+import membersRoutes from "./routes/members.routes.js";
+import projectRoutes from "./routes/projects.routes.js";
+import epicRoutes from "./routes/epics.routes.js"
 
 // Documenattion Imports
-import { swaggerOptions } from "./swagger/swaggerSetup.js"; // Swagger options
+import { swaggerOptions } from "../swagger/swaggerSetup.js"; // Swagger options
 
 // Obtain URL
 const PORT = process.env.PORT || 5050;

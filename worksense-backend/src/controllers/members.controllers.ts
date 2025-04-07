@@ -1,52 +1,40 @@
 import { Request, Response } from "express";
 import { db } from "../models/firebase.js";
+import { sqlConnect, sql } from "../models/sqlModel.js";
 
 
 // Obtener todos los miembros de un proyecto
-export const getMembers = async (req: Request, res: Response) => {
+export const getProjectMembers = async (req: Request, res: Response) => {
 
-    // Obtener el documento del proyecto
-    const project = await db.collection('projects').doc(req.params.id)
-    
-    // Obtener la colección de "members"
-    const members = await project.collection('members').get();
+  const projectId = req.params.ProjectId;
+  if (!projectId) return res.status(400).send("Project ID is required");
 
-    // Obtener los datos de los miembros
-    const membersData = members.docs.map((doc) => doc.data());  
+  // Obtener el documento del proyecto
+  const project = await db.collection('projects').doc(req.params.ProjectId)
+  
+  // Obtener la colección de "members"
+  const members = await project.collection('members').get();
 
-    // Devolver los datos de los miembros
-    res.json(membersData);
+  // Obtener los datos de los miembros
+  const membersData = members.docs.map((doc) => doc.data());  
+
+  // Devolver los datos de los miembros
+  res.json(membersData);
 };
-
-/*
-  @swagger
-  /projects/{ProjectId}/members/{MemberId}:
-  get:
-    summary: Obtener un miembro por ID
-    description: Obtiene un miembro específico de un proyecto por su ID
-    parameters:
-      - name: ProjectId
-        in: path
-        required: true
-        type: string
-      - name: MemberId
-        in: path  
-        required: true
-        type: string
-    responses:
-      '200':
-        description: Miembro encontrado exitosamente
-        schema:
-          type: object
-*/
 
 export const getMemberById = async (req: Request, res: Response) => {
 
+  const projectId = req.params.ProjectId;
+  if (!projectId) return res.status(400).send("Project ID is required");
+
+  const memberId = req.params.MemberId;
+  if (!memberId) return res.status(400).send("Member ID is required");
+
   // Obtener el documento del miembro
   const member = await db.collection('projects')
-    .doc(req.params.ProjectId)
+    .doc(projectId)
     .collection('members')
-    .doc(req.params.MemberId)
+    .doc(memberId)
     .get();
   const memberData = member.data();
 
@@ -57,19 +45,46 @@ export const getMemberById = async (req: Request, res: Response) => {
 
 export const addMember = async (req: Request, res: Response) => {
 
-  // Check if the user already exists in sql database
-  
+  const projectId = req.params.ProjectId;
+  const userId = req.body.userId;
+  const roleId = req.body.roleId;
 
+  if (!projectId) return res.status(400).send("Project ID is required");
+  if (!userId) return res.status(400).send("User ID is required");
+  if (!roleId) return res.status(400).send("Role ID is required");
+
+  // Check if the user already exists in sql database
+  const pool = await sqlConnect();
+  const result = await pool
+    .request()
+    .input("userId", sql.VarChar, userId+"")
+    .execute("spCheckUserExists");
+  if (result.recordset[0].UserExists != 1) return res.status(400).send("El usuario no existe");
+
+  console.log("El usuario existe");
+
+  // Check if the user is already a member of the project
+  const member = await db.collection('projects')
+    .doc(projectId)
+    .collection('members')
+    .doc(`${userId}_${projectId}`)
+    .get();
+  if (member.exists) return res.status(400).send("El usuario ya es miembro del proyecto");
+
+  console.log("El usuario no es miembro del proyecto");
+
+  // Create the member
+  const rolepath = `/projects/${projectId}/roles/${roleId}`;
   const newMember = {
-    userId: req.body.userId,
-    projectId: req.params.id,
-    roleId: req.body.roleId
+    userId: userId,
+    projectId: projectId,
+    roleId: rolepath
   };
 
   await db.collection('projects')
-    .doc(req.params.id)
+    .doc(projectId)
     .collection('members')
-    .doc(`${req.body.userId}_${req.params.id}`)
+    .doc(`${userId}_${projectId}`)
     .set(newMember);
 
   res.status(201).json(newMember);

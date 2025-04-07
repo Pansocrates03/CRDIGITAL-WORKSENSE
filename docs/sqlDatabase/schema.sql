@@ -76,24 +76,41 @@ END;
 
 GO
 
--- Checar si un usuario ya existe en la base de datos.
-CREATE PROCEDURE spCheckUserExists
-    @username NVARCHAR(50)
+-- Checar si un usuario ya existe en la base de datos por ID o username
+ALTER PROCEDURE spCheckUserExists
+    @userId INT = NULL,
+    @username NVARCHAR(50) = NULL
 AS
 BEGIN
-    -- Verifica si el usuario ya existe
-    IF EXISTS (
-        SELECT 1 FROM Users WHERE Username = @username
-    )
+    -- Validación de parámetros
+    IF @userId IS NULL AND @username IS NULL
     BEGIN
-        -- Devuelve 1 si el usuario existe
-        SELECT 1 AS UserExists;
+        RAISERROR('Debe proporcionar un ID de usuario o un nombre de usuario', 16, 1);
+        RETURN;
     END
-    ELSE
+    
+    -- Verifica si el usuario ya existe basado en ID o username
+    IF @userId IS NOT NULL
     BEGIN
-        -- Devuelve 0 si el usuario no existe
-        SELECT 0 AS UserExists;
+        -- Búsqueda por ID
+        IF EXISTS (SELECT 1 FROM Users WHERE UserId = @userId)
+        BEGIN
+            SELECT 1 AS UserExists;
+            RETURN;
+        END
     END
+    ELSE IF @username IS NOT NULL
+    BEGIN
+        -- Búsqueda por username
+        IF EXISTS (SELECT 1 FROM Users WHERE Username = @username)
+        BEGIN
+            SELECT 1 AS UserExists;
+            RETURN;
+        END
+    END
+    
+    -- Si no se encontró el usuario con ningún parámetro
+    SELECT 0 AS UserExists;
 END;
 
 GO

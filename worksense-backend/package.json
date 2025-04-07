@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon index.ts",
-    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts"
+    "dev": "nodemon"
   },
   "author": "",
   "license": "ISC",
@@ -19,7 +19,6 @@
     "firebase-admin": "^13.2.0",
     "morgan": "^1.10.0",
     "mssql": "^11.0.1",
-    "nodemon": "^3.1.9",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "tsx": "^4.19.3"
@@ -32,6 +31,7 @@
     "@types/node": "^22.13.14",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
+    "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   }
