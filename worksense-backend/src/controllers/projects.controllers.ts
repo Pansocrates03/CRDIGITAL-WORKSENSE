@@ -297,7 +297,7 @@ export const createProject = async (req: Request, res: Response) => {
     const { name, description } = req.body;
 
     if (!name || !description) {
-      return res.status(400).json({ error: "Se requieren 'name' y 'description'" });
+      res.status(400).json({ error: "Se requieren 'name' y 'description'" });
     }
 
     // Paso 1: Crear un documento principal en la colección "projects"
@@ -317,13 +317,13 @@ export const createProject = async (req: Request, res: Response) => {
     // Paso 2: Crear documentos placeholder en cada subcolección
     const creationPromises = subcollections.map(subcollection => {
       const subRef = db.collection("projects").doc(projectID).collection(subcollection);
-      return subRef.doc("emptyDoc").set({ placeholder: "empty" });
+      subRef.doc("emptyDoc").set({ placeholder: "empty" });
     });
 
     await Promise.all(creationPromises);
 
     // Respuesta
-    return res.status(201).json({
+    res.status(201).json({
       id: projectID,
       name,
       description,
@@ -332,7 +332,7 @@ export const createProject = async (req: Request, res: Response) => {
 
   } catch (error) {
     console.error("Error al crear el proyecto:", error);
-    return res.status(500).json({ error: "Error al crear el proyecto" });
+    res.status(500).json({ error: "Error al crear el proyecto" });
   }
 };
 
