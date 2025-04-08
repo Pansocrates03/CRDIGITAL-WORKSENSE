@@ -1,427 +1,433 @@
 /* src/pages/CreateProject/CreateProject.module.css */
 
 :root {
-    --color-white: #FFFFFF;
-    --color-purple: #AC1754;
-    --color-charcoal: #253C4F;
-    --color-charcoal-dark: #3B465B;
-    --color-gray: #D0D1D2;
-    --color-light-gray: #F8F8F8;
-    --color-pink-light: #f8eaf0;
-  
-    --font-main: 'Nunito Sans', sans-serif;
+  --color-white: #ffffff;
+  --color-purple: #ac1754;
+  --color-charcoal: #253c4f;
+  --color-charcoal-dark: #3b465b;
+  --color-gray: #d0d1d2;
+  --color-light-gray: #f8f8f8;
+  --color-pink-light: #f8eaf0;
+
+  --font-main: "Nunito Sans", sans-serif;
+}
+
+.pageContainer {
+  display: flex;
+  font-family: var(--font-main);
+  background-color: var(--color-light-gray);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 180px;
+  background-color: var(--color-white);
+  border-right: 1px solid var(--color-gray);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 40px;
+  margin-bottom: 1rem;
+}
+
+.logo img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+nav li {
+  cursor: pointer;
+  color: var(--color-charcoal-dark);
+  padding: 0.5rem;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.active {
+  font-weight: bold;
+  background-color: var(--color-pink-light);
+  color: var(--color-purple);
+}
+
+.icon {
+  margin-right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.icon img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-light-gray);
+}
+
+.header {
+  background-color: var(--color-white);
+  padding: 0 2rem;
+  height: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-gray);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.projectsHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.newProjectButton {
+  background-color: var(--color-purple);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.searchContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 400px;
+}
+
+.searchInput {
+  padding: 0.5rem 2rem 0.5rem 0.5rem;
+  border: 1px solid var(--color-gray);
+  border-radius: 4px;
+  background-color: var(--color-white);
+  width: 100%;
+}
+
+.clearSearch {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.filterContainer {
+  position: relative;
+}
+
+.filterButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.filterButton:hover {
+  background-color: var(--color-light-gray);
+}
+
+.filterButton.active {
+  background-color: var(--color-pink-light);
+}
+
+.filterButton img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.filterDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background-color: white;
+  border: 1px solid var(--color-gray);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 160px;
+  z-index: 1000;
+  padding: 4px;
+}
+
+.filterOption {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 14px;
+  color: var(--color-charcoal);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.filterOption:hover {
+  background-color: var(--color-light-gray);
+}
+
+.filterOption.active {
+  background-color: var(--color-pink-light);
+  color: var(--color-purple);
+  font-weight: 500;
+}
+
+.avatar {
+  background-color: var(--color-purple);
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.projectsSection {
+  padding: 2rem;
+  background-color: var(--color-light-gray);
+  flex: 1;
+  overflow-y: auto;
+}
+
+.projectsSection h3 {
+  margin-bottom: 1.5rem;
+  color: var(--color-charcoal);
+  font-weight: 500;
+}
+
+.projectCards {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.loadingContainer {
+  width: 100%;
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--color-charcoal);
+}
+
+.loadingSpinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-light-gray);
+  border-radius: 50%;
+  border-top-color: var(--color-purple);
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
-  
-  .pageContainer {
-    display: flex;
-    font-family: var(--font-main);
-    background-color: var(--color-light-gray);
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-  }
-  
-  .sidebar {
-    width: 180px;
-    background-color: var(--color-white);
-    border-right: 1px solid var(--color-gray);
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-  
-  .logo {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    height: 40px;
-    margin-bottom: 1rem;
-  }
-  
-  .logo img {
-    max-width: 100%;
-    max-height: 100%;
-  }
-  
-  nav ul {
-    list-style: none;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  nav li {
-    cursor: pointer;
-    color: var(--color-charcoal-dark);
-    padding: 0.5rem;
-    border-radius: 5px;
-    display: flex;
-    align-items: center;
-  }
-  
-  .active {
-    font-weight: bold;
-    background-color: var(--color-pink-light);
-    color: var(--color-purple);
-  }
-  
-  .icon {
-    margin-right: 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-  }
-  
-  .icon img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-  }
-  
-  .mainContent {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-light-gray);
-  }
-  
-  .header {
-    background-color: var(--color-white);
-    padding: 0 2rem;
-    height: 60px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--color-gray);
-  }
-  
-  .headerActions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  
-  .projectsHeader {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .newProjectButton {
-    background-color: var(--color-purple);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    white-space: nowrap;
-  }
-  
-  .searchContainer {
-    position: relative;
-    display: flex;
-    align-items: center;
-    flex: 1;
-    max-width: 400px;
-  }
-  
-  .searchInput {
-    padding: 0.5rem 2rem 0.5rem 0.5rem;
-    border: 1px solid var(--color-gray);
-    border-radius: 4px;
-    background-color: var(--color-white);
-    width: 100%;
-  }
-  
-  .clearSearch {
-    position: absolute;
-    right: 8px;
-    background: none;
-    border: none;
-    color: #999;
-    cursor: pointer;
-    font-size: 0.8rem;
-  }
-  
-  .filterContainer {
-    position: relative;
-  }
-  
-  .filterButton {
-    background: none;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    padding: 6px;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-  }
-  
-  .filterButton:hover {
-    background-color: var(--color-light-gray);
-  }
-  
-  .filterButton.active {
-    background-color: var(--color-pink-light);
-  }
-  
-  .filterButton img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-  
-  .filterDropdown {
-    position: absolute;
-    top: calc(100% + 4px);
-    right: 0;
-    background-color: white;
-    border: 1px solid var(--color-gray);
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    min-width: 160px;
-    z-index: 1000;
-    padding: 4px;
-  }
-  
-  .filterOption {
-    width: 100%;
-    padding: 8px 12px;
-    border: none;
-    background: none;
-    text-align: left;
-    font-size: 14px;
-    color: var(--color-charcoal);
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-  }
-  
-  .filterOption:hover {
-    background-color: var(--color-light-gray);
-  }
-  
-  .filterOption.active {
-    background-color: var(--color-pink-light);
-    color: var(--color-purple);
-    font-weight: 500;
-  }
-  
-  .avatar {
-    background-color: var(--color-purple);
-    color: white;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-  
-  .avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .projectsSection {
-    padding: 2rem;
-    background-color: var(--color-light-gray);
-    flex: 1;
-    overflow-y: auto;
-  }
-  
-  .projectsSection h3 {
-    margin-bottom: 1.5rem;
-    color: var(--color-charcoal);
-    font-weight: 500;
-  }
-  
-  .projectCards {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-  }
-  
-  .loadingContainer {
-    width: 100%;
-    text-align: center;
-    padding: 4rem 0;
-    color: var(--color-charcoal);
-  }
-  
-  .loadingSpinner {
-    display: inline-block;
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--color-light-gray);
-    border-radius: 50%;
-    border-top-color: var(--color-purple);
-    animation: spin 1s ease-in-out infinite;
-    margin-bottom: 1rem;
-  }
-  
-  @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-  }
-  
-  .loadingText {
-    font-size: 1rem;
-    color: var(--color-charcoal);
-    margin-top: 1rem;
-  }
-  
-  .card {
-    background-color: white;
-    padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    width: 340px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    border: 1px solid var(--color-gray);
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    position: relative;
-  }
-  
-  .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
-  
-  .cardHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .cardHeader h4 {
-    margin: 0;
-    font-size: 1rem;
-    color: var(--color-charcoal);
-  }
-  
-  .cardArrow {
-    color: var(--color-charcoal);
-    font-size: 1.5rem;
-    font-weight: lighter;
-    line-height: 1;
-  }
-  
-  .projectInfo {
-    color: #666;
-    font-size: 0.85rem;
-    margin: 0.2rem 0 0.8rem 0;
-  }
-  
-  .status {
-    font-size: 0.7rem;
-    font-weight: bold;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    align-self: flex-start;
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-  }
-  
-  .done {
-    background-color: var(--color-purple);
-    color: white;
-  }
-  
-  .wip {
-    background-color: var(--color-charcoal);
-    color: white;
-  }
-  
-  .cancelled {
-    background-color: var(--color-gray);
-    color: var(--color-charcoal);
-  }
-  
-  .cardFooter {
-    margin-top: auto;
-    padding-top: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .lastChange {
-    font-size: 0.7rem;
-    color: #888;
-    padding-left: 0.5rem;
-  }
-  
-  .noResults {
-    width: 100%;
-    text-align: center;
-    padding: 2rem;
-    color: #6B7280;
-    font-size: 0.9rem;
-    background-color: white;
-    border: 1px solid var(--color-gray);
-    border-radius: 8px;
-    margin: 1rem 0;
-  }
-  
-  .emptyState {
-    width: 100%;
-    text-align: center;
-    padding: 3rem 2rem;
-    background-color: white;
-    border: 1px solid var(--color-gray);
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-  
-  .emptyStateTitle {
-    color: var(--color-charcoal);
-    font-size: 1.2rem;
-    font-weight: 500;
-    margin: 0;
-  }
-  
-  .emptyStateText {
-    color: #6B7280;
-    font-size: 0.9rem;
-    margin: 0;
-    max-width: 400px;
-  }
-  
-  .createFirstButton {
-    margin-top: 1rem;
-    background-color: var(--color-purple);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: background-color 0.2s;
-  }
-  
-  .createFirstButton:hover {
-    background-color: #8f1346;
-  }
+}
+
+.loadingText {
+  font-size: 1rem;
+  color: var(--color-charcoal);
+  margin-top: 1rem;
+}
+
+.card {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid var(--color-gray);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardHeader h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-charcoal);
+}
+
+.cardArrow {
+  color: var(--color-charcoal);
+  font-size: 1.5rem;
+  font-weight: lighter;
+  line-height: 1;
+}
+
+.projectInfo {
+  margin: 0.5rem 0;
+  color: var(--color-charcoal-dark);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  max-height: 2.8em;
+}
+
+.status {
+  font-size: 0.7rem;
+  font-weight: bold;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  align-self: flex-start;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.done {
+  background-color: var(--color-purple);
+  color: white;
+}
+
+.wip {
+  background-color: var(--color-charcoal);
+  color: white;
+}
+
+.cancelled {
+  background-color: var(--color-gray);
+  color: var(--color-charcoal);
+}
+
+.cardFooter {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lastChange {
+  font-size: 0.7rem;
+  color: #888;
+  padding-left: 0.5rem;
+}
+
+.noResults {
+  width: 100%;
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+  background-color: white;
+  border: 1px solid var(--color-gray);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.emptyState {
+  width: 100%;
+  text-align: center;
+  padding: 3rem 2rem;
+  background-color: white;
+  border: 1px solid var(--color-gray);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.emptyStateTitle {
+  color: var(--color-charcoal);
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.emptyStateText {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin: 0;
+  max-width: 400px;
+}
+
+.createFirstButton {
+  margin-top: 1rem;
+  background-color: var(--color-purple);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.createFirstButton:hover {
+  background-color: #8f1346;
+}

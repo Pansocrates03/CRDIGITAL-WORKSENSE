@@ -45,7 +45,6 @@ const CreateProject: React.FC = () => {
   const fetchProjects = async () => {
     setIsLoading(true);
     try {
-
       const response = await apiClient.get(`${API_BASE_URL}/projects`);
       console.log("Response data:", response.data); // Debug log
 
