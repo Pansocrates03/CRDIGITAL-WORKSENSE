@@ -263,17 +263,22 @@ export const getProjectById = async (req: Request, res: Response): Promise<void>
   }
 };
 
-// Crear un nuevo proyecto con estructura inicial
-export const createProject = async (req: Request, res: Response): Promise<void> => {
+
+// Crear un proyecto con usuario actual y rol de admin
+export const createProject = async (req: Request, res: Response) => {
   try {
     const { name, description } = req.body;
+    const user = req.user;
 
     if (!name || !description) {
-      res.status(400).json({ error: "Se requieren 'name' y 'description'" });
-      return;
+      return res.status(400).json({ error: "Se requieren 'name' y 'description'" });
     }
 
-    // Paso 1: Crear un documento principal en la colección "projects"
+    if (!user?.userId) {
+      return res.status(401).json({ error: "Usuario no autenticado" });
+    }
+
+    // Paso 1: Crear el documento del proyecto
     const projectRef = await db.collection("projects").add({
       name,
       description,
@@ -284,83 +289,59 @@ export const createProject = async (req: Request, res: Response): Promise<void> 
 
     const projectID = projectRef.id;
 
-    // Subcolecciones a crear
-    const subcollections = ['items', 'members', 'roles'];
+    // Paso 2: Crear placeholder en items
+    const itemsRef = projectRef.collection("items");
+    const itemsPromise = itemsRef.doc("emptyDoc").set({ placeholder: "empty" });
 
-    // Paso 2: Crear documentos placeholder en cada subcolección
-    const creationPromises = subcollections.map(subcollection => {
-      const subRef = db.collection("projects").doc(projectID).collection(subcollection);
-      return subRef.doc("emptyDoc").set({ placeholder: "empty" });
+    // Paso 3: Crear rol 'admin' (con ID random)
+    const rolesRef = projectRef.collection("roles");
+    const adminRoleDocRef = rolesRef.doc(); // ID aleatorio
+    const adminRoleCreate = adminRoleDocRef.set({
+      name: "admin",
+      permissions: {
+        canAssign: true,
+        canComment: true,
+        canDelete: true,
+        canEdit: true,
+        canView: true,
+      },
     });
 
-    await Promise.all(creationPromises);
+    // Paso 4: Esperar a que el rol se cree
+    await adminRoleCreate;
 
-    // Respuesta
-    res.status(201).json({
+    // Paso 5: Buscar rol 'admin' por nombre (como referencia)
+    const adminRoleQuery = await rolesRef.where("name", "==", "admin").limit(1).get();
+
+    if (adminRoleQuery.empty) {
+      return res.status(404).json({ error: "No se encontró el rol 'admin'" });
+    }
+
+    const adminRoleRef = adminRoleQuery.docs[0].ref;
+
+    // Paso 6: Agregar al usuario como miembro con referencia al rol 'admin'
+    const membersRef = projectRef.collection("members");
+    const memberDocRef = membersRef.doc();
+
+    const memberPromise = memberDocRef.set({
+      userId: user.userId,
+      projectId: projectID,
+      role: adminRoleRef, // Referencia al rol
+    });
+
+    // Paso 7: Esperar las tareas pendientes
+    await Promise.all([itemsPromise, memberPromise]);
+
+    // Paso 8: Responder
+    return res.status(201).json({
       id: projectID,
       name,
       description,
-      message: "Proyecto creado con subcolecciones iniciales",
+      message: "Proyecto creado exitosamente con usuario asignado como admin",
     });
+
   } catch (error) {
     console.error("Error al crear el proyecto:", error);
-    res.status(500).json({ error: "Error al crear el proyecto" });
+    return res.status(500).json({ error: "Error interno al crear el proyecto" });
   }
 };
-
-
-  // // Paso 3: Crear subcolección "roles" dentro del documento del proyecto
-    // // Aquí creamos la subcolección "roles" agregando un campo vacío
-    // const epicsRef = db
-    //   .collection("projects")
-    //   .doc(projectID)
-    //   .collection("epics");
-    // await epicsRef.doc("emptyDoc").set({
-    //   placeholder: "empty", // Campo vacío solo para crear la subcolección
-    // });
-
-    // // Paso 4: Crear subcolección "stories" dentro de un epic
-    // const storiesRef = db
-    //   .collection("projects")
-    //   .doc(projectID)
-    //   .collection("epics")
-    //   .doc("epicID")
-    //   .collection("stories");
-    // await storiesRef.doc("emptyDoc").set({
-    //   placeholder: "empty", // Campo vacío solo para crear la subcolección
-    // });
-
-    // // Paso 5: Crear subcolección "comments" dentro de una historia
-    // const commentsRef = db
-    //   .collection("projects")
-    //   .doc(projectID)
-    //   .collection("epics")
-    //   .doc("epicID")
-    //   .collection("stories")
-    //   .doc("storyID")
-    //   .collection("comments");
-    // await commentsRef.doc("emptyDoc").set({
-    //   placeholder: "empty", // Campo vacío solo para crear la subcolección
-    // });
-
-    // // Paso 6: Crear subcolección "tasks" dentro de una historia
-    // const tasksRef = db
-    //   .collection("projects")
-    //   .doc(projectID)
-    //   .collection("epics")
-    //   .doc("epicID")
-    //   .collection("stories")
-    //   .doc("storyID")
-    //   .collection("tasks");
-    // await tasksRef.doc("emptyDoc").set({
-    //   placeholder: "empty", // Campo vacío solo para crear la subcolección
-    // });
-
-    // // Paso 7: Crear subcolección "members" dentro del proyecto
-    // const membersRef = db
-    //   .collection("projects")
-    //   .doc(projectID)
-    //   .collection("members");
-    // await membersRef.doc("emptyDoc").set({
-    //   placeholder: "empty", // Campo vacío solo para crear la subcolección
-    // });
