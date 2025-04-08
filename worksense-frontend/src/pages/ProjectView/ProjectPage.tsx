@@ -15,30 +15,14 @@ export const ProjectPage: React.FC = () => {
       try {
         if (!id) throw new Error('Project ID is required');
         const projectData = await projectService.getProject(id);
+        const membersData = await projectService.getProjectMembers(id);
         
-        // Test team members with real avatars
-        const testTeam = [
-          {
-            id: '1',
-            name: 'John Smith',
-            avatar: 'https://i.pravatar.cc/150?img=1'
-          },
-          {
-            id: '2',
-            name: 'Sarah Johnson',
-            avatar: 'https://i.pravatar.cc/150?img=5'
-          },
-          {
-            id: '3',
-            name: 'Mike Wilson',
-            avatar: 'https://i.pravatar.cc/150?img=3'
-          },
-          {
-            id: '4',
-            name: 'Emily Brown',
-            avatar: 'https://i.pravatar.cc/150?img=9'
-          }
-        ];
+        // Transform members data to match the expected format
+        const teamMembers = membersData.map(member => ({
+          id: member.userId,
+          name: member.name || 'Unknown User',
+          avatar: member.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || 'Unknown')}&background=random`
+        }));
 
         // Transform the data to match the ProjectView component's expected format
         const transformedProject: ProjectViewData = {
@@ -58,50 +42,42 @@ export const ProjectPage: React.FC = () => {
             completed: 0
           },
           progress: {
-            webDashboard: 75, // Test progress for web dashboard
-            database: 45      // Test progress for database
+            webDashboard: 75,
+            database: 45
           },
-          team: testTeam // Use our test team data
+          team: teamMembers
         };
 
-        // Safely calculate task counts if epics exist
-        if (projectData.epics && Array.isArray(projectData.epics)) {
-          const taskCounts = projectData.epics.reduce((acc, epic) => {
-            if (!epic.stories || !Array.isArray(epic.stories)) return acc;
+        // Calculate task counts from items instead of epics
+        if (projectData.items && Array.isArray(projectData.items)) {
+          const taskCounts = projectData.items.reduce((acc, item) => {
+            // Count main items
+            if (item.status === 'TODO' || item.status === 'BACKLOG') acc.todo++;
+            else if (item.status === 'IN_PROGRESS') acc.inProgress++;
+            else if (item.status === 'COMPLETED' || item.status === 'DONE') acc.completed++;
 
-            const storyCounts = epic.stories.reduce((storyAcc, story) => {
-              if (!story.tasks || !Array.isArray(story.tasks)) return storyAcc;
+            // Count sub-items if they exist
+            if (item.items && Array.isArray(item.items)) {
+              item.items.forEach(subItem => {
+                if (subItem.status === 'TODO' || subItem.status === 'BACKLOG') acc.todo++;
+                else if (subItem.status === 'IN_PROGRESS') acc.inProgress++;
+                else if (subItem.status === 'COMPLETED' || subItem.status === 'DONE') acc.completed++;
+              });
+            }
 
-              const todoCount = story.tasks.filter(task => task.status === 'TODO').length;
-              const inProgressCount = story.tasks.filter(task => task.status === 'IN_PROGRESS').length;
-              const completedCount = story.tasks.filter(task => task.status === 'COMPLETED').length;
-
-              return {
-                todo: storyAcc.todo + todoCount,
-                inProgress: storyAcc.inProgress + inProgressCount,
-                completed: storyAcc.completed + completedCount
-              };
-            }, { todo: 0, inProgress: 0, completed: 0 });
-
-            return {
-              todo: acc.todo + storyCounts.todo,
-              inProgress: acc.inProgress + storyCounts.inProgress,
-              completed: acc.completed + storyCounts.completed
-            };
+            return acc;
           }, { todo: 0, inProgress: 0, completed: 0 });
 
           transformedProject.tasks = taskCounts;
 
-          // Only update progress if we don't have our test values
-          if (projectData.progress === undefined) {
-            const totalTasks = taskCounts.todo + taskCounts.inProgress + taskCounts.completed;
-            if (totalTasks > 0) {
-              const completionRate = (taskCounts.completed / totalTasks) * 100;
-              transformedProject.progress = {
-                webDashboard: Math.round(completionRate),
-                database: Math.round(completionRate * 0.8)
-              };
-            }
+          // Calculate progress based on task completion
+          const totalTasks = taskCounts.todo + taskCounts.inProgress + taskCounts.completed;
+          if (totalTasks > 0) {
+            const completionRate = (taskCounts.completed / totalTasks) * 100;
+            transformedProject.progress = {
+              webDashboard: Math.round(completionRate),
+              database: Math.round(completionRate * 0.8)
+            };
           }
         }
 
@@ -131,17 +107,33 @@ export const ProjectPage: React.FC = () => {
           justifyContent: 'center',
           alignItems: 'center',
           flexDirection: 'column',
-          gap: '1rem'
+          gap: '1.5rem',
+          padding: '2rem'
         }}>
           <div style={{
-            width: '40px',
-            height: '40px',
+            width: '48px',
+            height: '48px',
             border: '3px solid var(--color-light-gray, #f5f5f5)',
             borderTopColor: 'var(--color-purple, #AC1754)',
             borderRadius: '50%',
             animation: 'spin 1s linear infinite'
           }} />
-          <p style={{ color: 'var(--color-charcoal, #253C4F)' }}>Loading project...</p>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <p style={{ 
+              color: 'var(--color-charcoal, #253C4F)',
+              fontSize: '1.1rem',
+              fontWeight: '500'
+            }}>Loading project...</p>
+            <p style={{
+              color: 'var(--color-gray-dark, #666)',
+              fontSize: '0.9rem'
+            }}>Please wait while we fetch your project data</p>
+          </div>
         </div>
       </div>
     );
@@ -161,9 +153,58 @@ export const ProjectPage: React.FC = () => {
           justifyContent: 'center',
           alignItems: 'center',
           padding: '2rem',
-          color: 'var(--color-charcoal, #253C4F)'
+          flexDirection: 'column',
+          gap: '1.5rem'
         }}>
-          Error: {error}
+          <div style={{
+            width: '64px',
+            height: '64px',
+            backgroundColor: 'var(--color-pink-light)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <span style={{
+              fontSize: '2rem',
+              color: 'var(--color-purple)'
+            }}>!</span>
+          </div>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.5rem',
+            textAlign: 'center'
+          }}>
+            <h2 style={{ 
+              color: 'var(--color-charcoal)',
+              fontSize: '1.5rem',
+              margin: '0'
+            }}>Something went wrong</h2>
+            <p style={{
+              color: 'var(--color-gray-dark)',
+              fontSize: '1rem',
+              maxWidth: '400px'
+            }}>{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              style={{
+                marginTop: '1rem',
+                padding: '0.75rem 1.5rem',
+                backgroundColor: 'var(--color-purple)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+                transition: 'background-color 0.2s'
+              }}
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -183,9 +224,58 @@ export const ProjectPage: React.FC = () => {
           justifyContent: 'center',
           alignItems: 'center',
           padding: '2rem',
-          color: 'var(--color-charcoal, #253C4F)'
+          flexDirection: 'column',
+          gap: '1.5rem'
         }}>
-          Project not found
+          <div style={{
+            width: '64px',
+            height: '64px',
+            backgroundColor: 'var(--color-pink-light)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <span style={{
+              fontSize: '2rem',
+              color: 'var(--color-purple)'
+            }}>?</span>
+          </div>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.5rem',
+            textAlign: 'center'
+          }}>
+            <h2 style={{ 
+              color: 'var(--color-charcoal)',
+              fontSize: '1.5rem',
+              margin: '0'
+            }}>Project Not Found</h2>
+            <p style={{
+              color: 'var(--color-gray-dark)',
+              fontSize: '1rem',
+              maxWidth: '400px'
+            }}>The project you're looking for doesn't exist or you don't have access to it.</p>
+            <button 
+              onClick={() => window.location.href = '/create'}
+              style={{
+                marginTop: '1rem',
+                padding: '0.75rem 1.5rem',
+                backgroundColor: 'var(--color-purple)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+                transition: 'background-color 0.2s'
+              }}
+            >
+              Back to Projects
+            </button>
+          </div>
         </div>
       </div>
     );
