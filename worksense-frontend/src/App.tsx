@@ -8,6 +8,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import LoginPage from "./pages/login/login";
 import CreateProject from "./pages/CreateProject/CreateProject";
 import { ProjectPage } from "./pages/ProjectView/ProjectPage";
+import { AccountPage } from "./pages/Account/AccountPage";
 import { useAuth } from "./contexts/AuthContext";
 
 // Componente para proteger rutas
@@ -56,6 +57,15 @@ function App() {
             element={
               <PrivateRoute>
                 <CreateProject />
+              </PrivateRoute>
+            }
+          />
+          {/* Account Route */}
+          <Route
+            path="/account"
+            element={
+              <PrivateRoute>
+                <AccountPage />
               </PrivateRoute>
             }
           />
