@@ -13,32 +13,38 @@ declare global {
 
 export const getUsers = async (req: Request, res: Response) => {
   const pool = await sqlConnect();
+  if(!pool) return;
   const result = await pool.request().execute("spGetUsers");
   res.json(result.recordset);
 };
 
 export const createUser = async (req: Request, res: Response) => {
-  const { username, password } = req.body;
+  const { email, firstName, lastName, gender, password } = req.body;
 
   // Verificar si el usuario ya existe usando Procedure
-
+  
   const pool = await sqlConnect();
+  if(!pool) return;  
+  /*
   const data = await pool
     .request()
     .input("username", sql.VarChar, username)
     .execute("spCheckUserExists");
   if (data.recordset[0].UserExists === 1)
     res.status(400).send("El usuario ya existe");
+  */
 
   // Encriptar la contraseña
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // Crear el nuevo usuario en la base de datos
-  const data2 = await pool
+  await pool
     .request()
-    .input("username", sql.VarChar, username)
+    .input("email", sql.VarChar, email)
+    .input("firstName", sql.VarChar, firstName)
+    .input("lastName", sql.VarChar, lastName)
+    .input("gender", sql.Int, gender)
     .input("passwordHash", sql.VarChar, hashedPassword)
-    .input("role", sql.VarChar, "1")
     .execute("spUserRegistration");
 
   res.status(201).send("Usuario registrado exitosamente");
@@ -53,9 +59,10 @@ export const deleteUser = (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
-  if (!username || !password) {
+  // Validar que el cuerpo de la solicitud contenga los campos necesarios
+  if (!email || !password) {
     return res.status(400).json({
       message: "Nombre de usuario y contraseña son obligatorios",
     });
@@ -63,9 +70,10 @@ export const login = async (req: Request, res: Response) => {
 
   try {
     const pool = await sqlConnect();
+    if(!pool) return;
     const result = await pool
       .request()
-      .input("username", sql.VarChar, username)
+      .input("email", sql.VarChar, email)
       .input("password", sql.VarChar, password)
       .execute("spValidateCredentials");
 
@@ -84,20 +92,16 @@ export const login = async (req: Request, res: Response) => {
       // Generar JWT con más información
       const token = jwt.sign(
         {
-          username: username,
+          email: email,
           userId: loginData.UserID,
-          roleId: loginData.RoleID,
-          roleName: loginData.RoleName,
         },
         process.env.TOKEN_SECRET,
         { expiresIn: "1h" }
       );
 
       const userObject = {
-        username: loginData.UserName || username, // Use correct field from DB result
+        email: loginData.UserName || email, // Use correct field from DB result
         userId: loginData.UserID,
-        roleId: loginData.RoleID,
-        roleName: loginData.RoleName,
         // Add any other fields your frontend User type expects
       };
 

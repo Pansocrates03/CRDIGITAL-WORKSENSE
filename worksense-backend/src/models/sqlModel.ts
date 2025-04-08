@@ -9,12 +9,18 @@ const isSqlConfigured =
   process.env.DB_NAME &&
   process.env.DB_SERVER;
 
+if (!isSqlConfigured) {
+  console.warn(
+    "⚠️ Configuración SQL incompleta. Asegúrate de definir DB_USER, DB_PWD, DB_NAME y DB_SERVER."
+  );
+}
+
 const sqlConfig = isSqlConfigured
   ? {
-      user: process.env.DB_USER,
-      password: process.env.DB_PWD,
-      database: process.env.DB_NAME,
-      server: process.env.DB_SERVER,
+      user: process.env.DB_USER as string,
+      password: process.env.DB_PWD as string,
+      database: process.env.DB_NAME as string,
+      server: process.env.DB_SERVER as string,
       options: {
         encrypt: false, // for azure
         trustServerCertificate: true, // change to true for local dev / self-signed certs

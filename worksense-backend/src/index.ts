@@ -8,7 +8,7 @@ import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
 
 // Routes Imports
-import sqlRoutes from "./routes/sql.routes.js";
+import sqlRoutes from "./routes/auth.routes.js";
 import membersRoutes from "./routes/members.routes.js";
 import projectRoutes from "./routes/projects.routes.js";
 import epicRoutes from "./routes/epics.routes.js"
