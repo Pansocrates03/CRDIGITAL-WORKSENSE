@@ -11,7 +11,7 @@ interface AuthContextType {
   user: User | null; // Use your User type or 'any' if necessary
   loading: boolean;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -47,12 +47,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = async (email: string, password: string) => {
     // setLoading(true); // Optional
     try {
       console.log("[AuthProvider] Calling authService.login...");
       // Login returns the response including the user now
-      const loginResponse = await authService.login(username, password);
+      const loginResponse = await authService.login(email, password);
       console.log("[AuthProvider] authService.login finished.");
 
       if (loginResponse.user && loginResponse.token) {

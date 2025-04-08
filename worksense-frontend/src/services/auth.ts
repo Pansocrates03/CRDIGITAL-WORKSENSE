@@ -3,7 +3,8 @@ import apiClient from "@/api/apiClient";
 const API_URL = "http://localhost:5050"; // Ajusta esto según tu configuración
 
 export interface User {
-  username: string;
+  email: string;
+  userId: number;
 }
 
 interface LoginResponse {
@@ -13,13 +14,13 @@ interface LoginResponse {
 }
 
 export const authService = {
-  async login(username: string, password: string): Promise<LoginResponse> {
+  async login(email: string, password: string): Promise<LoginResponse> {
     try {
-      console.log("Intentando login con:", { username, password: "***" });
+      console.log("Intentando login con:", { email, password: "***" });
       const response = await apiClient.post(
         `${API_URL}/login`,
         {
-          username,
+          email,
           password,
         },
         {
@@ -35,7 +36,7 @@ export const authService = {
         const tokenToSet = response.data.token;
         const userToSet = response.data.user;
         console.log("Token to set:", tokenToSet);
-        console.log("User data to set:", userToSet); // Log the user object before stringify
+        console.log("User data to set:", userToSet);
 
         try {
           localStorage.setItem("token", tokenToSet);
@@ -105,7 +106,7 @@ export const authService = {
         if (
           parsedUser &&
           typeof parsedUser === "object" &&
-          typeof parsedUser.username === "string" &&
+          typeof parsedUser.email === "string" &&
           typeof parsedUser.userId === "number"
         ) {
           console.log(

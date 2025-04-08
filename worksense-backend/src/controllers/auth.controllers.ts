@@ -13,7 +13,7 @@ declare global {
 
 export const getUsers = async (req: Request, res: Response) => {
   const pool = await sqlConnect();
-  if(!pool) return;
+  if (!pool) return;
   const result = await pool.request().execute("spGetUsers");
   res.json(result.recordset);
 };
@@ -22,9 +22,9 @@ export const createUser = async (req: Request, res: Response) => {
   const { email, firstName, lastName, gender, password } = req.body;
 
   // Verificar si el usuario ya existe usando Procedure
-  
+
   const pool = await sqlConnect();
-  if(!pool) return;  
+  if (!pool) return;
   /*
   const data = await pool
     .request()
@@ -70,7 +70,7 @@ export const login = async (req: Request, res: Response) => {
 
   try {
     const pool = await sqlConnect();
-    if(!pool) return;
+    if (!pool) return;
     const result = await pool
       .request()
       .input("email", sql.VarChar, email)
@@ -100,9 +100,8 @@ export const login = async (req: Request, res: Response) => {
       );
 
       const userObject = {
-        email: loginData.UserName || email, // Use correct field from DB result
+        email: email,
         userId: loginData.UserID,
-        // Add any other fields your frontend User type expects
       };
 
       return res.status(200).json({

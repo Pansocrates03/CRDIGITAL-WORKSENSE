@@ -10,7 +10,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const [username, setUsername] = useState("");
+  const [email, SetEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { login } = useAuth();
@@ -19,7 +19,7 @@ export function LoginForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(username, password);
+      await login(email, password);
       navigate("/create"); // Redirige al create después del login exitoso
     } catch (err) {
       setError(
@@ -47,12 +47,12 @@ export function LoginForm({
       )}
       <div className="grid gap-6">
         <div className="grid gap-3">
-          <Label htmlFor="username">Usuario</Label>
+          <Label htmlFor="email">Email</Label>
           <Input
-            id="username"
+            id="email"
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={email}
+            onChange={(e) => SetEmail(e.target.value)}
             required
           />
         </div>

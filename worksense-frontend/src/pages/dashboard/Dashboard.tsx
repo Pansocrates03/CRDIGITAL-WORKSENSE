@@ -9,7 +9,7 @@ export default function create() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">create</h1>
         <div className="flex items-center gap-4">
-          <span>Bienvenido, {user?.username}</span>
+          <span>Bienvenido, {user?.email}</span>
           <Button onClick={logout} variant="outline">
             Cerrar sesión
           </Button>

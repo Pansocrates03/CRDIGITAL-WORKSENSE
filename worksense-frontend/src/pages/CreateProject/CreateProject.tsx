@@ -263,7 +263,7 @@ const CreateProject: React.FC = () => {
             </div>
           </div>
 
-          <h3>{user?.username || "My"} projects</h3>
+          <h3>{user?.email || "My"} projects</h3>
           <div className={styles.projectCards}>
             {isLoading ? (
               <div className={styles.loadingContainer}>
