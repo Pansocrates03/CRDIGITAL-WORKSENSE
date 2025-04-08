@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { ProjectView, ProjectViewData } from '../../components/ProjectView/ProjectView';
 import { projectService } from '../../services/projectService';
 import { SideBar } from '../../components/SideBar/SideBar';
+import styles from './ProjectPage.module.css';
 
 export const ProjectPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -110,29 +111,14 @@ export const ProjectPage: React.FC = () => {
           gap: '1.5rem',
           padding: '2rem'
         }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            border: '3px solid var(--color-light-gray, #f5f5f5)',
-            borderTopColor: 'var(--color-purple, #AC1754)',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }} />
+          <div className={styles.loadingSpinner} />
           <div style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '0.5rem'
           }}>
-            <p style={{ 
-              color: 'var(--color-charcoal, #253C4F)',
-              fontSize: '1.1rem',
-              fontWeight: '500'
-            }}>Loading project...</p>
-            <p style={{
-              color: 'var(--color-gray-dark, #666)',
-              fontSize: '0.9rem'
-            }}>Please wait while we fetch your project data</p>
+            <div className={styles.loadingText}>Loading project data...</div>
           </div>
         </div>
       </div>
