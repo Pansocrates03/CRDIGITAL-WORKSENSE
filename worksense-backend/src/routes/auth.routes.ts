@@ -5,7 +5,7 @@ import {
     updateUser,
     deleteUser,
     login
-} from "../controllers/sql.controllers.js";
+} from "../controllers/auth.controllers.js";
 
 import { verifyToken } from "../middlewares/auth.js";
 
@@ -26,7 +26,9 @@ router.get("/users/:id", getUsers);
  *       400:
  *         description: El usuario ya existe
  */
-router.post("/users/", verifyToken, createUser);
+router.post("/users/", createUser);
+
+
 router.put("/users/:id", verifyToken, updateUser);
 router.delete("/users/:id", verifyToken, deleteUser);
 
