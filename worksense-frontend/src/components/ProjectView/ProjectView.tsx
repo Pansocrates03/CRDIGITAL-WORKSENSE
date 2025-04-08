@@ -49,13 +49,27 @@ export const ProjectView: React.FC<ProjectViewProps> = ({ project }) => {
         {/* Header Section */}
         <div className={styles.header}>
           <div className={styles.projectIcon}>
-            {/* Project icon will go here */}
+            <span style={{ fontSize: '1.5rem', color: 'var(--color-purple)' }}>
+              {project.title.charAt(0).toUpperCase()}
+            </span>
           </div>
           <div className={styles.projectInfo}>
             <h1>{project.title}</h1>
             <div className={styles.projectMeta}>
-              <span>{project.company}</span>
-              <span>{project.location}</span>
+              <span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" fill="currentColor"/>
+                  <path d="M8 9C5.23858 9 3 11.2386 3 14H13C13 11.2386 10.7614 9 8 9Z" fill="currentColor"/>
+                </svg>
+                {project.company}
+              </span>
+              <span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" fill="currentColor"/>
+                  <path d="M8 9C5.23858 9 3 11.2386 3 14H13C13 11.2386 10.7614 9 8 9Z" fill="currentColor"/>
+                </svg>
+                {project.location}
+              </span>
             </div>
           </div>
         </div>
@@ -76,9 +90,24 @@ export const ProjectView: React.FC<ProjectViewProps> = ({ project }) => {
           <div className={styles.workProgress}>
             <h3>Work in Progress</h3>
             <ul>
-              <li>To Do: {project.tasks.todo} task</li>
-              <li>In Progress: {project.tasks.inProgress} tasks</li>
-              <li>Completed: {project.tasks.completed} tasks</li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+                To Do: {project.tasks.todo} task{project.tasks.todo !== 1 ? 's' : ''}
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 8L6 11L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                In Progress: {project.tasks.inProgress} task{project.tasks.inProgress !== 1 ? 's' : ''}
+              </li>
+              <li>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 8L6 11L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Completed: {project.tasks.completed} task{project.tasks.completed !== 1 ? 's' : ''}
+              </li>
             </ul>
           </div>
         </div>
@@ -120,7 +149,13 @@ export const ProjectView: React.FC<ProjectViewProps> = ({ project }) => {
           <div className={styles.teamAvatars}>
             {project.team.map((member) => (
               <div key={member.id} className={styles.avatar}>
-                <img src={member.avatar} alt={member.name} />
+                <div className={styles.avatarImage}>
+                  <img src={member.avatar} alt={member.name} />
+                  <div className={styles.avatarTooltip}>
+                    {member.name}
+                  </div>
+                </div>
+                <span className={styles.avatarName}>{member.name}</span>
               </div>
             ))}
           </div>

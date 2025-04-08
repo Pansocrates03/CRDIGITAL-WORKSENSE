@@ -6,19 +6,22 @@ export interface Project {
   id: string;
   name: string;
   description: string;
-  bugs: Array<{
+  items: Array<{
     id: string;
-    [key: string]: any;
-  }>;
-  epics: Array<{
-    id: string;
-    stories: Array<{
-      id: string;
-      comments: Array<any>;
-      tasks: Array<any>;
-      [key: string]: any;
-    }>;
-    [key: string]: any;
+    name: string;
+    description: string;
+    tag: string;
+    status: string;
+    priority: string;
+    size: string;
+    author: string;
+    assignee: string[];
+    acceptanceCriteria: string[];
+    sprint?: string;
+    items?: Array<any>;
+    comments?: Array<any>;
+    createdAt: string;
+    updatedAt: string;
   }>;
   members: Array<{
     id: string;
@@ -49,6 +52,16 @@ export const projectService = {
       return response.data;
     } catch (error) {
       console.error("Error fetching projects:", error);
+      throw error;
+    }
+  },
+
+  async getProjectMembers(projectId: string): Promise<any[]> {
+    try {
+      const response = await apiClient.get(`${API_URL}/projects/${projectId}/members`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching project members:", error);
       throw error;
     }
   },
