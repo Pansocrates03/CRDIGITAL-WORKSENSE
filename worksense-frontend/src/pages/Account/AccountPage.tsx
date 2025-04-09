@@ -25,19 +25,6 @@ export const AccountPage: React.FC = () => {
     avatar: "https://i.pravatar.cc/150?img=3", // Replace with actual user avatar
   };
 
-  // Base user profile from auth context
-  const baseProfile: UserProfile = {
-    fullName:
-      user?.fullName ||
-      `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
-      "User",
-    email: user?.email || "",
-    gender: user?.gender || "Not specified",
-    country: "Mexico", // Default value
-    language: "English", // Default value
-    timeZone: "Central Standard Time (CST) GMT-06:00", // Default value
-  };
-
   const [isEditing, setIsEditing] = React.useState(false);
 
   return (
