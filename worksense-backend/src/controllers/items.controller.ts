@@ -251,3 +251,56 @@ export const getSubItemsByReader = async (req: Request, res: Response): Promise<
     res.status(500).json({ error: "Error al obtener los subitems" });
   }
 };
+
+export const getItemById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const itemId = req.params.id;
+    const projectID = req.query.projectID as string;
+
+    if (!projectID || !itemId) {
+      res.status(400).json({ error: "Faltan parámetros 'projectID' y/o 'itemId'" });
+      return;
+    }
+
+    const itemRef = db.collection("projects").doc(projectID).collection("items").doc(itemId);
+    const itemDoc = await itemRef.get();
+
+    if (!itemDoc.exists) {
+      res.status(404).json({ error: "Item no encontrado" });
+      return;
+    }
+
+    const itemData = itemDoc.data();
+
+    const subItemsSnapshot = await itemRef.collection("items").get();
+    const commentsSnapshot = await itemRef.collection("comments").get();
+
+    const subItems = subItemsSnapshot.empty
+      ? []
+      : subItemsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+    const comments = commentsSnapshot.empty
+      ? []
+      : commentsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+    const fullItem = {
+      id: itemId,
+      projectID,
+      ...itemData,
+      items: subItems,
+      comments: comments,
+    };
+
+    res.json(fullItem);
+  } catch (error) {
+    console.error("Error al obtener el item:", error);
+    res.status(500).json({ error: "Error al obtener el item" });
+  }
+};
+
