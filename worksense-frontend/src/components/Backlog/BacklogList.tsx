@@ -5,6 +5,7 @@ import { buildTree } from "./helpers";
 import { getExampleData } from "./MockData";
 import { TreeNodeType } from "./TreeNode";
 import { BacklogItemType } from "@/types";
+import LoadingSpinner from "../Loading/LoadingSpinner";
 
 interface BacklogListProps {
   projectId: string;
@@ -208,7 +209,7 @@ export const BacklogList: React.FC<BacklogListProps> = ({
 
   // Render functions
   if (loading) {
-    return <div>Loading backlog...</div>;
+    return <LoadingSpinner text="Loading backlog..." />;
   }
 
   if (error && filteredTree.length === 0) {
