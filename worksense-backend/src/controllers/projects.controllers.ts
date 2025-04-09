@@ -3,6 +3,7 @@ import { db } from "../models/firebase.js";
 import admin from "firebase-admin"
 const { FieldValue } = admin.firestore;
 
+// Obtener todos los proyectos
 export const getProjects = async (req: Request, res: Response): Promise<void> => {
   const useMockData = false;
 
@@ -262,6 +263,138 @@ export const getProjectById = async (req: Request, res: Response): Promise<void>
     res.status(500).json({ error: "Error fetching project" });
   }
 };
+
+
+// Obtener proyectos por usuario
+export const getProjectsByUser = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.userId;  // Obtener el userId del usuario autenticado
+
+  if (!userId) {
+    res.status(401).json({ error: "Usuario no autenticado" });
+  }
+
+  try {
+    // ✅ Lectura real desde Firebase
+    const projectsSnapshot = await db.collection("projects").get();
+    const list: any[] = [];
+
+    // Filtrar proyectos donde el usuario es miembro
+    for (const doc of projectsSnapshot.docs) {
+      const projectId = doc.id;
+      const projectData = doc.data();
+
+      // Obtener miembros del proyecto
+      const membersSnapshot = await db
+        .collection("projects")
+        .doc(projectId)
+        .collection("members")
+        .where("userId", "==", userId)
+        .get();
+
+      // Si el usuario no es miembro de este proyecto, lo ignoramos
+      if (membersSnapshot.empty) continue;
+
+      const bugsSnapshot = await db
+        .collection("projects")
+        .doc(projectId)
+        .collection("bugs")
+        .get();
+      const epicsSnapshot = await db
+        .collection("projects")
+        .doc(projectId)
+        .collection("epics")
+        .get();
+
+      const epics = epicsSnapshot.empty
+        ? []
+        : await Promise.all(
+            epicsSnapshot.docs.map(async (epicDoc) => {
+              const epicData = epicDoc.data();
+              const epicId = epicDoc.id;
+
+              const storiesSnapshot = await db
+                .collection("projects")
+                .doc(projectId)
+                .collection("epics")
+                .doc(epicId)
+                .collection("stories")
+                .get();
+
+              const stories = storiesSnapshot.empty
+                ? []
+                : await Promise.all(
+                    storiesSnapshot.docs.map(async (storyDoc) => {
+                      const storyData = storyDoc.data();
+                      const storyId = storyDoc.id;
+
+                      const commentsSnapshot = await db
+                        .collection("projects")
+                        .doc(projectId)
+                        .collection("epics")
+                        .doc(epicId)
+                        .collection("stories")
+                        .doc(storyId)
+                        .collection("comments")
+                        .get();
+
+                      const tasksSnapshot = await db
+                        .collection("projects")
+                        .doc(projectId)
+                        .collection("epics")
+                        .doc(epicId)
+                        .collection("stories")
+                        .doc(storyId)
+                        .collection("tasks")
+                        .get();
+
+                      return {
+                        id: storyId,
+                        ...storyData,
+                        comments: commentsSnapshot.empty
+                          ? []
+                          : commentsSnapshot.docs.map((c) => ({
+                              id: c.id,
+                              ...c.data(),
+                            })),
+                        tasks: tasksSnapshot.empty
+                          ? []
+                          : tasksSnapshot.docs.map((t) => ({
+                              id: t.id,
+                              ...t.data(),
+                            })),
+                      };
+                    })
+                  );
+
+              return {
+                id: epicId,
+                ...epicData,
+                stories,
+              };
+            })
+          );
+
+      list.push({
+        id: projectId,
+        name: projectData.name || "",
+        description: projectData.description || "",
+        bugs: bugsSnapshot.empty
+          ? []
+          : bugsSnapshot.docs.map((b) => ({ id: b.id, ...b.data() })),
+        epics,
+        members: membersSnapshot.empty
+          ? []
+          : membersSnapshot.docs.map((m) => ({ id: m.id, ...m.data() })),
+      });
+    }
+
+    res.json(list);
+  } catch (error) {
+    console.error("Error al obtener proyectos:", error);
+    res.status(500).json({ error: "Error al obtener proyectos" });
+  }
+};
+
 
 
 // Crear un proyecto con usuario actual y rol de admin
