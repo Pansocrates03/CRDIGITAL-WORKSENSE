@@ -3,13 +3,8 @@ import { db } from "../models/firebase.js";
 import admin from "firebase-admin"
 const { FieldValue } = admin.firestore;
 
+// Obtener todos los proyectos
 export const getProjects = async (req: Request, res: Response): Promise<void> => {
-  const userId = req.user?.userId;  // Obtener el userId del usuario autenticado
-
-  if (!userId) {
-    res.status(401).json({ error: "Usuario no autenticado" });
-  }
-
   const useMockData = false;
 
   try {
@@ -66,6 +61,219 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
+    // ✅ Lectura real desde Firebase
+    const projects = await db.collection("projects").get();
+    const list: any[] = [];
+
+    for (const doc of projects.docs) {
+      const projectId = doc.id;
+      const data = doc.data();
+
+      const bugsSnapshot = await db
+        .collection("projects")
+        .doc(projectId)
+        .collection("bugs")
+        .get();
+      const epicsSnapshot = await db
+        .collection("projects")
+        .doc(projectId)
+        .collection("epics")
+        .get();
+      const membersSnapshot = await db
+        .collection("projects")
+        .doc(projectId)
+        .collection("members")
+        .get();
+
+      const epics = epicsSnapshot.empty
+        ? []
+        : await Promise.all(
+            epicsSnapshot.docs.map(async (epicDoc) => {
+              const epicData = epicDoc.data();
+              const epicId = epicDoc.id;
+
+              const storiesSnapshot = await db
+                .collection("projects")
+                .doc(projectId)
+                .collection("epics")
+                .doc(epicId)
+                .collection("stories")
+                .get();
+
+              const stories = storiesSnapshot.empty
+                ? []
+                : await Promise.all(
+                    storiesSnapshot.docs.map(async (storyDoc) => {
+                      const storyData = storyDoc.data();
+                      const storyId = storyDoc.id;
+
+                      const commentsSnapshot = await db
+                        .collection("projects")
+                        .doc(projectId)
+                        .collection("epics")
+                        .doc(epicId)
+                        .collection("stories")
+                        .doc(storyId)
+                        .collection("comments")
+                        .get();
+
+                      const tasksSnapshot = await db
+                        .collection("projects")
+                        .doc(projectId)
+                        .collection("epics")
+                        .doc(epicId)
+                        .collection("stories")
+                        .doc(storyId)
+                        .collection("tasks")
+                        .get();
+
+                      return {
+                        id: storyId,
+                        ...storyData,
+                        comments: commentsSnapshot.empty
+                          ? []
+                          : commentsSnapshot.docs.map((c) => ({
+                              id: c.id,
+                              ...c.data(),
+                            })),
+                        tasks: tasksSnapshot.empty
+                          ? []
+                          : tasksSnapshot.docs.map((t) => ({
+                              id: t.id,
+                              ...t.data(),
+                            })),
+                      };
+                    })
+                  );
+
+              return {
+                id: epicId,
+                ...epicData,
+                stories,
+              };
+            })
+          );
+
+      list.push({
+        id: projectId,
+        name: data.name || "",
+        description: data.description || "",
+        bugs: bugsSnapshot.empty
+          ? []
+          : bugsSnapshot.docs.map((b) => ({ id: b.id, ...b.data() })),
+        epics,
+        members: membersSnapshot.empty
+          ? []
+          : membersSnapshot.docs.map((m) => ({ id: m.id, ...m.data() })),
+      });
+    }
+
+    res.json(list);
+  } catch (error) {
+    console.error("Error al obtener proyectos:", error);
+    res.status(500).json({ error: "Error al obtener proyectos" });
+  }
+};
+
+// Obtener un proyecto por ID
+export const getProjectById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const projectId = req.params.id;
+    const projectDoc = await db.collection("projects").doc(projectId).get();
+
+    if (!projectDoc.exists) {
+      res.status(404).json({ error: "Project not found" });
+      return;
+    }
+
+    const data = projectDoc.data();
+
+    // Get items collection
+    const itemsSnapshot = await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("items")
+      .get();
+
+    // Get members collection
+    const membersSnapshot = await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("members")
+      .get();
+
+    // Process items and their sub-items
+    const items = itemsSnapshot.empty
+      ? []
+      : await Promise.all(
+          itemsSnapshot.docs.map(async (itemDoc) => {
+            const itemData = itemDoc.data();
+            const itemId = itemDoc.id;
+
+            // Get sub-items if they exist
+            const subItemsSnapshot = await db
+              .collection("projects")
+              .doc(projectId)
+              .collection("items")
+              .doc(itemId)
+              .collection("items")
+              .get();
+
+            // Get comments if they exist
+            const commentsSnapshot = await db
+              .collection("projects")
+              .doc(projectId)
+              .collection("items")
+              .doc(itemId)
+              .collection("comments")
+              .get();
+
+            return {
+              id: itemId,
+              ...itemData,
+              items: subItemsSnapshot.empty
+                ? []
+                : subItemsSnapshot.docs.map(si => ({
+                    id: si.id,
+                    ...si.data()
+                  })),
+              comments: commentsSnapshot.empty
+                ? []
+                : commentsSnapshot.docs.map(c => ({
+                    id: c.id,
+                    ...c.data()
+                  }))
+            };
+          })
+        );
+
+    const project = {
+      id: projectId,
+      name: data?.name || "",
+      description: data?.description || "",
+      items,
+      members: membersSnapshot.empty
+        ? []
+        : membersSnapshot.docs.map((m) => ({ id: m.id, ...m.data() }))
+    };
+
+    res.json(project);
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    res.status(500).json({ error: "Error fetching project" });
+  }
+};
+
+
+// Obtener proyectos por usuario
+export const getProjectsByUser = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.userId;  // Obtener el userId del usuario autenticado
+
+  if (!userId) {
+    res.status(401).json({ error: "Usuario no autenticado" });
+  }
+
+  try {
     // ✅ Lectura real desde Firebase
     const projectsSnapshot = await db.collection("projects").get();
     const list: any[] = [];
@@ -187,95 +395,6 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-
-// Obtener un proyecto por ID
-export const getProjectById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const projectId = req.params.id;
-    const projectDoc = await db.collection("projects").doc(projectId).get();
-
-    if (!projectDoc.exists) {
-      res.status(404).json({ error: "Project not found" });
-      return;
-    }
-
-    const data = projectDoc.data();
-
-    // Get items collection
-    const itemsSnapshot = await db
-      .collection("projects")
-      .doc(projectId)
-      .collection("items")
-      .get();
-
-    // Get members collection
-    const membersSnapshot = await db
-      .collection("projects")
-      .doc(projectId)
-      .collection("members")
-      .get();
-
-    // Process items and their sub-items
-    const items = itemsSnapshot.empty
-      ? []
-      : await Promise.all(
-          itemsSnapshot.docs.map(async (itemDoc) => {
-            const itemData = itemDoc.data();
-            const itemId = itemDoc.id;
-
-            // Get sub-items if they exist
-            const subItemsSnapshot = await db
-              .collection("projects")
-              .doc(projectId)
-              .collection("items")
-              .doc(itemId)
-              .collection("items")
-              .get();
-
-            // Get comments if they exist
-            const commentsSnapshot = await db
-              .collection("projects")
-              .doc(projectId)
-              .collection("items")
-              .doc(itemId)
-              .collection("comments")
-              .get();
-
-            return {
-              id: itemId,
-              ...itemData,
-              items: subItemsSnapshot.empty
-                ? []
-                : subItemsSnapshot.docs.map(si => ({
-                    id: si.id,
-                    ...si.data()
-                  })),
-              comments: commentsSnapshot.empty
-                ? []
-                : commentsSnapshot.docs.map(c => ({
-                    id: c.id,
-                    ...c.data()
-                  }))
-            };
-          })
-        );
-
-    const project = {
-      id: projectId,
-      name: data?.name || "",
-      description: data?.description || "",
-      items,
-      members: membersSnapshot.empty
-        ? []
-        : membersSnapshot.docs.map((m) => ({ id: m.id, ...m.data() }))
-    };
-
-    res.json(project);
-  } catch (error) {
-    console.error("Error fetching project:", error);
-    res.status(500).json({ error: "Error fetching project" });
-  }
-};
 
 
 // Crear un proyecto con usuario actual y rol de admin
