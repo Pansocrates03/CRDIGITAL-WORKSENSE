@@ -114,6 +114,17 @@
 .icon img {
   width: 18px;
   height: 18px;
+  transition: filter 0.2s;
+}
+
+.navItem:hover .icon img {
+  filter: brightness(0) saturate(100%) invert(15%) sepia(83%) saturate(2637%)
+    hue-rotate(316deg) brightness(89%) contrast(98%);
+}
+
+.navItem.active .icon img {
+  filter: brightness(0) saturate(100%) invert(15%) sepia(83%) saturate(2637%)
+    hue-rotate(316deg) brightness(89%) contrast(98%);
 }
 
 .navText {
