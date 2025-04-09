@@ -4,6 +4,12 @@ import admin from "firebase-admin"
 const { FieldValue } = admin.firestore;
 
 export const getProjects = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.userId;  // Obtener el userId del usuario autenticado
+
+  if (!userId) {
+    res.status(401).json({ error: "Usuario no autenticado" });
+  }
+
   const useMockData = false;
 
   try {
@@ -61,12 +67,24 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
     }
 
     // ✅ Lectura real desde Firebase
-    const projects = await db.collection("projects").get();
+    const projectsSnapshot = await db.collection("projects").get();
     const list: any[] = [];
 
-    for (const doc of projects.docs) {
+    // Filtrar proyectos donde el usuario es miembro
+    for (const doc of projectsSnapshot.docs) {
       const projectId = doc.id;
-      const data = doc.data();
+      const projectData = doc.data();
+
+      // Obtener miembros del proyecto
+      const membersSnapshot = await db
+        .collection("projects")
+        .doc(projectId)
+        .collection("members")
+        .where("userId", "==", userId)
+        .get();
+
+      // Si el usuario no es miembro de este proyecto, lo ignoramos
+      if (membersSnapshot.empty) continue;
 
       const bugsSnapshot = await db
         .collection("projects")
@@ -77,11 +95,6 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
         .collection("projects")
         .doc(projectId)
         .collection("epics")
-        .get();
-      const membersSnapshot = await db
-        .collection("projects")
-        .doc(projectId)
-        .collection("members")
         .get();
 
       const epics = epicsSnapshot.empty
@@ -155,8 +168,8 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
 
       list.push({
         id: projectId,
-        name: data.name || "",
-        description: data.description || "",
+        name: projectData.name || "",
+        description: projectData.description || "",
         bugs: bugsSnapshot.empty
           ? []
           : bugsSnapshot.docs.map((b) => ({ id: b.id, ...b.data() })),
@@ -173,6 +186,7 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ error: "Error al obtener proyectos" });
   }
 };
+
 
 // Obtener un proyecto por ID
 export const getProjectById = async (req: Request, res: Response): Promise<void> => {
