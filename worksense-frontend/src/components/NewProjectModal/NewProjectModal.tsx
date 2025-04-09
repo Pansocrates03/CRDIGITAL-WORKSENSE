@@ -26,7 +26,10 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
 }) => {
   const [projectName, setProjectName] = useState(initialProjectName);
   const [description, setDescription] = useState(initialDescription);
-  const [errors, setErrors] = useState<{ projectName?: string }>({});
+  const [errors, setErrors] = useState<{
+    projectName?: string;
+    description?: string;
+  }>({});
   const modalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -79,10 +82,14 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   }, [isOpen, onClose]);
 
   const validateForm = (): boolean => {
-    const newErrors: { projectName?: string } = {};
+    const newErrors: { projectName?: string; description?: string } = {};
 
     if (!projectName.trim()) {
       newErrors.projectName = "Project name is required";
+    }
+
+    if (!description.trim()) {
+      newErrors.description = "Description is required";
     }
 
     setErrors(newErrors);
@@ -107,6 +114,9 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDescription(e.target.value);
+    if (errors.description) {
+      setErrors({ ...errors, description: undefined });
+    }
     adjustTextareaHeight(e.target);
   };
 
@@ -187,9 +197,11 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                 ref={textareaRef}
                 value={description}
                 onChange={handleTextareaChange}
-                placeholder="Describe your project (optional)"
+                placeholder="Describe your project (required)"
                 rows={3}
                 className={styles.textarea}
+                aria-required="true"
+                aria-invalid={!!errors.description}
               />
               {description && (
                 <button
@@ -202,6 +214,11 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                 </button>
               )}
             </div>
+            {errors.description && (
+              <p className={styles.errorMessage} role="alert">
+                {errors.description}
+              </p>
+            )}
           </div>
 
           <div className={styles.modalActions}>
@@ -215,7 +232,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
             <button
               type="submit"
               className={styles.startButton}
-              disabled={!projectName.trim()}
+              disabled={!projectName.trim() || !description.trim()}
             >
               {submitButtonText}
             </button>

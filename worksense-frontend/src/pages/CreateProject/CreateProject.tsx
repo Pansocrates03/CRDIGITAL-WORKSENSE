@@ -2,8 +2,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./CreateProject.module.css";
-// Eliminar importación de SideBar
-// import { SideBar } from "../../components/SideBar/SideBar";
 
 import { NewProjectModal } from "../../components/NewProjectModal/NewProjectModal";
 import { Alert } from "../../components/Alert/Alert";
