@@ -27,7 +27,7 @@ type SortOption = "last-change" | "status" | "a-z" | "z-a";
 
 const CreateProject: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -195,12 +195,16 @@ const CreateProject: React.FC = () => {
         <div className={styles.sectionHeader}>
           <div className={styles.welcomeMessage}>
             <h2 className={styles.welcomeTitle}>
-              Welcome,{" "}
-              {user?.fullName ||
-                user?.firstName ||
-                user?.email?.split("@")[0] ||
-                "User"}
-              !
+              {loading
+                ? "Cargando..."
+                : `Bienvenido, ${
+                    user?.fullName ||
+                    (user?.firstName && user?.lastName
+                      ? `${user.firstName} ${user.lastName}`
+                      : user?.firstName ||
+                        user?.email?.split("@")[0] ||
+                        "Usuario")
+                  }!`}
             </h2>
             <p className={styles.welcomeText}>
               Manage your projects and organize your work efficiently.
