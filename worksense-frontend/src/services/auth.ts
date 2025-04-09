@@ -5,6 +5,10 @@ const API_URL = "http://localhost:5050"; // Ajusta esto según tu configuración
 export interface User {
   email: string;
   userId: number;
+  firstName?: string;
+  lastName?: string;
+  gender?: string;
+  fullName?: string;
 }
 
 interface LoginResponse {
@@ -109,6 +113,11 @@ export const authService = {
           typeof parsedUser.email === "string" &&
           typeof parsedUser.userId === "number"
         ) {
+          // Agregar fullName si firstName y lastName están presentes
+          if (parsedUser.firstName && parsedUser.lastName) {
+            parsedUser.fullName = `${parsedUser.firstName} ${parsedUser.lastName}`;
+          }
+
           console.log(
             "%%% [getCurrentUser] VALIDATED as user object. Returning object."
           );

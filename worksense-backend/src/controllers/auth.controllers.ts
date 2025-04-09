@@ -102,6 +102,9 @@ export const login = async (req: Request, res: Response) => {
       const userObject = {
         email: email,
         userId: loginData.UserID,
+        firstName: loginData.FirstName,
+        lastName: loginData.LastName,
+        gender: loginData.Gender,
       };
 
       return res.status(200).json({

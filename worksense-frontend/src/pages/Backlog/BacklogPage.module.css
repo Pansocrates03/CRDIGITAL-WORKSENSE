@@ -1,0 +1,25 @@
+/* src/pages/Backlog/BacklogPage.module.css */
+.backlogPageContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Or adjust as needed */
+  background-color: var(
+    --background-color
+  ); /* Assuming you have CSS variables */
+  color: var(--text-color);
+}
+
+.backlogContent {
+  flex-grow: 1; /* Takes remaining vertical space */
+  padding: 20px 30px; /* Example padding */
+  overflow-y: auto; /* Allow content scrolling if it overflows */
+}
+
+.backlogContent h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--primary-color); /* Or your heading color */
+}
+
+/* Add any other specific styles for the backlog page layout */

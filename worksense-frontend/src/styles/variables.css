@@ -1,10 +1,13 @@
 :root {
-    --color-white: #F2F3F4;
-    --color-purple: #AC1754;
-    --color-charcoal: #253C4F;
-    --color-charcoal-dark: #3B465B;
-    --color-gray: #D0D1D2;
-  
-    --font-main: 'Nunito Sans', sans-serif;
-  }
-  
+  --color-white: #ffffff;
+  --color-purple: #ac1754;
+  --color-charcoal: #253c4f;
+  --color-charcoal-dark: #3b465b;
+  --color-gray: #d0d1d2;
+  --color-light-gray: #f8f8f8;
+  --color-pink-light: #f8eaf0;
+
+  /* Definición de la fuente principal - Inter es más moderna */
+  --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}

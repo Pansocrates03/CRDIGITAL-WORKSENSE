@@ -1,152 +1,149 @@
 /* src/pages/CreateProject/CreateProject.module.css */
 
-:root {
-  --color-white: #ffffff;
-  --color-purple: #ac1754;
-  --color-charcoal: #253c4f;
-  --color-charcoal-dark: #3b465b;
-  --color-gray: #d0d1d2;
-  --color-light-gray: #f8f8f8;
-  --color-pink-light: #f8eaf0;
-
-  --font-main: "Nunito Sans", sans-serif;
-}
-
 .pageContainer {
-  display: flex;
   font-family: var(--font-main);
   background-color: var(--color-light-gray);
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar {
-  width: 180px;
-  background-color: var(--color-white);
-  border-right: 1px solid var(--color-gray);
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  height: 40px;
-  margin-bottom: 1rem;
-}
-
-.logo img {
-  max-width: 100%;
-  max-height: 100%;
-}
-
-nav ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-nav li {
-  cursor: pointer;
-  color: var(--color-charcoal-dark);
-  padding: 0.5rem;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-}
-
-.active {
-  font-weight: bold;
-  background-color: var(--color-pink-light);
-  color: var(--color-purple);
-}
-
-.icon {
-  margin-right: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-}
-
-.icon img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  display: none;
 }
 
 .mainContent {
-  flex: 1;
   display: flex;
   flex-direction: column;
   background-color: var(--color-light-gray);
+  flex: 1;
+  min-height: 100vh;
 }
 
-.header {
-  background-color: var(--color-white);
-  padding: 0 2rem;
-  height: 60px;
+.sectionHeader {
   display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.compactControls {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--color-gray);
-}
-
-.headerActions {
-  display: flex;
-  align-items: center;
+  width: 100%;
   gap: 1rem;
 }
 
-.projectsHeader {
+.actionButtons {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.newProjectButton {
-  background-color: var(--color-purple);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .searchContainer {
   position: relative;
   display: flex;
   align-items: center;
-  flex: 1;
-  max-width: 400px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.projectsHeader {
+  display: none;
+}
+
+.projectsTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-charcoal);
+  margin: 0;
+}
+
+.projectsControls {
+  display: none;
+}
+
+.newProjectButton {
+  background-color: var(--color-purple);
+  color: white;
+  border: none;
+  padding: 0.65rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.newProjectButton:hover {
+  background-color: #7e0e3d;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btnIcon {
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 .searchInput {
-  padding: 0.5rem 2rem 0.5rem 0.5rem;
+  padding: 0.75rem 2.5rem 0.75rem 2.75rem;
   border: 1px solid var(--color-gray);
-  border-radius: 4px;
+  border-radius: 30px;
   background-color: var(--color-white);
   width: 100%;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-purple);
+  box-shadow: 0 0 0 3px rgba(147, 22, 81, 0.1);
+}
+
+.searchContainer::before {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  width: 16px;
+  height: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .clearSearch {
   position: absolute;
-  right: 8px;
+  right: 12px;
   background: none;
   border: none;
   color: #999;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  transition: all 0.2s;
+}
+
+.clearSearch:hover {
+  color: #666;
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .filterContainer {
@@ -154,31 +151,46 @@ nav li {
 }
 
 .filterButton {
-  background: none;
-  border: none;
+  background-color: white;
+  border: 1px solid var(--color-gray);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 6px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  border-radius: 30px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .filterButton:hover {
   background-color: var(--color-light-gray);
+  border-color: #ccc;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
 }
 
 .filterButton.active {
   background-color: var(--color-pink-light);
+  border-color: var(--color-purple);
 }
 
-.filterButton img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.filterButton svg {
+  width: 18px;
+  height: 18px;
+  stroke: #666;
+  stroke-width: 2;
+  transition: stroke 0.2s;
+}
+
+.filterButton:hover svg {
+  stroke: var(--color-purple);
+}
+
+.filterButton.active svg {
+  stroke: var(--color-purple);
 }
 
 .filterDropdown {
@@ -238,8 +250,8 @@ nav li {
 }
 
 .projectsSection {
-  padding: 2rem;
-  background-color: var(--color-light-gray);
+  padding: 2.5rem;
+  background-color: var(--background-color, #f4f7fa);
   flex: 1;
   overflow-y: auto;
 }
@@ -251,26 +263,33 @@ nav li {
 }
 
 .projectCards {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
-  flex-wrap: wrap;
+  margin-top: 1.5rem;
 }
 
 .loadingContainer {
   width: 100%;
-  text-align: center;
-  padding: 4rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  grid-column: 1 / -1;
+  padding: 3rem 0;
   color: var(--color-charcoal);
 }
 
 .loadingSpinner {
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--color-light-gray);
+  display: block;
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(147, 22, 81, 0.1);
   border-radius: 50%;
   border-top-color: var(--color-purple);
-  margin-bottom: 1rem;
+  margin: 0 auto 1.5rem;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -282,27 +301,28 @@ nav li {
 .loadingText {
   font-size: 1rem;
   color: var(--color-charcoal);
-  margin-top: 1rem;
+  font-weight: 500;
+  text-align: center;
 }
 
 .card {
   background-color: white;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  width: 340px;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  border: 1px solid var(--color-gray);
+  gap: 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.3s, box-shadow 0.3s;
   position: relative;
+  overflow: hidden;
 }
 
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .cardHeader {
@@ -313,22 +333,27 @@ nav li {
 
 .cardHeader h4 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
   color: var(--color-charcoal);
 }
 
 .cardArrow {
-  color: var(--color-charcoal);
-  font-size: 1.5rem;
-  font-weight: lighter;
-  line-height: 1;
+  color: var(--color-purple);
+  font-size: 1.25rem;
+  font-weight: bold;
+  transition: transform 0.2s;
+}
+
+.card:hover .cardArrow {
+  transform: translateX(3px);
 }
 
 .projectInfo {
-  margin: 0.5rem 0;
+  margin: 0;
   color: var(--color-charcoal-dark);
   font-size: 0.9rem;
-  line-height: 1.4;
+  line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -340,94 +365,163 @@ nav li {
 .status {
   font-size: 0.7rem;
   font-weight: bold;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
   align-self: flex-start;
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
+  letter-spacing: 0.5px;
 }
 
 .done {
-  background-color: var(--color-purple);
-  color: white;
+  background-color: rgba(147, 22, 81, 0.15);
+  color: var(--color-purple);
 }
 
 .wip {
-  background-color: var(--color-charcoal);
-  color: white;
+  background-color: rgba(33, 33, 33, 0.1);
+  color: var(--color-charcoal);
 }
 
 .cancelled {
-  background-color: var(--color-gray);
-  color: var(--color-charcoal);
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #888;
 }
 
 .cardFooter {
   margin-top: auto;
-  padding-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
 .lastChange {
-  font-size: 0.7rem;
-  color: #888;
-  padding-left: 0.5rem;
+  font-size: 0.8rem;
+  color: #777;
+  display: flex;
+  align-items: center;
 }
 
 .noResults {
   width: 100%;
   text-align: center;
-  padding: 2rem;
+  padding: 3rem 2rem;
   color: #6b7280;
-  font-size: 0.9rem;
+  font-size: 1rem;
   background-color: white;
   border: 1px solid var(--color-gray);
-  border-radius: 8px;
+  border-radius: 12px;
   margin: 1rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .emptyState {
   width: 100%;
   text-align: center;
-  padding: 3rem 2rem;
+  padding: 4rem 2rem;
   background-color: white;
-  border: 1px solid var(--color-gray);
-  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .emptyStateTitle {
   color: var(--color-charcoal);
-  font-size: 1.2rem;
-  font-weight: 500;
+  font-size: 1.4rem;
+  font-weight: 600;
   margin: 0;
 }
 
 .emptyStateText {
   color: #6b7280;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  line-height: 1.6;
   margin: 0;
-  max-width: 400px;
+  max-width: 500px;
 }
 
 .createFirstButton {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   background-color: var(--color-purple);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
+  padding: 0.85rem 2rem;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 500;
-  transition: background-color 0.2s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(147, 22, 81, 0.2);
 }
 
 .createFirstButton:hover {
-  background-color: #8f1346;
+  background-color: #7e0e3d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(147, 22, 81, 0.3);
+}
+
+.welcomeMessage {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.welcomeTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--color-purple);
+  margin: 0 0 0.75rem 0;
+}
+
+.welcomeText {
+  font-size: 1rem;
+  color: var(--color-charcoal);
+  margin: 0;
+  line-height: 1.5;
+  max-width: 600px;
+}
+
+/* Medias queries para responsive */
+@media (min-width: 768px) {
+  .sectionHeader {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .welcomeMessage {
+    width: 50%;
+  }
+
+  .compactControls {
+    width: 50%;
+  }
+}
+
+@media (max-width: 767px) {
+  .compactControls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .searchContainer {
+    max-width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .actionButtons {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .newProjectButton {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    width: auto;
+    justify-content: center;
+  }
 }

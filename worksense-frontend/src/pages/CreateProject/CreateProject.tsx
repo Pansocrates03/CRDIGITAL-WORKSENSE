@@ -2,8 +2,9 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./CreateProject.module.css";
-import { SideBar } from "../../components/SideBar/SideBar";
-import { Header } from "../../components/Header/Header";
+// Eliminar importación de SideBar
+// import { SideBar } from "../../components/SideBar/SideBar";
+
 import { NewProjectModal } from "../../components/NewProjectModal/NewProjectModal";
 import { Alert } from "../../components/Alert/Alert";
 import { useAuth } from "../../contexts/AuthContext";
@@ -187,18 +188,24 @@ const CreateProject: React.FC = () => {
   };
 
   return (
-    <div className={styles.pageContainer}>
-      <SideBar />
-      <main className={styles.mainContent}>
-        <Header title="Projects" />
-        <section className={styles.projectsSection}>
-          <div className={styles.projectsHeader}>
-            <button
-              className={styles.newProjectButton}
-              onClick={() => setIsModalOpen(true)}
-            >
-              New Project
-            </button>
+    <main className={styles.mainContent}>
+      <section className={styles.projectsSection}>
+        <div className={styles.sectionHeader}>
+          <div className={styles.welcomeMessage}>
+            <h2 className={styles.welcomeTitle}>
+              Welcome,{" "}
+              {user?.fullName ||
+                user?.firstName ||
+                user?.email?.split("@")[0] ||
+                "User"}
+              !
+            </h2>
+            <p className={styles.welcomeText}>
+              Manage your projects and organize your work efficiently.
+            </p>
+          </div>
+
+          <div className={styles.compactControls}>
             <div className={styles.searchContainer}>
               <input
                 className={styles.searchInput}
@@ -215,136 +222,165 @@ const CreateProject: React.FC = () => {
                 </button>
               )}
             </div>
-            <div className={styles.filterContainer}>
-              <button
-                className={`${styles.filterButton} ${
-                  isFilterOpen ? styles.active : ""
-                }`}
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-              >
-                <img src="/Filter Button.svg" alt="Filter" />
-              </button>
-              {isFilterOpen && (
-                <div className={styles.filterDropdown}>
-                  <button
-                    className={`${styles.filterOption} ${
-                      currentSort === "last-change" ? styles.active : ""
-                    }`}
-                    onClick={() => handleFilterSelect("last-change")}
-                  >
-                    Last Change
-                  </button>
-                  <button
-                    className={`${styles.filterOption} ${
-                      currentSort === "status" ? styles.active : ""
-                    }`}
-                    onClick={() => handleFilterSelect("status")}
-                  >
-                    Status
-                  </button>
-                  <button
-                    className={`${styles.filterOption} ${
-                      currentSort === "a-z" ? styles.active : ""
-                    }`}
-                    onClick={() => handleFilterSelect("a-z")}
-                  >
-                    A-Z
-                  </button>
-                  <button
-                    className={`${styles.filterOption} ${
-                      currentSort === "z-a" ? styles.active : ""
-                    }`}
-                    onClick={() => handleFilterSelect("z-a")}
-                  >
-                    Z-A
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
 
-          <h3>{user?.email || "My"} projects</h3>
-          <div className={styles.projectCards}>
-            {isLoading ? (
-              <div className={styles.loadingContainer}>
-                <div className={styles.loadingSpinner} />
-                <div className={styles.loadingText}>Loading projects...</div>
-              </div>
-            ) : (
-              <>
-                {filteredProjects.length > 0 ? (
-                  filteredProjects.map((project) => (
-                    <div
-                      key={project.id}
-                      className={styles.card}
-                      onClick={() => handleProjectClick(project.id)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <div className={styles.cardHeader}>
-                        <h4>{project.name}</h4>
-                        <span className={styles.cardArrow}>&#8250;</span>
-                      </div>
-                      <p className={styles.projectInfo}>
-                        {project.description}
-                      </p>
-                      <span
-                        className={`${styles.status} ${
-                          styles[project.status.toLowerCase()]
-                        }`}
-                      >
-                        {project.status}
-                      </span>
-                      <div className={styles.cardFooter}>
-                        <span className={styles.lastChange}>
-                          Last change: {project.lastChange}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                ) : searchTerm ? (
-                  <div className={styles.noResults}>
-                    No projects found matching "{searchTerm}"
-                  </div>
-                ) : (
-                  <div className={styles.emptyState}>
-                    <h4 className={styles.emptyStateTitle}>No projects yet</h4>
-                    <p className={styles.emptyStateText}>
-                      Create your first project to start organizing your work
-                      and collaborating with your team.
-                    </p>
+            <div className={styles.actionButtons}>
+              <div className={styles.filterContainer}>
+                <button
+                  className={`${styles.filterButton} ${
+                    isFilterOpen ? styles.active : ""
+                  }`}
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  title="Filter"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="4" y1="7" x2="20" y2="7" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                    <line x1="10" y1="17" x2="14" y2="17" />
+                  </svg>
+                </button>
+                {isFilterOpen && (
+                  <div className={styles.filterDropdown}>
                     <button
-                      className={styles.createFirstButton}
-                      onClick={() => setIsModalOpen(true)}
+                      className={`${styles.filterOption} ${
+                        currentSort === "last-change" ? styles.active : ""
+                      }`}
+                      onClick={() => handleFilterSelect("last-change")}
                     >
-                      Create your first project
+                      Last Change
+                    </button>
+                    <button
+                      className={`${styles.filterOption} ${
+                        currentSort === "status" ? styles.active : ""
+                      }`}
+                      onClick={() => handleFilterSelect("status")}
+                    >
+                      Status
+                    </button>
+                    <button
+                      className={`${styles.filterOption} ${
+                        currentSort === "a-z" ? styles.active : ""
+                      }`}
+                      onClick={() => handleFilterSelect("a-z")}
+                    >
+                      A-Z
+                    </button>
+                    <button
+                      className={`${styles.filterOption} ${
+                        currentSort === "z-a" ? styles.active : ""
+                      }`}
+                      onClick={() => handleFilterSelect("z-a")}
+                    >
+                      Z-A
                     </button>
                   </div>
                 )}
-              </>
-            )}
+              </div>
+
+              <button
+                className={styles.newProjectButton}
+                onClick={() => setIsModalOpen(true)}
+              >
+                <span className={styles.btnIcon}>+</span>
+                New Project
+              </button>
+            </div>
           </div>
-        </section>
+        </div>
 
-        <NewProjectModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleCreateProject}
+        <div className={styles.projectCards}>
+          {isLoading ? (
+            <div className={styles.loadingContainer}>
+              <div className={styles.loadingSpinner} />
+              <div className={styles.loadingText}>Loading projects...</div>
+            </div>
+          ) : (
+            <>
+              {filteredProjects.length > 0 ? (
+                filteredProjects.map((project) => (
+                  <div
+                    key={project.id}
+                    className={styles.card}
+                    onClick={() => handleProjectClick(project.id)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <div className={styles.cardHeader}>
+                      <h4>{project.name}</h4>
+                      <span className={styles.cardArrow}>&#8250;</span>
+                    </div>
+                    <p className={styles.projectInfo}>{project.description}</p>
+                    <span
+                      className={`${styles.status} ${
+                        styles[project.status.toLowerCase()]
+                      }`}
+                    >
+                      {project.status}
+                    </span>
+                    <div className={styles.cardFooter}>
+                      <span className={styles.lastChange}>
+                        Last change: {project.lastChange}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : searchTerm ? (
+                <div className={styles.noResults}>
+                  No projects found matching "{searchTerm}"
+                </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  <h4 className={styles.emptyStateTitle}>No projects yet</h4>
+                  <p className={styles.emptyStateText}>
+                    Create your first project to start organizing your work and
+                    collaborating with your team.
+                  </p>
+                  <button
+                    className={styles.createFirstButton}
+                    onClick={() => setIsModalOpen(true)}
+                  >
+                    Create your first project
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+
+      <NewProjectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateProject}
+      />
+
+      {alert && (
+        <Alert
+          type={alert.type}
+          title={
+            alert.type === "success"
+              ? "Project Created Successfully!"
+              : "Something went wrong..."
+          }
+          message={
+            alert.type === "success"
+              ? `Your project "${
+                  alert.message.split('"')[1] || "name"
+                }" has been created and is ready to use.`
+              : "Please try again!"
+          }
+          onClose={() => setAlert(null)}
+          actionLabel={alert.type === "error" ? "Try again" : undefined}
+          onAction={
+            alert.type === "error" ? () => setIsModalOpen(true) : undefined
+          }
         />
-
-        {alert && (
-          <Alert
-            type={alert.type}
-            title={alert.title}
-            message={alert.message}
-            onClose={() => setAlert(null)}
-            actionLabel={alert.type === "error" ? "Try again" : undefined}
-            onAction={
-              alert.type === "error" ? () => setIsModalOpen(true) : undefined
-            }
-          />
-        )}
-      </main>
-    </div>
+      )}
+    </main>
   );
 };
 

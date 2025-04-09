@@ -1,0 +1,77 @@
+/* Asegurar que Inter se aplique a absolutamente todos los elementos */
+* {
+  font-family: var(--font-main) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Aplicación específica para elementos comunes */
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+button,
+input,
+select,
+textarea,
+a {
+  font-family: var(--font-main);
+}
+
+/* Ajustes específicos para headings con Inter */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-main);
+  font-weight: 600; /* Semi-bold para títulos */
+  letter-spacing: -0.02em; /* Ajuste típico para Inter en headings */
+}
+
+/* Asegurar aplicación en sidebar */
+.sidebar,
+nav,
+nav ul,
+nav li,
+.projectTitle,
+.documentation h4 {
+  font-family: var(--font-main);
+}
+
+/* Asegurar que la fuente se aplique también en los componentes de formulario */
+input,
+button,
+textarea,
+select {
+  font-family: inherit;
+}
+
+/* Aplicar a las clases específicas de CreateProject */
+.projectsSection h3,
+.cardHeader h4,
+.emptyStateTitle,
+.newProjectButton,
+.createFirstButton {
+  font-family: var(--font-main);
+}
+
+/* Asegurar que los títulos en todo el proyecto tengan la misma fuente */
+.header,
+.headerTitle,
+.breadcrumb,
+.breadcrumbCurrent,
+.projectView h1,
+.projectView h2,
+.projectView h3 {
+  font-family: var(--font-main);
+}

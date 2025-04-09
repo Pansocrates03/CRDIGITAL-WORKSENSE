@@ -158,33 +158,42 @@ END;
 GO
 
 CREATE PROCEDURE spValidateCredentials
-    @email NVARCHAR(50),
-    @password NVARCHAR(256)
+    @Email NVARCHAR(50),
+    @Password NVARCHAR(256)
 AS
 BEGIN
-    -- Busca al usuario con su información de rol
-    DECLARE @storedHash NVARCHAR(256);
-    DECLARE @userID INT;
+    DECLARE @StoredHash NVARCHAR(256);
+    DECLARE @UserID INT;
 
+    -- Obtener el hash de la contraseña y el ID del usuario
     SELECT 
-        @storedHash = PasswordHash,
-        @userID = id
+        @StoredHash = PasswordHash,
+        @UserID = ID
     FROM Users
-    WHERE email = @email;
+    WHERE Email = @Email;
 
-    IF @storedHash IS NULL
+    -- Si no existe el usuario
+    IF @StoredHash IS NULL
     BEGIN
-        -- Usuario no encontrado
         SELECT 
             0 AS IsValid, 
-            NULL AS UserID
+            NULL AS UserID,
+            NULL AS Email,
+            NULL AS FirstName,
+            NULL AS LastName,
+            NULL AS Gender;
         RETURN;
-    END
+    END;
 
-    -- Devolver la información para validación en la aplicación
+    -- Devolver la información completa del usuario
     SELECT 
         1 AS IsValid, 
-        @userID AS UserID,
-        @storedHash AS PasswordHash;
+        ID AS UserID,
+        Email,
+        FirstName,
+        LastName,
+        Gender
+    FROM Users
+    WHERE ID = @UserID;
 END;
 GO

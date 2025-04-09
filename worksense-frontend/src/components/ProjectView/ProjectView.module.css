@@ -1,9 +1,8 @@
 .projectViewContainer {
   display: flex;
   flex-direction: column;
-  height: 100vh;
   background-color: var(--color-background, #f5f5f5);
-  overflow: hidden;
+  overflow: auto;
 }
 
 .projectView {
@@ -13,7 +12,7 @@
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
   gap: 1rem;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .header {
@@ -330,7 +329,7 @@
 }
 
 .avatarTooltip::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -4px;
   left: 50%;
@@ -343,4 +342,4 @@
 .avatar:hover .avatarTooltip {
   opacity: 1;
   transform: translateX(-50%) translateY(-5px);
-} 
+}

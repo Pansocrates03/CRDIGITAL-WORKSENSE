@@ -1,49 +1,42 @@
+// src/App.tsx
+import React from "react"; // Make sure React is imported
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext"; // Import useAuth
+import { MainLayout } from "./layouts/MainLayout"; // Import the layout
 import LoginPage from "./pages/login/login";
 import CreateProject from "./pages/CreateProject/CreateProject";
 import { ProjectPage } from "./pages/ProjectView/ProjectPage";
 import { AccountPage } from "./pages/Account/AccountPage";
-import { useAuth } from "./contexts/AuthContext";
+import BacklogPage from "./pages/Backlog/BacklogPage";
 
-// Componente para proteger rutas
+// Updated PrivateRoute to wrap content with MainLayout
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  // Get all necessary values from context
-  const { isAuthenticated, loading, user } = useAuth(); // <-- Get loading state
+  const { isAuthenticated, loading } = useAuth();
 
-  // Add logging to see its state during render
   console.log(
-    `%%% [PrivateRoute] Rendering. Loading: ${loading}, Authenticated: ${isAuthenticated}, User:`,
-    user
+    `[PrivateRoute] Loading: ${loading}, Authenticated: ${isAuthenticated}`
   );
 
-  // 1. Check if the authentication status is still loading
   if (loading) {
-    console.log(
-      "%%% [PrivateRoute] Condition: LOADING. Rendering loading indicator."
-    );
-    // Render a loading indicator, or null, while checking auth status
-    return <div>Loading...</div>; // Or your preferred loading component/null
+    console.log("[PrivateRoute] Rendering loading indicator.");
+    return <div>Loading Authentication...</div>; // Or a better loading spinner
   }
 
   if (!isAuthenticated) {
-    console.log(
-      "%%% [PrivateRoute] Condition: NOT Authenticated (Loading is false). REDIRECTING."
-    );
-    // If not authenticated, redirect to login
+    console.log("[PrivateRoute] Not Authenticated. Redirecting to /login.");
     return <Navigate to="/login" replace />;
   }
 
-  // 3. If loading is false and authenticated, render the actual route's component
   console.log(
-    "%%% [PrivateRoute] Condition: Authenticated. Rendering children."
+    "[PrivateRoute] Authenticated. Rendering children within MainLayout."
   );
-  return children;
+  // Wrap the authenticated route's content with the MainLayout
+  return <MainLayout>{children}</MainLayout>;
 }
 
 function App() {
@@ -51,30 +44,25 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Login Page - Does NOT use MainLayout */}
           <Route path="/login" element={<LoginPage />} />
+
+          {/* Routes that REQUIRE Authentication and the Sidebar Layout */}
           <Route
             path="/create"
             element={
               <PrivateRoute>
-                <CreateProject />
+                {" "}
+                <CreateProject />{" "}
               </PrivateRoute>
             }
           />
-          {/* Account Route */}
           <Route
             path="/account"
             element={
               <PrivateRoute>
-                <AccountPage />
-              </PrivateRoute>
-            }
-          />
-          {/* Project Routes */}
-          <Route
-            path="/project/:id"
-            element={
-              <PrivateRoute>
-                <Navigate to="overview" replace />
+                {" "}
+                <AccountPage />{" "}
               </PrivateRoute>
             }
           />
@@ -82,39 +70,8 @@ function App() {
             path="/project/:id/overview"
             element={
               <PrivateRoute>
-                <ProjectPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/project/:id/sprint"
-            element={
-              <PrivateRoute>
-                <ProjectPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/project/:id/users"
-            element={
-              <PrivateRoute>
-                <ProjectPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/project/:id/bugs"
-            element={
-              <PrivateRoute>
-                <ProjectPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/project/:id/stories"
-            element={
-              <PrivateRoute>
-                <ProjectPage />
+                {" "}
+                <ProjectPage />{" "}
               </PrivateRoute>
             }
           />
@@ -122,7 +79,48 @@ function App() {
             path="/project/:id/backlog"
             element={
               <PrivateRoute>
-                <ProjectPage />
+                {" "}
+                <BacklogPage />{" "}
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/project/:id/sprint"
+            element={
+              <PrivateRoute>
+                {" "}
+                <ProjectPage />{" "}
+                {/* Replace with specific SprintPage if you have one */}{" "}
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/project/:id/users"
+            element={
+              <PrivateRoute>
+                {" "}
+                <ProjectPage />{" "}
+                {/* Replace with specific UsersPage if you have one */}{" "}
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/project/:id/bugs"
+            element={
+              <PrivateRoute>
+                {" "}
+                <ProjectPage />{" "}
+                {/* Replace with specific BugsPage if you have one */}{" "}
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/project/:id/stories"
+            element={
+              <PrivateRoute>
+                {" "}
+                <ProjectPage />{" "}
+                {/* Replace with specific StoriesPage if you have one */}{" "}
               </PrivateRoute>
             }
           />
@@ -130,16 +128,31 @@ function App() {
             path="/project/:id/leaderboard"
             element={
               <PrivateRoute>
-                <ProjectPage />
+                {" "}
+                <ProjectPage />{" "}
+                {/* Replace with specific LeaderboardPage if you have one */}{" "}
               </PrivateRoute>
             }
           />
-          {/* Documentation Routes */}
+
+          {/* Redirect base project path if needed, still within layout */}
+          <Route
+            path="/project/:id"
+            element={
+              <PrivateRoute>
+                {" "}
+                <Navigate to="overview" replace />{" "}
+              </PrivateRoute>
+            }
+          />
+
+          {/* Documentation Routes - Also use MainLayout */}
           <Route
             path="/guides"
             element={
               <PrivateRoute>
-                <div>Guides Page</div>
+                {" "}
+                <div>Guides Page Content</div>{" "}
               </PrivateRoute>
             }
           />
@@ -147,15 +160,36 @@ function App() {
             path="/api"
             element={
               <PrivateRoute>
-                <div>API Reference Page</div>
+                {" "}
+                <div>API Reference Page Content</div>{" "}
               </PrivateRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/create" />} />
+
+          {/* Fallback Route */}
+          {/* Redirects authenticated users to /create, unauthenticated handled by PrivateRoute */}
+          <Route
+            path="*"
+            element={
+              <PrivateRoute>
+                <Navigate to="/create" replace />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Alternative Fallback: Check auth status explicitly */}
+          {/* <Route path="*" element={<RootFallback />} /> */}
         </Routes>
       </Router>
     </AuthProvider>
   );
 }
+
+// Optional: Explicit fallback component if needed
+// function RootFallback() {
+//   const { isAuthenticated, loading } = useAuth();
+//   if (loading) return <div>Loading...</div>;
+//   return <Navigate to={isAuthenticated ? "/create" : "/login"} replace />;
+// }
 
 export default App;
