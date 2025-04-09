@@ -7,6 +7,10 @@ import { NewProjectModal } from "../../components/NewProjectModal/NewProjectModa
 import { Alert } from "../../components/Alert/Alert";
 import { useAuth } from "../../contexts/AuthContext";
 import apiClient from "@/api/apiClient";
+import {
+  projectService,
+  Project as ProjectType,
+} from "../../services/projectService";
 
 // API base URL
 const API_BASE_URL = "http://localhost:5050";
@@ -44,16 +48,16 @@ const CreateProject: React.FC = () => {
   const fetchProjects = async () => {
     setIsLoading(true);
     try {
-      const response = await apiClient.get(`${API_BASE_URL}/projects`);
-      console.log("Response data:", response.data); // Debug log
+      const projectsData = await projectService.getAllProjects();
+      console.log("Response data:", projectsData); // Debug log
 
-      // Check if response.data is an array
-      if (!Array.isArray(response.data)) {
-        console.error("Response data is not an array:", response.data);
+      // Check if projectsData is an array
+      if (!Array.isArray(projectsData)) {
+        console.error("Response data is not an array:", projectsData);
         return;
       }
 
-      const projectsData: Project[] = response.data.map((project: any) => ({
+      const formattedProjects: Project[] = projectsData.map((project: any) => ({
         id: project.id || project._id || String(Date.now()),
         name: project.name || "Unnamed Project",
         description: project.description || "No description",
@@ -67,7 +71,7 @@ const CreateProject: React.FC = () => {
           .toLowerCase(),
       }));
 
-      setProjects(projectsData);
+      setProjects(formattedProjects);
     } catch (error) {
       console.error("Error fetching projects:", error);
     } finally {
@@ -111,15 +115,15 @@ const CreateProject: React.FC = () => {
     description: string
   ) => {
     try {
-      const response = await apiClient.post(`${API_BASE_URL}/projects`, {
+      const response = await projectService.createProject({
         name: projectName,
         description: description,
       });
 
-      console.log("Create project response:", response.data);
+      console.log("Create project response:", response);
 
       const newProject: Project = {
-        id: response.data.id || response.data._id || String(Date.now()),
+        id: response.id || String(Date.now()),
         name: projectName,
         description: description,
         status: "WIP",
