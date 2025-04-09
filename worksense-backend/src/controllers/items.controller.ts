@@ -144,3 +144,85 @@ export const getAllItems = async (_req: Request, res: Response): Promise<void> =
       res.status(500).json({ error: "Error al obtener los items" });
     }
   };
+
+// POST /items/:itemId/items
+export const addSubItem = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const parentItemId = req.params.itemId;
+    const {
+      projectID,
+      name,
+      description,
+      status,
+      priority,
+      size,
+      author
+    } = req.body;
+
+    if (!projectID || !name || !description) {
+      res.status(400).json({ error: "Faltan campos obligatorios (projectID, name, description)" });
+      return;
+    }
+
+    const subItemData = {
+      name,
+      description,
+      status: status || "todo",
+      priority: priority || "medium",
+      size: size || 0,
+      author: author || "",
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    };
+
+    const subItemRef = await db
+      .collection("projects")
+      .doc(projectID)
+      .collection("items")
+      .doc(parentItemId)
+      .collection("items")
+      .add(subItemData);
+
+    res.status(201).json({
+      id: subItemRef.id,
+      ...subItemData,
+      message: "Subitem creado correctamente"
+    });
+  } catch (error) {
+    console.error("Error al crear el subitem:", error);
+    res.status(500).json({ error: "Error al crear el subitem" });
+  }
+};
+
+export const getSubItems = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const itemId = req.params.itemId;
+    const projectID = req.query.projectID as string;
+
+    if (!projectID) {
+      res.status(400).json({ error: "Falta el parámetro 'projectID' en la query" });
+      return;
+    }
+
+    const subItemsSnapshot = await db
+      .collection("projects")
+      .doc(projectID)
+      .collection("items")
+      .doc(itemId)
+      .collection("items")
+      .get();
+
+    const subItems = subItemsSnapshot.empty
+      ? []
+      : subItemsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+    res.json(subItems);
+  } catch (error) {
+    console.error("Error al obtener los subitems:", error);
+    res.status(500).json({ error: "Error al obtener los subitems" });
+  }
+};
+
