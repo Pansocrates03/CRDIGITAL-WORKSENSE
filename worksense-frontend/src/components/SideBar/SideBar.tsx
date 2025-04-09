@@ -1,185 +1,243 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./SideBar.module.css";
 import worksenseLogo from "@/assets/images/worksenseLogo.svg";
 import { projectService } from "../../services/projectService";
 
-interface ProjectNavItem {
+// Define nav item interface
+interface NavItem {
   name: string;
   icon: string;
   path: string;
+  badge?: number | string;
 }
+
+// Component for rendering individual nav items
+const NavItemComponent: React.FC<{
+  item: NavItem;
+  isActive: boolean;
+  onClick: () => void;
+}> = ({ item, isActive, onClick }) => (
+  <li
+    className={`${styles.navItem} ${isActive ? styles.active : ""}`}
+    onClick={onClick}
+    title={item.name}
+  >
+    <span className={styles.icon}>
+      <img src={item.icon} alt="" aria-hidden="true" />
+    </span>
+    <span className={styles.navText}>{item.name}</span>
+    {item.badge !== undefined && (
+      <span className={styles.badge}>{item.badge}</span>
+    )}
+  </li>
+);
 
 export const SideBar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isProjectView = location.pathname.includes("/project/");
-  const projectId = isProjectView ? location.pathname.split("/")[2] : null;
   const [projectName, setProjectName] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // Extract project ID from URL using useMemo for performance
+  const { isProjectView, projectId } = useMemo(() => {
+    const isInProjectView = location.pathname.includes("/project/");
+    const id = isInProjectView ? location.pathname.split("/")[2] : null;
+    return { isProjectView: isInProjectView, projectId: id };
+  }, [location.pathname]);
+
+  // Fetch project name when project ID changes
   useEffect(() => {
+    let isMounted = true;
     const fetchProjectName = async () => {
-      if (projectId) {
-        try {
-          const projectData = await projectService.getProject(projectId);
+      if (!projectId) return;
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const projectData = await projectService.getProject(projectId);
+        if (isMounted) {
           setProjectName(projectData.name || "Untitled Project");
-        } catch (error) {
-          console.error("Error fetching project name:", error);
+        }
+      } catch (error) {
+        console.error("Error fetching project name:", error);
+        if (isMounted) {
+          setError("Failed to load project data");
           setProjectName("Untitled Project");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
         }
       }
     };
 
     fetchProjectName();
+
+    return () => {
+      isMounted = false;
+    };
   }, [projectId]);
 
-  const projectNavItems: ProjectNavItem[] = [
-    {
-      name: "Project Overview",
-      icon: "/homeProject.svg",
-      path: `/project/${projectId}/overview`,
-    },
-    {
-      name: "Backlog",
-      icon: "/backlog.svg",
-      path: `/project/${projectId}/backlog`,
-    },
-    {
-      name: "Sprint & Workflow",
-      icon: "/sprint.svg",
-      path: `/project/${projectId}/sprint`,
-    },
-    {
-      name: "User Management",
-      icon: "/users.svg",
-      path: `/project/${projectId}/users`,
-    },
-    {
-      name: "Story Management",
-      icon: "/story.svg",
-      path: `/project/${projectId}/stories`,
-    },
-    {
-      name: "Bug Tracking",
-      icon: "/bug.svg",
-      path: `/project/${projectId}/bugs`,
-    },
-    {
-      name: "Leaderboard",
-      icon: "/leaderboard.svg",
-      path: `/project/${projectId}/leaderboard`,
-    },
-  ];
+  // Improved active state check that works with nested routes
+  const isPathActive = (path: string): boolean => {
+    // For exact match
+    if (location.pathname === path) return true;
 
-  const mainNavItems: ProjectNavItem[] = [
-    { name: "My Projects", icon: "/bookOpen.svg", path: "/create" },
-    { name: "Account", icon: "/Home.svg", path: "/account" },
-  ];
+    // For nested routes, check if the current path starts with the nav item path
+    // Ensure we're not matching partial segments
+    if (path !== "/" && location.pathname.startsWith(path + "/")) return true;
 
+    return false;
+  };
+
+  // Define project navigation items with useMemo
+  const projectNavItems = useMemo<NavItem[]>(
+    () => [
+      {
+        name: "Project Overview",
+        icon: "/homeProject.svg",
+        path: `/project/${projectId}/overview`,
+      },
+      {
+        name: "Backlog",
+        icon: "/backlog.svg",
+        path: `/project/${projectId}/backlog`,
+      },
+      {
+        name: "Sprint & Workflow",
+        icon: "/sprint.svg",
+        path: `/project/${projectId}/sprint`,
+      },
+      {
+        name: "User Management",
+        icon: "/users.svg",
+        path: `/project/${projectId}/users`,
+      },
+      {
+        name: "Story Management",
+        icon: "/story.svg",
+        path: `/project/${projectId}/stories`,
+      },
+      {
+        name: "Bug Tracking",
+        icon: "/bug.svg",
+        path: `/project/${projectId}/bugs`,
+        badge: 3, // Example of a badge showing number of bugs
+      },
+      {
+        name: "Leaderboard",
+        icon: "/leaderboard.svg",
+        path: `/project/${projectId}/leaderboard`,
+      },
+    ],
+    [projectId]
+  );
+
+  // Define main navigation items
+  const mainNavItems = useMemo<NavItem[]>(
+    () => [
+      { name: "My Projects", icon: "/bookOpen.svg", path: "/create" },
+      { name: "Account", icon: "/Home.svg", path: "/account" },
+    ],
+    []
+  );
+
+  // Navigation handler
   const handleNavigation = (path: string) => {
     navigate(path);
   };
 
+  // Loading UI component
+  const LoadingUI = () => (
+    <div className={styles.projectLoading}>
+      <div className={styles.loadingIndicator}>
+        <div className={styles.loadingDot}></div>
+        <div className={styles.loadingDot}></div>
+        <div className={styles.loadingDot}></div>
+      </div>
+      <span>Loading project...</span>
+    </div>
+  );
+
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.logo}>
-        <img
-          src={worksenseLogo}
-          alt="WorkSense Logo"
-          onClick={() => navigate("/create")}
-          style={{ cursor: "pointer" }}
-        />
+      <div
+        className={styles.logo}
+        onClick={() => navigate("/create")}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            navigate("/create");
+          }
+        }}
+      >
+        <img src={worksenseLogo} alt="WorkSense" />
       </div>
 
-      <nav>
-        <ul>
-          {isProjectView ? (
-            // Project-specific navigation items
-            <>
-              {projectId && (
-                <>
-                  <div className={styles.projectHeader}>
-                    <div className={styles.projectIcon}>
-                      <img src="/project-icon.svg" alt="Project" />
-                      <div>
-                        <h3 className={styles.projectTitle}>
-                          {projectName} Project
-                        </h3>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={styles.projectNav}>
-                    {projectNavItems.map((item) => (
-                      <li
-                        key={item.name}
-                        className={
-                          location.pathname === item.path ? styles.active : ""
-                        }
-                        onClick={() => handleNavigation(item.path)}
-                      >
-                        <span
-                          className={styles.icon}
-                          style={
-                            {
-                              "--icon-url": `url(${item.icon})`,
-                            } as React.CSSProperties
-                          }
-                        >
-                          <img src={item.icon} alt={item.name} />
-                        </span>
-                        {item.name}
-                      </li>
-                    ))}
-                  </div>
-                </>
-              )}
-            </>
+      {isProjectView && (
+        <div className={styles.projectHeader}>
+          {isLoading ? (
+            <LoadingUI />
           ) : (
-            // Main navigation items
-            mainNavItems.map((item) => (
-              <li
-                key={item.name}
-                className={location.pathname === item.path ? styles.active : ""}
-                onClick={() => handleNavigation(item.path)}
-              >
-                <span
-                  className={styles.icon}
-                  style={
-                    { "--icon-url": `url(${item.icon})` } as React.CSSProperties
-                  }
-                >
-                  <img src={item.icon} alt={item.name} />
-                </span>
-                {item.name}
-              </li>
-            ))
+            <div className={styles.projectInfo}>
+              <div className={styles.projectIcon}>
+                <img src="/project-icon.svg" alt="" aria-hidden="true" />
+              </div>
+              <h3 className={styles.projectTitle} title={projectName}>
+                {projectName}
+              </h3>
+              {error && <div className={styles.errorMessage}>{error}</div>}
+            </div>
           )}
-        </ul>
+        </div>
+      )}
+
+      <nav className={styles.navigation} aria-label="Main Navigation">
+        {isProjectView ? (
+          <>
+            <div className={styles.sectionTitle} id="project-nav-title">
+              Project Navigation
+            </div>
+            <ul className={styles.navList} aria-labelledby="project-nav-title">
+              {projectNavItems.map((item) => (
+                <NavItemComponent
+                  key={item.path}
+                  item={item}
+                  isActive={isPathActive(item.path)}
+                  onClick={() => handleNavigation(item.path)}
+                />
+              ))}
+            </ul>
+          </>
+        ) : (
+          <>
+            <div className={styles.sectionTitle} id="main-nav-title">
+              Main Navigation
+            </div>
+            <ul className={styles.navList} aria-labelledby="main-nav-title">
+              {mainNavItems.map((item) => (
+                <NavItemComponent
+                  key={item.path}
+                  item={item}
+                  isActive={isPathActive(item.path)}
+                  onClick={() => handleNavigation(item.path)}
+                />
+              ))}
+            </ul>
+          </>
+        )}
       </nav>
 
-      <div className={styles.documentation}>
-        <h4>Documentation</h4>
-        <ul>
-          <li onClick={() => handleNavigation("/guides")}>
-            <span
-              className={styles.icon}
-              style={{ "--icon-url": `url(/guide.svg)` } as React.CSSProperties}
-            >
-              <img src="/guide.svg" alt="Guides" />
-            </span>
-            Guides
-          </li>
-          <li onClick={() => handleNavigation("/api")}>
-            <span
-              className={styles.icon}
-              style={{ "--icon-url": `url(/guide.svg)` } as React.CSSProperties}
-            >
-              <img src="/guide.svg" alt="API Reference" />
-            </span>
-            API Reference
-          </li>
-        </ul>
+      <div className={styles.sidebarFooter}>
+        <div className={styles.versionInfo}>WorkSense v1.2.0</div>
+        <button className={styles.helpButton}>Need Help?</button>
       </div>
     </aside>
   );
 };
+
+export default SideBar;

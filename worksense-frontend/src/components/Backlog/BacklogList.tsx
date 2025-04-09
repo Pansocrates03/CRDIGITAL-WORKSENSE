@@ -1,12 +1,10 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import apiClient from "../../api/apiClient";
 import { BacklogTree } from "./BacklogTree";
 import { buildTree } from "./helpers";
 import { getExampleData } from "./MockData";
 import { TreeNodeType } from "./TreeNode";
 import { BacklogItemType } from "@/types";
-
-const API_URL = "http://localhost:5050"; // URL base del backend
 
 interface BacklogListProps {
   projectId: string;
@@ -23,14 +21,16 @@ export const BacklogList: React.FC<BacklogListProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
+  // Fetch backlog items when projectId changes
   useEffect(() => {
     const fetchBacklogItems = async () => {
       setLoading(true);
       setError(null);
-      let fetchedItems: BacklogItemType[] = [];
+
       try {
         console.log(`Loading backlog for project: ${projectId}`);
-        const response = await apiClient.get(`${API_URL}/items`);
+        // Use apiClient without re-specifying the base URL
+        const response = await apiClient.get(`/items`);
         const allData = response.data;
         const projectItems = allData.filter(
           (item: any) => item.projectID === projectId && !item.placeholder
@@ -38,48 +38,15 @@ export const BacklogList: React.FC<BacklogListProps> = ({
 
         if (!projectItems || projectItems.length === 0) {
           console.warn("No backlog items found (API), using example data");
-          fetchedItems = getExampleData(projectId);
+          setAllItems(getExampleData(projectId));
         } else {
-          fetchedItems = projectItems.map((item: any) => ({
-            id: item.id,
-            projectID: item.projectID,
-            parentId: item.parentId || null,
-            type: item.type || "epic",
-            name: item.name || "Unnamed",
-            description: item.description || "",
-            status: item.status || item.sstatus || "backlog",
-            priority: item.priority || "medium",
-            createdAt: item.createdAt
-              ? typeof item.createdAt === "string"
-                ? item.createdAt
-                : new Date(item.createdAt._seconds * 1000).toISOString()
-              : new Date().toISOString(),
-            updatedAt: item.updatedAt
-              ? typeof item.updatedAt === "string"
-                ? item.updatedAt
-                : new Date(item.updatedAt._seconds * 1000).toISOString()
-              : new Date().toISOString(),
-            size: item.size || 0,
-            tag: item.tag || "",
-            author: item.author || "",
-            asignee: Array.isArray(item.asignee)
-              ? item.asignee
-              : item.asignee
-              ? [item.asignee]
-              : [],
-            acceptanceCriteria: Array.isArray(item.acceptanceCriteria)
-              ? item.acceptanceCriteria
-              : item.acceptanceCriteria
-              ? [item.acceptanceCriteria]
-              : [],
-          }));
+          const normalizedItems = projectItems.map(normalizeBacklogItem);
+          setAllItems(normalizedItems);
         }
-        setAllItems(fetchedItems);
       } catch (err) {
         console.error("Error fetching backlog items:", err);
         console.log("Using example data due to API error");
-        fetchedItems = getExampleData(projectId);
-        setAllItems(fetchedItems);
+        setAllItems(getExampleData(projectId));
         setError("Error loading backlog items. Displaying example data.");
       } finally {
         setLoading(false);
@@ -89,69 +56,125 @@ export const BacklogList: React.FC<BacklogListProps> = ({
     fetchBacklogItems();
   }, [projectId]);
 
+  // Filter and build tree when search term or items change
   useEffect(() => {
     if (loading) return;
 
     const lowerSearchTerm = searchTerm.toLowerCase();
+    const filteredItems = lowerSearchTerm
+      ? filterBacklogItems(allItems, lowerSearchTerm)
+      : allItems;
 
-    const filterNodes = (items: BacklogItemType[]): BacklogItemType[] => {
-      const matchingItems: BacklogItemType[] = [];
-      const itemMap = new Map(items.map((item) => [item.id, item]));
-      const childrenMap = new Map<string, BacklogItemType[]>();
-
-      items.forEach((item) => {
-        if (item.parentId) {
-          if (!childrenMap.has(item.parentId)) {
-            childrenMap.set(item.parentId, []);
-          }
-          childrenMap.get(item.parentId)?.push(item);
-        }
-      });
-
-      const checkMatch = (item: BacklogItemType): boolean => {
-        const selfMatch =
-          item.name.toLowerCase().includes(lowerSearchTerm) ||
-          item.id.toLowerCase().includes(lowerSearchTerm) ||
-          (item.type && item.type.toLowerCase().includes(lowerSearchTerm)) ||
-          (item.status &&
-            item.status.toLowerCase().includes(lowerSearchTerm)) ||
-          (item.priority &&
-            item.priority.toLowerCase().includes(lowerSearchTerm));
-
-        const children = childrenMap.get(item.id) || [];
-        const descendantMatch = children.some((child) => checkMatch(child));
-
-        return selfMatch || descendantMatch;
-      };
-
-      items.forEach((item) => {
-        if (checkMatch(item)) {
-          matchingItems.push(item);
-        }
-      });
-
-      const finalItems = new Set<BacklogItemType>(matchingItems);
-      matchingItems.forEach((item) => {
-        let current = item;
-        while (current.parentId && itemMap.has(current.parentId)) {
-          const parent = itemMap.get(current.parentId);
-          if (parent && !finalItems.has(parent)) {
-            finalItems.add(parent);
-            current = parent;
-          } else {
-            break;
-          }
-        }
-      });
-
-      return Array.from(finalItems);
-    };
-
-    const filteredItems = lowerSearchTerm ? filterNodes(allItems) : allItems;
     const treeData = buildTree(filteredItems);
     setFilteredTree(treeData);
 
-    if (lowerSearchTerm && filteredItems.length > 0) {
+    // Handle expansion state based on search results
+    updateExpansionState(treeData, lowerSearchTerm);
+  }, [searchTerm, allItems, loading]);
+
+  // Helper function to normalize API item format
+  const normalizeBacklogItem = (item: any): BacklogItemType => ({
+    id: item.id,
+    projectID: item.projectID,
+    parentId: item.parentId || null,
+    type: item.type || "epic",
+    name: item.name || "Unnamed",
+    description: item.description || "",
+    status: item.status || item.sstatus || "backlog",
+    priority: item.priority || "medium",
+    createdAt: formatTimestamp(item.createdAt),
+    updatedAt: formatTimestamp(item.updatedAt),
+    size: item.size || 0,
+    tag: item.tag || "",
+    author: item.author || "",
+    asignee: Array.isArray(item.asignee)
+      ? item.asignee
+      : item.asignee
+      ? [item.asignee]
+      : [],
+    acceptanceCriteria: Array.isArray(item.acceptanceCriteria)
+      ? item.acceptanceCriteria
+      : item.acceptanceCriteria
+      ? [item.acceptanceCriteria]
+      : [],
+  });
+
+  // Helper function to format timestamps
+  const formatTimestamp = (timestamp: any): string => {
+    if (!timestamp) return new Date().toISOString();
+
+    if (typeof timestamp === "string") return timestamp;
+
+    return timestamp._seconds
+      ? new Date(timestamp._seconds * 1000).toISOString()
+      : new Date().toISOString();
+  };
+
+  // Filter items based on search term
+  const filterBacklogItems = (
+    items: BacklogItemType[],
+    searchTerm: string
+  ): BacklogItemType[] => {
+    const matchingItems: BacklogItemType[] = [];
+    const itemMap = new Map(items.map((item) => [item.id, item]));
+    const childrenMap = new Map<string, BacklogItemType[]>();
+
+    // Build parent-child relationships map
+    items.forEach((item) => {
+      if (item.parentId) {
+        if (!childrenMap.has(item.parentId)) {
+          childrenMap.set(item.parentId, []);
+        }
+        childrenMap.get(item.parentId)?.push(item);
+      }
+    });
+
+    // Check if item or any descendants match search criteria
+    const checkMatch = (item: BacklogItemType): boolean => {
+      const selfMatch =
+        item.name.toLowerCase().includes(searchTerm) ||
+        item.id.toLowerCase().includes(searchTerm) ||
+        (item.type && item.type.toLowerCase().includes(searchTerm)) ||
+        (item.status && item.status.toLowerCase().includes(searchTerm)) ||
+        (item.priority && item.priority.toLowerCase().includes(searchTerm));
+
+      const children = childrenMap.get(item.id) || [];
+      const descendantMatch = children.some((child) => checkMatch(child));
+
+      return selfMatch || descendantMatch;
+    };
+
+    // Collect all matching items
+    items.forEach((item) => {
+      if (checkMatch(item)) {
+        matchingItems.push(item);
+      }
+    });
+
+    // Include parents of matching items
+    const finalItems = new Set<BacklogItemType>(matchingItems);
+    matchingItems.forEach((item) => {
+      let current = item;
+      while (current.parentId && itemMap.has(current.parentId)) {
+        const parent = itemMap.get(current.parentId);
+        if (parent && !finalItems.has(parent)) {
+          finalItems.add(parent);
+          current = parent;
+        } else {
+          break;
+        }
+      }
+    });
+
+    return Array.from(finalItems);
+  };
+
+  // Update expansion state based on search results
+  const updateExpansionState = (
+    treeData: TreeNodeType[],
+    searchTerm: string
+  ) => {
+    if (searchTerm && treeData.length > 0) {
       const newExpanded = new Set<string>();
       const addExpanded = (nodes: TreeNodeType[]) => {
         nodes.forEach((node) => {
@@ -163,12 +186,14 @@ export const BacklogList: React.FC<BacklogListProps> = ({
       };
       addExpanded(treeData);
       setExpandedIds(newExpanded);
-    } else if (!lowerSearchTerm) {
+    } else if (!searchTerm) {
+      // Only expand top-level items when no search
       const initialExpanded = new Set(treeData.map((node) => node.id));
       setExpandedIds(initialExpanded);
     }
-  }, [searchTerm, allItems, loading]);
+  };
 
+  // Toggle node expansion
   const toggleExpand = useCallback((id: string) => {
     setExpandedIds((prev) => {
       const newSet = new Set(prev);
@@ -181,6 +206,7 @@ export const BacklogList: React.FC<BacklogListProps> = ({
     });
   }, []);
 
+  // Render functions
   if (loading) {
     return <div>Loading backlog...</div>;
   }

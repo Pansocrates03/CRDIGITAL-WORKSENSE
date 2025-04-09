@@ -1,3 +1,5 @@
+/* NewProjectModal.module.css - Simplified version */
+
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -13,11 +15,13 @@
 
 .modalContent {
   background: white;
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 32px;
   width: 100%;
   max-width: 600px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
 }
 
 .modalHeader {
@@ -28,12 +32,12 @@
   font-size: 24px;
   font-weight: 600;
   margin: 0 0 8px;
-  color: #1a1a1a;
+  color: var(--foreground);
 }
 
 .modalDescription {
   font-size: 16px;
-  color: #666;
+  color: var(--secondary);
   margin: 0;
   line-height: 1.5;
 }
@@ -46,7 +50,7 @@
   display: block;
   font-size: 14px;
   font-weight: 500;
-  color: #1a1a1a;
+  color: var(--foreground);
   margin-bottom: 8px;
 }
 
@@ -62,10 +66,9 @@
   padding: 12px;
   padding-right: 40px;
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: var(--radius);
   font-size: 16px;
-  color: #1a1a1a;
-  transition: border-color 0.2s;
+  color: var(--foreground);
 }
 
 .textareaWrapper textarea {
@@ -78,7 +81,14 @@
 .inputWrapper input:focus,
 .textareaWrapper textarea:focus {
   outline: none;
-  border-color: var(--color-purple);
+  border-color: var(--primary);
+}
+
+/* Simple error message */
+.errorMessage {
+  color: #ef4444;
+  font-size: 14px;
+  margin-top: 6px;
 }
 
 .clearButton {
@@ -109,17 +119,16 @@
 .modalActions button {
   flex: 1;
   padding: 12px 24px;
-  border-radius: 6px;
+  border-radius: var(--radius);
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
 }
 
 .cancelButton {
   background-color: transparent;
   border: 1px solid #e5e7eb;
-  color: #666;
+  color: var(--secondary);
 }
 
 .cancelButton:hover {
@@ -127,11 +136,24 @@
 }
 
 .startButton {
-  background-color: var(--color-purple);
+  background-color: var(--primary);
   border: none;
-  color: white;
+  color: var(--primary-foreground);
 }
 
 .startButton:hover {
-  background-color: var(--color-purple-dark);
+  background-color: #901346; /* Slightly darker than AC1754 */
+}
+
+.startButton:disabled {
+  background-color: #e0a2ba; /* Lighter pink */
+  cursor: not-allowed;
+}
+
+/* Simple responsive adjustment */
+@media (max-width: 640px) {
+  .modalContent {
+    padding: 24px;
+    margin: 16px;
+  }
 }

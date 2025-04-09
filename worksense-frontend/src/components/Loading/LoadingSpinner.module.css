@@ -1,0 +1,88 @@
+/* LoadingSpinner.module.css */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.fullScreenContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 1000;
+  gap: 1rem;
+}
+
+.spinner {
+  border-radius: 50%;
+  border-style: solid;
+  border-color: var(--color-light-gray, #f5f5f5);
+  border-top-color: var(--color-purple, #ac1754);
+  animation: spin 1s linear infinite;
+}
+
+.spinnerSmall {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+}
+
+.spinnerMedium {
+  width: 48px;
+  height: 48px;
+  border-width: 3px;
+}
+
+.spinnerLarge {
+  width: 64px;
+  height: 64px;
+  border-width: 4px;
+}
+
+.text {
+  color: var(--color-charcoal, #253c4f);
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+  text-align: center;
+}
+
+.subtext {
+  color: var(--color-gray-dark, #666);
+  font-size: 0.9rem;
+  margin: 0;
+  text-align: center;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .spinnerLarge {
+    width: 48px;
+    height: 48px;
+  }
+
+  .text {
+    font-size: 1rem;
+  }
+
+  .subtext {
+    font-size: 0.8rem;
+  }
+}
