@@ -11,7 +11,6 @@ import swaggerJsdoc from "swagger-jsdoc";
 import sqlRoutes from "./routes/auth.routes.js";
 import membersRoutes from "./routes/members.routes.js";
 import projectRoutes from "./routes/projects.routes.js";
-import epicRoutes from "./routes/epics.routes.js"
 import itemsRoutes from "./routes/items.routes.js";
 
 // Documenattion Imports
@@ -33,7 +32,6 @@ app.use(express.json());
 app.use(sqlRoutes);
 app.use(projectRoutes);
 app.use(membersRoutes);
-app.use(epicRoutes);
 app.use(itemsRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get('/', (req: any, res: any) => {
