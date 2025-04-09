@@ -28,7 +28,7 @@
   font-size: 24px;
   font-weight: 600;
   margin: 0 0 8px;
-  color: #1A1A1A;
+  color: #1a1a1a;
 }
 
 .modalDescription {
@@ -46,23 +46,25 @@
   display: block;
   font-size: 14px;
   font-weight: 500;
-  color: #1A1A1A;
+  color: #1a1a1a;
   margin-bottom: 8px;
 }
 
-.inputWrapper, .textareaWrapper {
+.inputWrapper,
+.textareaWrapper {
   position: relative;
   width: 100%;
 }
 
-.inputWrapper input, .textareaWrapper textarea {
+.inputWrapper input,
+.textareaWrapper textarea {
   width: 100%;
   padding: 12px;
   padding-right: 40px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   border-radius: 6px;
   font-size: 16px;
-  color: #1A1A1A;
+  color: #1a1a1a;
   transition: border-color 0.2s;
 }
 
@@ -73,9 +75,10 @@
   overflow-y: hidden;
 }
 
-.inputWrapper input:focus, .textareaWrapper textarea:focus {
+.inputWrapper input:focus,
+.textareaWrapper textarea:focus {
   outline: none;
-  border-color: #B4004E;
+  border-color: var(--color-purple);
 }
 
 .clearButton {
@@ -94,7 +97,7 @@
 }
 
 .clearButton:hover {
-  color: #1A1A1A;
+  color: #1a1a1a;
 }
 
 .modalActions {
@@ -115,20 +118,20 @@
 
 .cancelButton {
   background-color: transparent;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   color: #666;
 }
 
 .cancelButton:hover {
-  background-color: #F3F4F6;
+  background-color: #f3f4f6;
 }
 
 .startButton {
-  background-color: #B4004E;
+  background-color: var(--color-purple);
   border: none;
   color: white;
 }
 
 .startButton:hover {
-  background-color: #8E003E;
-} 
+  background-color: var(--color-purple-dark);
+}

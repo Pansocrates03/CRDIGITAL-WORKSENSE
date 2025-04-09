@@ -117,7 +117,14 @@ export const SideBar: React.FC = () => {
                         }
                         onClick={() => handleNavigation(item.path)}
                       >
-                        <span className={styles.icon}>
+                        <span
+                          className={styles.icon}
+                          style={
+                            {
+                              "--icon-url": `url(${item.icon})`,
+                            } as React.CSSProperties
+                          }
+                        >
                           <img src={item.icon} alt={item.name} />
                         </span>
                         {item.name}
@@ -135,7 +142,12 @@ export const SideBar: React.FC = () => {
                 className={location.pathname === item.path ? styles.active : ""}
                 onClick={() => handleNavigation(item.path)}
               >
-                <span className={styles.icon}>
+                <span
+                  className={styles.icon}
+                  style={
+                    { "--icon-url": `url(${item.icon})` } as React.CSSProperties
+                  }
+                >
                   <img src={item.icon} alt={item.name} />
                 </span>
                 {item.name}
@@ -149,13 +161,19 @@ export const SideBar: React.FC = () => {
         <h4>Documentation</h4>
         <ul>
           <li onClick={() => handleNavigation("/guides")}>
-            <span className={styles.icon}>
+            <span
+              className={styles.icon}
+              style={{ "--icon-url": `url(/guide.svg)` } as React.CSSProperties}
+            >
               <img src="/guide.svg" alt="Guides" />
             </span>
             Guides
           </li>
           <li onClick={() => handleNavigation("/api")}>
-            <span className={styles.icon}>
+            <span
+              className={styles.icon}
+              style={{ "--icon-url": `url(/guide.svg)` } as React.CSSProperties}
+            >
               <img src="/guide.svg" alt="API Reference" />
             </span>
             API Reference

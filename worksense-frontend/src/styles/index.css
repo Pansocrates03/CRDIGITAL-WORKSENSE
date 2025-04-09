@@ -10,7 +10,7 @@
   --foreground: oklch(0.145 0 0);
 
   /* Your primary color - AC1754 (Pink) */
-  --primary: oklch(0.45 0.27 350);
+  --primary: #ac1754;
   --primary-foreground: oklch(0.985 0 0);
 
   /* Your secondary color - A6A6A6 (Gray) */

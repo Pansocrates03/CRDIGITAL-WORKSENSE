@@ -47,6 +47,7 @@ nav li {
   display: flex;
   align-items: center;
   font-size: 0.875rem;
+  font-weight: 500;
   transition: all 0.2s ease;
   min-height: 38px;
   white-space: nowrap;
@@ -69,19 +70,29 @@ nav li:hover {
 
 .icon {
   margin-right: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   width: 18px;
   height: 18px;
   flex-shrink: 0;
-  opacity: 0.8;
+  background-color: var(--color-charcoal-dark);
+  mask-image: var(--icon-url);
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: var(--icon-url);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  vertical-align: middle;
 }
 
 .icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  display: none;
+}
+
+nav li:hover .icon,
+.active .icon {
+  background-color: var(--color-purple);
 }
 
 .projectNav {
@@ -134,7 +145,7 @@ nav li:hover {
 }
 
 .documentation h4 {
-  font-size: 0.80rem;
+  font-size: 0.8rem;
   color: var(--color-charcoal);
   margin: 0 0 0.5rem 0.75rem;
 }
@@ -155,9 +166,18 @@ nav li:hover {
   display: flex;
   align-items: center;
   font-size: 0.875rem;
+  font-weight: 500;
   min-height: 28px;
 }
 
 .documentation li:hover {
   color: var(--color-purple);
-} 
+}
+
+.documentation li .icon {
+  background-color: var(--color-charcoal-dark);
+}
+
+.documentation li:hover .icon {
+  background-color: var(--color-purple);
+}
