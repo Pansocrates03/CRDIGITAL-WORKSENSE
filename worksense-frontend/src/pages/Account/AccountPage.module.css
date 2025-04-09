@@ -1,188 +1,307 @@
-.pageContainer {
-  display: flex;
-  height: 100vh;
-  background-color: var(--color-background, #f5f5f5);
+/* AccountPage.module.css - Modern redesign */
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
 }
 
-.mainContent {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.accountView {
-  flex: 1;
-  padding: 2rem;
-  overflow-y: auto;
-}
-
-.accountCard {
-  background-color: var(--color-white);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.gradientHeader {
-  background: linear-gradient(to right, var(--color-purple) 0%, rgba(255, 255, 255, 0) 100%);
-  height: 120px;
-}
-
-.cardContent {
-  padding: 2rem;
-  margin-top: -20px;
-}
-
+/* Header section */
 .profileHeader {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-  position: relative;
-  background-color: var(--color-white);
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  min-height: 100px;
-}
-
-.avatarSection {
-  flex-shrink: 0;
-  margin-top: -80px;
-  display: flex;
-  align-items: center;
-}
-
-.avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.profileInfo {
-  flex: 1;
-  padding-top: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.profileInfo h1 {
-  font-size: 1.5rem;
-  color: var(--color-charcoal-dark);
-  margin: 0 0 0.5rem 0;
-}
-
-.email {
-  color: var(--color-gray-dark);
-  font-size: 0.9rem;
-}
-
-.editButton {
-  position: absolute;
-  right: 1.5rem;
-  top: 1.5rem;
-  background-color: var(--color-purple);
-  color: white;
-  border: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  transition: background-color 0.2s ease;
-}
-
-.editButton:hover {
-  background-color: var(--color-purple-dark);
-}
-
-.profileForm {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.formRow {
-  display: flex;
-  gap: 2rem;
-}
-
-.formGroup {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.formGroup label {
-  font-size: 0.875rem;
-  color: var(--color-charcoal);
-  font-weight: 500;
-}
-
-.inputField {
-  background-color: var(--color-background);
-  border: 1px solid var(--color-gray);
-  border-radius: 6px;
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  color: var(--color-charcoal);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1.5rem;
 }
 
-.dropdownIcon {
-  font-size: 0.75rem;
-  color: var(--color-gray-dark);
+.profileHeader h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--foreground, #222);
+  margin: 0;
 }
 
-.emailSection {
-  margin-top: 1rem;
+.actionButton {
+  background-color: var(--primary, #ac1754);
+  color: white;
+  border: none;
+  border-radius: var(--radius, 0.5rem);
+  padding: 0.7rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.emailSection h2 {
-  font-size: 1rem;
-  color: var(--color-charcoal);
-  margin-bottom: 1rem;
+.actionButton:hover {
+  background-color: var(--primary-dark, #901346);
+  transform: translateY(-1px);
 }
 
-.emailItem {
+.actionButton:active {
+  transform: translateY(0);
+}
+
+.saveButton {
+  background-color: var(--secondary, #666);
+}
+
+.saveButton:hover {
+  background-color: var(--secondary-dark, #444);
+}
+
+/* Profile card */
+.profileCard {
+  background: white;
+  border-radius: var(--radius, 0.5rem);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+/* Basic info section */
+.profileBasics {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  background-color: var(--color-background);
-  border: 1px solid var(--color-gray);
-  border-radius: 6px;
-  padding: 1rem;
+  padding: 2rem;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.avatarContainer {
+  margin-right: 1.5rem;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: 3px solid white;
+}
+
+.userDetails {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.userName {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--foreground, #222);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nameInput {
+  width: 100%;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: var(--radius, 0.5rem);
+}
+
+.userEmail {
+  display: flex;
+  align-items: center;
+  color: var(--secondary, #666);
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .emailIcon {
-  width: 40px;
-  height: 40px;
-  background-color: var(--color-purple-light);
+  width: 18px;
+  height: 18px;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Form sections */
+.formSection {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.formSection:last-child {
+  border-bottom: none;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  color: var(--foreground, #222);
+  margin: 0 0 1.25rem;
+  font-weight: 600;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.formField {
+  margin-bottom: 1.25rem;
+}
+
+.formField:last-child {
+  margin-bottom: 0;
+}
+
+.formField label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--secondary, #666);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.formField input,
+.formField select {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  border: 1px solid #ddd;
+  border-radius: var(--radius, 0.5rem);
+  color: var(--foreground, #222);
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.formField input:focus,
+.formField select:focus {
+  outline: none;
+  border-color: var(--primary, #ac1754);
+  box-shadow: 0 0 0 3px rgba(172, 23, 84, 0.1);
+}
+
+.fieldValue {
+  font-size: 0.95rem;
+  color: var(--foreground, #222);
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border-radius: var(--radius, 0.5rem);
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+/* Loading state */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  gap: 1rem;
+}
+
+.loadingSpinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(172, 23, 84, 0.1);
   border-radius: 50%;
+  border-top-color: var(--primary, #ac1754);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingContainer p {
+  color: var(--secondary, #666);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Error state */
+.errorContainer {
+  max-width: 400px;
+  margin: 4rem auto;
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border-radius: var(--radius, 0.5rem);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.errorIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-purple);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: rgba(172, 23, 84, 0.1);
+  color: var(--primary, #ac1754);
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 auto 1rem;
 }
 
-.emailDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+.errorContainer h2 {
+  font-size: 1.25rem;
+  color: var(--foreground, #222);
+  margin: 0 0 0.75rem;
 }
 
-.emailAddress {
-  font-size: 0.875rem;
-  color: var(--color-charcoal);
+.errorContainer p {
+  font-size: 0.95rem;
+  color: var(--secondary, #666);
+  margin: 0 0 1.5rem;
 }
 
-.emailTimestamp {
-  font-size: 0.75rem;
-  color: var(--color-gray-dark);
-} 
+.retryButton {
+  background-color: var(--primary, #ac1754);
+  color: white;
+  border: none;
+  border-radius: var(--radius, 0.5rem);
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background-color: var(--primary-dark, #901346);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .profileBasics {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem 1rem;
+  }
+
+  .avatarContainer {
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+
+  .profileHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formSection {
+    padding: 1.25rem 1.5rem;
+  }
+}

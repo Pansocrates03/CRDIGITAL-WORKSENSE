@@ -1,6 +1,7 @@
 :root {
   --color-white: #ffffff;
-  --color-purple: #ac1754;
+  --color-purple: #ac1754; /* Este será nuestro único tono rojizo/púrpura en toda la aplicación */
+  --color-purple-dark: #8e0e3d; /* Versión oscura para hover */
   --color-charcoal: #253c4f;
   --color-charcoal-dark: #3b465b;
   --color-gray: #d0d1d2;

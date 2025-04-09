@@ -35,6 +35,11 @@ export interface Project {
   };
 }
 
+export interface CreateProjectData {
+  name: string;
+  description: string;
+}
+
 export const projectService = {
   async getProject(id: string): Promise<Project> {
     try {
@@ -48,7 +53,7 @@ export const projectService = {
 
   async getAllProjects(): Promise<Project[]> {
     try {
-      const response = await apiClient.get(`${API_URL}/projects`);
+      const response = await apiClient.get(`${API_URL}/projectsbyuser`);
       return response.data;
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -56,9 +61,21 @@ export const projectService = {
     }
   },
 
+  async createProject(projectData: CreateProjectData): Promise<Project> {
+    try {
+      const response = await apiClient.post(`${API_URL}/projects`, projectData);
+      return response.data;
+    } catch (error) {
+      console.error("Error creating project:", error);
+      throw error;
+    }
+  },
+
   async getProjectMembers(projectId: string): Promise<any[]> {
     try {
-      const response = await apiClient.get(`${API_URL}/projects/${projectId}/members`);
+      const response = await apiClient.get(
+        `${API_URL}/projects/${projectId}/members`
+      );
       return response.data;
     } catch (error) {
       console.error("Error fetching project members:", error);

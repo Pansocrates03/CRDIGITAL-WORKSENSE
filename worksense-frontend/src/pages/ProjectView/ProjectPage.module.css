@@ -1,27 +1,90 @@
+/* ProjectPage.module.css */
+
+.stateContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 60px); /* Adjust for header height if needed */
+  padding: 2rem;
+  text-align: center;
+}
+
+.iconContainer {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.errorIcon {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--color-purple, #ac1754);
+}
+
+.messageContainer {
+  max-width: 500px;
+}
+
+.stateTitle {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-charcoal, #253c4f);
+}
+
+.stateDescription {
+  font-size: 1rem;
+  color: var(--color-gray-dark, #666);
+  margin-bottom: 1.5rem;
+}
+
+.actionButton {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-purple, #ac1754);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.actionButton:hover {
+  background-color: #950d47;
+}
+
+.actionButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(172, 23, 84, 0.2);
+}
+
+/* Remove the old loading spinner styles since we're using the component */
+/* 
 .loadingSpinner {
   width: 48px;
   height: 48px;
-  border: 3px solid var(--color-light-gray, #f5f5f5);
-  border-top-color: var(--color-purple, #AC1754);
+  border: 3px solid #f5f5f5;
+  border-top-color: #ac1754;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  margin-bottom: 1.5rem;
 }
 
 .loadingText {
-  color: var(--color-charcoal, #253C4F);
-  font-size: 1.1rem;
+  font-size: 1.25rem;
+  color: #253c4f;
   font-weight: 500;
-  margin: 0;
-}
-
-.loadingSubtext {
-  color: var(--color-gray-dark, #666);
-  font-size: 0.9rem;
-  margin: 0;
 }
 
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
-} 
+}
+*/

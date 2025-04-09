@@ -13,6 +13,8 @@ interface Comment {
 export interface BacklogItemType {
   id: string; // The item's own ID
   projectID: string; // ID of the parent project
+  parentId: string | null; // ID of the parent item (null for top-level)
+  type: "epic" | "story" | "task" | "bug"; // Type of the backlog item
   name: string;
   description: string;
   tag?: string; // Optional fields based on your backend logic

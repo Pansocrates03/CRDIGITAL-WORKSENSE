@@ -11,7 +11,7 @@
 
 .backlogContent {
   flex-grow: 1; /* Takes remaining vertical space */
-  padding: 20px 30px; /* Example padding */
+  padding: 1.5rem; /* Reducir padding a 1.5rem (24px) */
   overflow-y: auto; /* Allow content scrolling if it overflows */
 }
 

@@ -1,59 +1,103 @@
 // src/components/Header/Header.tsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
-import { authService } from "@/services/auth"; // Assuming path is correct
-import { useAuth } from "@/contexts/AuthContext"; // Importar contexto de autenticación
+import { authService } from "@/services/auth";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HeaderProps {
-  title: string; // This will now represent the current section/page name
-  projectNameForBreadcrumb?: string; // Explicit prop for project name in breadcrumb
+  /** Current section/page name */
+  title: string;
+  /** Project name to display in breadcrumb */
+  projectNameForBreadcrumb?: string;
+  /** Whether to show the back button */
   showBackButton?: boolean;
+  /** Whether to show the breadcrumb navigation */
   showBreadcrumb?: boolean;
-  projectId?: string; // Keep for potential future use or context
+  /** Project ID for potential future use */
+  projectId?: string;
+  /** URL to navigate to when back button is clicked */
+  backUrl?: string;
+  /** URL to navigate to when "My Projects" is clicked */
+  projectsUrl?: string;
 }
 
+/**
+ * Application header component with breadcrumb navigation and user menu
+ */
 export const Header: React.FC<HeaderProps> = ({
   title,
-  projectNameForBreadcrumb, // Use the new prop
+  projectNameForBreadcrumb,
   showBackButton = false,
   showBreadcrumb = false,
-  // projectId prop remains available if needed elsewhere
+  projectId,
+  backUrl = "/create",
+  projectsUrl = "/create",
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth(); // Obtener el usuario del contexto
+  const { user } = useAuth();
 
-  // Función para obtener las iniciales del usuario
-  const getUserInitials = (): string => {
+  // Memoize user initials to prevent recalculation on rerenders
+  const userInitials = useMemo(() => {
     if (user?.firstName && user?.lastName) {
       return `${user.firstName.charAt(0)}${user.lastName.charAt(
         0
       )}`.toUpperCase();
-    } else if (user?.email) {
+    }
+    if (user?.email) {
       return user.email.charAt(0).toUpperCase();
     }
-    return "U"; // Default
-  };
+    return "U"; // Default fallback
+  }, [user?.firstName, user?.lastName, user?.email]);
 
+  // Handler for user logout
   const handleLogout = () => {
     authService.logout();
-    navigate("/login", { replace: true }); // Use replace for login redirect
+    navigate("/login", { replace: true });
   };
 
+  // Handler for back button
   const handleBack = () => {
-    // Navigate back to the main projects view, typically '/create' in your setup
-    navigate("/create");
+    navigate(backUrl);
   };
 
+  // Handler for projects link in breadcrumb
   const handleProjectsClick = () => {
-    // Link in breadcrumb also goes to '/create'
-    navigate("/create");
+    navigate(projectsUrl);
   };
+
+  // Close menu when clicking outside
+  const handleMenuClose = () => {
+    setIsMenuOpen(false);
+  };
+
+  // Toggle menu state
+  const toggleMenu = () => {
+    setIsMenuOpen((prev) => !prev);
+  };
+
+  // Add event listener to close menu when clicking outside
+  React.useEffect(() => {
+    if (isMenuOpen) {
+      const handleClickOutside = (event: MouseEvent) => {
+        const target = event.target as HTMLElement;
+        if (!target.closest(`.${styles.avatarContainer}`)) {
+          handleMenuClose();
+        }
+      };
+
+      document.addEventListener("click", handleClickOutside);
+      return () => {
+        document.removeEventListener("click", handleClickOutside);
+      };
+    }
+  }, [isMenuOpen]);
 
   return (
     <header className={styles.header}>
       <div className={styles.headerLeft}>
+        {/* Back Button */}
         {showBackButton && (
           <button
             className={styles.backButton}
@@ -66,7 +110,8 @@ export const Header: React.FC<HeaderProps> = ({
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true" // Hide decorative SVG from screen readers
+              aria-hidden="true"
+              data-testid="back-icon"
             >
               <path
                 d="M15 18L9 12L15 6"
@@ -79,53 +124,63 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        {/* Breadcrumb display logic */}
+        {/* Breadcrumb Navigation */}
         {showBreadcrumb ? (
           <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
             <button
               onClick={handleProjectsClick}
               className={styles.breadcrumbLink}
+              data-testid="projects-link"
             >
               My Projects
             </button>
             <span className={styles.breadcrumbSeparator} aria-hidden="true">
               /
             </span>
-            {/* Display the Project Name */}
+            {/* Project Name */}
             <span className={styles.breadcrumbCurrent}>
-              {projectNameForBreadcrumb || "Project"}{" "}
-              {/* Use passed name or fallback */}
+              {projectNameForBreadcrumb || "Project"}
             </span>
             <span className={styles.breadcrumbSeparator} aria-hidden="true">
               /
             </span>
-            {/* Display the Current Section (passed as title) */}
-            <span className={styles.breadcrumbCurrent} aria-current="page">
-              {title} {/* 'title' prop now represents the current section */}
+            {/* Current Section */}
+            <span
+              className={styles.breadcrumbCurrent}
+              aria-current="page"
+              data-testid="current-section"
+            >
+              {title}
             </span>
           </nav>
         ) : (
-          // Display title as heading when not showing breadcrumbs
-          <h2 className={styles.headerTitle}>{title}</h2>
+          // Page Title
+          <h2 className={styles.headerTitle} data-testid="page-title">
+            {title}
+          </h2>
         )}
       </div>
 
-      {/* Header Actions (Avatar/Logout) */}
+      {/* User Menu */}
       <div className={styles.headerActions}>
         <div className={styles.avatarContainer}>
           <button
             className={styles.avatar}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={toggleMenu}
             aria-label="User menu"
             aria-expanded={isMenuOpen}
             aria-haspopup="true"
+            data-testid="user-menu-button"
           >
-            {/* Mostrar iniciales del usuario en lugar de imagen */}
-            <div className={styles.avatarInitials}>{getUserInitials()}</div>
+            <div className={styles.avatarInitials}>{userInitials}</div>
           </button>
 
           {isMenuOpen && (
-            <div className={styles.dropdownMenu} role="menu">
+            <div
+              className={styles.dropdownMenu}
+              role="menu"
+              data-testid="user-menu"
+            >
               {user && (
                 <div className={styles.userInfo}>
                   <p className={styles.userName}>
@@ -138,10 +193,10 @@ export const Header: React.FC<HeaderProps> = ({
                 className={styles.menuItem}
                 role="menuitem"
                 onClick={handleLogout}
+                data-testid="logout-button"
               >
                 Logout
               </button>
-              {/* Add other menu items here (e.g., Profile, Settings) */}
             </div>
           )}
         </div>
@@ -149,3 +204,5 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+
+export default Header;
