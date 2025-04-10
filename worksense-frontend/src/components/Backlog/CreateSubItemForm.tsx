@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import apiClient from "@/api/apiClient";
 import { XIcon, CheckSquare, Bug, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { projectService } from "@/services/projectService";
+import { authService } from "@/services/auth";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface CreateSubItemFormProps {
   projectId: string;
@@ -58,11 +61,36 @@ const CreateSubItemForm: React.FC<CreateSubItemFormProps> = ({
     status: "To do",
     priority: "medium",
     size: 0,
-    author: "",
+    author: authService.getCurrentUser()?.fullName || "",
+    asignee: [] as string[],
+    acceptanceCriteria: [] as string[],
   });
 
+  const [members, setMembers] = useState<
+    Array<{ userId: number; name?: string; fullName?: string }>
+  >([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      setIsLoadingMembers(true);
+      try {
+        const projectMembers = await projectService.getProjectMembers(
+          projectId
+        );
+        setMembers(projectMembers);
+      } catch (error) {
+        console.error("Error fetching members:", error);
+        setError("Error loading project members");
+      } finally {
+        setIsLoadingMembers(false);
+      }
+    };
+
+    fetchMembers();
+  }, [projectId]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -77,13 +105,27 @@ const CreateSubItemForm: React.FC<CreateSubItemFormProps> = ({
     setFormData({ ...formData, tag: type });
   };
 
+  const handleAssigneeChange = (userId: string, checked: boolean) => {
+    if (checked) {
+      setFormData({
+        ...formData,
+        asignee: [...formData.asignee, userId],
+      });
+    } else {
+      setFormData({
+        ...formData,
+        asignee: formData.asignee.filter((id) => id !== userId),
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
     try {
-      // Validar campos requeridos
+      // Validate required fields
       if (!formData.name || !formData.description || !formData.tag) {
         setError("The name, description and type are required fields");
         setIsSubmitting(false);
@@ -106,9 +148,9 @@ const CreateSubItemForm: React.FC<CreateSubItemFormProps> = ({
   };
 
   return (
-    <div className="bg-card p-6 rounded-lg shadow-md w-full max-w-2xl">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Create New Subitem</h2>
+    <div className="p-6 max-w-2xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold">Create Subitem</h2>
         <Button
           variant="ghost"
           size="icon"
@@ -119,40 +161,39 @@ const CreateSubItemForm: React.FC<CreateSubItemFormProps> = ({
         </Button>
       </div>
 
-      {error && (
-        <div className="bg-destructive/10 text-destructive p-3 rounded-md mb-4">
-          {error}
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Tipo de SubItem */}
+        {/* Type Selection */}
         <div className="space-y-2">
-          <Label>Subitem Type *</Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Label>Type *</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {subItemTypes.map((type) => (
               <button
                 key={type.value}
                 type="button"
-                className={cn(
-                  "flex items-start gap-3 p-4 rounded-lg border transition-colors",
-                  "hover:bg-muted/50",
-                  formData.tag === type.value
-                    ? "border-primary bg-primary/5"
-                    : "border-border"
-                )}
                 onClick={() => handleTypeSelect(type.value)}
+                className={cn(
+                  "flex items-center gap-2 p-3 rounded-lg border transition-colors",
+                  formData.tag === type.value
+                    ? "border-[#ac1754] bg-[#ac1754]/10"
+                    : "border-input hover:border-[#ac1754]"
+                )}
               >
-                <div className="mt-0.5">{type.icon}</div>
-                <div className="text-left">
-                  <div className="font-medium">{type.label}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {type.description}
-                  </div>
-                </div>
+                {type.icon}
+                <span>{type.label}</span>
               </button>
             ))}
           </div>
+          {subItemTypes.map(
+            (type) =>
+              formData.tag === type.value && (
+                <p
+                  key={type.value}
+                  className="text-sm text-muted-foreground mt-1"
+                >
+                  {type.description}
+                </p>
+              )
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -190,6 +231,66 @@ const CreateSubItemForm: React.FC<CreateSubItemFormProps> = ({
             placeholder="Description of the subitem"
             className="w-full min-h-[100px] p-2 rounded-md border border-input bg-transparent"
             required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="asignee">Assignees</Label>
+          <div className="border rounded-md p-4 space-y-2 max-h-[200px] overflow-y-auto">
+            {isLoadingMembers ? (
+              <div className="text-sm text-muted-foreground">
+                Loading members...
+              </div>
+            ) : members.length === 0 ? (
+              <div className="text-sm text-muted-foreground">
+                No members available
+              </div>
+            ) : (
+              members.map((member) => (
+                <div
+                  key={member.userId}
+                  className="flex items-center space-x-2"
+                >
+                  <Checkbox
+                    id={`member-${member.userId}`}
+                    checked={formData.asignee.includes(
+                      member.userId.toString()
+                    )}
+                    onCheckedChange={(checked) =>
+                      handleAssigneeChange(
+                        member.userId.toString(),
+                        checked as boolean
+                      )
+                    }
+                  />
+                  <Label
+                    htmlFor={`member-${member.userId}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {member.fullName || member.name || `User ${member.userId}`}
+                  </Label>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="acceptanceCriteria">Acceptance Criteria</Label>
+          <textarea
+            id="acceptanceCriteria"
+            name="acceptanceCriteria"
+            value={formData.acceptanceCriteria.join("\n")}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                acceptanceCriteria: e.target.value
+                  .split("\n")
+                  .filter((line) => line.trim()),
+              })
+            }
+            placeholder="Enter acceptance criteria (one per line)"
+            className="w-full min-h-[100px] p-2 rounded-md border border-input bg-transparent"
           />
         </div>
 
@@ -240,6 +341,12 @@ const CreateSubItemForm: React.FC<CreateSubItemFormProps> = ({
             />
           </div>
         </div>
+
+        {error && (
+          <div className="text-red-500 text-sm" role="alert">
+            {error}
+          </div>
+        )}
 
         <div className="flex justify-end gap-2 pt-4">
           <Button

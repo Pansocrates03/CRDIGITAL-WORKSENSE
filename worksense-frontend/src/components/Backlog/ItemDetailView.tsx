@@ -15,6 +15,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { enUS } from "date-fns/locale";
 import apiClient from "@/api/apiClient";
+import { projectService } from "@/services/projectService";
 
 interface ItemDetailViewProps {
   item: BacklogItemType;
@@ -67,6 +68,30 @@ const ItemDetailView: React.FC<ItemDetailViewProps> = ({
 }) => {
   const [subItems, setSubItems] = useState<BacklogItemType[]>([]);
   const [isLoadingSubItems, setIsLoadingSubItems] = useState(false);
+  const [members, setMembers] = useState<
+    Array<{ userId: number; name?: string; fullName?: string }>
+  >([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      if (!projectID) return;
+
+      setIsLoadingMembers(true);
+      try {
+        const projectMembers = await projectService.getProjectMembers(
+          projectID
+        );
+        setMembers(projectMembers);
+      } catch (error) {
+        console.error("Error fetching members:", error);
+      } finally {
+        setIsLoadingMembers(false);
+      }
+    };
+
+    fetchMembers();
+  }, [projectID]);
 
   useEffect(() => {
     const fetchSubItems = async () => {
@@ -106,6 +131,12 @@ const ItemDetailView: React.FC<ItemDetailViewProps> = ({
     } catch (e) {
       return "-";
     }
+  };
+
+  // Helper function to get member name by ID
+  const getMemberName = (memberId: string) => {
+    const member = members.find((m) => m.userId.toString() === memberId);
+    return member?.fullName || member?.name || memberId;
   };
 
   return (
@@ -349,15 +380,21 @@ const ItemDetailView: React.FC<ItemDetailViewProps> = ({
                     Assignees
                   </p>
                   <div className="flex flex-wrap gap-1">
-                    {item.asignee.map((assignee, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-0.5 bg-primary/10 rounded-md text-xs"
-                        title={assignee}
-                      >
-                        {assignee}
+                    {isLoadingMembers ? (
+                      <span className="text-sm text-muted-foreground">
+                        Loading assignees...
                       </span>
-                    ))}
+                    ) : (
+                      item.asignee.map((assignee, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-0.5 bg-primary/10 rounded-md text-xs"
+                          title={getMemberName(assignee)}
+                        >
+                          {getMemberName(assignee)}
+                        </span>
+                      ))
+                    )}
                   </div>
                 </div>
               )}

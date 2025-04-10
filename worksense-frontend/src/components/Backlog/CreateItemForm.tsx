@@ -7,6 +7,7 @@ import { XIcon, FileText, Layers, CheckSquare, Bug } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { authService } from "@/services/auth";
 import { projectService } from "@/services/projectService";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface CreateItemFormProps {
   projectId: string;
@@ -107,11 +108,18 @@ const CreateItemForm: React.FC<CreateItemFormProps> = ({
     setFormData({ ...formData, tag: type });
   };
 
-  const handleAssigneeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(e.target.selectedOptions).map(
-      (option) => option.value
-    );
-    setFormData({ ...formData, asignee: selectedOptions });
+  const handleAssigneeChange = (userId: string, checked: boolean) => {
+    if (checked) {
+      setFormData({
+        ...formData,
+        asignee: [...formData.asignee, userId],
+      });
+    } else {
+      setFormData({
+        ...formData,
+        asignee: formData.asignee.filter((id) => id !== userId),
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -143,9 +151,9 @@ const CreateItemForm: React.FC<CreateItemFormProps> = ({
   };
 
   return (
-    <div className="bg-card p-6 rounded-lg shadow-md w-full max-w-2xl">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Create New Item</h2>
+    <div className="p-6 max-w-2xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold">Create Item</h2>
         <Button
           variant="ghost"
           size="icon"
@@ -156,40 +164,39 @@ const CreateItemForm: React.FC<CreateItemFormProps> = ({
         </Button>
       </div>
 
-      {error && (
-        <div className="bg-destructive/10 text-destructive p-3 rounded-md mb-4">
-          {error}
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Tipo de Item */}
+        {/* Type Selection */}
         <div className="space-y-2">
-          <Label>Item Type *</Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Label>Type *</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {itemTypes.map((type) => (
               <button
                 key={type.value}
                 type="button"
-                className={cn(
-                  "flex items-start gap-3 p-4 rounded-lg border transition-colors",
-                  "hover:bg-muted/50",
-                  formData.tag === type.value
-                    ? "border-primary bg-primary/5"
-                    : "border-border"
-                )}
                 onClick={() => handleTypeSelect(type.value)}
+                className={cn(
+                  "flex items-center gap-2 p-3 rounded-lg border transition-colors",
+                  formData.tag === type.value
+                    ? "border-[#ac1754] bg-[#ac1754]/10"
+                    : "border-input hover:border-[#ac1754]"
+                )}
               >
-                <div className="mt-0.5">{type.icon}</div>
-                <div className="text-left">
-                  <div className="font-medium">{type.label}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {type.description}
-                  </div>
-                </div>
+                {type.icon}
+                <span>{type.label}</span>
               </button>
             ))}
           </div>
+          {itemTypes.map(
+            (type) =>
+              formData.tag === type.value && (
+                <p
+                  key={type.value}
+                  className="text-sm text-muted-foreground mt-1"
+                >
+                  {type.description}
+                </p>
+              )
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -206,25 +213,14 @@ const CreateItemForm: React.FC<CreateItemFormProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="asignee">Assignees</Label>
-            <select
-              id="asignee"
-              name="asignee"
-              multiple
-              value={formData.asignee}
-              onChange={handleAssigneeChange}
-              className="w-full min-h-[100px] p-2 rounded-md border border-input bg-transparent"
-              disabled={isLoadingMembers}
-            >
-              {members.map((member) => (
-                <option key={member.userId} value={member.userId.toString()}>
-                  {member.fullName || member.name || `User ${member.userId}`}
-                </option>
-              ))}
-            </select>
-            <p className="text-sm text-muted-foreground">
-              Hold Ctrl/Cmd to select multiple members
-            </p>
+            <Label htmlFor="author">Author</Label>
+            <Input
+              id="author"
+              name="author"
+              value={formData.author}
+              onChange={handleChange}
+              placeholder="Author of the item"
+            />
           </div>
         </div>
 
@@ -241,6 +237,47 @@ const CreateItemForm: React.FC<CreateItemFormProps> = ({
           />
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="asignee">Assignees</Label>
+          <div className="border rounded-md p-4 space-y-2 max-h-[200px] overflow-y-auto">
+            {isLoadingMembers ? (
+              <div className="text-sm text-muted-foreground">
+                Loading members...
+              </div>
+            ) : members.length === 0 ? (
+              <div className="text-sm text-muted-foreground">
+                No members available
+              </div>
+            ) : (
+              members.map((member) => (
+                <div
+                  key={member.userId}
+                  className="flex items-center space-x-2"
+                >
+                  <Checkbox
+                    id={`member-${member.userId}`}
+                    checked={formData.asignee.includes(
+                      member.userId.toString()
+                    )}
+                    onCheckedChange={(checked) =>
+                      handleAssigneeChange(
+                        member.userId.toString(),
+                        checked as boolean
+                      )
+                    }
+                  />
+                  <Label
+                    htmlFor={`member-${member.userId}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {member.fullName || member.name || `User ${member.userId}`}
+                  </Label>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label htmlFor="status">Status</Label>
@@ -251,10 +288,10 @@ const CreateItemForm: React.FC<CreateItemFormProps> = ({
               onChange={handleChange}
               className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1"
             >
-              <option value={"To Do"}>To Do</option>
-              <option value={"In Progress"}>In Progress</option>
-              <option value={"Done"}>Done</option>
-              <option value={"Blocked"}>Blocked</option>
+              <option value="To do">To do</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Done">Done</option>
+              <option value="Blocked">Blocked</option>
             </select>
           </div>
 
@@ -288,6 +325,12 @@ const CreateItemForm: React.FC<CreateItemFormProps> = ({
             />
           </div>
         </div>
+
+        {error && (
+          <div className="text-red-500 text-sm" role="alert">
+            {error}
+          </div>
+        )}
 
         <div className="flex justify-end gap-2 pt-4">
           <Button
