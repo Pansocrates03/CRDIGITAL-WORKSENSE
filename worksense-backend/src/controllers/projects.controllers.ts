@@ -428,7 +428,7 @@ export const createProject = async (req: Request, res: Response) => {
 
     // Paso 3: Crear rol 'admin' (con ID random)
     const rolesRef = projectRef.collection("roles");
-    const adminRoleDocRef = rolesRef.doc(); // ID aleatorio
+    const adminRoleDocRef = rolesRef.doc("admin");
     const adminRoleCreate = adminRoleDocRef.set({
       name: "admin",
       permissions: {
