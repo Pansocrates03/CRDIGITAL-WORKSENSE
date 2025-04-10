@@ -5,11 +5,17 @@ import { BacklogList } from "@/components/Backlog/BacklogList";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusIcon, SearchIcon } from "lucide-react";
+import BacklogModal from "@/components/Backlog/BacklogModal";
 // import { Separator } from "@/components/ui/separator"; // No se encontró, usamos un div
 
 const BacklogPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedParentItemId, setSelectedParentItemId] = useState<
+    string | null
+  >(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Basic check in case the ID isn't found in the URL (though routing should handle this)
   if (!id) {
@@ -19,6 +25,21 @@ const BacklogPage: React.FC = () => {
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleOpenModal = (parentItemId: string | null) => {
+    setSelectedParentItemId(parentItemId);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedParentItemId(null);
+  };
+
+  const handleSuccess = () => {
+    // Incrementar la clave para forzar la actualización del componente BacklogList
+    setRefreshKey((prev) => prev + 1);
   };
 
   return (
@@ -51,6 +72,7 @@ const BacklogPage: React.FC = () => {
             variant="default"
             size="default"
             className="bg-[#ac1754] hover:bg-[#8e0e3d] flex-shrink-0"
+            onClick={() => handleOpenModal(null)}
           >
             <PlusIcon className="mr-1 h-4 w-4" />
             Add Item
@@ -61,7 +83,20 @@ const BacklogPage: React.FC = () => {
       <div className="border-b border-border my-4"></div>
       {/* Opciones de filtrado/ordenamiento podrían ir aquí */}
       {/* <div className="mb-6"> ... filtro ... </div> */}
-      <BacklogList projectId={id} searchTerm={searchTerm} />
+      <BacklogList
+        projectId={id}
+        searchTerm={searchTerm}
+        key={refreshKey}
+        onAddSubItem={handleOpenModal}
+      />
+      {/* Modal para crear elementos y subelementos */}
+      <BacklogModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        projectId={id}
+        parentItemId={selectedParentItemId}
+        onSuccess={handleSuccess}
+      />
     </div>
   );
 };

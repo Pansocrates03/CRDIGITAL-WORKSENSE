@@ -28,6 +28,8 @@ export interface BacklogItemType {
   updatedAt: string | { _seconds: number; _nanoseconds: number };
   items?: SubItem[]; // Nested items from the subcollection (optional based on endpoint)
   comments?: Comment[]; // Comments from the subcollection (optional based on endpoint)
+  children?: BacklogItemType[];
+  hasChildren?: boolean;
 }
 
 // Helper function to safely convert potential Firestore Timestamp serialization

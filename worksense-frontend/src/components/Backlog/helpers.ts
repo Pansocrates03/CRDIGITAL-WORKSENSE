@@ -1,9 +1,9 @@
 import { BacklogItemType } from "@/types";
-import { TreeNodeType } from "./TreeNode";
+import { TreeItemType } from "./types";
 
-export const buildTree = (items: BacklogItemType[]): TreeNodeType[] => {
-  const itemMap: { [id: string]: TreeNodeType } = {};
-  const rootItems: TreeNodeType[] = [];
+export const buildTree = (items: BacklogItemType[]): TreeItemType[] => {
+  const itemMap: { [id: string]: TreeItemType } = {};
+  const rootItems: TreeItemType[] = [];
 
   items.forEach((item) => {
     itemMap[item.id] = { ...item, children: [], level: 0 };
@@ -13,16 +13,19 @@ export const buildTree = (items: BacklogItemType[]): TreeNodeType[] => {
     const node = itemMap[item.id];
     if (item.parentId && itemMap[item.parentId]) {
       const parentNode = itemMap[item.parentId];
+      parentNode.children = parentNode.children || [];
       parentNode.children.push(node);
     } else {
       rootItems.push(node);
     }
   });
 
-  const calculateLevels = (nodes: TreeNodeType[], level: number) => {
+  const calculateLevels = (nodes: TreeItemType[], level: number) => {
     nodes.forEach((node) => {
       node.level = level;
-      calculateLevels(node.children, level + 1);
+      if (node.children) {
+        calculateLevels(node.children, level + 1);
+      }
     });
   };
   calculateLevels(rootItems, 0);

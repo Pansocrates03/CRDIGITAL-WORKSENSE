@@ -22,11 +22,9 @@ export const createItem = async (
     } = req.body;
 
     if (!projectID || !name || !description) {
-      res
-        .status(400)
-        .json({
-          error: "Faltan campos obligatorios (projectID, name, description)",
-        });
+      res.status(400).json({
+        error: "Faltan campos obligatorios (projectID, name, description)",
+      });
       return;
     }
 
@@ -181,12 +179,10 @@ export const createSubItem = async (
     } = req.body;
 
     if (!projectID || !parentItemID || !name || !description) {
-      res
-        .status(400)
-        .json({
-          error:
-            "Faltan campos obligatorios (projectID, parentItemID, name, description)",
-        });
+      res.status(400).json({
+        error:
+          "Faltan campos obligatorios (projectID, parentItemID, name, description)",
+      });
       return;
     }
 
@@ -197,6 +193,8 @@ export const createSubItem = async (
       priority: priority || "medium",
       size: size || 0,
       author: author || "",
+      parentId: parentItemID,
+      projectID,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     };
@@ -209,6 +207,10 @@ export const createSubItem = async (
       .collection("items")
       .add(subItemData);
 
+    console.log(
+      `Subitem created with ID: ${subItemRef.id}, parentID: ${parentItemID}`
+    );
+
     res.status(201).json({
       id: subItemRef.id,
       ...subItemData,
@@ -220,13 +222,18 @@ export const createSubItem = async (
   }
 };
 
-export const getSubItemsByReader = async (req: Request, res: Response): Promise<void> => {
+export const getSubItemsByReader = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const projectID = req.query.projectID as string;
     const parentItemID = req.query.parentItemID as string;
 
     if (!projectID || !parentItemID) {
-      res.status(400).json({ error: "Faltan parámetros 'projectID' y/o 'parentItemID' en la query" });
+      res.status(400).json({
+        error: "Faltan parámetros 'projectID' y/o 'parentItemID' en la query",
+      });
       return;
     }
 
@@ -242,9 +249,12 @@ export const getSubItemsByReader = async (req: Request, res: Response): Promise<
       ? []
       : subItemsSnapshot.docs.map((doc) => ({
           id: doc.id,
+          parentId: parentItemID,
+          projectID,
           ...doc.data(),
         }));
 
+    console.log(`Subitems for parent ${parentItemID}:`, subItems);
     res.json(subItems);
   } catch (error) {
     console.error("Error al obtener los subitems:", error);
@@ -252,17 +262,26 @@ export const getSubItemsByReader = async (req: Request, res: Response): Promise<
   }
 };
 
-export const getItemById = async (req: Request, res: Response): Promise<void> => {
+export const getItemById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const itemId = req.params.id;
     const projectID = req.query.projectID as string;
 
     if (!projectID || !itemId) {
-      res.status(400).json({ error: "Faltan parámetros 'projectID' y/o 'itemId'" });
+      res
+        .status(400)
+        .json({ error: "Faltan parámetros 'projectID' y/o 'itemId'" });
       return;
     }
 
-    const itemRef = db.collection("projects").doc(projectID).collection("items").doc(itemId);
+    const itemRef = db
+      .collection("projects")
+      .doc(projectID)
+      .collection("items")
+      .doc(itemId);
     const itemDoc = await itemRef.get();
 
     if (!itemDoc.exists) {
@@ -304,3 +323,54 @@ export const getItemById = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
+export const getItemsByProject = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const projectID = req.params.projectID;
+
+    if (!projectID) {
+      res.status(400).json({
+        error: "Falta el parámetro 'projectID'",
+      });
+      return;
+    }
+
+    // Verificar si el proyecto existe
+    const projectDoc = await db.collection("projects").doc(projectID).get();
+
+    if (!projectDoc.exists) {
+      res.status(404).json({ error: "Proyecto no encontrado" });
+      return;
+    }
+
+    // Obtener todos los items del proyecto
+    const itemsSnapshot = await db
+      .collection("projects")
+      .doc(projectID)
+      .collection("items")
+      .get();
+
+    const items = itemsSnapshot.empty
+      ? []
+      : itemsSnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            projectID,
+            ...data,
+          };
+        });
+
+    // Filtrar los documentos placeholder
+    const filteredItems = items.filter(
+      (item) => item.id !== "emptyDoc" && !(item as any).placeholder
+    );
+
+    res.json(filteredItems);
+  } catch (error) {
+    console.error("Error al obtener los items del proyecto:", error);
+    res.status(500).json({ error: "Error al obtener los items del proyecto" });
+  }
+};

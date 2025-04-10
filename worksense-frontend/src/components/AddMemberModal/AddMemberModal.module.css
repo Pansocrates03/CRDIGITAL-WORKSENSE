@@ -1,0 +1,113 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modalHeader {
+  margin-bottom: 2rem;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.modalDescription {
+  margin-top: 0.5rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.inputWrapper input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.inputWrapper input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.errorMessage {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.cancelButton,
+.addButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton {
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #666;
+}
+
+.cancelButton:hover {
+  background: #f8f9fa;
+}
+
+.addButton {
+  background: #007bff;
+  border: none;
+  color: white;
+}
+
+.addButton:hover {
+  background: #0056b3;
+}
+
+.addButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
