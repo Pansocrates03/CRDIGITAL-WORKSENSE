@@ -2,86 +2,162 @@ import { Request, Response } from "express";
 import { db } from "../models/firebase.js";
 import { generateItemWithAI } from "../service/aiService.js";
 import { Timestamp } from "firebase-admin/firestore";
+import { sqlConnect, sql } from "../models/sqlModel.js";
 
-// 🧠 Parser del texto plano generado por la IA
+// 🔧 Normalize priority
+function normalizePriority(priority: string): string {
+  const allowed = ["lowest", "low", "medium", "high", "highest"];
+  const lower = priority.toLowerCase();
+  return allowed.includes(lower) ? lower : "medium";
+}
+
+// 🔍 Parse AI response
 function parseIAResponse(text: string): any {
-  const lines = text.split("\n").filter((line) => line.trim() !== "");
+  const lines = text.split("\n").filter(line => line.trim() !== "");
   if (lines.length === 0) return null;
 
-  const epicTitle = lines[0].replace(/\*\*/g, "").replace(/^[-*]\s*/, "").trim();
-
-  const result = {
-    name: epicTitle,
-    description: "Contenido generado por IA",
+  const epic = {
+    name: "",
+    description: "",
     tag: "epic",
+    status: "to do",
+    priority: "medium",
     items: [],
   };
 
+  let currentItem: any = epic;
   let currentStory: any = null;
 
-  for (const line of lines.slice(1)) {
+  for (const line of lines) {
     const clean = line.replace(/\*\*/g, "").trim();
 
-    if (clean.match(/^[-*]\s*(User )?Story/i)) {
-      if (currentStory) result.items.push(currentStory);
+    // EPIC
+    if (/epic:/i.test(clean)) {
+      epic.name = clean.replace(/.*epic:/i, "").trim();
+      currentItem = epic;
+
+    // USER STORY
+    } else if (/user story/i.test(clean)) {
+      if (currentStory) epic.items.push(currentStory);
       currentStory = {
-        name: clean.replace(/^[-*]\s*/, ""),
-        description: "Historia generada por IA",
+        name: clean.replace(/[-*]\s*/, ""),
+        description: "",
         tag: "user-story",
+        status: "to do",
+        priority: "medium",
         items: [],
       };
-    } else if (clean.match(/^[-*]\s*Task/i) || clean.match(/^\s{2,}[-*]/)) {
-      if (currentStory) {
-        const taskName = clean.replace(/^[-*]\s*/, "").replace(/^\s{2,}[-*]/, "").trim();
-        currentStory.items.push({
-          name: taskName,
-          description: "Tarea generada por IA",
-          tag: "task",
-        });
-      }
+      currentItem = currentStory;
+
+    // TASK
+    } else if (/task/i.test(clean)) {
+      const task = {
+        name: clean.replace(/[-*]\s*/, ""),
+        description: "",
+        tag: "task",
+        status: "to do",
+        priority: "medium",
+      };
+      if (currentStory) currentStory.items.push(task);
+      currentItem = task;
+
+    // DESCRIPTION
+    } else if (/description:/i.test(clean)) {
+      const desc = clean.replace(/.*description:/i, "").trim();
+      if (currentItem) currentItem.description = desc;
+
+    // PRIORITY
+    } else if (/priority:/i.test(clean)) {
+      const priority = normalizePriority(clean.replace(/.*priority:/i, "").trim());
+      if (currentItem) currentItem.priority = priority;
     }
   }
 
-  if (currentStory) result.items.push(currentStory);
-  return result;
+  // Push final story if any
+  if (currentStory) epic.items.push(currentStory);
+
+  return epic.name && epic.items.length > 0 ? epic : null;
+}
+
+// Recursively apply fields
+function applyCustomFields(item: any) {
+  item.status = item.status?.toLowerCase() || "to do";
+  item.priority = normalizePriority(item.priority || "medium");
+  if (!item.description) item.description = "AI-generated content";
+
+  if (item.items && Array.isArray(item.items)) {
+    item.items.forEach(applyCustomFields);
+  }
 }
 
 export const generateEpic = async (req: Request, res: Response) => {
   const projectId = req.params.id;
   const userId = (req as any).user?.userId;
+  let authorName = "Unknown";
 
   try {
+    // 🔍 Buscar nombre del usuario en SQL
+    if (userId) {
+      const pool = await sqlConnect();
+      const result = await pool
+        .request()
+        .input("userId", sql.Int, userId)
+        .execute("spGetUserById");
+
+      const user = result.recordset[0];
+      if (user) {
+        authorName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
+      }
+    }
+
     const projectRef = db.collection("projects").doc(projectId);
     const projectSnap = await projectRef.get();
 
     if (!projectSnap.exists) {
-      return res.status(404).json({ error: "Proyecto no encontrado" });
+      return res.status(404).json({ error: "Project not found" });
     }
 
     const project = projectSnap.data();
     if (!project?.name || !project?.description) {
-      return res.status(400).json({ error: "El proyecto no tiene nombre o descripción válidos" });
+      return res.status(400).json({ error: "Project must have a name and description" });
     }
 
     const itemsRef = projectRef.collection("items");
 
-    // ✅ Obtener títulos de épicas ya existentes
     const existingEpicsSnap = await itemsRef.where("tag", "==", "epic").get();
-    const existingEpicNames = existingEpicsSnap.docs.map((doc) => doc.data().name).filter(Boolean);
+    const existingEpicNames = existingEpicsSnap.docs.map(doc => doc.data().name).filter(Boolean);
     const epicExclusionList = existingEpicNames.length
       ? `Avoid repeating or generating epics with these titles: ${existingEpicNames.join(", ")}.`
       : "";
 
-    // ✅ Construir el prompt personalizado
-    const promptWithExclusions = `
-Generate a hierarchical structure of one epic with at least two user stories and each user story with at least one task.
-Use the context of a project called {projectName} described as: {projectDescription}.
+      const prompt = `
+Generate ONE epic with at least two user stories, and each user story with at least one task.
+
+For each item (epic, user story, task), include:
+- A clear **name** (start with "Epic:", "User Story:", or "Task:")
+- A **short description** (1–2 sentences), starting with "Description:"
+- A **priority level**, starting with "Priority:" (choose from: lowest, low, medium, high, highest)
+
+The project is called "{projectName}", and it is described as: "{projectDescription}".
+
 ${epicExclusionList}
+
+Return the response using bullet-point Markdown format. Example:
+
+- **Epic:** Name
+  - **Description:** Some short description
+  - **Priority:** medium
+  - **User Story:** Name
+    - **Description:** ...
+    - **Priority:** ...
+    - **Task:** Name
+      - **Description:** ...
+      - **Priority:** ...
 `;
 
-    // ✅ Payload final a enviar a la IA
+
     const payload = {
-      prompt: promptWithExclusions,
+      prompt,
       data: {
         projectName: project.name,
         projectDescription: project.description,
@@ -92,45 +168,44 @@ ${epicExclusionList}
     const rawText = generated.data;
 
     if (!rawText || typeof rawText !== "string") {
-      return res.status(400).json({ error: "La IA no devolvió una estructura válida de texto" });
+      return res.status(400).json({ error: "AI did not return a valid structure" });
     }
 
     const structuredData = parseIAResponse(rawText);
-
     if (!structuredData?.name || !structuredData?.items?.length) {
-      return res.status(400).json({ error: "No se pudo estructurar correctamente la respuesta de la IA" });
+      return res.status(400).json({ error: "AI output could not be parsed correctly" });
     }
 
-    // ✅ Verificar que no se repita una épica ya existente
-    const existingDuplicate = await itemsRef
+    const duplicate = await itemsRef
       .where("tag", "==", "epic")
       .where("name", "==", structuredData.name)
       .get();
 
-    if (!existingDuplicate.empty) {
+    if (!duplicate.empty) {
       return res.status(409).json({
-        error: `Ya existe una épica llamada "${structuredData.name}" en este proyecto`,
+        error: `An epic named "${structuredData.name}" already exists in this project.`,
       });
     }
 
-    // ✅ Guardar los ítems en Firestore
+    applyCustomFields(structuredData);
+
     const saveItemRecursively = async (
       item: any,
       parentRef: FirebaseFirestore.CollectionReference,
       projectID: string
     ) => {
       const docRef = parentRef.doc();
-      const itemID = docRef.id;
 
       const itemData = {
         projectID,
-        name: item.name || "Ítem sin nombre",
-        description: item.description || "Contenido generado por IA",
-        tag: item.tag || "task",
-        status: "backlog",
-        priority: "medium",
+        name: item.name || "Untitled Item",
+        description: item.description || "AI-generated content",
+        tag: item.tag || "default",
+        status: item.status || "default",
+        priority: item.priority || "default",
         size: 0,
-        author: userId || "",
+        author: authorName,
+        authorId: userId || null,
         asignee: Array.isArray(item.assignee) ? item.assignee : [],
         acceptanceCriteria: Array.isArray(item.acceptanceCriteria)
           ? item.acceptanceCriteria
@@ -151,11 +226,7 @@ ${epicExclusionList}
       }
 
       const commentsRef = docRef.collection("comments");
-      if (
-        item.comments &&
-        Array.isArray(item.comments) &&
-        item.comments.length > 0
-      ) {
+      if (item.comments && Array.isArray(item.comments) && item.comments.length > 0) {
         for (const comment of item.comments) {
           const commentRef = commentsRef.doc();
           await commentRef.set({
@@ -173,10 +244,10 @@ ${epicExclusionList}
 
     await saveItemRecursively(structuredData, itemsRef, projectId);
 
-    res.status(201).json({ message: "Épica generada y guardada exitosamente" });
+    res.status(201).json({ message: "Epic generated and saved successfully." });
 
   } catch (error: any) {
-    console.error("Error al generar ítems:", error);
-    res.status(500).json({ error: error.message || "Error interno al generar épica" });
+    console.error("Error generating items:", error);
+    res.status(500).json({ error: error.message || "Internal server error while generating epic." });
   }
 };
