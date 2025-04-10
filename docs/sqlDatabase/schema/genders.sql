@@ -1,5 +1,5 @@
 CREATE TABLE Genders (
-    id INT IDENTITY(1,1) PRIMARY KEY, -- Identificador único del género
+    id INT PRIMARY KEY, -- Identificador único del género
     name NVARCHAR(50) NOT NULL UNIQUE -- Nombre único del género
 )
 

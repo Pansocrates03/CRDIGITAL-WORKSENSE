@@ -197,3 +197,23 @@ BEGIN
     WHERE ID = @UserID;
 END;
 GO
+
+
+--CREATE PROCEDURE spGetAllUsers
+--    @PageNumber INT,
+--   @PageSize INT
+--AS
+--BEGIN
+--    SELECT * FROM Users
+--    ORDER BY name
+--    OFFSET (@PageNumber - 1) * @PageSize ROWS
+--    FETCH NEXT @PageSize ROWS ONLY;
+--END;
+--GO
+
+CREATE PROCEDURE spGetUsers
+AS
+BEGIN
+    SELECT * FROM Users;
+END;
+GO
