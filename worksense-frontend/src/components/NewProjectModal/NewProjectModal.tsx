@@ -31,6 +31,8 @@ interface NewProjectModalProps {
   title?: string;
   /** Submit button text. Defaults to "Start" */
   submitButtonText?: string;
+  /** Current user ID to exclude from the dropdown */
+  currentUserId: number;
 }
 
 const ROLES = [{ id: "admin", name: "Admin" }];
@@ -43,6 +45,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   initialDescription = "",
   title = "New Project",
   submitButtonText = "Start",
+  currentUserId,
 }) => {
   const [projectName, setProjectName] = useState(initialProjectName);
   const [description, setDescription] = useState(initialDescription);
@@ -64,9 +67,11 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   // Add this after the other useState declarations
   const availableUsers = useMemo(() => {
     return users.filter(
-      (user) => !selectedMembers.some((member) => member.userId === user.id)
+      (user) => 
+        user.id !== currentUserId && 
+        !selectedMembers.some((member) => member.userId === user.id)
     );
-  }, [users, selectedMembers]);
+  }, [users, selectedMembers, currentUserId]);
 
   // Fetch users when modal opens
   useEffect(() => {
