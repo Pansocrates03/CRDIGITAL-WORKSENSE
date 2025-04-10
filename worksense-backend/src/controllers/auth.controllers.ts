@@ -11,6 +11,13 @@ declare global {
   }
 }
 
+export const getAllUsers = async (req: Request, res: Response) => {
+  const pool = await sqlConnect();
+  if (!pool) return;
+  const result = await pool.request().execute("spGetUsers");
+  res.json(result.recordset);
+}
+
 export const getUsers = async (req: Request, res: Response) => {
   const pool = await sqlConnect();
   if (!pool) return;
