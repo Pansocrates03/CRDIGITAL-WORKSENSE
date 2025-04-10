@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import apiClient from "@/api/apiClient";
 import { XIcon, FileText, Layers, CheckSquare, Bug } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { authService } from "@/services/auth";
+import { projectService } from "@/services/projectService";
 
 interface CreateItemFormProps {
   projectId: string;
@@ -61,13 +63,36 @@ const CreateItemForm: React.FC<CreateItemFormProps> = ({
     status: "To do",
     priority: "medium",
     size: 0,
-    author: "",
+    author: authService.getCurrentUser()?.fullName || "",
     asignee: [] as string[],
     acceptanceCriteria: [] as string[],
   });
 
+  const [members, setMembers] = useState<
+    Array<{ userId: number; name?: string; fullName?: string }>
+  >([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      setIsLoadingMembers(true);
+      try {
+        const projectMembers = await projectService.getProjectMembers(
+          projectId
+        );
+        setMembers(projectMembers);
+      } catch (error) {
+        console.error("Error fetching members:", error);
+        setError("Error loading project members");
+      } finally {
+        setIsLoadingMembers(false);
+      }
+    };
+
+    fetchMembers();
+  }, [projectId]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -80,6 +105,13 @@ const CreateItemForm: React.FC<CreateItemFormProps> = ({
 
   const handleTypeSelect = (type: ItemType) => {
     setFormData({ ...formData, tag: type });
+  };
+
+  const handleAssigneeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedOptions = Array.from(e.target.selectedOptions).map(
+      (option) => option.value
+    );
+    setFormData({ ...formData, asignee: selectedOptions });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -174,14 +206,25 @@ const CreateItemForm: React.FC<CreateItemFormProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="author">Author</Label>
-            <Input
-              id="author"
-              name="author"
-              value={formData.author}
-              onChange={handleChange}
-              placeholder="Author of the item"
-            />
+            <Label htmlFor="asignee">Assignees</Label>
+            <select
+              id="asignee"
+              name="asignee"
+              multiple
+              value={formData.asignee}
+              onChange={handleAssigneeChange}
+              className="w-full min-h-[100px] p-2 rounded-md border border-input bg-transparent"
+              disabled={isLoadingMembers}
+            >
+              {members.map((member) => (
+                <option key={member.userId} value={member.userId.toString()}>
+                  {member.fullName || member.name || `User ${member.userId}`}
+                </option>
+              ))}
+            </select>
+            <p className="text-sm text-muted-foreground">
+              Hold Ctrl/Cmd to select multiple members
+            </p>
           </div>
         </div>
 
