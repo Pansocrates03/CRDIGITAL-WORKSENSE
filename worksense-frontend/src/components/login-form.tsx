@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "@/components/Loading/LoadingSpinner";
 
 export function LoginForm({
   className,
@@ -13,20 +14,26 @@ export function LoginForm({
   const [email, SetEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       await login(email, password);
-      navigate("/create"); // Redirige al create después del login exitoso
+      navigate("/create"); // Redirect to create after successful login
     } catch (err) {
-      setError(
-        "Error en la autenticación. Por favor verifica tus credenciales."
-      );
+      setError("Authentication error. Please verify your credentials.");
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return <LoadingSpinner text="Logging in..." />;
+  }
 
   return (
     <form
@@ -35,9 +42,9 @@ export function LoginForm({
       {...props}
     >
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Inicia sesión en tu cuenta</h1>
+        <h1 className="text-2xl font-bold">Sign in to your account</h1>
         <p className="text-muted-foreground text-sm text-balance">
-          Ingresa tus credenciales para acceder
+          Enter your credentials to access
         </p>
       </div>
       {error && (
@@ -58,7 +65,7 @@ export function LoginForm({
         </div>
         <div className="grid gap-3">
           <div className="flex items-center">
-            <Label htmlFor="password">Contraseña</Label>
+            <Label htmlFor="password">Password</Label>
           </div>
           <Input
             id="password"
@@ -69,7 +76,7 @@ export function LoginForm({
           />
         </div>
         <Button type="submit" className="w-full">
-          Iniciar sesión
+          Sign in
         </Button>
       </div>
     </form>

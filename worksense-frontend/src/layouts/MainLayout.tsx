@@ -90,6 +90,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const showBreadcrumb = isInProjectView; // Show breadcrumbs only inside a project
   const showBackButton = isInProjectView; // Show back button only inside a project
 
+  // Loading UI component
+  const LoadingUI = () => (
+    <div className={styles.loadingContainer}>
+      <div className={styles.loadingIndicator}>
+        <div className={styles.loadingDot}></div>
+        <div className={styles.loadingDot}></div>
+        <div className={styles.loadingDot}></div>
+      </div>
+      <span>Loading project details...</span>
+    </div>
+  );
+
   return (
     <div className={styles.layoutContainer}>
       {" "}
@@ -110,7 +122,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* The main content area where page components render */}
         <main className={styles.contentArea}>
           {projectLoading && isInProjectView ? (
-            <div>Loading project details...</div> // Show loading indicator while fetching name
+            <LoadingUI />
           ) : (
             children // Render page content once project name is loaded or not applicable
           )}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import styles from "./SideBar.module.css";
 import worksenseLogo from "@/assets/images/worksenseLogo.svg";
 import settingsIcon from "@/assets/images/settings.svg";
@@ -185,7 +185,11 @@ export const SideBar: React.FC = () => {
           ) : (
             <div className={styles.projectInfo}>
               <div className={styles.projectIcon}>
-                <img src="/project-icon.svg" alt="" aria-hidden="true" />
+                <span
+                  style={{ fontSize: "1.5rem", color: "var(--color-purple)" }}
+                >
+                  {projectName.charAt(0).toUpperCase()}
+                </span>
               </div>
               <h3 className={styles.projectTitle} title={projectName}>
                 {projectName}
