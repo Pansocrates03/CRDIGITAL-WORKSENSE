@@ -55,7 +55,6 @@ const CreateProject: React.FC = () => {
     title: string;
     message: string;
   } | null>(null);
-  const [projectCreated, setProjectCreated] = useState(false);
 
   // Fetch projects when component mounts
   useEffect(() => {
@@ -238,8 +237,15 @@ const CreateProject: React.FC = () => {
 
       setProjects([...projects, newProject]);
 
-      // Set projectCreated to true to indicate a project was created
-      setProjectCreated(true);
+      // Show success alert directly after project creation is complete
+      // We'll set this to happen after the modal has fully closed for a smooth transition
+      setTimeout(() => {
+        setAlert({
+          type: "success",
+          title: "Project Created Successfully!",
+          message: `Your project has been created and is ready to use.`,
+        });
+      }, 300);
 
       // Return the project ID first, let the modal handle its closure
       return response.id;
@@ -255,18 +261,8 @@ const CreateProject: React.FC = () => {
   };
 
   const handleModalClose = () => {
+    // Simply close the modal without showing alerts
     setIsModalOpen(false);
-
-    // Only show success message if a project was actually created
-    if (projectCreated) {
-      setAlert({
-        type: "success",
-        title: "Project Created Successfully!",
-        message: `Your project has been created and is ready to use.`,
-      });
-      // Reset the projectCreated state
-      setProjectCreated(false);
-    }
   };
 
   const handleClearSearch = () => {

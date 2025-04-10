@@ -4,6 +4,7 @@ import styles from "./SideBar.module.css";
 import worksenseLogo from "@/assets/images/worksenseLogo.svg";
 import settingsIcon from "@/assets/images/settings.svg";
 import { projectService } from "../../services/projectService";
+import { Alert } from "../Alert/Alert";
 
 // Define nav item interface
 interface NavItem {
@@ -40,6 +41,7 @@ export const SideBar: React.FC = () => {
   const [projectName, setProjectName] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAlert, setShowAlert] = useState<boolean>(false);
 
   // Extract project ID from URL using useMemo for performance
   const { isProjectView, projectId } = useMemo(() => {
@@ -238,8 +240,21 @@ export const SideBar: React.FC = () => {
 
       <div className={styles.sidebarFooter}>
         <div className={styles.versionInfo}>WorkSense v1.2.0</div>
-        <button className={styles.helpButton}>Need Help?</button>
+        <button
+          className={styles.helpButton}
+          onClick={() => setShowAlert(true)}
+        >
+          Need Help?
+        </button>
       </div>
+      {showAlert && (
+        <Alert
+          type="success"
+          title="¡No se necesita ayuda!"
+          message="WorkSense está diseñado para ser intuitivo y fácil de usar."
+          onClose={() => setShowAlert(false)}
+        />
+      )}
     </aside>
   );
 };

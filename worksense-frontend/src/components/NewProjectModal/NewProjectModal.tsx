@@ -163,7 +163,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
           await populateBacklog(projectId);
         }
 
-        // Only close the modal after everything is complete
+        // Close the modal when everything is complete
         onClose();
       } catch (error) {
         console.error("Error creating project:", error);
