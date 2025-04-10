@@ -1,13 +1,13 @@
 // src/components/backlog/styles.ts
 export const statusClasses: { [key: string]: string } = {
-  backlog:
+  Backlog:
     "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 font-medium",
-  "to do":
+  "To do":
     "bg-[#ac175415] text-[#ac1754] dark:bg-[#ac175430] dark:text-[#ff8bb4] font-medium",
-  "in progress":
+  "In Progress":
     "bg-[#ac175430] text-[#ac1754] dark:bg-[#ac175450] dark:text-[#ff8bb4] font-medium",
-  done: "bg-[#ac175450] text-[#ac1754] dark:bg-[#ac175470] dark:text-[#ff8bb4] font-medium",
-  blocked:
+  Done: "bg-[#ac175450] text-[#ac1754] dark:bg-[#ac175470] dark:text-[#ff8bb4] font-medium",
+  Blocked:
     "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 font-medium",
   default:
     "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 font-medium",

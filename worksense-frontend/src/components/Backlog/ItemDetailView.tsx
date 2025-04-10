@@ -46,6 +46,13 @@ const typeTranslations: { [key: string]: string } = {
   default: "Item",
 };
 
+const statusTranslations: { [key: string]: string } = {
+  todo: "To Do",
+  inprogress: "In Progress",
+  done: "Completed",
+  blocked: "Blocked",
+};
+
 const priorityTranslations: { [key: string]: string } = {
   lowest: "Lowest",
   low: "Low",
@@ -248,7 +255,7 @@ const ItemDetailView: React.FC<ItemDetailViewProps> = ({
                                   : "bg-[#ac175415] text-[#ac1754] dark:bg-[#ac175430] dark:text-[#ff8bb4]"
                               }`}
                             >
-                              {subItem.status || ""}
+                              {statusTranslations[subItem.status || "todo"]}
                             </span>
                             <div className="flex items-center gap-1 text-muted-foreground">
                               <div
@@ -313,7 +320,9 @@ const ItemDetailView: React.FC<ItemDetailViewProps> = ({
                         : "bg-[#ac1754]/30"
                     }`}
                   />
-                  <span className="font-medium text-sm">{item.status}</span>
+                  <span className="font-medium text-sm">
+                    {statusTranslations[item.status || "todo"]}
+                  </span>
                 </div>
               </div>
 
