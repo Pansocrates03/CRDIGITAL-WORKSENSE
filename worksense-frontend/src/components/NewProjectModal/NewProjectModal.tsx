@@ -5,6 +5,7 @@ import InputWithClear from "./InputWithClear";
 import BacklogProgress from "./BacklogProgress";
 import useAutoResizeTextarea from "../../hooks/resizingTextarea";
 import apiClient from "../../api/apiClient";
+import { Alert } from "../../components/Alert/Alert";
 import {
   User,
   ProjectMember,
@@ -27,6 +28,13 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
   const [projectName, setProjectName] = useState(initialProjectName);
   const [shouldPopulateBacklog, setShouldPopulateBacklog] = useState(false);
   const [selectedMembers, setSelectedMembers] = useState<ProjectMember[]>([]);
+
+  // State for alerts
+  const [alert, setAlert] = useState<{
+    type: "success" | "error";
+    title: string;
+    message: string;
+  } | null>(null);
 
   // Description textarea with auto-resize
   const {
@@ -163,7 +171,14 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
           await populateBacklog(projectId);
         }
 
-        // Close the modal when everything is complete
+        // Show success alert
+        setAlert({
+          type: "success",
+          title: "Project Created Successfully!",
+          message: `Your project has been created and is ready to use.`,
+        });
+
+        // Only close the modal after everything is complete
         onClose();
       } catch (error) {
         console.error("Error creating project:", error);
@@ -195,6 +210,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
       setIsPopulatingBacklog(false);
       setPopulationProgress(0);
       setCreatedProjectId(null);
+      setAlert(null);
 
       setTimeout(() => {
         inputRef.current?.focus();
@@ -253,131 +269,146 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div
-      className={styles.modalOverlay}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
-    >
-      <div className={styles.modalContent} ref={modalRef}>
-        {isPopulatingBacklog ? (
-          <BacklogProgress progress={populationProgress} />
-        ) : (
-          <>
-            <div className={styles.modalHeader}>
-              <h2 id="modal-title">{title}</h2>
-              <p className={styles.modalDescription}>
-                Your project will have its own dedicated space and will be
-                completely separate from other projects.
-              </p>
-            </div>
+    <>
+      <div
+        className={styles.modalOverlay}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        <div className={styles.modalContent} ref={modalRef}>
+          {isPopulatingBacklog ? (
+            <BacklogProgress progress={populationProgress} />
+          ) : (
+            <>
+              <div className={styles.modalHeader}>
+                <h2 id="modal-title">{title}</h2>
+                <p className={styles.modalDescription}>
+                  Your project will have its own dedicated space and will be
+                  completely separate from other projects.
+                </p>
+              </div>
 
-            <form onSubmit={handleSubmit}>
-              <InputWithClear
-                id="projectName"
-                value={projectName}
-                onChange={handleProjectNameChange}
-                onClear={handleClearProjectName}
-                placeholder="Enter project name"
-                label="Project name"
-                error={errors.projectName}
-                inputRef={inputRef}
-                required={true}
-              />
+              <form onSubmit={handleSubmit}>
+                <InputWithClear
+                  id="projectName"
+                  value={projectName}
+                  onChange={handleProjectNameChange}
+                  onClear={handleClearProjectName}
+                  placeholder="Enter project name"
+                  label="Project name"
+                  error={errors.projectName}
+                  inputRef={inputRef}
+                  required={true}
+                />
 
-              <div className={styles.formGroup}>
-                <label htmlFor="description">Description</label>
-                <div className={styles.textareaWrapper}>
-                  <textarea
-                    id="description"
-                    ref={textareaRef}
-                    value={description}
-                    onChange={handleTextareaChange}
-                    placeholder="Describe your project (required)"
-                    rows={3}
-                    className={styles.textarea}
-                    aria-required="true"
-                    aria-invalid={!!errors.description}
-                  />
-                  {description && (
-                    <button
-                      type="button"
-                      className={styles.clearButton}
-                      onClick={handleClearDescription}
-                      aria-label="Clear description"
-                    >
-                      <span aria-hidden="true">✕</span>
-                    </button>
+                <div className={styles.formGroup}>
+                  <label htmlFor="description">Description</label>
+                  <div className={styles.textareaWrapper}>
+                    <textarea
+                      id="description"
+                      ref={textareaRef}
+                      value={description}
+                      onChange={handleTextareaChange}
+                      placeholder="Describe your project (required)"
+                      rows={3}
+                      className={styles.textarea}
+                      aria-required="true"
+                      aria-invalid={!!errors.description}
+                    />
+                    {description && (
+                      <button
+                        type="button"
+                        className={styles.clearButton}
+                        onClick={handleClearDescription}
+                        aria-label="Clear description"
+                      >
+                        <span aria-hidden="true">✕</span>
+                      </button>
+                    )}
+                  </div>
+                  {errors.description && (
+                    <p className={styles.errorMessage} role="alert">
+                      {errors.description}
+                    </p>
                   )}
                 </div>
-                {errors.description && (
-                  <p className={styles.errorMessage} role="alert">
-                    {errors.description}
-                  </p>
-                )}
-              </div>
 
-              <MemberSelection
-                users={users}
-                selectedMembers={selectedMembers}
-                onAddMember={handleAddMember}
-                onRemoveMember={handleRemoveMember}
-                isLoading={isLoadingUsers}
-                error={errors.members}
-                availableUsers={availableUsers}
-              />
+                <MemberSelection
+                  users={users}
+                  selectedMembers={selectedMembers}
+                  onAddMember={handleAddMember}
+                  onRemoveMember={handleRemoveMember}
+                  isLoading={isLoadingUsers}
+                  error={errors.members}
+                  availableUsers={availableUsers}
+                />
 
-              <div className={styles.formGroup}>
-                <div className={styles.checkboxWrapper}>
-                  <input
-                    type="checkbox"
-                    id="populateBacklog"
-                    checked={shouldPopulateBacklog}
-                    onChange={(e) => setShouldPopulateBacklog(e.target.checked)}
-                  />
-                  <label
-                    htmlFor="populateBacklog"
-                    className={styles.checkboxLabel}
-                  >
-                    Automatically populate backlog with AI
-                    <span className={styles.aiLabel}>AI</span>
-                  </label>
+                <div className={styles.formGroup}>
+                  <div className={styles.checkboxWrapper}>
+                    <input
+                      type="checkbox"
+                      id="populateBacklog"
+                      checked={shouldPopulateBacklog}
+                      onChange={(e) =>
+                        setShouldPopulateBacklog(e.target.checked)
+                      }
+                    />
+                    <label
+                      htmlFor="populateBacklog"
+                      className={styles.checkboxLabel}
+                    >
+                      Automatically populate backlog with AI
+                      <span className={styles.aiLabel}>AI</span>
+                    </label>
+                  </div>
+                  {shouldPopulateBacklog && (
+                    <p className={styles.aiDescription}>
+                      Our AI will analyze your project description and generate
+                      relevant epics and user stories.
+                    </p>
+                  )}
                 </div>
-                {shouldPopulateBacklog && (
-                  <p className={styles.aiDescription}>
-                    Our AI will analyze your project description and generate
-                    relevant epics and user stories.
-                  </p>
-                )}
-              </div>
 
-              <div className={styles.modalActions}>
-                <button
-                  type="button"
-                  className={styles.cancelButton}
-                  onClick={onClose}
-                  disabled={isCreatingProject || isPopulatingBacklog}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className={styles.startButton}
-                  disabled={
-                    !projectName.trim() ||
-                    !description.trim() ||
-                    isCreatingProject ||
-                    isPopulatingBacklog
-                  }
-                >
-                  {isCreatingProject ? "Creating Project..." : submitButtonText}
-                </button>
-              </div>
-            </form>
-          </>
-        )}
+                <div className={styles.modalActions}>
+                  <button
+                    type="button"
+                    className={styles.cancelButton}
+                    onClick={onClose}
+                    disabled={isCreatingProject || isPopulatingBacklog}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className={styles.startButton}
+                    disabled={
+                      !projectName.trim() ||
+                      !description.trim() ||
+                      isCreatingProject ||
+                      isPopulatingBacklog
+                    }
+                  >
+                    {isCreatingProject
+                      ? "Creating Project..."
+                      : submitButtonText}
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+
+      {alert && (
+        <Alert
+          type={alert.type}
+          title={alert.title}
+          message={alert.message}
+          onClose={() => setAlert(null)}
+        />
+      )}
+    </>
   );
 };
 
