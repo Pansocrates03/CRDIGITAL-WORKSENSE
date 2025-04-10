@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./SideBar.module.css";
 import worksenseLogo from "@/assets/images/worksenseLogo.svg";
+import settingsIcon from "@/assets/images/settings.svg";
 import { projectService } from "../../services/projectService";
 
 // Define nav item interface
@@ -86,8 +87,6 @@ export const SideBar: React.FC = () => {
     // For exact match
     if (location.pathname === path) return true;
 
-    // For nested routes, check if the current path starts with the nav item path
-    // Ensure we're not matching partial segments
     if (path !== "/" && location.pathname.startsWith(path + "/")) return true;
 
     return false;
@@ -141,6 +140,7 @@ export const SideBar: React.FC = () => {
     () => [
       { name: "My Projects", icon: "/bookOpen.svg", path: "/create" },
       { name: "Account", icon: "/Home.svg", path: "/account" },
+      { name: "Settings", icon: settingsIcon, path: "/settings" },
     ],
     []
   );
