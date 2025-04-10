@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import styles from "./AddMemberModal.module.css";
+import LoadingSpinner from "../Loading/LoadingSpinner";
 
 interface AddMemberModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
 }) => {
   const [userId, setUserId] = useState("");
   const [roleId, setRoleId] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{
     userId?: string;
     roleId?: string;
@@ -86,96 +88,85 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (validateForm()) {
-      onSubmit(userId.trim(), roleId.trim());
+      setIsSubmitting(true);
+      try {
+        onSubmit(userId, roleId);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div
-      className={styles.modalOverlay}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
-    >
+    <div className={styles.modalOverlay}>
       <div className={styles.modalContent} ref={modalRef}>
         <div className={styles.modalHeader}>
-          <h2 id="modal-title">{title}</h2>
-          <p className={styles.modalDescription}>
-            Add a new member to your project. They will be able to collaborate
-            based on their assigned role.
-          </p>
+          <h2 className={styles.modalTitle}>{title}</h2>
+          <button className={styles.closeButton} onClick={onClose}>
+            ×
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className={styles.modalForm}>
           <div className={styles.formGroup}>
-            <label htmlFor="userId">User ID</label>
-            <div className={styles.inputWrapper}>
-              <input
-                id="userId"
-                ref={inputRef}
-                type="text"
-                value={userId}
-                onChange={(e) => {
-                  setUserId(e.target.value);
-                  if (errors.userId) {
-                    setErrors({ ...errors, userId: undefined });
-                  }
-                }}
-                placeholder="Enter user ID"
-                aria-required="true"
-                aria-invalid={!!errors.userId}
-              />
-            </div>
+            <label htmlFor="userId" className={styles.label}>
+              User
+            </label>
+            <input
+              ref={inputRef}
+              id="userId"
+              type="text"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              className={styles.input}
+              placeholder="Enter user ID"
+              disabled={isSubmitting}
+            />
             {errors.userId && (
-              <p className={styles.errorMessage} role="alert">
-                {errors.userId}
-              </p>
+              <p className={styles.errorMessage}>{errors.userId}</p>
             )}
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="roleId">Role</label>
-            <div className={styles.inputWrapper}>
-              <input
-                id="roleId"
-                type="text"
-                value={roleId}
-                onChange={(e) => {
-                  setRoleId(e.target.value);
-                  if (errors.roleId) {
-                    setErrors({ ...errors, roleId: undefined });
-                  }
-                }}
-                placeholder="Enter role ID"
-                aria-required="true"
-                aria-invalid={!!errors.roleId}
-              />
-            </div>
+            <label htmlFor="roleId" className={styles.label}>
+              Role
+            </label>
+            <input
+              id="roleId"
+              type="text"
+              value={roleId}
+              onChange={(e) => setRoleId(e.target.value)}
+              className={styles.input}
+              placeholder="Enter role ID"
+              disabled={isSubmitting}
+            />
             {errors.roleId && (
-              <p className={styles.errorMessage} role="alert">
-                {errors.roleId}
-              </p>
+              <p className={styles.errorMessage}>{errors.roleId}</p>
             )}
           </div>
 
-          <div className={styles.modalActions}>
+          <div className={styles.formActions}>
             <button
               type="button"
-              className={styles.cancelButton}
               onClick={onClose}
+              className={styles.cancelButton}
+              disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className={styles.addButton}
-              disabled={!userId.trim() || !roleId.trim()}
+              className={styles.submitButton}
+              disabled={isSubmitting}
             >
-              {submitButtonText}
+              {isSubmitting ? (
+                <LoadingSpinner size="small" text="Adding member..." />
+              ) : (
+                submitButtonText
+              )}
             </button>
           </div>
         </form>

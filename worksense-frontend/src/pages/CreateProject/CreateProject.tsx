@@ -6,24 +6,39 @@ import styles from "./CreateProject.module.css";
 import { NewProjectModal } from "../../components/NewProjectModal/NewProjectModal";
 import { Alert } from "../../components/Alert/Alert";
 import { useAuth } from "../../contexts/AuthContext";
-import apiClient from "@/api/apiClient";
-import {
-  projectService,
-  Project as ProjectType,
-} from "../../services/projectService";
+import { projectService } from "../../services/projectService";
 
-// API base URL
-const API_BASE_URL = "http://localhost:5050";
+// Icons
+import {
+  Calendar,
+  Star,
+  Users,
+  Clock,
+  ArrowRight,
+  Search,
+  X,
+  SlidersHorizontal,
+  Plus,
+} from "lucide-react";
 
 interface Project {
   id: string;
   name: string;
   description: string;
-  status: "WIP" | "DONE" | "CANCELLED";
+  status: "Active" | "Inactive" | "Completed" | "On Hold";
   lastChange: string;
+  members: Array<{
+    id: string;
+    name?: string;
+    avatar?: string;
+  }>;
+  items: Array<{
+    id: string;
+    status: string;
+  }>;
 }
 
-type SortOption = "last-change" | "status" | "a-z" | "z-a";
+type SortOption = "last-change" | "status" | "a-z" | "z-a" | "progress";
 
 const CreateProject: React.FC = () => {
   const navigate = useNavigate();
@@ -34,6 +49,7 @@ const CreateProject: React.FC = () => {
   const [currentSort, setCurrentSort] = useState<SortOption>("last-change");
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [alert, setAlert] = useState<{
     type: "success" | "error";
     title: string;
@@ -49,27 +65,75 @@ const CreateProject: React.FC = () => {
     setIsLoading(true);
     try {
       const projectsData = await projectService.getAllProjects();
-      console.log("Response data:", projectsData); // Debug log
 
-      // Check if projectsData is an array
       if (!Array.isArray(projectsData)) {
         console.error("Response data is not an array:", projectsData);
         return;
       }
 
-      const formattedProjects: Project[] = projectsData.map((project: any) => ({
-        id: project.id || project._id || String(Date.now()),
-        name: project.name || "Unnamed Project",
-        description: project.description || "No description",
-        status: "WIP" as const,
-        lastChange: new Date()
-          .toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })
-          .toLowerCase(),
-      }));
+      const formattedProjects: Project[] = await Promise.all(
+        projectsData.map(async (project: any) => {
+          // Get project members
+          const members = await projectService.getProjectMembers(project.id);
+          const formattedMembers = members.map((member: any) => {
+            // Generate a light random color
+            const getRandomLightColor = () => {
+              // Using higher values (180-255) for RGB components to ensure lighter colors
+              const r = Math.floor(180 + Math.random() * 75)
+                .toString(16)
+                .padStart(2, "0");
+              const g = Math.floor(180 + Math.random() * 75)
+                .toString(16)
+                .padStart(2, "0");
+              const b = Math.floor(180 + Math.random() * 75)
+                .toString(16)
+                .padStart(2, "0");
+              return `${r}${g}${b}`;
+            };
+
+            return {
+              id: member.userId,
+              name: member.name || "Unknown User",
+              avatar:
+                member.avatar ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  member.name || "Unknown"
+                )}&background=${getRandomLightColor()}&color=000000`,
+            };
+          });
+
+          // Calculate task counts
+          const items = project.items || [];
+          const taskCounts = {
+            todo: items.filter(
+              (item: any) => item.status === "TODO" || item.status === "BACKLOG"
+            ).length,
+            inProgress: items.filter(
+              (item: any) => item.status === "IN_PROGRESS"
+            ).length,
+            completed: items.filter(
+              (item: any) =>
+                item.status === "COMPLETED" || item.status === "DONE"
+            ).length,
+          };
+
+          return {
+            id: project.id || project._id || String(Date.now()),
+            name: project.name || "Unnamed Project",
+            description: project.description || "No description",
+            status: project.status || "Active",
+            lastChange: new Date()
+              .toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+              .toLowerCase(),
+            members: formattedMembers,
+            items: items,
+          };
+        })
+      );
 
       setProjects(formattedProjects);
     } catch (error) {
@@ -98,12 +162,32 @@ const CreateProject: React.FC = () => {
             new Date(b.lastChange).getTime() - new Date(a.lastChange).getTime()
           );
         case "status":
-          const statusOrder = { WIP: 1, DONE: 2, CANCELLED: 3 };
-          return statusOrder[a.status] - statusOrder[b.status];
+          const statusOrder = {
+            Active: 1,
+            "On Hold": 2,
+            Inactive: 3,
+            Completed: 4,
+          };
+          return (
+            statusOrder[a.status as keyof typeof statusOrder] -
+            statusOrder[b.status as keyof typeof statusOrder]
+          );
         case "a-z":
           return a.name.localeCompare(b.name);
         case "z-a":
           return b.name.localeCompare(a.name);
+        case "progress":
+          const getProgress = (project: Project) => {
+            if (project.items.length === 0) return 0;
+            return (
+              (project.items.filter(
+                (item) => item.status === "COMPLETED" || item.status === "DONE"
+              ).length /
+                project.items.length) *
+              100
+            );
+          };
+          return getProgress(b) - getProgress(a);
         default:
           return 0;
       }
@@ -112,7 +196,8 @@ const CreateProject: React.FC = () => {
 
   const handleCreateProject = async (
     projectName: string,
-    description: string
+    description: string,
+    members: { userId: number; roleId: string }[]
   ) => {
     try {
       const response = await projectService.createProject({
@@ -120,13 +205,24 @@ const CreateProject: React.FC = () => {
         description: description,
       });
 
-      console.log("Create project response:", response);
+      // If there are additional members to add (beyond the current user who's automatically added)
+      if (members.length > 0) {
+        const addMemberPromises = members.map((member) =>
+          projectService.addProjectMember(
+            response.id,
+            member.userId,
+            member.roleId
+          )
+        );
+
+        await Promise.all(addMemberPromises);
+      }
 
       const newProject: Project = {
         id: response.id || String(Date.now()),
         name: projectName,
         description: description,
-        status: "WIP",
+        status: "Active",
         lastChange: new Date()
           .toLocaleDateString("en-US", {
             month: "short",
@@ -134,6 +230,8 @@ const CreateProject: React.FC = () => {
             year: "numeric",
           })
           .toLowerCase(),
+        members: [],
+        items: [],
       };
 
       setProjects([...projects, newProject]);
@@ -189,6 +287,31 @@ const CreateProject: React.FC = () => {
     navigate(`/project/${projectId}`);
   };
 
+  // Get status color class based on status
+  const getStatusColorClass = (status: string): string => {
+    switch (status) {
+      case "Active":
+        return styles.statusActive;
+      case "Inactive":
+        return styles.statusInactive;
+      case "Completed":
+        return styles.statusCompleted;
+      case "On Hold":
+        return styles.statusOnHold;
+      default:
+        return styles.statusActive;
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <main className={styles.mainContent}>
       <section className={styles.projectsSection}>
@@ -196,23 +319,22 @@ const CreateProject: React.FC = () => {
           <div className={styles.welcomeMessage}>
             <h2 className={styles.welcomeTitle}>
               {loading
-                ? "Cargando..."
-                : `Bienvenido, ${
+                ? "Loading..."
+                : `Welcome, ${
                     user?.fullName ||
                     (user?.firstName && user?.lastName
                       ? `${user.firstName} ${user.lastName}`
-                      : user?.firstName ||
-                        user?.email?.split("@")[0] ||
-                        "Usuario")
+                      : user?.firstName || user?.email?.split("@")[0] || "User")
                   }!`}
             </h2>
             <p className={styles.welcomeText}>
-              Manage your projects and organize your work efficiently.
+              Manage your agile projects and organize your sprints efficiently.
             </p>
           </div>
 
           <div className={styles.compactControls}>
             <div className={styles.searchContainer}>
+              <Search className={styles.searchIcon} size={18} />
               <input
                 className={styles.searchInput}
                 placeholder="Search projects..."
@@ -224,31 +346,51 @@ const CreateProject: React.FC = () => {
                   className={styles.clearSearch}
                   onClick={handleClearSearch}
                 >
-                  ✕
+                  <X size={16} />
                 </button>
               )}
             </div>
 
             <div className={styles.actionButtons}>
+              <div className={styles.viewToggle}>
+                <button
+                  className={`${styles.viewToggleButton} ${
+                    viewMode === "grid" ? styles.active : ""
+                  }`}
+                  onClick={() => setViewMode("grid")}
+                  title="Grid View"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16">
+                    <rect x="1" y="1" width="6" height="6" rx="1" />
+                    <rect x="9" y="1" width="6" height="6" rx="1" />
+                    <rect x="1" y="9" width="6" height="6" rx="1" />
+                    <rect x="9" y="9" width="6" height="6" rx="1" />
+                  </svg>
+                </button>
+                <button
+                  className={`${styles.viewToggleButton} ${
+                    viewMode === "list" ? styles.active : ""
+                  }`}
+                  onClick={() => setViewMode("list")}
+                  title="List View"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16">
+                    <rect x="1" y="1" width="14" height="3" rx="1" />
+                    <rect x="1" y="6" width="14" height="3" rx="1" />
+                    <rect x="1" y="11" width="14" height="3" rx="1" />
+                  </svg>
+                </button>
+              </div>
+
               <div className={styles.filterContainer}>
                 <button
                   className={`${styles.filterButton} ${
                     isFilterOpen ? styles.active : ""
                   }`}
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  title="Filter"
+                  title="Sort Projects"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <line x1="4" y1="7" x2="20" y2="7" />
-                    <line x1="8" y1="12" x2="16" y2="12" />
-                    <line x1="10" y1="17" x2="14" y2="17" />
-                  </svg>
+                  <SlidersHorizontal size={18} />
                 </button>
                 {isFilterOpen && (
                   <div className={styles.filterDropdown}>
@@ -258,7 +400,7 @@ const CreateProject: React.FC = () => {
                       }`}
                       onClick={() => handleFilterSelect("last-change")}
                     >
-                      Last Change
+                      Last Updated
                     </button>
                     <button
                       className={`${styles.filterOption} ${
@@ -267,6 +409,14 @@ const CreateProject: React.FC = () => {
                       onClick={() => handleFilterSelect("status")}
                     >
                       Status
+                    </button>
+                    <button
+                      className={`${styles.filterOption} ${
+                        currentSort === "progress" ? styles.active : ""
+                      }`}
+                      onClick={() => handleFilterSelect("progress")}
+                    >
+                      Progress
                     </button>
                     <button
                       className={`${styles.filterOption} ${
@@ -292,14 +442,18 @@ const CreateProject: React.FC = () => {
                 className={styles.newProjectButton}
                 onClick={() => setIsModalOpen(true)}
               >
-                <span className={styles.btnIcon}>+</span>
+                <Plus size={18} />
                 New Project
               </button>
             </div>
           </div>
         </div>
 
-        <div className={styles.projectCards}>
+        <div
+          className={`${styles.projectCards} ${
+            viewMode === "list" ? styles.listView : ""
+          }`}
+        >
           {isLoading ? (
             <div className={styles.loadingContainer}>
               <div className={styles.loadingSpinner} />
@@ -313,37 +467,114 @@ const CreateProject: React.FC = () => {
                     key={project.id}
                     className={styles.card}
                     onClick={() => handleProjectClick(project.id)}
-                    style={{ cursor: "pointer" }}
                   >
                     <div className={styles.cardHeader}>
-                      <h4>{project.name}</h4>
-                      <span className={styles.cardArrow}>&#8250;</span>
+                      <div className={styles.cardTitleArea}>
+                        <div className={styles.titleRow}>
+                          <h4>{project.name}</h4>
+                          <div
+                            className={`${styles.status} ${getStatusColorClass(
+                              project.status
+                            )}`}
+                          >
+                            {project.status}
+                          </div>
+                        </div>
+                        <p className={styles.projectInfo}>
+                          {project.description}
+                        </p>
+                      </div>
                     </div>
-                    <p className={styles.projectInfo}>{project.description}</p>
-                    <span
-                      className={`${styles.status} ${
-                        styles[project.status.toLowerCase()]
-                      }`}
-                    >
-                      {project.status}
-                    </span>
-                    <div className={styles.cardFooter}>
-                      <span className={styles.lastChange}>
-                        Last change: {project.lastChange}
+
+                    <div className={styles.progressContainer}>
+                      <div className={styles.progressBar}>
+                        <div
+                          className={styles.progressFill}
+                          style={{
+                            width: `${
+                              project.items.length > 0
+                                ? (project.items.filter(
+                                    (item) =>
+                                      item.status === "COMPLETED" ||
+                                      item.status === "DONE"
+                                  ).length /
+                                    project.items.length) *
+                                  100
+                                : 0
+                            }%`,
+                          }}
+                        />
+                      </div>
+                      <span className={styles.progressText}>
+                        {project.items.length > 0
+                          ? Math.round(
+                              (project.items.filter(
+                                (item) =>
+                                  item.status === "COMPLETED" ||
+                                  item.status === "DONE"
+                              ).length /
+                                project.items.length) *
+                                100
+                            )
+                          : 0}
+                        % Complete
                       </span>
+                    </div>
+
+                    <div className={styles.cardFooter}>
+                      <div className={styles.metaInfo}>
+                        <div className={styles.memberAvatars}>
+                          {project.members.slice(0, 3).map((member) => (
+                            <div
+                              key={member.id}
+                              className={styles.memberAvatar}
+                              title={member.name}
+                            >
+                              {member.avatar ? (
+                                <img src={member.avatar} alt={member.name} />
+                              ) : (
+                                <div className={styles.avatarInitials}>
+                                  {getInitials(member.name || "Unknown")}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                          {project.members.length > 3 && (
+                            <div className={styles.moreMembers}>
+                              +{project.members.length - 3}
+                            </div>
+                          )}
+                        </div>
+                        <div className={styles.metaItem}>
+                          <Calendar size={16} className={styles.metaIcon} />
+                          <span>{project.lastChange}</span>
+                        </div>
+                      </div>
+                      <div className={styles.cardAction}>
+                        <ArrowRight size={18} />
+                      </div>
                     </div>
                   </div>
                 ))
               ) : searchTerm ? (
                 <div className={styles.noResults}>
-                  No projects found matching "{searchTerm}"
+                  <div className={styles.noResultsIcon}>🔍</div>
+                  <h3>No projects found matching "{searchTerm}"</h3>
+                  <p>Try a different search term or clear filters</p>
+                  <button
+                    className={styles.clearSearchButton}
+                    onClick={handleClearSearch}
+                  >
+                    Clear Search
+                  </button>
                 </div>
               ) : (
                 <div className={styles.emptyState}>
+                  <div className={styles.emptyStateIcon}>📋</div>
                   <h4 className={styles.emptyStateTitle}>No projects yet</h4>
                   <p className={styles.emptyStateText}>
-                    Create your first project to start organizing your work and
-                    collaborating with your team.
+                    Create your first project to start organizing your sprints
+                    and collaborating with your team.
                   </p>
                   <button
                     className={styles.createFirstButton}
@@ -362,23 +593,14 @@ const CreateProject: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreateProject}
+        currentUserId={user?.userId ?? -1}
       />
 
       {alert && (
         <Alert
           type={alert.type}
-          title={
-            alert.type === "success"
-              ? "Project Created Successfully!"
-              : "Something went wrong..."
-          }
-          message={
-            alert.type === "success"
-              ? `Your project "${
-                  alert.message.split('"')[1] || "name"
-                }" has been created and is ready to use.`
-              : "Please try again!"
-          }
+          title={alert.title}
+          message={alert.message}
           onClose={() => setAlert(null)}
           actionLabel={alert.type === "error" ? "Try again" : undefined}
           onAction={

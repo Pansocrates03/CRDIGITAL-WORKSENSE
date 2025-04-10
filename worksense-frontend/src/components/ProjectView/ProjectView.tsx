@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./ProjectView.module.css";
 import { useParams } from "react-router-dom";
+import apiClient from "../../api/apiClient";
+import { BacklogItemType } from "@/types";
+import LoadingSpinner from "../Loading/LoadingSpinner";
 
 export interface ProjectViewData {
   id: string;
@@ -12,15 +15,6 @@ export interface ProjectViewData {
     number: number;
     startDate: string;
     endDate: string;
-  };
-  tasks: {
-    todo: number;
-    inProgress: number;
-    completed: number;
-  };
-  progress: {
-    webDashboard: number;
-    database: number;
   };
   team: Array<{
     id: string;
@@ -35,6 +29,26 @@ interface ProjectViewProps {
 
 export const ProjectView: React.FC<ProjectViewProps> = ({ project }) => {
   const { id } = useParams<{ id: string }>();
+  const [backlogItems, setBacklogItems] = useState<BacklogItemType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBacklogItems = async () => {
+      try {
+        const response = await apiClient.get(`/projects/${id}/items`);
+        const items = response.data;
+        setBacklogItems(items);
+      } catch (error) {
+        console.error('Error fetching backlog items:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchBacklogItems();
+    }
+  }, [id]);
 
   return (
     <div className={styles.projectView}>
@@ -104,100 +118,33 @@ export const ProjectView: React.FC<ProjectViewProps> = ({ project }) => {
             {project.currentSprint.startDate} - {project.currentSprint.endDate}
           </p>
         </div>
-
-        <div className={styles.workProgress}>
-          <h3>Work in Progress</h3>
-          <ul>
-            <li>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle
-                  cx="8"
-                  cy="8"
-                  r="7"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
-              </svg>
-              To Do: {project.tasks.todo} task
-              {project.tasks.todo !== 1 ? "s" : ""}
-            </li>
-            <li>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M3 8L6 11L13 4"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              In Progress: {project.tasks.inProgress} task
-              {project.tasks.inProgress !== 1 ? "s" : ""}
-            </li>
-            <li>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M3 8L6 11L13 4"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Completed: {project.tasks.completed} task
-              {project.tasks.completed !== 1 ? "s" : ""}
-            </li>
-          </ul>
-        </div>
       </div>
 
-      {/* Progress Section */}
-      <section className={styles.progressSection}>
-        <div className={styles.progressItem}>
-          <div className={styles.progressHeader}>
-            <h3>Web Dashboard</h3>
-            <span>{project.progress.webDashboard}%</span>
+      {/* Backlog Preview Section */}
+      <section className={styles.backlogPreview}>
+        <h2>Recent Backlog Items</h2>
+        {loading ? (
+          <LoadingSpinner text="Loading backlog items..." />
+        ) : (
+          <div className={styles.backlogItems}>
+            {backlogItems.slice(0, 5).map((item) => (
+              <div key={item.id} className={styles.backlogItem}>
+                <div className={styles.backlogItemHeader}>
+                  <span className={styles.itemType}>{item.type}</span>
+                  <span className={`${styles.itemStatus} ${styles[item.status]}`}>
+                    {item.status}
+                  </span>
+                </div>
+                <h4>{item.name}</h4>
+                <p>{item.description}</p>
+                <div className={styles.itemMeta}>
+                  <span>Priority: {item.priority}</span>
+                  {item.size !== undefined && item.size > 0 && <span>Size: {item.size}</span>}
+                </div>
+              </div>
+            ))}
           </div>
-          <div className={styles.progressBar}>
-            <div
-              className={styles.progressFill}
-              style={{ width: `${project.progress.webDashboard}%` }}
-            />
-          </div>
-          <span className={styles.daysLeft}>5 days left</span>
-        </div>
-
-        <div className={styles.progressItem}>
-          <div className={styles.progressHeader}>
-            <h3>Database</h3>
-            <span>{project.progress.database}%</span>
-          </div>
-          <div className={styles.progressBar}>
-            <div
-              className={styles.progressFill}
-              style={{ width: `${project.progress.database}%` }}
-            />
-          </div>
-          <span className={styles.daysLeft}>5 days left</span>
-        </div>
+        )}
       </section>
 
       {/* Team Section */}
@@ -213,6 +160,36 @@ export const ProjectView: React.FC<ProjectViewProps> = ({ project }) => {
               <span className={styles.avatarName}>{member.name}</span>
             </div>
           ))}
+        </div>
+
+        <div className={styles.teamStats}>
+          <h3>Project Statistics</h3>
+          <div className={styles.statsGrid}>
+            <div className={styles.statItem}>
+              <div className={styles.statValue}>
+                {backlogItems.length}
+                <span className={styles.statLabel}>Total Tasks</span>
+              </div>
+            </div>
+            <div className={styles.statItem}>
+              <div className={styles.statValue}>
+                {backlogItems.filter(item => item.type === 'epic').length}
+                <span className={styles.statLabel}>Epics</span>
+              </div>
+            </div>
+            <div className={styles.statItem}>
+              <div className={styles.statValue}>
+                {backlogItems.filter(item => item.status === 'in-progress').length}
+                <span className={styles.statLabel}>In Progress</span>
+              </div>
+            </div>
+            <div className={styles.statItem}>
+              <div className={styles.statValue}>
+                {backlogItems.filter(item => item.status === 'done').length}
+                <span className={styles.statLabel}>Completed</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
