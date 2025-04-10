@@ -1,10 +1,21 @@
 import React, { useState, useRef, useEffect } from "react";
 import styles from "./NewProjectModal.module.css";
+import apiClient from "../../api/apiClient";
+
+interface User {
+  id: number;
+  username: string;
+}
+
+interface ProjectMember {
+  userId: number;
+  roleId: string;
+}
 
 interface NewProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (projectName: string, description: string) => void;
+  onSubmit: (projectName: string, description: string, members: ProjectMember[]) => void;
   /** Initial project name (for editing mode) */
   initialProjectName?: string;
   /** Initial project description (for editing mode) */
@@ -14,6 +25,13 @@ interface NewProjectModalProps {
   /** Submit button text. Defaults to "Start" */
   submitButtonText?: string;
 }
+
+const ROLES = [
+  { id: "admin", name: "Admin" },
+  { id: "developer", name: "Developer" },
+  { id: "designer", name: "Designer" },
+  { id: "product_owner", name: "Product Owner" },
+];
 
 export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   isOpen,
@@ -26,27 +44,54 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
 }) => {
   const [projectName, setProjectName] = useState(initialProjectName);
   const [description, setDescription] = useState(initialDescription);
+  const [users, setUsers] = useState<User[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<ProjectMember[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [selectedRoleId, setSelectedRoleId] = useState<string>("");
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [errors, setErrors] = useState<{
     projectName?: string;
     description?: string;
+    members?: string;
   }>({});
+
   const modalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Fetch users when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchUsers();
+    }
+  }, [isOpen]);
+
+  const fetchUsers = async () => {
+    setIsLoadingUsers(true);
+    try {
+      const response = await apiClient.get("/users");
+      setUsers(response.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
 
   // Reset form when opening and auto-focus the input
   useEffect(() => {
     if (isOpen) {
       setProjectName(initialProjectName);
       setDescription(initialDescription);
+      setSelectedMembers([]);
+      setSelectedUserId("");
+      setSelectedRoleId("");
       setErrors({});
 
-      // Focus the input after a short delay to ensure the modal is fully rendered
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
 
-      // Adjust textarea height for initial content
       if (textareaRef.current && initialDescription) {
         adjustTextareaHeight(textareaRef.current);
       }
@@ -82,7 +127,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   }, [isOpen, onClose]);
 
   const validateForm = (): boolean => {
-    const newErrors: { projectName?: string; description?: string } = {};
+    const newErrors: { projectName?: string; description?: string; members?: string } = {};
 
     if (!projectName.trim()) {
       newErrors.projectName = "Project name is required";
@@ -90,6 +135,10 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
 
     if (!description.trim()) {
       newErrors.description = "Description is required";
+    }
+
+    if (selectedMembers.length === 0) {
+      newErrors.members = "At least one member is required";
     }
 
     setErrors(newErrors);
@@ -100,15 +149,32 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
     e.preventDefault();
 
     if (validateForm()) {
-      onSubmit(projectName.trim(), description.trim());
-      // Don't reset the form here - let the parent component control the modal
+      onSubmit(projectName.trim(), description.trim(), selectedMembers);
     }
   };
 
+  const handleAddMember = () => {
+    if (selectedUserId && selectedRoleId) {
+      const newMember: ProjectMember = {
+        userId: parseInt(selectedUserId),
+        roleId: selectedRoleId,
+      };
+
+      // Check if member is already added
+      if (!selectedMembers.some(member => member.userId === newMember.userId)) {
+        setSelectedMembers([...selectedMembers, newMember]);
+        setSelectedUserId("");
+        setSelectedRoleId("");
+      }
+    }
+  };
+
+  const handleRemoveMember = (userId: number) => {
+    setSelectedMembers(selectedMembers.filter(member => member.userId !== userId));
+  };
+
   const adjustTextareaHeight = (element: HTMLTextAreaElement) => {
-    // Reset height to auto to properly calculate scroll height
     element.style.height = "auto";
-    // Set new height based on scroll height with a small buffer
     element.style.height = `${element.scrollHeight + 2}px`;
   };
 
@@ -120,7 +186,6 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
     adjustTextareaHeight(e.target);
   };
 
-  // Clear handlers with proper focus management
   const handleClearProjectName = () => {
     setProjectName("");
     inputRef.current?.focus();
@@ -221,6 +286,73 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
             )}
           </div>
 
+          <div className={styles.formGroup}>
+            <label>Project Members</label>
+            <div className={styles.memberControls}>
+              <select
+                value={selectedUserId}
+                onChange={(e) => setSelectedUserId(e.target.value)}
+                className={styles.memberSelect}
+                disabled={isLoadingUsers}
+              >
+                <option value="">Select a user</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.username}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={selectedRoleId}
+                onChange={(e) => setSelectedRoleId(e.target.value)}
+                className={styles.roleSelect}
+              >
+                <option value="">Select a role</option>
+                {ROLES.map((role) => (
+                  <option key={role.id} value={role.id}>
+                    {role.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className={styles.addButton}
+                onClick={handleAddMember}
+                disabled={!selectedUserId || !selectedRoleId}
+              >
+                +
+              </button>
+            </div>
+            <div className={styles.membersContainer}>
+              {selectedMembers.length === 0 ? (
+                <div className={styles.noMembers}>No members added yet</div>
+              ) : (
+                selectedMembers.map((member) => {
+                  const user = users.find((u) => u.id === member.userId);
+                  const role = ROLES.find((r) => r.id === member.roleId);
+                  return (
+                    <div key={member.userId} className={styles.memberRow}>
+                      <span className={styles.username}>{user?.username}</span>
+                      <span className={styles.memberRole}>{role?.name}</span>
+                      <button
+                        type="button"
+                        className={styles.removeMember}
+                        onClick={() => handleRemoveMember(member.userId)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            {errors.members && (
+              <p className={styles.errorMessage} role="alert">
+                {errors.members}
+              </p>
+            )}
+          </div>
+
           <div className={styles.modalActions}>
             <button
               type="button"
@@ -232,7 +364,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
             <button
               type="submit"
               className={styles.startButton}
-              disabled={!projectName.trim() || !description.trim()}
+              disabled={!projectName.trim() || !description.trim() || selectedMembers.length === 0}
             >
               {submitButtonText}
             </button>

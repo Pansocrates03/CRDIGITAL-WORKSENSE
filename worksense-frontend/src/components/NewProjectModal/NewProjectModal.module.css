@@ -142,18 +142,138 @@
 }
 
 .startButton:hover {
-  background-color: #901346; /* Slightly darker than AC1754 */
+  background-color: #8E003E;
 }
 
 .startButton:disabled {
-  background-color: #e0a2ba; /* Lighter pink */
+  background-color: #e5e7eb;
   cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Member-related styles */
+.memberControls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.memberSelect,
+.roleSelect {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+  background-color: white;
+  color: #1A1A1A;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.memberSelect:hover,
+.roleSelect:hover {
+  border-color: #B4004E;
+}
+
+.memberSelect:focus,
+.roleSelect:focus {
+  outline: none;
+  border-color: #B4004E;
+  box-shadow: 0 0 0 2px rgba(180, 0, 78, 0.2);
+}
+
+.addButton {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 6px;
+  border: none;
+  background-color: #B4004E;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.addButton:hover:not(:disabled) {
+  background-color: #8E003E;
+}
+
+.addButton:disabled {
+  background-color: #E5E7EB;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.membersContainer {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius);
+  padding: 8px;
+}
+
+.memberRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: white;
+}
+
+.memberRow:last-child {
+  border-bottom: none;
+}
+
+.username {
+  flex: 1;
+  font-weight: 500;
+}
+
+.memberRole {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #f3f4f6;
+  color: #666;
+  font-size: 12px;
+}
+
+.removeMember {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  background-color: transparent;
+  color: #ef4444;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.removeMember:hover {
+  background-color: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+.noMembers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: #666;
+  font-size: 14px;
+  font-style: italic;
 }
 
 /* Simple responsive adjustment */
 @media (max-width: 640px) {
   .modalContent {
-    padding: 24px;
     margin: 16px;
+    padding: 24px;
   }
 }
