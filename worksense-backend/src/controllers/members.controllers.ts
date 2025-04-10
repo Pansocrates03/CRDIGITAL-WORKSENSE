@@ -57,7 +57,7 @@ export const addMember = async (req: Request, res: Response) => {
   const pool = await sqlConnect();
   const result = await pool
     .request()
-    .input("userId", sql.VarChar, userId+"")
+    .input("id", sql.VarChar, userId+"")
     .execute("spCheckUserExists");
   if (result.recordset[0].UserExists != 1) return res.status(400).send("El usuario no existe");
 
@@ -76,7 +76,7 @@ export const addMember = async (req: Request, res: Response) => {
   // Create the member
   const rolepath = `/projects/${projectId}/roles/${roleId}`;
   const newMember = {
-    userId: userId,
+    userId: Number(userId),
     projectId: projectId,
     roleId: rolepath
   };
@@ -89,12 +89,4 @@ export const addMember = async (req: Request, res: Response) => {
 
   res.status(201).json(newMember);
 };
-
-
-
-
-
-
-
-
 
