@@ -18,7 +18,11 @@ interface ProjectMember {
 interface NewProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (projectName: string, description: string, members: ProjectMember[]) => void;
+  onSubmit: (
+    projectName: string,
+    description: string,
+    members: ProjectMember[]
+  ) => void;
   /** Initial project name (for editing mode) */
   initialProjectName?: string;
   /** Initial project description (for editing mode) */
@@ -29,9 +33,7 @@ interface NewProjectModalProps {
   submitButtonText?: string;
 }
 
-const ROLES = [
-  { id: "admin", name: "Admin" }
-];
+const ROLES = [{ id: "admin", name: "Admin" }];
 
 export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   isOpen,
@@ -61,8 +63,8 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
 
   // Add this after the other useState declarations
   const availableUsers = useMemo(() => {
-    return users.filter(user => 
-      !selectedMembers.some(member => member.userId === user.id)
+    return users.filter(
+      (user) => !selectedMembers.some((member) => member.userId === user.id)
     );
   }, [users, selectedMembers]);
 
@@ -77,11 +79,14 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
     setIsLoadingUsers(true);
     try {
       const response = await apiClient.get("/users");
-      console.log('Raw response from /users:', response);
-      console.log('Users data:', response.data);
+      console.log("Raw response from /users:", response);
+      console.log("Users data:", response.data);
       if (response.data && Array.isArray(response.data)) {
-        console.log('First user in array:', response.data[0]);
-        console.log('User fields available:', response.data[0] ? Object.keys(response.data[0]) : 'No users found');
+        console.log("First user in array:", response.data[0]);
+        console.log(
+          "User fields available:",
+          response.data[0] ? Object.keys(response.data[0]) : "No users found"
+        );
       }
       setUsers(response.data);
     } catch (error) {
@@ -140,7 +145,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   }, [isOpen, onClose]);
 
   const validateForm = (): boolean => {
-    const newErrors: { projectName?: string; description?: string; members?: string } = {};
+    const newErrors: { projectName?: string; description?: string } = {};
 
     if (!projectName.trim()) {
       newErrors.projectName = "Project name is required";
@@ -148,10 +153,6 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
 
     if (!description.trim()) {
       newErrors.description = "Description is required";
-    }
-
-    if (selectedMembers.length === 0) {
-      newErrors.members = "At least one member is required";
     }
 
     setErrors(newErrors);
@@ -170,11 +171,13 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
     if (selectedUserId) {
       const newMember: ProjectMember = {
         userId: parseInt(selectedUserId),
-        roleId: selectedRoleId
+        roleId: selectedRoleId,
       };
 
       // Check if member is already added
-      if (!selectedMembers.some(member => member.userId === newMember.userId)) {
+      if (
+        !selectedMembers.some((member) => member.userId === newMember.userId)
+      ) {
         setSelectedMembers([...selectedMembers, newMember]);
         setSelectedUserId("");
         setSelectedRoleId("admin");
@@ -183,7 +186,9 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   };
 
   const handleRemoveMember = (userId: number) => {
-    setSelectedMembers(selectedMembers.filter(member => member.userId !== userId));
+    setSelectedMembers(
+      selectedMembers.filter((member) => member.userId !== userId)
+    );
   };
 
   const adjustTextareaHeight = (element: HTMLTextAreaElement) => {
@@ -345,7 +350,9 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                   return (
                     <div key={member.userId} className={styles.memberRow}>
                       <span className={styles.username}>
-                        {user ? `${user.firstName} ${user.lastName}` : 'Unknown User'}
+                        {user
+                          ? `${user.firstName} ${user.lastName}`
+                          : "Unknown User"}
                       </span>
                       <span className={styles.memberRole}>Admin</span>
                       <button
@@ -378,7 +385,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
             <button
               type="submit"
               className={styles.startButton}
-              disabled={!projectName.trim() || !description.trim() || selectedMembers.length === 0}
+              disabled={!projectName.trim() || !description.trim()}
             >
               {submitButtonText}
             </button>
