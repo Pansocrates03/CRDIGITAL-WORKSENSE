@@ -1,10 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import styles from "./NewProjectModal.module.css";
 import apiClient from "../../api/apiClient";
 
 interface User {
   id: number;
-  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  nickName: string | null;
 }
 
 interface ProjectMember {
@@ -27,10 +30,7 @@ interface NewProjectModalProps {
 }
 
 const ROLES = [
-  { id: "admin", name: "Admin" },
-  { id: "developer", name: "Developer" },
-  { id: "designer", name: "Designer" },
-  { id: "product_owner", name: "Product Owner" },
+  { id: "admin", name: "Admin" }
 ];
 
 export const NewProjectModal: React.FC<NewProjectModalProps> = ({
@@ -47,7 +47,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   const [users, setUsers] = useState<User[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<ProjectMember[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
-  const [selectedRoleId, setSelectedRoleId] = useState<string>("");
+  const [selectedRoleId, setSelectedRoleId] = useState<string>("admin");
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [errors, setErrors] = useState<{
     projectName?: string;
@@ -58,6 +58,13 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Add this after the other useState declarations
+  const availableUsers = useMemo(() => {
+    return users.filter(user => 
+      !selectedMembers.some(member => member.userId === user.id)
+    );
+  }, [users, selectedMembers]);
 
   // Fetch users when modal opens
   useEffect(() => {
@@ -70,6 +77,12 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
     setIsLoadingUsers(true);
     try {
       const response = await apiClient.get("/users");
+      console.log('Raw response from /users:', response);
+      console.log('Users data:', response.data);
+      if (response.data && Array.isArray(response.data)) {
+        console.log('First user in array:', response.data[0]);
+        console.log('User fields available:', response.data[0] ? Object.keys(response.data[0]) : 'No users found');
+      }
       setUsers(response.data);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -85,7 +98,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
       setDescription(initialDescription);
       setSelectedMembers([]);
       setSelectedUserId("");
-      setSelectedRoleId("");
+      setSelectedRoleId("admin");
       setErrors({});
 
       setTimeout(() => {
@@ -154,17 +167,17 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   };
 
   const handleAddMember = () => {
-    if (selectedUserId && selectedRoleId) {
+    if (selectedUserId) {
       const newMember: ProjectMember = {
         userId: parseInt(selectedUserId),
-        roleId: selectedRoleId,
+        roleId: selectedRoleId
       };
 
       // Check if member is already added
       if (!selectedMembers.some(member => member.userId === newMember.userId)) {
         setSelectedMembers([...selectedMembers, newMember]);
         setSelectedUserId("");
-        setSelectedRoleId("");
+        setSelectedRoleId("admin");
       }
     }
   };
@@ -296,9 +309,9 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                 disabled={isLoadingUsers}
               >
                 <option value="">Select a user</option>
-                {users.map((user) => (
+                {availableUsers.map((user) => (
                   <option key={user.id} value={user.id}>
-                    {user.username}
+                    {`${user.firstName} ${user.lastName}`}
                   </option>
                 ))}
               </select>
@@ -306,8 +319,8 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                 value={selectedRoleId}
                 onChange={(e) => setSelectedRoleId(e.target.value)}
                 className={styles.roleSelect}
+                disabled={isLoadingUsers}
               >
-                <option value="">Select a role</option>
                 {ROLES.map((role) => (
                   <option key={role.id} value={role.id}>
                     {role.name}
@@ -318,7 +331,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                 type="button"
                 className={styles.addButton}
                 onClick={handleAddMember}
-                disabled={!selectedUserId || !selectedRoleId}
+                disabled={!selectedUserId}
               >
                 +
               </button>
@@ -329,11 +342,12 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
               ) : (
                 selectedMembers.map((member) => {
                   const user = users.find((u) => u.id === member.userId);
-                  const role = ROLES.find((r) => r.id === member.roleId);
                   return (
                     <div key={member.userId} className={styles.memberRow}>
-                      <span className={styles.username}>{user?.username}</span>
-                      <span className={styles.memberRole}>{role?.name}</span>
+                      <span className={styles.username}>
+                        {user ? `${user.firstName} ${user.lastName}` : 'Unknown User'}
+                      </span>
+                      <span className={styles.memberRole}>Admin</span>
                       <button
                         type="button"
                         className={styles.removeMember}
