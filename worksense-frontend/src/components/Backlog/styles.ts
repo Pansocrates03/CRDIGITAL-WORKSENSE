@@ -40,5 +40,19 @@ export const typeClasses: { [key: string]: string } = {
   default: "text-neutral-600 dark:text-neutral-400",
 };
 
+export const levelBackgroundClasses: { [key: number]: string } = {
+  0: "bg-white dark:bg-neutral-900",
+  1: "bg-[#ac175408] dark:bg-[#ac175410]",
+  2: "bg-[#ac175410] dark:bg-[#ac175420]",
+  3: "bg-[#ac175415] dark:bg-[#ac175430]",
+};
+
 export const hoverRowClass =
-  "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150";
+  "transition-colors duration-150 hover:bg-[#ac175408] dark:hover:bg-[#ac175415] relative";
+
+export const levelBorderClasses: { [key: number]: string } = {
+  0: "border-l-4 border-transparent",
+  1: "border-l-4 border-[#ac1754]/20",
+  2: "border-l-4 border-[#ac1754]/40",
+  3: "border-l-4 border-[#ac1754]/60",
+};

@@ -17,6 +17,8 @@ import {
   priorityClasses,
   typeClasses,
   hoverRowClass,
+  levelBackgroundClasses,
+  levelBorderClasses,
 } from "./styles";
 import { BacklogItemType } from "@/types";
 import {
@@ -144,18 +146,35 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   };
 
   // Calculate indentation style based on level
-  const indentStyle = { paddingLeft: `${level * 24}px` };
+  const indentStyle = {
+    paddingLeft: `${level * 24}px`,
+    position: "relative" as const,
+  };
 
   return (
     <>
-      <TableRow className={hoverRowClass}>
+      <TableRow
+        className={`${hoverRowClass} ${
+          levelBackgroundClasses[Math.min(level, 3)]
+        } ${levelBorderClasses[Math.min(level, 3)]} group`}
+      >
         {/* Expand Button */}
         <TableCell className="w-[50px] py-2">
           <div style={indentStyle} className="flex items-center gap-2">
+            {level > 0 && (
+              <div
+                className="absolute left-0 w-[24px] border-l-2 border-[#ac1754]/10 dark:border-[#ac1754]/20"
+                style={{
+                  height: "calc(100% + 1px)",
+                  top: "-1px",
+                  left: `${(level - 1) * 24 + 12}px`,
+                }}
+              />
+            )}
             {hasChildren ? (
               <button
                 onClick={toggleExpand}
-                className="p-1 rounded-full hover:bg-muted/70 dark:hover:bg-neutral-700 transition-colors"
+                className="p-1 rounded-full hover:bg-muted/70 dark:hover:bg-neutral-700 transition-colors relative z-10"
                 aria-label={isExpanded ? "Collapse" : "Expand"}
               >
                 {isLoading ? (
