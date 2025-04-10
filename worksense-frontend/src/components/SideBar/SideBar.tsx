@@ -105,7 +105,7 @@ export const SideBar: React.FC = () => {
         icon: "/backlog.svg",
         path: `/project/${projectId}/backlog`,
       },
-      {
+      /*{
         name: "Sprint & Workflow",
         icon: "/sprint.svg",
         path: `/project/${projectId}/sprint`,
@@ -130,7 +130,7 @@ export const SideBar: React.FC = () => {
         name: "Leaderboard",
         icon: "/leaderboard.svg",
         path: `/project/${projectId}/leaderboard`,
-      },
+      },*/
     ],
     [projectId]
   );
