@@ -189,8 +189,7 @@
 }
 
 .avatarImage:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  /* Removed hover effect */
 }
 
 .avatarImage img {
@@ -240,8 +239,7 @@
 }
 
 .avatar:hover .avatarTooltip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(-5px);
+  /* Removed hover effect */
 }
 
 .backlogPreview {

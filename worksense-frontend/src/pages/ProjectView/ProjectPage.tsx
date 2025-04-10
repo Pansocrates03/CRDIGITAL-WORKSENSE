@@ -94,6 +94,7 @@ export const ProjectPage: React.FC = () => {
 
       // Transform members data
       const teamMembers = membersData.map((member) => ({
+        // Generate a light random color
         id: member.userId,
         name: member.name || "Unknown User",
         avatar:
