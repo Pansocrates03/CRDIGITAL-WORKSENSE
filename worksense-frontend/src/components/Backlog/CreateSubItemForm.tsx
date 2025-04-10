@@ -58,7 +58,7 @@ const CreateSubItemForm: React.FC<CreateSubItemFormProps> = ({
     name: "",
     description: "",
     tag: "" as SubItemType,
-    status: "To do",
+    status: "to do",
     priority: "medium",
     size: 0,
     author: authService.getCurrentUser()?.fullName || "",
@@ -208,17 +208,6 @@ const CreateSubItemForm: React.FC<CreateSubItemFormProps> = ({
               required
             />
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="author">Author</Label>
-            <Input
-              id="author"
-              name="author"
-              value={formData.author}
-              onChange={handleChange}
-              placeholder="Author of the subitem"
-            />
-          </div>
         </div>
 
         <div className="space-y-2">
@@ -304,10 +293,10 @@ const CreateSubItemForm: React.FC<CreateSubItemFormProps> = ({
               onChange={handleChange}
               className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1"
             >
-              <option value="To do">To do</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Done">Done</option>
-              <option value="Blocked">Blocked</option>
+              <option value="to do">to do</option>
+              <option value="in progress">in progress</option>
+              <option value="done">done</option>
+              <option value="blocked">blocked</option>
             </select>
           </div>
 
