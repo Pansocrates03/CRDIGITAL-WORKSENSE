@@ -82,4 +82,21 @@ export const projectService = {
       throw error;
     }
   },
+
+  async addProjectMember(
+    projectId: string,
+    userId: number,
+    roleId: string
+  ): Promise<any> {
+    try {
+      const response = await apiClient.post(
+        `${API_URL}/projects/${projectId}/members`,
+        { userId, roleId }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error adding project member:", error);
+      throw error;
+    }
+  },
 };

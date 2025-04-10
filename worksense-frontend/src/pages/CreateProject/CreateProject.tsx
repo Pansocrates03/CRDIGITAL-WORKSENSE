@@ -112,7 +112,8 @@ const CreateProject: React.FC = () => {
 
   const handleCreateProject = async (
     projectName: string,
-    description: string
+    description: string,
+    members: { userId: number; roleId: string }[]
   ) => {
     try {
       const response = await projectService.createProject({
@@ -121,6 +122,19 @@ const CreateProject: React.FC = () => {
       });
 
       console.log("Create project response:", response);
+
+      // If there are additional members to add (beyond the current user who's automatically added)
+      if (members.length > 0) {
+        const addMemberPromises = members.map((member) =>
+          projectService.addProjectMember(
+            response.id,
+            member.userId,
+            member.roleId
+          )
+        );
+
+        await Promise.all(addMemberPromises);
+      }
 
       const newProject: Project = {
         id: response.id || String(Date.now()),
@@ -362,6 +376,7 @@ const CreateProject: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreateProject}
+        currentUserId={user?.userId ?? -1}
       />
 
       {alert && (
