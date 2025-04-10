@@ -166,14 +166,24 @@
 }
 
 .projectIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background-color: var(--primary, #ac1754);
+  width: 48px;
+  height: 48px;
+  background-color: var(--color-pink-light);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.2s ease;
   flex-shrink: 0;
+}
+
+.projectIcon:hover {
+  transform: scale(1.05);
+}
+
+.projectIcon span {
+  font-weight: 600;
+  line-height: 1;
 }
 
 .projectIcon img {
