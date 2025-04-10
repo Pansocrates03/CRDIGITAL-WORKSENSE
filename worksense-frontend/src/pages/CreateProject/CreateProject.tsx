@@ -376,6 +376,7 @@ const CreateProject: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreateProject}
+        currentUserId={user?.userId ?? -1}
       />
 
       {alert && (
