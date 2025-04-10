@@ -27,10 +27,7 @@ interface NewProjectModalProps {
 }
 
 const ROLES = [
-  { id: "admin", name: "Admin" },
-  { id: "developer", name: "Developer" },
-  { id: "designer", name: "Designer" },
-  { id: "product_owner", name: "Product Owner" },
+  { id: "admin", name: "Admin" }
 ];
 
 export const NewProjectModal: React.FC<NewProjectModalProps> = ({
@@ -47,7 +44,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   const [users, setUsers] = useState<User[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<ProjectMember[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
-  const [selectedRoleId, setSelectedRoleId] = useState<string>("");
+  const [selectedRoleId, setSelectedRoleId] = useState<string>("admin");
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [errors, setErrors] = useState<{
     projectName?: string;
@@ -85,7 +82,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
       setDescription(initialDescription);
       setSelectedMembers([]);
       setSelectedUserId("");
-      setSelectedRoleId("");
+      setSelectedRoleId("admin");
       setErrors({});
 
       setTimeout(() => {
@@ -154,17 +151,17 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   };
 
   const handleAddMember = () => {
-    if (selectedUserId && selectedRoleId) {
+    if (selectedUserId) {
       const newMember: ProjectMember = {
         userId: parseInt(selectedUserId),
-        roleId: selectedRoleId,
+        roleId: selectedRoleId
       };
 
       // Check if member is already added
       if (!selectedMembers.some(member => member.userId === newMember.userId)) {
         setSelectedMembers([...selectedMembers, newMember]);
         setSelectedUserId("");
-        setSelectedRoleId("");
+        setSelectedRoleId("admin");
       }
     }
   };
@@ -306,8 +303,8 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                 value={selectedRoleId}
                 onChange={(e) => setSelectedRoleId(e.target.value)}
                 className={styles.roleSelect}
+                disabled={isLoadingUsers}
               >
-                <option value="">Select a role</option>
                 {ROLES.map((role) => (
                   <option key={role.id} value={role.id}>
                     {role.name}
@@ -318,7 +315,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                 type="button"
                 className={styles.addButton}
                 onClick={handleAddMember}
-                disabled={!selectedUserId || !selectedRoleId}
+                disabled={!selectedUserId}
               >
                 +
               </button>
@@ -329,11 +326,10 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
               ) : (
                 selectedMembers.map((member) => {
                   const user = users.find((u) => u.id === member.userId);
-                  const role = ROLES.find((r) => r.id === member.roleId);
                   return (
                     <div key={member.userId} className={styles.memberRow}>
                       <span className={styles.username}>{user?.username}</span>
-                      <span className={styles.memberRole}>{role?.name}</span>
+                      <span className={styles.memberRole}>Admin</span>
                       <button
                         type="button"
                         className={styles.removeMember}
