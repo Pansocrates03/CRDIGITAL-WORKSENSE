@@ -13,6 +13,7 @@ import CreateProject from "./pages/CreateProject/CreateProject";
 import { ProjectPage } from "./pages/ProjectView/ProjectPage";
 import { AccountPage } from "./pages/Account/AccountPage";
 import BacklogPage from "./pages/Backlog/BacklogPage";
+import Settings from "./pages/Settings/Settings";
 
 // Updated PrivateRoute to wrap content with MainLayout
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -63,6 +64,15 @@ function App() {
               <PrivateRoute>
                 {" "}
                 <AccountPage />{" "}
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute>
+                {" "}
+                <Settings />{" "}
               </PrivateRoute>
             }
           />
