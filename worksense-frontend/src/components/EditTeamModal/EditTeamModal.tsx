@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './EditTeamModal.module.css';
 import apiClient from '../../api/apiClient';
+import { TeamMember } from '../ProjectView/ProjectView';
 
 // Add helper function for generating avatars
 const generateAvatar = (firstName: string, lastName: string) => {
@@ -15,13 +16,6 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
-}
-
-interface TeamMember {
-  id: number;
-  name: string;
-  avatar: string;
-  role: string;
 }
 
 interface EditTeamModalProps {
@@ -85,14 +79,21 @@ const EditTeamModal: React.FC<EditTeamModalProps> = ({
         roleId: 'admin'
       });
 
-      const updatedTeam = [...currentTeam, {
+      const newMember: TeamMember = {
         id: selectedUser.id,
         name: `${selectedUser.firstName} ${selectedUser.lastName}`,
+        role: 'Team Member',
         avatar: generateAvatar(selectedUser.firstName, selectedUser.lastName),
-        role: 'Admin'
-      }];
+        userId: selectedUser.id,
+        projectId: projectId,
+        roleId: response.data.roleId || '/projects/${projectId}/roles/member',
+        status: 'Active',
+        email: selectedUser.email,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
       
-      onTeamUpdate(updatedTeam);
+      onTeamUpdate([...currentTeam, newMember]);
       setSelectedUserId('');
       onClose();
     } catch (err) {
@@ -152,19 +153,16 @@ const EditTeamModal: React.FC<EditTeamModalProps> = ({
           <div className={styles.currentTeam}>
             <h3>Current Team Members</h3>
             <div className={styles.teamList}>
-              {currentTeam.map(member => {
-                // Extract first and last name from full name
-                const [firstName = '', lastName = ''] = member.name.split(' ');
-                const avatarUrl = generateAvatar(firstName, lastName);
-                
-                return (
-                  <div key={member.id} className={styles.teamMember}>
-                    <img src={avatarUrl} alt={member.name} className={styles.memberAvatar} />
+              {currentTeam.map(member => (
+                <div key={member.id} className={styles.teamMember}>
+                  <img src={member.avatar} alt={member.name} className={styles.memberAvatar} />
+                  <div className={styles.memberInfo}>
                     <span className={styles.memberName}>{member.name}</span>
                     <span className={styles.memberRole}>{member.role}</span>
+                    {member.email && <span className={styles.memberEmail}>{member.email}</span>}
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
 
