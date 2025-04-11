@@ -60,6 +60,7 @@ export const getProjectMembers = async (req: Request, res: Response) => {
 };
 
 export const getMemberById = async (req: Request, res: Response) => {
+  
   const projectId = req.params.ProjectId;
   if (!projectId) return res.status(400).send("Project ID is required");
 
