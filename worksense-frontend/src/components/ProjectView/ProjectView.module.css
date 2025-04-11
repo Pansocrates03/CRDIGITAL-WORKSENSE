@@ -68,7 +68,7 @@
 }
 
 .aboutSection {
-  grid-column: 1;
+  grid-column: 1 / -1;
   grid-row: 2;
   background-color: var(--color-white);
   padding: 1.25rem;
@@ -96,41 +96,6 @@
   line-height: 1.5;
   font-size: 0.95rem;
   margin: 0;
-}
-
-.sprintStatus {
-  grid-column: 2;
-  grid-row: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  height: auto;
-  min-height: 0;
-}
-
-.currentSprint {
-  background-color: var(--color-purple);
-  color: white;
-  padding: 1.25rem;
-  border-radius: 12px;
-  transition: transform 0.2s ease;
-  height: 100%;
-}
-
-.currentSprint:hover {
-  transform: translateY(-2px);
-}
-
-.currentSprint h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.currentSprint p {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.9;
 }
 
 .teamSection {
@@ -452,4 +417,43 @@
   font-weight: 500;
   color: var(--color-gray-dark);
   text-align: center;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sectionHeader h2 {
+  margin-bottom: 0;
+}
+
+.editButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-gray-light);
+  border-radius: 8px;
+  color: var(--color-charcoal-dark);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editButton:hover {
+  background-color: var(--color-purple-light);
+  border-color: var(--color-purple);
+  color: var(--color-purple);
+  transform: translateY(-1px);
+}
+
+.editButton svg {
+  width: 16px;
+  height: 16px;
+  color: currentColor;
 }

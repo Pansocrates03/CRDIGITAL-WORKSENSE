@@ -1,0 +1,246 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeader {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-gray-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--color-charcoal-dark);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-gray-dark);
+  cursor: pointer;
+  padding: 0.5rem;
+  line-height: 1;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: var(--color-gray-light);
+  color: var(--color-charcoal-dark);
+}
+
+.modalContent {
+  padding: 1.5rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.addMemberForm {
+  margin-bottom: 2rem;
+}
+
+.addMemberForm label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-charcoal-dark);
+  font-weight: 500;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-gray-light);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-purple);
+  box-shadow: 0 0 0 2px var(--color-purple-light);
+}
+
+.input:disabled {
+  background-color: var(--color-gray-light);
+  cursor: not-allowed;
+}
+
+.currentTeam {
+  margin-top: 2rem;
+}
+
+.currentTeam h3 {
+  font-size: 1rem;
+  color: var(--color-charcoal-dark);
+  margin-bottom: 1rem;
+}
+
+.teamList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.teamMember {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--color-background);
+  border-radius: 8px;
+  gap: 0.75rem;
+}
+
+.memberAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.memberName {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--color-charcoal-dark);
+}
+
+.removeButton {
+  padding: 0.5rem 1rem;
+  background-color: var(--color-red-light);
+  color: var(--color-red);
+  border: 1px solid var(--color-red);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.removeButton:hover {
+  background-color: var(--color-red);
+  color: white;
+}
+
+.modalFooter {
+  padding: 1.5rem;
+  border-top: 1px solid var(--color-gray-light);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.cancelButton, .saveButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton {
+  background-color: var(--color-gray-light);
+  color: var(--color-gray-dark);
+  border: 1px solid var(--color-gray-light);
+}
+
+.cancelButton:hover {
+  background-color: var(--color-gray);
+  color: var(--color-charcoal-dark);
+}
+
+.saveButton {
+  background-color: var(--color-purple);
+  color: white;
+  border: 1px solid var(--color-purple);
+}
+
+.saveButton:hover:not(:disabled) {
+  background-color: var(--color-purple-dark);
+}
+
+.saveButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: var(--color-red-light);
+  color: var(--color-red);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-charcoal-dark);
+  font-weight: 500;
+}
+
+.select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-gray-light);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: white;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--color-purple);
+  box-shadow: 0 0 0 2px var(--color-purple-light);
+}
+
+.select:disabled {
+  background-color: var(--color-gray-light);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.helpText {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-gray-dark);
+}
+
+.memberRole {
+  padding: 0.25rem 0.75rem;
+  background-color: var(--color-purple-light);
+  color: var(--color-purple);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+} 
