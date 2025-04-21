@@ -61,3 +61,43 @@ export const parseTimestamp = (timestamp: any): Date | null => {
   console.warn("Unrecognized timestamp format:", timestamp);
   return null; // Return null if format is unrecognized
 };
+
+// Types
+export interface User {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  nickName: string | null;
+}
+
+export interface ProjectMember {
+  userId: number;
+  roleId: string;
+}
+
+export interface FormErrors {
+  projectName?: string;
+  description?: string;
+  members?: string;
+}
+export interface NewProjectModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (
+    projectName: string,
+    description: string,
+    members: ProjectMember[],
+    shouldPopulateBacklog: boolean
+  ) => Promise<string>; // Return project ID
+  /** Initial project name (for editing mode) */
+  initialProjectName?: string;
+  /** Initial project description (for editing mode) */
+  initialDescription?: string;
+  /** Modal title. Defaults to "New Project" */
+  title?: string;
+  /** Submit button text. Defaults to "Start" */
+  submitButtonText?: string;
+  /** Current user ID to exclude from the dropdown */
+  currentUserId: number;
+}

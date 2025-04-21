@@ -8,15 +8,16 @@
 .projectView {
   flex: 1;
   padding: 1.5rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto auto;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
   overflow: auto;
+  min-height: 100vh;
+  background-color: var(--color-background, #f5f5f5);
 }
 
 .header {
-  grid-column: 1 / -1;
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 1.5rem;
@@ -67,16 +68,20 @@
   gap: 0.5rem;
 }
 
+.mainContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  width: 100%;
+}
+
 .aboutSection {
-  grid-column: 1;
-  grid-row: 2;
+  grid-column: 1 / -1;
   background-color: var(--color-white);
   padding: 1.25rem;
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  height: auto;
-  min-height: 0;
 }
 
 .aboutSection:hover {
@@ -96,41 +101,6 @@
   line-height: 1.5;
   font-size: 0.95rem;
   margin: 0;
-}
-
-.sprintStatus {
-  grid-column: 2;
-  grid-row: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  height: auto;
-  min-height: 0;
-}
-
-.currentSprint {
-  background-color: var(--color-purple);
-  color: white;
-  padding: 1.25rem;
-  border-radius: 12px;
-  transition: transform 0.2s ease;
-  height: 100%;
-}
-
-.currentSprint:hover {
-  transform: translateY(-2px);
-}
-
-.currentSprint h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.currentSprint p {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.9;
 }
 
 .teamSection {
@@ -452,4 +422,68 @@
   font-weight: 500;
   color: var(--color-gray-dark);
   text-align: center;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sectionHeader h2 {
+  margin-bottom: 0;
+}
+
+.editButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-gray-light);
+  border-radius: 8px;
+  color: var(--color-charcoal-dark);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editButton:hover {
+  background-color: var(--color-purple-light);
+  border-color: var(--color-purple);
+  color: var(--color-purple);
+  transform: translateY(-1px);
+}
+
+.editButton svg {
+  width: 16px;
+  height: 16px;
+  color: currentColor;
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 2rem;
+  text-align: center;
+  background-color: var(--color-background);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.errorContainer h2 {
+  color: var(--color-error);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.errorContainer p {
+  color: var(--color-gray-dark);
+  max-width: 400px;
+  margin: 0 auto;
 }

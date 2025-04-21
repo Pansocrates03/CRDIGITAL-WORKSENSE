@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./CreateProject.module.css";
 
-import { NewProjectModal } from "../../components/NewProjectModal/NewProjectModal";
+import NewProjectModal from "../../components/NewProjectModal/NewProjectModal";
 import { Alert } from "../../components/Alert/Alert";
 import { useAuth } from "../../contexts/AuthContext";
 import { projectService } from "../../services/projectService";
@@ -55,6 +55,7 @@ const CreateProject: React.FC = () => {
     title: string;
     message: string;
   } | null>(null);
+  const [projectCreated, setProjectCreated] = useState(false);
 
   // Fetch projects when component mounts
   useEffect(() => {
@@ -197,8 +198,9 @@ const CreateProject: React.FC = () => {
   const handleCreateProject = async (
     projectName: string,
     description: string,
-    members: { userId: number; roleId: string }[]
-  ) => {
+    members: { userId: number; roleId: string }[],
+    shouldPopulateBacklog: boolean
+  ): Promise<string> => {
     try {
       const response = await projectService.createProject({
         name: projectName,
@@ -235,12 +237,12 @@ const CreateProject: React.FC = () => {
       };
 
       setProjects([...projects, newProject]);
-      setIsModalOpen(false);
-      setAlert({
-        type: "success",
-        title: "Project Created Successfully!",
-        message: `Your project "${projectName}" has been created and is ready to use.`,
-      });
+
+      // Set projectCreated to true to indicate a project was created
+      setProjectCreated(true);
+
+      // Return the project ID first, let the modal handle its closure
+      return response.id;
     } catch (error) {
       console.error("Error creating project:", error);
       setAlert({
@@ -248,6 +250,22 @@ const CreateProject: React.FC = () => {
         title: "Something went wrong...",
         message: "Please try again!",
       });
+      throw error;
+    }
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+
+    // Only show success message if a project was actually created
+    if (projectCreated) {
+      setAlert({
+        type: "success",
+        title: "Project Created Successfully!",
+        message: `Your project has been created and is ready to use.`,
+      });
+      // Reset the projectCreated state
+      setProjectCreated(false);
     }
   };
 
@@ -591,7 +609,7 @@ const CreateProject: React.FC = () => {
 
       <NewProjectModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleModalClose}
         onSubmit={handleCreateProject}
         currentUserId={user?.userId ?? -1}
       />
