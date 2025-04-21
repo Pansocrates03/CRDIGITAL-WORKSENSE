@@ -16,13 +16,9 @@ interface MemberInfoPopupProps {
     updatedAt?: string;
   };
   onClose: () => void;
-  position: {
-    x: number;
-    y: number;
-  };
 }
 
-const MemberInfoPopup: React.FC<MemberInfoPopupProps> = ({ member, onClose, position }) => {
+const MemberInfoPopup: React.FC<MemberInfoPopupProps> = ({ member, onClose }) => {
   // Extract first and last name for generating a consistent avatar
   const [firstName = '', lastName = ''] = member.name.split(' ');
   const avatarUrl = member.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName + ' ' + lastName)}&background=random&color=fff&size=128`;
@@ -61,8 +57,8 @@ const MemberInfoPopup: React.FC<MemberInfoPopupProps> = ({ member, onClose, posi
       <div 
         className={styles.popup}
         style={{
-          top: position.y,
-          left: position.x
+          top: 0,
+          left: 0
         }}
         onClick={e => e.stopPropagation()}
       >

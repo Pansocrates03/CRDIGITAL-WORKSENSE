@@ -1,24 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "./AccountPage.module.css";
-
-// Import the User interface
-export interface User {
-  email: string;
-  userId: number;
-  firstName?: string;
-  lastName?: string;
-  gender?: string;
-  fullName?: string;
-}
-
-// Extended user profile with additional fields
-interface UserProfile extends User {
-  nickName?: string;
-  country?: string;
-  language?: string;
-  timeZone?: string;
-  avatar?: string;
-}
+import { User,UserProfile } from "@/types/UserType";
 
 export const AccountPage: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);

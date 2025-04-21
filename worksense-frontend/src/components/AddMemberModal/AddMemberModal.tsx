@@ -15,7 +15,6 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
-  projectId,
   title = "Add Member",
   submitButtonText = "Add Member",
 }) => {

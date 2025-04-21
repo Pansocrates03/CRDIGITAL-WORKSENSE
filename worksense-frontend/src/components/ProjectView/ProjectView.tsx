@@ -1,57 +1,25 @@
+  // Core Imports
 import React, { useEffect, useState } from "react";
-import styles from "./ProjectView.module.css";
 import { useParams } from "react-router-dom";
 import apiClient from "../../api/apiClient";
-import { BacklogItemType } from "@/types";
+import styles from "./ProjectView.module.css";
+// Component Imports
 import LoadingSpinner from "../Loading/LoadingSpinner";
 import EditTeamModal from "../EditTeamModal/EditTeamModal";
 import MemberInfoPopup from "../MemberInfoPopup/MemberInfoPopup";
+// Type Imports
+import { BacklogItemType } from "@/types";
+import { ProjectViewData } from "@/types/ProjectType";
+import { TeamMember } from "@/types/TeamMemberType";
 
-export interface ProjectViewData {
-  id: string;
-  name: string;
-  description: string;
-  currentSprint: {
-    number: number;
-    startDate: string;
-    endDate: string;
-  };
-  team: TeamMember[];
-}
 
-export interface TeamMember {
-  id: number;
-  name: string;
-  role: string;
-  avatar: string;
-  email?: string;
-  userId: string | number;
-  projectId: string;
-  roleId: string;
-  status: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface ProjectViewProps {
-  project: ProjectViewData;
-}
-
-interface SelectedMember {
-  member: TeamMember;
-  position: {
-    x: number;
-    y: number;
-  };
-}
-
-export const ProjectView: React.FC<ProjectViewProps> = ({ project }) => {
+export const ProjectView: React.FC<ProjectViewData> = ( project ) => {
   const { id } = useParams<{ id: string }>();
   const [backlogItems, setBacklogItems] = useState<BacklogItemType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(project.team);
-  const [selectedMember, setSelectedMember] = useState<SelectedMember | null>(null);
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 
   useEffect(() => {
     const fetchBacklogItems = async () => {
@@ -80,11 +48,7 @@ export const ProjectView: React.FC<ProjectViewProps> = ({ project }) => {
   };
 
   const handleAvatarClick = (member: TeamMember, e: React.MouseEvent<HTMLDivElement>) => {
-    console.log("Member clicked:", member);
-    setSelectedMember({ 
-      member,
-      position: { x: 0, y: 0 } // Set position to 0,0 since we'll center it with CSS
-    });
+    setSelectedMember(member);
   };
 
   return (
@@ -228,8 +192,7 @@ export const ProjectView: React.FC<ProjectViewProps> = ({ project }) => {
 
       {selectedMember && (
         <MemberInfoPopup
-          member={selectedMember.member}
-          position={selectedMember.position}
+          member={selectedMember}
           onClose={() => setSelectedMember(null)}
         />
       )}

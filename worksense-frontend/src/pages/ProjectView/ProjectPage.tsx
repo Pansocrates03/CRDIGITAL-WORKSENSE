@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  ProjectView,
-  ProjectViewData,
-} from "../../components/ProjectView/ProjectView";
+import { ProjectView } from "../../components/ProjectView/ProjectView";
+import { ProjectViewData } from "@/types/ProjectType";
 import { projectService } from "../../services/projectService";
 import styles from "./ProjectPage.module.css";
 import LoadingSpinner from "../../components/Loading/LoadingSpinner";
@@ -86,8 +84,6 @@ export const ProjectPage: React.FC = () => {
         projectService.getProjectMembers(id),
       ]);
 
-      console.log("Raw members data from API:", membersData);
-
       // Transform members data
       const teamMembers = membersData.map((member) => ({
         id: parseInt(member.userId, 10),
@@ -146,7 +142,7 @@ export const ProjectPage: React.FC = () => {
     return <NotFoundState onBackToProjects={handleBackToProjects} />;
   }
 
-  return <ProjectView project={project} />;
+  return <ProjectView {...project} />;
 };
 
 export default ProjectPage;

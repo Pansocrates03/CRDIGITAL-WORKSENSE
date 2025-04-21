@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './EditTeamModal.module.css';
 import apiClient from '../../api/apiClient';
-import { TeamMember } from '../ProjectView/ProjectView';
+import { TeamMember } from "@/types/TeamMemberType";
 
 // Add helper function for generating avatars
 const generateAvatar = (firstName: string, lastName: string) => {

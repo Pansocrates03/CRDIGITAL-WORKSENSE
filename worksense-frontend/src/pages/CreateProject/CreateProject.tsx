@@ -7,13 +7,11 @@ import NewProjectModal from "../../components/NewProjectModal/NewProjectModal";
 import { Alert } from "../../components/Alert/Alert";
 import { useAuth } from "../../contexts/AuthContext";
 import { projectService } from "../../services/projectService";
+import { Project } from "../../types/ProjectType";
 
 // Icons
 import {
   Calendar,
-  Star,
-  Users,
-  Clock,
   ArrowRight,
   Search,
   X,
@@ -21,22 +19,7 @@ import {
   Plus,
 } from "lucide-react";
 
-interface Project {
-  id: string;
-  name: string;
-  description: string;
-  status: "Active" | "Inactive" | "Completed" | "On Hold";
-  lastChange: string;
-  members: Array<{
-    id: string;
-    name?: string;
-    avatar?: string;
-  }>;
-  items: Array<{
-    id: string;
-    status: string;
-  }>;
-}
+
 
 type SortOption = "last-change" | "status" | "a-z" | "z-a" | "progress";
 
