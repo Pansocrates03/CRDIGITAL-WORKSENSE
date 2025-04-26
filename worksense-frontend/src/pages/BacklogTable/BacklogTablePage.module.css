@@ -1,0 +1,90 @@
+.backlogTablePageContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: white; /* Igual que el sidebar */
+    color: var(--foreground, #222); /* Texto principal */
+  }
+  
+  .backlogTableContent {
+    flex-grow: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+  }
+  
+  .backlogTableContent h1 {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary, #ac1754); /* Color del título */
+  }
+  
+  /* Estilos de tabla */
+  .tableContainer {
+    overflow-x: auto;
+    border: 1px solid #eaeaea; /* Igual que borde del sidebar */
+    border-radius: 0.5rem;
+    background-color: white;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eaeaea; /* Border igual que Sidebar */
+  }
+  
+  .table th {
+    background-color: #f9fafb; /* Muy suave, consistente */
+    color: var(--secondary, #666); /* Color de sección titles */
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  
+  .table td {
+    font-size: 0.875rem;
+    color: var(--foreground, #222); /* Texto principal */
+  }
+  
+  /* Para badges de Priority y Status */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  /* Opcional: colores suaves para badges */
+  .highPriority {
+    background-color: #fee2e2;
+    color: #b91c1c;
+  }
+  .mediumPriority {
+    background-color: #fef9c3;
+    color: #92400e;
+  }
+  .lowPriority {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  .statusTodo {
+    background-color: #f3f4f6;
+    color: #374151;
+  }
+  .statusInProgress {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  .statusDone {
+    background-color: #d1fae5;
+    color: #047857;
+  }
+  

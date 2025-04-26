@@ -14,6 +14,7 @@ import { ProjectPage } from "./pages/ProjectView/ProjectPage";
 import { AccountPage } from "./pages/Account/AccountPage";
 import BacklogPage from "./pages/Backlog/BacklogPage";
 import Settings from "./pages/Settings/Settings";
+import BacklogTablePage from "./pages/BacklogTable/BacklogTablePage";
 
 // Updated PrivateRoute to wrap content with MainLayout
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -91,6 +92,14 @@ function App() {
               <PrivateRoute>
                 {" "}
                 <BacklogPage />{" "}
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/project/:id/product-backlog" // Nueva ruta para el backlog
+            element={
+              <PrivateRoute>
+                <BacklogTablePage />
               </PrivateRoute>
             }
           />
