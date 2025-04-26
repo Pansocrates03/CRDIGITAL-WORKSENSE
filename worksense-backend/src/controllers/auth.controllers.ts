@@ -26,7 +26,8 @@ export const getUsers = async (req: Request, res: Response) => {
 };
 
 export const createUser = async (req: Request, res: Response) => {
-  const { email, firstName, lastName, gender, password } = req.body;
+  const { email, firstName, lastName, gender, password, platformRole } =
+    req.body;
 
   // Verificar si el usuario ya existe usando Procedure
 
@@ -44,6 +45,7 @@ export const createUser = async (req: Request, res: Response) => {
     .input("lastName", sql.VarChar, lastName)
     .input("gender", sql.Int, gender)
     .input("passwordHash", sql.VarChar, hashedPassword)
+    .input("platformRole", sql.VarChar, platformRole)
     .execute("spUserRegistration");
 
   res.status(201).send("Usuario registrado exitosamente");
