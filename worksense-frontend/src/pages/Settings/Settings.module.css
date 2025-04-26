@@ -120,12 +120,18 @@
   margin-bottom: 1.5rem;
 }
 
+.credentialsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
 .credentialsTitle {
   color: var(--color-purple);
   font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: 1rem;
-  text-align: center;
+  margin: 0;
 }
 
 .credentialsContent {
@@ -174,6 +180,66 @@
 
 .dismissButton:active {
   background-color: #545b62;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.copyButton {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  color: var(--color-charcoal);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.copyButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.copyButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+.copyLabel {
+  font-weight: 500;
+  color: var(--color-charcoal);
+}
+
+.copyTooltip {
+  position: absolute;
+  top: -30px;
+  right: 0;
+  background-color: var(--color-charcoal);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Modal styles */
