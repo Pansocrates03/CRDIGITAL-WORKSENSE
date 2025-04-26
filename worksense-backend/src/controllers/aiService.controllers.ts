@@ -13,7 +13,7 @@ function normalizePriority(priority: string): string {
 
 // 🔍 Parse AI response
 function parseIAResponse(text: string): any {
-  const lines = text.split("\n").filter(line => line.trim() !== "");
+  const lines = text.split("\n").filter((line) => line.trim() !== "");
   if (lines.length === 0) return null;
 
   const epic = {
@@ -36,7 +36,7 @@ function parseIAResponse(text: string): any {
       epic.name = clean.replace(/.*epic:/i, "").trim();
       currentItem = epic;
 
-    // USER STORY
+      // USER STORY
     } else if (/user story/i.test(clean)) {
       if (currentStory) epic.items.push(currentStory);
       currentStory = {
@@ -49,7 +49,7 @@ function parseIAResponse(text: string): any {
       };
       currentItem = currentStory;
 
-    // TASK
+      // TASK
     } else if (/task/i.test(clean)) {
       const task = {
         name: clean.replace(/[-*]\s*/, ""),
@@ -61,14 +61,16 @@ function parseIAResponse(text: string): any {
       if (currentStory) currentStory.items.push(task);
       currentItem = task;
 
-    // DESCRIPTION
+      // DESCRIPTION
     } else if (/description:/i.test(clean)) {
       const desc = clean.replace(/.*description:/i, "").trim();
       if (currentItem) currentItem.description = desc;
 
-    // PRIORITY
+      // PRIORITY
     } else if (/priority:/i.test(clean)) {
-      const priority = normalizePriority(clean.replace(/.*priority:/i, "").trim());
+      const priority = normalizePriority(
+        clean.replace(/.*priority:/i, "").trim()
+      );
       if (currentItem) currentItem.priority = priority;
     }
   }
@@ -119,18 +121,24 @@ export const generateEpic = async (req: Request, res: Response) => {
 
     const project = projectSnap.data();
     if (!project?.name || !project?.description) {
-      return res.status(400).json({ error: "Project must have a name and description" });
+      return res
+        .status(400)
+        .json({ error: "Project must have a name and description" });
     }
 
     const itemsRef = projectRef.collection("items");
 
     const existingEpicsSnap = await itemsRef.where("tag", "==", "epic").get();
-    const existingEpicNames = existingEpicsSnap.docs.map(doc => doc.data().name).filter(Boolean);
+    const existingEpicNames = existingEpicsSnap.docs
+      .map((doc) => doc.data().name)
+      .filter(Boolean);
     const epicExclusionList = existingEpicNames.length
-      ? `Avoid repeating or generating epics with these titles: ${existingEpicNames.join(", ")}.`
+      ? `Avoid repeating or generating epics with these titles: ${existingEpicNames.join(
+          ", "
+        )}.`
       : "";
 
-      const prompt = `
+    const prompt = `
 Generate ONE epic with at least two user stories, and each user story with at least one task.
 
 For each item (epic, user story, task), include:
@@ -155,7 +163,6 @@ Return the response using bullet-point Markdown format. Example:
       - **Priority:** ...
 `;
 
-
     const payload = {
       prompt,
       data: {
@@ -168,12 +175,16 @@ Return the response using bullet-point Markdown format. Example:
     const rawText = generated.data;
 
     if (!rawText || typeof rawText !== "string") {
-      return res.status(400).json({ error: "AI did not return a valid structure" });
+      return res
+        .status(400)
+        .json({ error: "AI did not return a valid structure" });
     }
 
     const structuredData = parseIAResponse(rawText);
     if (!structuredData?.name || !structuredData?.items?.length) {
-      return res.status(400).json({ error: "AI output could not be parsed correctly" });
+      return res
+        .status(400)
+        .json({ error: "AI output could not be parsed correctly" });
     }
 
     const duplicate = await itemsRef
@@ -226,7 +237,11 @@ Return the response using bullet-point Markdown format. Example:
       }
 
       const commentsRef = docRef.collection("comments");
-      if (item.comments && Array.isArray(item.comments) && item.comments.length > 0) {
+      if (
+        item.comments &&
+        Array.isArray(item.comments) &&
+        item.comments.length > 0
+      ) {
         for (const comment of item.comments) {
           const commentRef = commentsRef.doc();
           await commentRef.set({
@@ -245,9 +260,10 @@ Return the response using bullet-point Markdown format. Example:
     await saveItemRecursively(structuredData, itemsRef, projectId);
 
     res.status(201).json({ message: "Epic generated and saved successfully." });
-
   } catch (error: any) {
     console.error("Error generating items:", error);
-    res.status(500).json({ error: error.message || "Internal server error while generating epic." });
+    res.status(500).json({
+      error: error.message || "Internal server error while generating epic.",
+    });
   }
 };

@@ -1,4 +1,7 @@
+// Importo React y varios hooks útiles para manejar estado, refs y efectos
 import React, { useState, useRef, useEffect, useMemo } from "react";
+
+// Estilos y componentes personalizados
 import styles from "./NewProjectModal.module.css";
 import MemberSelection from "./MemberSelection";
 import InputWithClear from "./InputWithClear";
@@ -6,6 +9,8 @@ import BacklogProgress from "./BacklogProgress";
 import useAutoResizeTextarea from "../../hooks/resizingTextarea";
 import apiClient from "../../api/apiClient";
 import { Alert } from "../../components/Alert/Alert";
+
+// Tipos para props y estado
 import {
   User,
   ProjectMember,
@@ -13,7 +18,7 @@ import {
   NewProjectModalProps,
 } from "../../types";
 
-// Main component
+// Componente principal del modal para crear proyecto
 const NewProjectModal: React.FC<NewProjectModalProps> = ({
   isOpen,
   onClose,
@@ -24,19 +29,19 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
   submitButtonText = "Start",
   currentUserId,
 }) => {
-  // State for form inputs
+  // Estado para inputs del formulario
   const [projectName, setProjectName] = useState(initialProjectName);
   const [shouldPopulateBacklog, setShouldPopulateBacklog] = useState(false);
   const [selectedMembers, setSelectedMembers] = useState<ProjectMember[]>([]);
 
-  // State for alerts
+  // Alertas para errores o éxito
   const [alert, setAlert] = useState<{
     type: "success" | "error";
     title: string;
     message: string;
   } | null>(null);
 
-  // Description textarea with auto-resize
+  // Hook personalizado para el textarea que se autoajusta
   const {
     value: description,
     setValue: setDescription,
@@ -45,24 +50,24 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
     textareaRef,
   } = useAutoResizeTextarea(initialDescription);
 
-  // State for users and loading
+  // Lista de usuarios y estado de carga
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
 
-  // State for form validation and submission
+  // Errores del formulario y estado de envío
   const [errors, setErrors] = useState<FormErrors>({});
   const [isCreatingProject, setIsCreatingProject] = useState(false);
 
-  // State for backlog population
+  // Estado para el llenado automático del backlog
   const [isPopulatingBacklog, setIsPopulatingBacklog] = useState(false);
   const [populationProgress, setPopulationProgress] = useState(0);
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
 
-  // Refs
+  // Referencias para el modal y el input
   const modalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Filter available users for member selection
+  // Lista filtrada de usuarios disponibles (excluyendo al actual y ya seleccionados)
   const availableUsers = useMemo(() => {
     return users.filter(
       (user) =>
@@ -71,60 +76,50 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
     );
   }, [users, selectedMembers, currentUserId]);
 
-  // API calls
+  // Función para obtener usuarios desde la API
   const fetchUsers = async () => {
     setIsLoadingUsers(true);
     try {
       const response = await apiClient.get("/users");
       setUsers(response.data);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("Error al obtener usuarios:", error);
     } finally {
       setIsLoadingUsers(false);
     }
   };
 
+  // Lógica para generar backlog automáticamente usando IA
   const populateBacklog = async (projectId: string): Promise<void> => {
     setIsPopulatingBacklog(true);
     setPopulationProgress(0);
 
     try {
-      // Call AI service to populate the backlog
       await apiClient.post(`/projects/${projectId}/generate-epic`);
-
-      // Set to 100% when complete
       setPopulationProgress(100);
-
-      // Small delay before proceeding to show 100% completion
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500)); // pequeña pausa para UX
     } catch (error) {
-      console.error("Error populating backlog:", error);
+      console.error("Error generando backlog:", error);
       setErrors({
         ...errors,
-        members: "Failed to populate backlog. Please try again.",
+        members: "Error al generar el backlog. Intenta de nuevo.",
       });
     } finally {
       setIsPopulatingBacklog(false);
     }
   };
 
-  // Form validation
+  // Validación del formulario antes de enviar
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-
-    if (!projectName.trim()) {
-      newErrors.projectName = "Project name is required";
-    }
-
-    if (!description.trim()) {
-      newErrors.description = "Description is required";
-    }
-
+    if (!projectName.trim()) newErrors.projectName = "El nombre es obligatorio";
+    if (!description.trim())
+      newErrors.description = "La descripción es obligatoria";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Event handlers
+  // Handlers para inputs y miembros
   const handleProjectNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProjectName(e.target.value);
     if (errors.projectName) {
@@ -138,25 +133,21 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
   };
 
   const handleAddMember = (member: ProjectMember) => {
-    // Check if member is already added
     if (!selectedMembers.some((m) => m.userId === member.userId)) {
       setSelectedMembers([...selectedMembers, member]);
     }
   };
 
   const handleRemoveMember = (userId: number) => {
-    setSelectedMembers(
-      selectedMembers.filter((member) => member.userId !== userId)
-    );
+    setSelectedMembers(selectedMembers.filter((m) => m.userId !== userId));
   };
 
+  // Envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (validateForm()) {
       setIsCreatingProject(true);
       try {
-        // First create the project
         const projectId = await onSubmit(
           projectName.trim(),
           description.trim(),
@@ -165,42 +156,29 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
         );
 
         setCreatedProjectId(projectId);
+        if (shouldPopulateBacklog) await populateBacklog(projectId);
 
-        // If backlog population is requested, handle it
-        if (shouldPopulateBacklog) {
-          await populateBacklog(projectId);
-        }
-
-        // Show success alert
         setAlert({
           type: "success",
-          title: "Project Created Successfully!",
-          message: `Your project has been created and is ready to use.`,
+          title: "¡Proyecto creado!",
+          message: "Tu proyecto está listo para usarse.",
         });
 
-        // Only close the modal after everything is complete
         onClose();
       } catch (error) {
-        console.error("Error creating project:", error);
-        setErrors({
-          ...errors,
-          members: "Failed to create project. Please try again.",
-        });
+        console.error("Error creando proyecto:", error);
+        setErrors({ ...errors, members: "Error al crear proyecto." });
       } finally {
         setIsCreatingProject(false);
       }
     }
   };
 
-  // Effects
-  // Fetch users when modal opens
+  // useEffects para manejar lógica cuando el modal abre o cambia algo
   useEffect(() => {
-    if (isOpen) {
-      fetchUsers();
-    }
+    if (isOpen) fetchUsers();
   }, [isOpen]);
 
-  // Reset form when opening and auto-focus the input
   useEffect(() => {
     if (isOpen) {
       setProjectName(initialProjectName);
@@ -212,45 +190,31 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
       setCreatedProjectId(null);
       setAlert(null);
 
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
+      setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [isOpen, initialProjectName, initialDescription]);
 
-  // Progress bar animation for backlog population
   useEffect(() => {
     let interval: NodeJS.Timeout;
-
     if (isPopulatingBacklog) {
       interval = setInterval(() => {
         setPopulationProgress((prev) => {
-          // Slow down as we approach 95%
           const increment = prev < 70 ? 5 : prev < 90 ? 2 : 1;
-          const newProgress = Math.min(prev + increment, 95);
-          return newProgress;
+          return Math.min(prev + increment, 95);
         });
       }, 200);
     }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, [isPopulatingBacklog]);
 
-  // Handle close on ESC key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
+      if (e.key === "Escape" && isOpen) onClose();
     };
-
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
-  // Handle click outside to close
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (
@@ -261,56 +225,53 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
         onClose();
       }
     };
-
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen) return null; // Si no está abierto, no renderizo nada
 
   return (
     <>
-      <div
-        className={styles.modalOverlay}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
-      >
+      {/* Contenedor del modal */}
+      <div className={styles.modalOverlay} role="dialog" aria-modal="true">
         <div className={styles.modalContent} ref={modalRef}>
           {isPopulatingBacklog ? (
             <BacklogProgress progress={populationProgress} />
           ) : (
             <>
+              {/* Encabezado y descripción del modal */}
               <div className={styles.modalHeader}>
-                <h2 id="modal-title">{title}</h2>
+                <h2>{title}</h2>
                 <p className={styles.modalDescription}>
-                  Your project will have its own dedicated space and will be
-                  completely separate from other projects.
+                  Tu proyecto tendrá su propio espacio independiente.
                 </p>
               </div>
 
+              {/* Formulario principal */}
               <form onSubmit={handleSubmit}>
                 <InputWithClear
                   id="projectName"
                   value={projectName}
                   onChange={handleProjectNameChange}
                   onClear={handleClearProjectName}
-                  placeholder="Enter project name"
-                  label="Project name"
+                  placeholder="Nombre del proyecto"
+                  label="Nombre"
                   error={errors.projectName}
                   inputRef={inputRef}
                   required={true}
                 />
 
+                {/* Textarea de descripción con opción de limpiar */}
                 <div className={styles.formGroup}>
-                  <label htmlFor="description">Description</label>
+                  <label htmlFor="description">Descripción</label>
                   <div className={styles.textareaWrapper}>
                     <textarea
                       id="description"
                       ref={textareaRef}
                       value={description}
                       onChange={handleTextareaChange}
-                      placeholder="Describe your project (required)"
+                      placeholder="Describe tu proyecto"
                       rows={3}
                       className={styles.textarea}
                       aria-required="true"
@@ -321,19 +282,18 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
                         type="button"
                         className={styles.clearButton}
                         onClick={handleClearDescription}
-                        aria-label="Clear description"
+                        aria-label="Limpiar descripción"
                       >
                         <span aria-hidden="true">✕</span>
                       </button>
                     )}
                   </div>
                   {errors.description && (
-                    <p className={styles.errorMessage} role="alert">
-                      {errors.description}
-                    </p>
+                    <p className={styles.errorMessage}>{errors.description}</p>
                   )}
                 </div>
 
+                {/* Componente para seleccionar miembros */}
                 <MemberSelection
                   users={users}
                   selectedMembers={selectedMembers}
@@ -344,6 +304,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
                   availableUsers={availableUsers}
                 />
 
+                {/* Checkbox para usar IA */}
                 <div className={styles.formGroup}>
                   <div className={styles.checkboxWrapper}>
                     <input
@@ -358,18 +319,19 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
                       htmlFor="populateBacklog"
                       className={styles.checkboxLabel}
                     >
-                      Automatically populate backlog with AI
+                      Generar backlog automáticamente con IA
                       <span className={styles.aiLabel}>AI</span>
                     </label>
                   </div>
                   {shouldPopulateBacklog && (
                     <p className={styles.aiDescription}>
-                      Our AI will analyze your project description and generate
-                      relevant epics and user stories.
+                      Analizaremos la descripción para generar épicas e
+                      historias.
                     </p>
                   )}
                 </div>
 
+                {/* Botones del modal */}
                 <div className={styles.modalActions}>
                   <button
                     type="button"
@@ -377,7 +339,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
                     onClick={onClose}
                     disabled={isCreatingProject || isPopulatingBacklog}
                   >
-                    Cancel
+                    Cancelar
                   </button>
                   <button
                     type="submit"
@@ -389,9 +351,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
                       isPopulatingBacklog
                     }
                   >
-                    {isCreatingProject
-                      ? "Creating Project..."
-                      : submitButtonText}
+                    {isCreatingProject ? "Creando..." : submitButtonText}
                   </button>
                 </div>
               </form>
@@ -400,6 +360,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
         </div>
       </div>
 
+      {/* Alerta de éxito o error */}
       {alert && (
         <Alert
           type={alert.type}
