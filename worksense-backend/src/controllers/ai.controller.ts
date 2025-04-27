@@ -1,8 +1,51 @@
 import { Request, Response } from "express";
 import { db } from "../models/firebase.js";
 import { generateItemWithAI} from '../service/aiService.js';
-import {parseIAResponse, Epic} from '../utils/parseIAResponse.js';
-import { WriteBatch, Timestamp } from 'firebase-admin/firestore';
+import {parseIAResponse, Epic, Story, Task} from '../utils/parseIAResponse.js';
+import { WriteBatch, CollectionReference, Timestamp } from 'firebase-admin/firestore';
+
+// Guarda un item (épica, historia o tarea) y sus sub-items en batch.
+async function saveItemRecursively(
+    batch: WriteBatch,
+    parentColl: CollectionReference,
+    projectId: string,
+    item: any,      // Epic | Story | Task con .items[]
+    userId: number
+): Promise<string[]> {
+    const docRef = parentColl.doc();
+    const now = Timestamp.now();
+  
+    batch.set(docRef, {
+      projectID: projectId,
+      name: item.name,
+      description: item.description,
+      tag: item.tag,        // 'epic' | 'user-story' | 'task'
+      status: 'to do',
+      priority: item.priority,
+      assignees: item.assignees,
+      authorId: userId,
+      createdAt: now,
+      updatedAt: now,
+    });
+  
+    let ids = [docRef.id];
+  
+    if (Array.isArray(item.items) && item.items.length > 0) {
+      const sub = docRef.collection('items');
+      for (const child of item.items) {
+        // garantizamos child.tag correcto
+        ids = ids.concat(
+          await saveItemRecursively(batch, sub, projectId, {
+            ...child,
+            // si child no trae tag, asignamos según profundidad
+            tag: child.items ? 'user-story' : 'task'
+          }, userId)
+        );
+      }
+    }
+  
+    return ids;
+}
 
 export const generateEpicHandler = async (req: Request, res: Response) => {
     // Validación de autenticación 
@@ -141,88 +184,69 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
     });
 };
 
-// Controlador confirmEpicsHandler
+/**
+ * POST /projects/:id/confirm-epics
+ */
 export async function confirmEpicsHandler(req: Request, res: Response) {
-    // Autenticación
-    const userId = (req as any).user?.userId;
+    // 1) Autenticación
+    const userId = (req as any).user?.userId as number;
     if (!userId) {
-        return res.status(401).json({ error: "Acceso denegado: token inválido" });
+      return res.status(401).json({ error: 'Acceso denegado: token inválido.' });
     }
-
-    // Validar proyecto
+  
+    // 2) Validar proyecto
     const projectId = req.params.id;
     const projectRef = db.collection('projects').doc(projectId);
     const projectSnap = await projectRef.get();
-
     if (!projectSnap.exists) {
-        return res.status(404).json({ error: 'Proyecto no encontrado' });
+      return res.status(404).json({ error: 'Proyecto no encontrado.' });
     }
     const project = projectSnap.data();
     if (!project?.name || !project?.description) {
-        return res
+      return res
         .status(400)
-        .json({ error: 'El proyecto requiere los campos "name" y "description"'});
+        .json({ error: 'El proyecto requiere campos name y description.' });
     }
-
-    // Validar body.epics
+  
+    // 3) Validar body.epics
     const epics: Epic[] = req.body.epics;
-    if (!Array.isArray(epics) || epics.length === 0) {
-        return res
+    if (!Array.isArray(epics) || epics.length < 1 || epics.length > 5) {
+      return res
         .status(400)
-        .json({ error: 'Se requieren entre 1 y 5 épicas válidas en el body.'});
+        .json({ error: 'Se requieren entre 1 y 5 épicas en el body.' });
     }
-
-    // Recuperar nombres existentes para evitar duplicados
+  
+    // 4) Traer épicas existentes para filtrar duplicados
     const itemsRef = projectRef.collection('items');
     const existSnap = await itemsRef.where('tag', '==', 'epic').get();
-    const existingNames = new Set (
-        existSnap.docs
+    const existingNames = new Set(
+      existSnap.docs
         .map((d) => d.data().name)
         .filter((n): n is string => typeof n === 'string')
     );
-    
-    // Creat batch para operaciones de escritura y agregar sólo épicas no duplicadas
+  
+    // 5) Batch y guardado recursivo
     const batch = db.batch();
-    const createIds: string[] = [];
-
+    let createdIds: string[] = [];
+  
     for (const epic of epics) {
-        if (existingNames.has(epic.name)) {
-            continue;
-        }
-
-        const docRef = itemsRef.doc(); // nuevo id
-        batch.set(docRef, {
-            projectID: projectId,
-            name: epic.name,
-            description: epic.description,
-            tag: 'epic',
-            status: 'to do',
-            priority: epic.priority,
-            assignees: epic.assignees,
-            authorId: userId,
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now()
-        });
-        createIds.push(docRef.id);
-
-        // Agregar aqui si tuvieramos historias/tareas anidadas en Epic
+      if (existingNames.has(epic.name)) {
+        continue; // saltamos duplicadas
+      }
+      // definimos el tag de épica
+      const epicWithTag = { ...epic, tag: 'epic' };
+      const ids = await saveItemRecursively(batch, itemsRef, projectId, epicWithTag, userId);
+      createdIds = createdIds.concat(ids);
     }
-
-    // Si no se crearon documentos, devolver 409
-    if (createIds.length === 0) {
-        return res
+  
+    if (createdIds.length === 0) {
+      return res
         .status(409)
-        .json({ error: 'Todas las épicas sugeridas ya existen en el proyecto.'});
+        .json({ error: 'Ninguna épica nueva para guardar (todas duplicadas).' });
     }
-
-    // Ejecutar batch
+  
     await batch.commit();
-
-    // Respuesta 201
     return res
-    .status(201)
-    .json({
-        message: 'Épicas guardadas exitosamente',
-        epicIds: createIds
-    });
+      .status(201)
+      .json({ message: 'Épicas guardadas', docIds: createdIds });
 }

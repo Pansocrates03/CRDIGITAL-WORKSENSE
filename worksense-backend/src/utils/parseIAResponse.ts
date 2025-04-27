@@ -3,6 +3,29 @@ export interface Epic {
     description: string;
     priority: 'low' | 'medium' | 'high';
     assignees: string[];
+    items: Story[];
+}
+
+export interface Task {
+    name: string;
+    description: string;
+    priority: 'low' | 'medium' | 'high';
+    assignees: string[];
+}
+
+export interface Story {
+    name: string;
+    description: string;
+    priority: 'low' | 'medium' | 'high';
+    assignees: string[];
+    items: Task[]; // Sub-tareas
+}
+
+// Normalizar el campo "priority" y asegurar que sea uno de los valores permitidos
+function normalizePriority(value: string): Epic['priority'] {
+    const allowed = ['low', 'medium', 'high'];
+    const lower = value.toLowerCase();
+    return (allowed.includes(lower) ? lower : 'medium') as Epic ['priority'];
 }
 
 /**
@@ -34,37 +57,65 @@ export function parseIAResponse(rawText: string): Epic[] {
         throw new Error('El JSON debe incluir "epics" como array');
     }
 
-    const epics: Epic[] = parsed.epics.map((e: any, idx: number) => {
-        // Validar tipo de cada campo
-        if (typeof e.name !== 'string' || e.name.trim() === '') {
-            throw new Error(`Épica "${e.name}" falta campo "name" válido`);
+    // Mapear cada épica y sus sub-niveles
+    const epics: Epic[] = parsed.epics.map((e: any, epiIdx: number) => {
+        // Campos obligatorios de la épica
+        if (typeof e.name !== 'string' || !e.name.trim()) {
+            throw new Error(`Épica #${epiIdx + 1} falta campo "name" válido`);
         }
-        if (typeof e.description !== 'string' || e.description.trim() === '') {
+        if (typeof e.description !== 'string' || !e.description.trim()) {
             throw new Error(`Épica "${e.name}" falta campo "description" válido`);
         }
 
-        // Prioridad válida o default
-        const allowed = ['low', 'medium', 'high'];
-        const priority = typeof e.priority === 'string' && allowed.includes(e.priority.toLowerCase())
-        ? e.priority.toLowerCase() as Epic['priority']
-        : 'medium';
+        // Mapear historias (Story)
+        const stories: Story[] = Array.isArray(e.items) ? e.items.map((s: any, sIdx: number) => {
+            if (typeof s.name !== 'string' || !s.name.trim()) {
+                throw new Error(`Historia #${sIdx + 1} de "${e.name}" falta campo "name" válido`);
+            }
+            if (typeof s.description !== 'string' || !s.description.trim()) {
+                throw new Error(`Historia "${s.name}" de "${e.name}" falta campo "description" válido`);
+            }
+            
+            // Mapear tareas (Task)
+            const tasks: Task[] = Array.isArray(s.items) ? s.items.map((t: any, tIdx: number) => {
+                if (typeof t.name !== 'string' || !t.name.trim()) {
+                    throw new Error(`Tarea #${tIdx + 1} de "${s.name}" de "${e.name}" falta campo "name" válido`);
+                }
+                if (typeof t.description !== 'string' || !t.description.trim()) {
+                    throw new Error(`Tarea "${t.name}" de "${s.name}" de "${e.name}" falta campo "description" válido`);
+                }
+                return {
+                    name: t.name.trim(),
+                    description: t.description.trim(),
+                    priority: normalizePriority(t.priority || ''),
+                    assignees: Array.isArray(t.assignees) ? t.assignees.map(String) : []
+                  };
+            }) 
+            : [];
 
-        // Assignees como array de strings
-        const assignees = Array.isArray(e.assignees)
-        ? e.assignees.map((a: any) => String(a))
+            return {
+                name: s.name.trim(),
+                description: s.description.trim(),
+                priority: normalizePriority(s.priority || ''),
+                assignees: Array.isArray(s.assignees) ? s.assignees.map(String) : [],
+                items: tasks
+            };
+        })
         : [];
-
         return {
             name: e.name.trim(),
             description: e.description.trim(),
-            priority,
-            assignees
+            priority: normalizePriority(e.priority || ''),
+            assignees: Array.isArray(e.assignees) ? e.assignees.map(String) : [],
+            items: stories
         };
     });
-    
+
+    // Validar cantidad de épicas
     if (epics.length < 3 || epics.length > 5) {
         throw new Error(`Se esperaban entre 3 y 5 épicas, IA devolvió ${epics.length}`);
     }
 
     return epics;
+            
 }
