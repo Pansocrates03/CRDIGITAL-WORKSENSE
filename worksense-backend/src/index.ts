@@ -12,7 +12,10 @@ import sqlRoutes from "./routes/auth.routes.js";
 import membersRoutes from "./routes/members.routes.js";
 import projectRoutes from "./routes/projects.routes.js";
 import itemsRoutes from "./routes/items.routes.js";
-import aiService from "./routes/aiService.routes.js"
+//import aiService from "./routes/aiService.routes.js"
+
+// IA Routes Imports
+import aiRoutes from "./routes/ai.routes.js";
 
 // Documenattion Imports
 import { swaggerOptions } from "../swagger/swaggerSetup.js"; // Swagger options
@@ -30,14 +33,19 @@ const app = express();
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
+
+// Routes
 app.use(sqlRoutes);
 app.use(projectRoutes);
 app.use(membersRoutes);
 app.use(itemsRoutes);
-app.use(aiService);
+//app.use(aiServiceRoutes);
+app.use("/api", aiRoutes);
+
+// Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get('/', (req: any, res: any) => {
     res.send('API is running...');
 });
 
-app.listen(PORT, () => console.log(URL));
+app.listen(PORT, () => console.log(`Server listening on ${URL}`));
