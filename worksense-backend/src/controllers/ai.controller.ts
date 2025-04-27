@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { db } from "../models/firebase.js";
 import { generateItemWithAI} from '../service/aiService.js';
 import {parseIAResponse, Epic} from '../utils/parseIAResponse.js';
+import { WriteBatch, Timestamp } from 'firebase-admin/firestore';
 
 export const generateEpicHandler = async (req: Request, res: Response) => {
     // Validación de autenticación 
@@ -139,3 +140,89 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
         epics: epics
     });
 };
+
+// Controlador confirmEpicsHandler
+export async function confirmEpicsHandler(req: Request, res: Response) {
+    // Autenticación
+    const userId = (req as any).user?.userId;
+    if (!userId) {
+        return res.status(401).json({ error: "Acceso denegado: token inválido" });
+    }
+
+    // Validar proyecto
+    const projectId = req.params.id;
+    const projectRef = db.collection('projects').doc(projectId);
+    const projectSnap = await projectRef.get();
+
+    if (!projectSnap.exists) {
+        return res.status(404).json({ error: 'Proyecto no encontrado' });
+    }
+    const project = projectSnap.data();
+    if (!project?.name || !project?.description) {
+        return res
+        .status(400)
+        .json({ error: 'El proyecto requiere los campos "name" y "description"'});
+    }
+
+    // Validar body.epics
+    const epics: Epic[] = req.body.epics;
+    if (!Array.isArray(epics) || epics.length === 0) {
+        return res
+        .status(400)
+        .json({ error: 'Se requieren entre 1 y 5 épicas válidas en el body.'});
+    }
+
+    // Recuperar nombres existentes para evitar duplicados
+    const itemsRef = projectRef.collection('items');
+    const existSnap = await itemsRef.where('tag', '==', 'epic').get();
+    const existingNames = new Set (
+        existSnap.docs
+        .map((d) => d.data().name)
+        .filter((n): n is string => typeof n === 'string')
+    );
+    
+    // Creat batch para operaciones de escritura y agregar sólo épicas no duplicadas
+    const batch = db.batch();
+    const createIds: string[] = [];
+
+    for (const epic of epics) {
+        if (existingNames.has(epic.name)) {
+            continue;
+        }
+
+        const docRef = itemsRef.doc(); // nuevo id
+        batch.set(docRef, {
+            projectID: projectId,
+            name: epic.name,
+            description: epic.description,
+            tag: 'epic',
+            status: 'to do',
+            priority: epic.priority,
+            assignees: epic.assignees,
+            authorId: userId,
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now()
+        });
+        createIds.push(docRef.id);
+
+        // Agregar aqui si tuvieramos historias/tareas anidadas en Epic
+    }
+
+    // Si no se crearon documentos, devolver 409
+    if (createIds.length === 0) {
+        return res
+        .status(409)
+        .json({ error: 'Todas las épicas sugeridas ya existen en el proyecto.'});
+    }
+
+    // Ejecutar batch
+    await batch.commit();
+
+    // Respuesta 201
+    return res
+    .status(201)
+    .json({
+        message: 'Épicas guardadas exitosamente',
+        epicIds: createIds
+    });
+}
