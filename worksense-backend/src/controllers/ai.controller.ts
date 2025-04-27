@@ -129,8 +129,6 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
         return res.status(200).json({ epics: unique });
     } catch (err: any) {
         console.error('Error comprobando duplicados en Firestore:', err.message);
-        
-        return res.status(500).json({error: 'Error al obtener épicas existentes'});
     }
 
     // Devolvemos la respuesta
