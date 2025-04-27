@@ -96,13 +96,41 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
         return res.status(502).json({error: 'Error al comunicarse con la IA'});
     }
 
-    // Parseo mínimo para comprobar estructura de respuesta (sub-issue #4)
+    // Parseo mínimo para comprobar estructura de respuesta (sub-issue #5)
     let epics: Epic[];
     try {
         epics = parseIAResponse(rawText);   
     } catch (err: any) {
         console.error('Error parseando IA:', err.message);
         return res.status(400).json({error: err.message});
+    }
+
+    // Obtener épicas existentes en Firestore y filtrar duplicados
+    try {
+        const itemRef = db
+        .collection('projects')
+        .doc(req.params.id)
+        .collection('items');
+        const snapshot = await itemRef.where('tag', '==', 'epic').get();
+        const existingNames = snapshot.docs
+        .map((doc) => doc.data().name)
+        .filter((n): n is string => typeof n === 'string');
+
+        // Filtramos sólo las épicas que no existen en Firestore
+        const unique = epics.filter((e) => !existingNames.includes(e.name));
+
+        if (unique.length === 0) {
+            return res
+            .status(409)
+            .json({ error: 'Todas las épicas sugeridas ya existen en el proyecto.'});
+        }
+
+        // Devolvemos sólo las no duplicadas
+        return res.status(200).json({ epics: unique });
+    } catch (err: any) {
+        console.error('Error comprobando duplicados en Firestore:', err.message);
+        
+        return res.status(500).json({error: 'Error al obtener épicas existentes'});
     }
 
     // Devolvemos la respuesta
