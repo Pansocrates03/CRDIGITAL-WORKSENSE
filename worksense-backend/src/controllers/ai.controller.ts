@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { db } from "../models/firebase.js";
 import { generateItemWithAI} from '../service/aiService.js';
-// import {parseIAResponse} from '../utils/parseIAResponse.js';
-// Token valido Enrique: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImEwMTY0MTQwMkB0ZWMubXgiLCJ1c2VySWQiOjEyLCJpYXQiOjE3NDU3NzQ5NDgsImV4cCI6MTc0NTc3ODU0OH0.pPxP-xwfafkYcOMx7ss7inOlgvSyCkxbgv0WiForMzY
+import {parseIAResponse, Epic} from '../utils/parseIAResponse.js';
+
 export const generateEpicHandler = async (req: Request, res: Response) => {
     // Validación de autenticación 
     const userId = (req as any).user?.userId;
@@ -83,7 +83,7 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
     Do **not** add any extra text before or after the JSON.
     `.trim();
 
-    console.log('Prompt enviado a la IA:', prompt);
+    console.log('✅ Prompt enviado a la IA');
     // ───────────────────────────────────────────────────────────────────────
 
     // Llamada al servicio de IA FRIDA
@@ -97,17 +97,19 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
     }
 
     // Parseo mínimo para comprobar estructura de respuesta (sub-issue #4)
-    // const structured = parseIAResponse(rawText);
-    // if (!structured) {
-    //     return res.status(400).json({ error: 'No se pudo parsear la respuesta de la IA.'});
-    // }
+    let epics: Epic[];
+    try {
+        epics = parseIAResponse(rawText);   
+    } catch (err: any) {
+        console.error('Error parseando IA:', err.message);
+        return res.status(400).json({error: err.message});
+    }
 
-    // Punto de control: Endpoint alcanzado correctamente con proyecto válido
+    // Devolvemos la respuesta
     return res.status(200).json({ 
         message: "Proyecto Válido. Endpoint generate-epic alcanzado.",
         projectId: projectId,
         userId: userId,
-        rawText: rawText,
-        // , epics: [structured]
+        epics: epics
     });
 };
