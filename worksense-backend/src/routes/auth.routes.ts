@@ -8,55 +8,25 @@ import {
   login,
 } from "../controllers/auth.controller.js";
 import { verifyToken } from "../middlewares/tokenAuth.js";
+import { checkPlatformAdmin } from "../middlewares/adminAuth.js";
 
 const router = Router();
 
 /**
  * @swagger
  * tags:
- *   name: Authentication
- *   description: User authentication and management operations
+ *   - name: Authentication
+ *     description: User authentication operations
+ *   - name: Platform Admin
+ *     description: Platform-level user management operations
  */
-
-/**
- * @swagger
- * /users:
- *   get:
- *     summary: Get all users (protected route)
- *     tags: [Authentication]
- *     security:
- *       - authToken: []
- *     responses:
- *       200:
- *         description: List of all users
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                   email:
- *                     type: string
- *                   name:
- *                     type: string
- *                   role:
- *                     type: string
- *       401:
- *         description: Unauthorized - User is not authenticated
- *       403:
- *         description: Forbidden - User does not have permission to view all users
- */
-router.get("/users", verifyToken, getAllUsers);
 
 /**
  * @swagger
  * /users/{id}:
  *   put:
- *     summary: Update a user (protected route)
- *     tags: [Authentication]
+ *     summary: Update a user (admin only)
+ *     tags: [Platform Admin]
  *     security:
  *       - authToken: []
  *     parameters:
@@ -104,18 +74,18 @@ router.get("/users", verifyToken, getAllUsers);
  *       401:
  *         description: Unauthorized - User is not authenticated
  *       403:
- *         description: Forbidden - User does not have permission to update this user
+ *         description: Forbidden - User does not have admin privileges
  *       404:
  *         description: User not found
  */
-router.put("/users/:id", verifyToken, updateUser);
+router.put("/users/:id", verifyToken, checkPlatformAdmin, updateUser);
 
 /**
  * @swagger
  * /users/{id}:
  *   delete:
- *     summary: Delete a user (protected route)
- *     tags: [Authentication]
+ *     summary: Delete a user (admin only)
+ *     tags: [Platform Admin]
  *     security:
  *       - authToken: []
  *     parameters:
@@ -131,18 +101,20 @@ router.put("/users/:id", verifyToken, updateUser);
  *       401:
  *         description: Unauthorized - User is not authenticated
  *       403:
- *         description: Forbidden - User does not have permission to delete this user
+ *         description: Forbidden - User does not have admin privileges
  *       404:
  *         description: User not found
  */
-router.delete("/users/:id", verifyToken, deleteUser);
+router.delete("/users/:id", verifyToken, checkPlatformAdmin, deleteUser);
 
 /**
  * @swagger
  * /users/{id}:
  *   get:
- *     summary: Get a user by ID (public route)
+ *     summary: Get a user by ID (protected route)
  *     tags: [Authentication]
+ *     security:
+ *       - authToken: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -166,17 +138,21 @@ router.delete("/users/:id", verifyToken, deleteUser);
  *                   type: string
  *                 role:
  *                   type: string
+ *       401:
+ *         description: Unauthorized - User is not authenticated
  *       404:
  *         description: User not found
  */
-router.get("/users/:id", getUsers);
+router.get("/users/:id", verifyToken, getUsers);
 
 /**
  * @swagger
  * /users:
  *   post:
- *     summary: Create a new user (public route)
- *     tags: [Authentication]
+ *     summary: Create a new user (admin only)
+ *     tags: [Platform Admin]
+ *     security:
+ *       - authToken: []
  *     requestBody:
  *       required: true
  *       content:
@@ -218,10 +194,14 @@ router.get("/users/:id", getUsers);
  *                   format: date-time
  *       400:
  *         description: Invalid request data
+ *       401:
+ *         description: Unauthorized - User is not authenticated
+ *       403:
+ *         description: Forbidden - User does not have admin privileges
  *       409:
  *         description: Email already in use
  */
-router.post("/users", createUser);
+router.post("/users", verifyToken, checkPlatformAdmin, createUser);
 
 /**
  * @swagger
