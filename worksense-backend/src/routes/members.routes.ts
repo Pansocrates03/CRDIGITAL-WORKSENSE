@@ -1,8 +1,12 @@
 import { Router } from "express";
-import { getProjectMembers, getMemberById, addMember} from "../controllers/members.controllers.js";
+import {
+  getProjectMembers,
+  getMemberById,
+  addMember,
+} from "../controllers/members.controllers.js";
 const router = Router();
 
-import { verifyToken } from "../middlewares/auth.js";
+import { verifyToken } from "../middlewares/tokenAuth.js";
 
 /**
  * @swagger
@@ -42,7 +46,11 @@ router.get("/projects/:ProjectId/members", verifyToken, getProjectMembers); // O
  *       400:
  *         description: Error al obtener el miembro
  */
-router.get("/projects/:ProjectId/members/:MemberId", verifyToken, getMemberById); // Obtener un miembro por ID
+router.get(
+  "/projects/:ProjectId/members/:MemberId",
+  verifyToken,
+  getMemberById
+); // Obtener un miembro por ID
 
 /**
  * @swagger
@@ -72,6 +80,5 @@ router.post("/projects/:ProjectId/members", verifyToken, addMember); // Crear un
 
 //router.put("/projects/:id/members/:id", updateMember); // Actualizar un miembro existente
 //router.delete("/projects/:id/members/:id", deleteMember); // Eliminar un miembro existente
-
 
 export default router;

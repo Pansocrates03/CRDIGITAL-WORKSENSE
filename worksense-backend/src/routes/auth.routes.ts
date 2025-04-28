@@ -1,55 +1,285 @@
 import { Router } from "express";
 import {
-    getAllUsers,
-    getUsers,
-    createUser,
-    updateUser,
-    deleteUser,
-    login
-} from "../controllers/auth.controllers.js";
-
-import { verifyToken } from "../middlewares/auth.js";
+  getAllUsers,
+  getUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  login,
+} from "../controllers/auth.controller.js";
+import { verifyToken } from "../middlewares/tokenAuth.js";
+import { checkPlatformAdmin } from "../middlewares/adminAuth.js";
 
 const router = Router();
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Authentication
+ *     description: User authentication operations
+ *   - name: Platform Admin
+ *     description: Platform-level user management operations
+ */
 
-router.get("/users", verifyToken, getAllUsers);
-router.get("/users/:id", getUsers);
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     summary: Update a user (admin only)
+ *     tags: [Platform Admin]
+ *     security:
+ *       - authToken: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the user to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: New name for the user
+ *               email:
+ *                 type: string
+ *                 description: New email for the user
+ *               password:
+ *                 type: string
+ *                 description: New password for the user (will be hashed)
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Invalid request data
+ *       401:
+ *         description: Unauthorized - User is not authenticated
+ *       403:
+ *         description: Forbidden - User does not have admin privileges
+ *       404:
+ *         description: User not found
+ */
+router.put("/users/:id", verifyToken, checkPlatformAdmin, updateUser);
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   delete:
+ *     summary: Delete a user (admin only)
+ *     tags: [Platform Admin]
+ *     security:
+ *       - authToken: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the user to delete
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *       401:
+ *         description: Unauthorized - User is not authenticated
+ *       403:
+ *         description: Forbidden - User does not have admin privileges
+ *       404:
+ *         description: User not found
+ */
+router.delete("/users/:id", verifyToken, checkPlatformAdmin, deleteUser);
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Get a user by ID (protected route)
+ *     tags: [Authentication]
+ *     security:
+ *       - authToken: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the user to retrieve
+ *     responses:
+ *       200:
+ *         description: User details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 role:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized - User is not authenticated
+ *       404:
+ *         description: User not found
+ */
+router.get("/users/:id", verifyToken, getUsers);
 
 /**
  * @swagger
  * /users:
  *   post:
- *     summary: Crea un nuevo usuario con los datos proporcionados
+ *     summary: Create a new user (admin only)
+ *     tags: [Platform Admin]
+ *     security:
+ *       - authToken: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the user
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email of the user
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: Password for the user account
  *     responses:
- *       200:
- *         description: Usuario creado exitosamente
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
  *       400:
- *         description: El usuario ya existe
+ *         description: Invalid request data
+ *       401:
+ *         description: Unauthorized - User is not authenticated
+ *       403:
+ *         description: Forbidden - User does not have admin privileges
+ *       409:
+ *         description: Email already in use
  */
-router.post("/users/", createUser);
-
-
-router.put("/users/:id", verifyToken, updateUser);
-router.delete("/users/:id", verifyToken, deleteUser);
+router.post("/users", verifyToken, checkPlatformAdmin, createUser);
 
 /**
  * @swagger
  * /login:
  *   post:
- *     summary: Permite a los usuarios iniciar sesión con sus credenciales y devuelve un token de acceso
+ *     summary: Authenticate a user and get a token
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email of the user
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: Password for the user account
  *     responses:
  *       200:
- *         description: Message, token
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   description: JWT token for authentication
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
  *       400:
- *         description: Credenciales inválidas
+ *         description: Invalid request data
+ *       401:
+ *         description: Invalid credentials
  */
 router.post("/login", login);
 
-// Ruta protegida (solo accesible con token)
-router.get('/protected', verifyToken, (req, res) => {
-    res.send('Accediste a una ruta protegida');
-});   
-
+/**
+ * @swagger
+ * /protected:
+ *   get:
+ *     summary: Test protected route access
+ *     tags: [Authentication]
+ *     security:
+ *       - authToken: []
+ *     responses:
+ *       200:
+ *         description: Protected route access successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Protected route access successful"
+ *       401:
+ *         description: Unauthorized - User is not authenticated
+ */
+router.get("/protected", verifyToken, (req, res) => {
+  res.send("Protected route access successful");
+});
 
 export default router;

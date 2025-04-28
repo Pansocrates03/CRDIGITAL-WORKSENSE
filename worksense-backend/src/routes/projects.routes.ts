@@ -3,9 +3,9 @@ import {
   getProjects,
   getProjectById,
   createProject,
-  getProjectsByUser
+  getProjectsByUser,
 } from "../controllers/projects.controllers.js";
-import { verifyToken } from "../middlewares/auth.js";
+import { verifyToken } from "../middlewares/tokenAuth.js";
 
 const router = Router();
 
