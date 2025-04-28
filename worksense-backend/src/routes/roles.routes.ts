@@ -1,12 +1,12 @@
 import { Router } from "express";
 import {
-    getProjectRoles,
-    createProjectRole,
-    updateProjectRole,
-    deleteProjectRole,
-    getProjectRoleById
+  getProjectRoles,
+  createProjectRole,
+  updateProjectRole,
+  deleteProjectRole,
+  getProjectRoleById,
 } from "../controllers/roles.controllers.js";
-import { verifyToken } from "../middlewares/auth.js";
+import { verifyToken } from "../middlewares/tokenAuth.js";
 
 const router = Router();
 
@@ -17,13 +17,24 @@ router.get("/projects/:ProjectId/roles", verifyToken, getProjectRoles);
 router.post("/projects/:ProjectId/roles", verifyToken, createProjectRole);
 
 // Update Project Role
-router.put("/projects/:ProjectId/roles/:roleID", verifyToken, updateProjectRole);
+router.put(
+  "/projects/:ProjectId/roles/:roleID",
+  verifyToken,
+  updateProjectRole
+);
 
 // Delete Project Role
-router.delete("/projects/:ProjectId/roles/:roleID", verifyToken, deleteProjectRole);
+router.delete(
+  "/projects/:ProjectId/roles/:roleID",
+  verifyToken,
+  deleteProjectRole
+);
 
 // Get Project Role by ID
-router.get("/projects/:ProjectId/roles/:roleID", verifyToken, getProjectRoleById);
-
+router.get(
+  "/projects/:ProjectId/roles/:roleID",
+  verifyToken,
+  getProjectRoleById
+);
 
 export default router;

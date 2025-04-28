@@ -7,7 +7,7 @@ import {
   getItemById,
   getItemsByProject,
 } from "../controllers/items.controller.js";
-import { verifyToken } from "../middlewares/auth.js";
+import { verifyToken } from "../middlewares/tokenAuth.js";
 
 const router = Router();
 
