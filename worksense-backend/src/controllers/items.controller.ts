@@ -46,7 +46,7 @@ export const createItem = async (
     };
 
     const itemRef = await db
-      .collection("projects")
+      .collection("projectss")
       .doc(projectID)
       .collection("items")
       .add(itemData);
@@ -54,7 +54,7 @@ export const createItem = async (
 
     // Crear subcolección "items"
     const subItemsRef = db
-      .collection("projects")
+      .collection("projectss")
       .doc(projectID)
       .collection("items")
       .doc(itemID)
@@ -66,7 +66,7 @@ export const createItem = async (
 
     // Crear subcolección "comments"
     const commentsRef = db
-      .collection("projects")
+      .collection("projectss")
       .doc(projectID)
       .collection("items")
       .doc(itemID)
@@ -97,14 +97,14 @@ export const getAllItems = async (
   res: Response
 ): Promise<void> => {
   try {
-    const projectsSnapshot = await db.collection("projects").get();
+    const projectsSnapshot = await db.collection("projectss").get();
     const allItems: any[] = [];
 
     for (const projectDoc of projectsSnapshot.docs) {
       const projectID = projectDoc.id;
 
       const itemsSnapshot = await db
-        .collection("projects")
+        .collection("projectss")
         .doc(projectID)
         .collection("items")
         .get();
@@ -115,7 +115,7 @@ export const getAllItems = async (
 
         // Subcolección: items
         const subItemsSnapshot = await db
-          .collection("projects")
+          .collection("projectss")
           .doc(projectID)
           .collection("items")
           .doc(itemID)
@@ -131,7 +131,7 @@ export const getAllItems = async (
 
         // Subcolección: comments
         const commentsSnapshot = await db
-          .collection("projects")
+          .collection("projectss")
           .doc(projectID)
           .collection("items")
           .doc(itemID)
@@ -200,7 +200,7 @@ export const createSubItem = async (
     };
 
     const subItemRef = await db
-      .collection("projects")
+      .collection("projectss")
       .doc(projectID)
       .collection("items")
       .doc(parentItemID)
@@ -238,7 +238,7 @@ export const getSubItemsByReader = async (
     }
 
     const subItemsSnapshot = await db
-      .collection("projects")
+      .collection("projectss")
       .doc(projectID)
       .collection("items")
       .doc(parentItemID)
@@ -278,7 +278,7 @@ export const getItemById = async (
     }
 
     const itemRef = db
-      .collection("projects")
+      .collection("projectss")
       .doc(projectID)
       .collection("items")
       .doc(itemId);
@@ -338,7 +338,7 @@ export const getItemsByProject = async (
     }
 
     // Verificar si el proyecto existe
-    const projectDoc = await db.collection("projects").doc(projectID).get();
+    const projectDoc = await db.collection("projectss").doc(projectID).get();
 
     if (!projectDoc.exists) {
       res.status(404).json({ error: "Proyecto no encontrado" });
@@ -347,7 +347,7 @@ export const getItemsByProject = async (
 
     // Obtener todos los items del proyecto
     const itemsSnapshot = await db
-      .collection("projects")
+      .collection("projectss")
       .doc(projectID)
       .collection("items")
       .get();

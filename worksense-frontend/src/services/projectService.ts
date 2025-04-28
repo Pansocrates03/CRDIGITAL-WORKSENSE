@@ -31,7 +31,11 @@ export const projectService = {
   // Gets the list of the projects a member has access to
   async fetchUserProjects(): Promise<ProjectDetails[]> {
     try {
+<<<<<<< HEAD
       const response = await apiClient.get(`${API_URL}/api/v1/`);
+=======
+      const response = await apiClient.post(`${API_URL}/api/v1`, projectData);
+>>>>>>> 45bb49cb42b643debfe19fec9c695ce81e4f6b16
       return response.data;
     } catch (error) {
       console.error("Error fetching members");

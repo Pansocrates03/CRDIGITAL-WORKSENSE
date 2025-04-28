@@ -63,7 +63,7 @@ async function saveItemRecursively(
 }
 
 /**
- * POST /projects/:id/generate-epics
+ * POST /projectss/:id/generate-epics
  */
 export const generateEpicHandler = async (req: Request, res: Response) => {
   // Validación de autenticación
@@ -85,7 +85,7 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
   // Validación de proyecto y campos mínimos (Firestore)
   let projectData: any;
   try {
-    const projectRef = db.collection("projects").doc(projectId);
+    const projectRef = db.collection("projectss").doc(projectId);
     const projectSnap = await projectRef.get();
 
     // Caso 1: Proyecto no encontrado
@@ -176,7 +176,7 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
   // Obtener épicas existentes en Firestore y filtrar duplicados
   try {
     const itemRef = db
-      .collection("projects")
+      .collection("projectss")
       .doc(req.params.id)
       .collection("items");
     const snapshot = await itemRef.where("tag", "==", "epic").get();
@@ -209,7 +209,7 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
 };
 
 /**
- * POST /projects/:id/confirm-epics
+ * POST /projectss/:id/confirm-epics
  */
 export async function confirmEpicsHandler(req: Request, res: Response) {
   // 1) Autenticación
@@ -220,7 +220,7 @@ export async function confirmEpicsHandler(req: Request, res: Response) {
 
   // 2) Validar proyecto
   const projectId = req.params.id;
-  const projectRef = db.collection("projects").doc(projectId);
+  const projectRef = db.collection("projectss").doc(projectId);
   const projectSnap = await projectRef.get();
   if (!projectSnap.exists) {
     return res.status(404).json({ error: "Proyecto no encontrado." });
