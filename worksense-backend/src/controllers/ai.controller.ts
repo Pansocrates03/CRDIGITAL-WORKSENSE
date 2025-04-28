@@ -93,11 +93,9 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
     // Caso 2: Proyecto encontrado pero sin campos mínimos
     projectData = projectSnap.data();
     if (!projectData?.name || !projectData?.description) {
-      return res
-        .status(400)
-        .json({
-          error: 'El proyecto requiere los campos "name" y "description"',
-        });
+      return res.status(400).json({
+        error: 'El proyecto requiere los campos "name" y "description"',
+      });
     }
   } catch (err) {
     console.error("Error al leer Firestore:", err);
@@ -187,11 +185,9 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
     const unique = epics.filter((e) => !existingNames.includes(e.name));
 
     if (unique.length === 0) {
-      return res
-        .status(409)
-        .json({
-          error: "Todas las épicas sugeridas ya existen en el proyecto.",
-        });
+      return res.status(409).json({
+        error: "Todas las épicas sugeridas ya existen en el proyecto.",
+      });
     }
 
     // Devolvemos sólo las no duplicadas
