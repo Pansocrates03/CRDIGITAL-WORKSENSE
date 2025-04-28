@@ -11,7 +11,7 @@ import { MainLayout } from "./layouts/MainLayout"; // Import the layout
 import LoginPage from "./pages/login/login";
 import CreateProject from "./pages/CreateProject/CreateProject";
 import { ProjectPage } from "./pages/ProjectView/ProjectPage";
-import { AccountPage } from "./pages/Account/AccountPage";
+import AccountPage from "./pages/Account/AccountPage";
 import BacklogPage from "./pages/Backlog/BacklogPage";
 import Settings from "./pages/Settings/Settings";
 import BacklogTablePage from "./pages/BacklogTable/BacklogTablePage";
