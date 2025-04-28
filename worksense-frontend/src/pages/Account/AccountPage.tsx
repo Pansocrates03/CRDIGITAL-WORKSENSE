@@ -1,47 +1,52 @@
 import React, { useState, useEffect } from "react";
 import styles from "./AccountPage.module.css";
-import { User,UserProfile } from "@/types/UserType";
+import { User } from "@/types/UserType";
+import { authService } from "@/services/auth";
+import apiClient from "@/api/apiClient";
+
+// Define UserProfile interface that extends User
+interface UserProfile extends User {
+  avatar: string;
+}
 
 export const AccountPage: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [newAvatarUrl, setNewAvatarUrl] = useState<string>("");
 
-  // Get user data from localStorage on component mount
+  // Load user data on component mount
   useEffect(() => {
-    const fetchUserData = async () => {
+    const loadUserData = async () => {
       try {
         setIsLoading(true);
+        setError(null);
 
         // Get user data from localStorage
         const userData = localStorage.getItem("user");
-
         if (!userData) {
-          throw new Error("User data not found in localStorage");
+          throw new Error("User data not found");
         }
 
+        // Parse user data
         const user: User = JSON.parse(userData);
 
-        // Create profile by extending the User data with defaults for missing fields
+        // Create user profile
         const profile: UserProfile = {
           ...user,
-          nickName: user.firstName ? user.firstName.substring(0, 4) : "User",
-          country: "México",
-          language: "English",
-          timeZone: "Central Standard Time (CST) GMT-06:00",
-          // Generate avatar from API if not provided
-          // For a specific color (like your brand color)
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            user.fullName ||
-              `${user.firstName || ""} ${user.lastName || ""}` ||
-              user.email
-          )}&background=AC1754&color=FFFFFF`,
+          avatar:
+            user.pfp ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              user.fullName || user.email
+            )}&background=AC1754&color=FFFFFF`,
         };
 
         setUserProfile(profile);
+        setNewAvatarUrl(profile.avatar);
       } catch (err) {
-        console.error("Error fetching user data:", err);
+        console.error("Error loading user data:", err);
         setError(
           err instanceof Error ? err.message : "Failed to load user data"
         );
@@ -50,13 +55,71 @@ export const AccountPage: React.FC = () => {
       }
     };
 
-    fetchUserData();
+    loadUserData();
   }, []);
 
-  const handleSave = () => {
-    // In a real app, this would send updated data to the server
-    // For now we just toggle out of edit mode
-    setIsEditing(false);
+  // Handle nickname change
+  const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!userProfile) return;
+    setUserProfile({
+      ...userProfile,
+      nickName: e.target.value,
+    });
+  };
+
+  // Handle avatar URL change
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewAvatarUrl(e.target.value);
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userProfile) return;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      setSaveSuccess(false);
+
+      // Get auth token
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+
+      // Prepare data for API
+      const updateData: Record<string, any> = {
+        nickName: userProfile.nickName || "",
+        pfp: newAvatarUrl,
+      };
+
+      // Send update request
+      await apiClient.put("/me", updateData);
+
+      // Update local storage with new data
+      const updatedProfile = {
+        ...userProfile,
+        pfp: newAvatarUrl,
+        avatar: newAvatarUrl,
+      };
+
+      authService.updateUserInStorage(updatedProfile);
+      setUserProfile(updatedProfile);
+
+      setSaveSuccess(true);
+      setIsEditing(false);
+
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 3000);
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setError(err instanceof Error ? err.message : "Failed to update profile");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Loading state
@@ -86,201 +149,98 @@ export const AccountPage: React.FC = () => {
     );
   }
 
-  // Formatted display name
-  const displayName =
-    userProfile.fullName ||
-    `${userProfile.firstName || ""} ${userProfile.lastName || ""}`.trim() ||
-    userProfile.email.split("@")[0];
-
   return (
     <div className={styles.container}>
-      <div className={styles.profileHeader}>
+      <div className={styles.header}>
         <h1>My Account</h1>
-        <button
-          className={`${styles.actionButton} ${
-            isEditing ? styles.saveButton : ""
-          }`}
-          onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
-        >
-          {isEditing ? "Save Changes" : "Edit Profile"}
-        </button>
+        {!isEditing && (
+          <button
+            className={styles.editButton}
+            onClick={() => setIsEditing(true)}
+          >
+            Edit Profile
+          </button>
+        )}
       </div>
 
+      {saveSuccess && (
+        <div className={styles.successMessage}>
+          Profile updated successfully!
+        </div>
+      )}
+
       <div className={styles.profileCard}>
-        <div className={styles.profileBasics}>
-          <div className={styles.avatarContainer}>
-            <img
-              src={userProfile.avatar}
-              alt={displayName}
-              className={styles.avatar}
+        <div className={styles.avatarSection}>
+          <img
+            src={isEditing ? newAvatarUrl : userProfile.avatar}
+            alt="Profile"
+            className={styles.avatar}
+          />
+          <h2>{userProfile.fullName || userProfile.email}</h2>
+        </div>
+
+        <form onSubmit={handleSubmit} className={styles.form}>
+          {/* Editable fields */}
+          <div className={styles.formGroup}>
+            <label htmlFor="nickName">Nickname</label>
+            <input
+              type="text"
+              id="nickName"
+              name="nickName"
+              value={userProfile.nickName || ""}
+              onChange={handleNicknameChange}
+              disabled={!isEditing}
             />
           </div>
-          <div className={styles.userDetails}>
-            {isEditing ? (
+
+          {isEditing && (
+            <div className={styles.formGroup}>
+              <label htmlFor="avatar">Profile Picture URL</label>
               <input
                 type="text"
-                className={styles.nameInput}
-                value={displayName}
-                onChange={(e) => {
-                  setUserProfile({
-                    ...userProfile,
-                    fullName: e.target.value,
-                  });
-                }}
-                placeholder="Your name"
+                id="avatar"
+                name="avatar"
+                value={newAvatarUrl}
+                onChange={handleAvatarChange}
+                placeholder="Enter image URL"
               />
-            ) : (
-              <h2 className={styles.userName}>{displayName}</h2>
-            )}
-            <div className={styles.userEmail}>
-              <svg
-                className={styles.emailIcon}
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+            </div>
+          )}
+
+          {/* Read-only fields */}
+          <div className={styles.formGroup}>
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              value={userProfile.email}
+              disabled
+              className={styles.readOnlyField}
+            />
+          </div>
+
+          {isEditing && (
+            <div className={styles.formActions}>
+              <button
+                type="button"
+                className={styles.cancelButton}
+                onClick={() => {
+                  setIsEditing(false);
+                  setNewAvatarUrl(userProfile.avatar);
+                }}
               >
-                <path
-                  d="M20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M22 6L12 13L2 6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              {userProfile.email}
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.formSection}>
-          <h3 className={styles.sectionTitle}>Personal Information</h3>
-
-          <div className={styles.formGrid}>
-            <div className={styles.formField}>
-              <label htmlFor="nickname">Nickname</label>
-              {isEditing ? (
-                <input
-                  id="nickname"
-                  type="text"
-                  value={userProfile.nickName || ""}
-                  onChange={(e) =>
-                    setUserProfile({ ...userProfile, nickName: e.target.value })
-                  }
-                  placeholder="Your nickname"
-                />
-              ) : (
-                <div className={styles.fieldValue}>
-                  {userProfile.nickName || "-"}
-                </div>
-              )}
-            </div>
-
-            <div className={styles.formField}>
-              <label htmlFor="gender">Gender</label>
-              {isEditing ? (
-                <select
-                  id="gender"
-                  value={userProfile.gender || ""}
-                  onChange={(e) =>
-                    setUserProfile({ ...userProfile, gender: e.target.value })
-                  }
-                >
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                  <option value="Prefer not to say">Prefer not to say</option>
-                </select>
-              ) : (
-                <div className={styles.fieldValue}>
-                  {userProfile.gender || "-"}
-                </div>
-              )}
-            </div>
-
-            <div className={styles.formField}>
-              <label htmlFor="country">Country</label>
-              {isEditing ? (
-                <select
-                  id="country"
-                  value={userProfile.country || ""}
-                  onChange={(e) =>
-                    setUserProfile({ ...userProfile, country: e.target.value })
-                  }
-                >
-                  <option value="">Select Country</option>
-                  <option value="México">México</option>
-                  <option value="United States">United States</option>
-                  <option value="Canada">Canada</option>
-                </select>
-              ) : (
-                <div className={styles.fieldValue}>
-                  {userProfile.country || "-"}
-                </div>
-              )}
-            </div>
-
-            <div className={styles.formField}>
-              <label htmlFor="language">Language</label>
-              {isEditing ? (
-                <select
-                  id="language"
-                  value={userProfile.language || ""}
-                  onChange={(e) =>
-                    setUserProfile({ ...userProfile, language: e.target.value })
-                  }
-                >
-                  <option value="">Select Language</option>
-                  <option value="English">English</option>
-                  <option value="Spanish">Spanish</option>
-                </select>
-              ) : (
-                <div className={styles.fieldValue}>
-                  {userProfile.language || "-"}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.formSection}>
-          <h3 className={styles.sectionTitle}>Preferences</h3>
-
-          <div className={styles.formField}>
-            <label htmlFor="timezone">Time Zone</label>
-            {isEditing ? (
-              <select
-                id="timezone"
-                value={userProfile.timeZone || ""}
-                onChange={(e) =>
-                  setUserProfile({ ...userProfile, timeZone: e.target.value })
-                }
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className={styles.saveButton}
+                disabled={isLoading}
               >
-                <option value="">Select Time Zone</option>
-                <option value="Central Standard Time (CST) GMT-06:00">
-                  Central Standard Time (CST) GMT-06:00
-                </option>
-                <option value="Eastern Standard Time (EST) GMT-05:00">
-                  Eastern Standard Time (EST) GMT-05:00
-                </option>
-                <option value="Pacific Standard Time (PST) GMT-08:00">
-                  Pacific Standard Time (PST) GMT-08:00
-                </option>
-              </select>
-            ) : (
-              <div className={styles.fieldValue}>
-                {userProfile.timeZone || "-"}
-              </div>
-            )}
-          </div>
-        </div>
+                {isLoading ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          )}
+        </form>
       </div>
     </div>
   );

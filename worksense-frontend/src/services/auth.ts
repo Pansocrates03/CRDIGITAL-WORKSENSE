@@ -7,8 +7,15 @@ export interface User {
   userId: number;
   firstName?: string;
   lastName?: string;
-  gender?: string;
   fullName?: string;
+  nickName?: string;
+  pfp?: string;
+  platformRole?: string;
+  // The following fields are no longer used in the database but kept for backward compatibility
+  // gender?: number;
+  // country?: string;
+  // lang?: number;
+  // timezone?: number;
 }
 
 interface LoginResponse {
@@ -51,7 +58,8 @@ export const authService = {
 
           // Now try setting the user, wrapped in its own try-catch
           try {
-            localStorage.setItem("user", JSON.stringify(userToSet));
+            // Use the updateUserInStorage function to ensure all fields are included
+            this.updateUserInStorage(userToSet);
             console.log("User SET attempt finished.");
             // Verify user immediately too
             console.log("Verification (user):", localStorage.getItem("user"));
@@ -140,6 +148,51 @@ export const authService = {
       return null;
     }
   },
+
+  /**
+   * Updates the user object in localStorage with all necessary fields
+   * This ensures consistency across the application
+   * @param userData - The user data to store
+   */
+  updateUserInStorage(userData: User): void {
+    try {
+      // Get existing user data if available
+      const existingUserStr = localStorage.getItem("user");
+      let existingUser: Partial<User> = {};
+
+      if (
+        existingUserStr &&
+        existingUserStr !== "undefined" &&
+        existingUserStr !== "null"
+      ) {
+        try {
+          existingUser = JSON.parse(existingUserStr);
+        } catch (e) {
+          console.warn("Failed to parse existing user data, starting fresh");
+        }
+      }
+
+      // Create a complete user object with all fields
+      const completeUser: User = {
+        ...existingUser,
+        ...userData,
+        // Ensure fullName is set if firstName and lastName are available
+        fullName:
+          userData.fullName ||
+          (userData.firstName && userData.lastName
+            ? `${userData.firstName} ${userData.lastName}`
+            : existingUser.fullName || ""),
+      };
+
+      // Store the complete user object
+      localStorage.setItem("user", JSON.stringify(completeUser));
+      console.log("User data updated in localStorage:", completeUser);
+    } catch (error) {
+      console.error("Error updating user in localStorage:", error);
+      throw error;
+    }
+  },
+
   getToken(): string | null {
     return localStorage.getItem("token");
   },

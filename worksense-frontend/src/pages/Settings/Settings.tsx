@@ -11,7 +11,6 @@ interface UserCreationForm {
   email: string;
   firstName: string;
   lastName: string;
-  gender: string;
   password: string;
   platformRole: string;
 }
@@ -21,7 +20,6 @@ interface CreatedUser {
   email: string;
   firstName: string;
   lastName: string;
-  gender: string;
   password: string;
   userId?: number;
   platformRole: string;
@@ -32,7 +30,6 @@ const Settings: React.FC = () => {
     email: "",
     firstName: "",
     lastName: "",
-    gender: "",
     password: "",
     platformRole: "",
   });
@@ -61,11 +58,8 @@ const Settings: React.FC = () => {
     setCreatedUser(null);
 
     try {
-      // Convert gender string to number as expected by the backend
       const userData = {
         ...newUser,
-        gender:
-          newUser.gender === "male" ? 1 : newUser.gender === "female" ? 2 : 3,
       };
 
       const response = await apiClient.post("users/", userData);
@@ -76,7 +70,6 @@ const Settings: React.FC = () => {
           email: newUser.email,
           firstName: newUser.firstName,
           lastName: newUser.lastName,
-          gender: newUser.gender,
           password: newUser.password,
           userId: response.data.userId || undefined,
           platformRole: newUser.platformRole,
@@ -87,7 +80,6 @@ const Settings: React.FC = () => {
           email: "",
           firstName: "",
           lastName: "",
-          gender: "",
           password: "",
           platformRole: "",
         });
@@ -191,23 +183,20 @@ const Settings: React.FC = () => {
               onChange={handleInputChange}
             />
 
-            <TextInput
-              inputName="lastName"
-              inputValue={newUser.lastName}
-              isRequired={true}
-              labelText="Last Name"
-              onChange={handleInputChange}
-            />
+            <div className={styles.formGroup}>
+              <label htmlFor="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={newUser.password}
+                onChange={handleInputChange}
+                className={styles.input}
+                required
+                minLength={6}
+              />
+            </div>
 
-            <SelectInput
-              inputName="gender"
-              inputValue={newUser.gender}
-              options={[{ value: "male", label: "Male" }, { value: "female", label: "Female"}, { value: "other", label: "Other"}]}
-              isRequired={true}
-              labelText="Gender"
-              onChange={handleInputChange}
-              placeholder="Select a gender"
-            />
 
             <TextInput
               inputType="password"
