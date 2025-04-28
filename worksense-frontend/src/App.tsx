@@ -16,6 +16,7 @@ import BacklogPage from "./pages/Backlog/BacklogPage";
 import Settings from "./pages/Settings/Settings";
 import BacklogTablePage from "./pages/BacklogTable/BacklogTablePage";
 import { projectService } from "./services/projectService";
+import MembersPage from "./pages/Members/MembersPage";
 
 console.log("Running")
 
@@ -127,9 +128,7 @@ function App() {
             path="/project/:id/users"
             element={
               <PrivateRoute>
-                {" "}
-                <ProjectPage />{" "}
-                {/* Replace with specific UsersPage if you have one */}{" "}
+                <MembersPage />
               </PrivateRoute>
             }
           />
