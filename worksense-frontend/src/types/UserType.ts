@@ -8,9 +8,4 @@ export interface User {
   nickName?: string;
   pfp?: string;
   platformRole?: string;
-  // The following fields are no longer used in the database but kept for backward compatibility
-  // gender?: number;
-  // country?: string;
-  // lang?: number;
-  // timezone?: number;
 }

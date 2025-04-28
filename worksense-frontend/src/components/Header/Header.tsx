@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import { authService } from "@/services/auth";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface HeaderProps {
   /** Current section/page name */
@@ -37,6 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { profile } = useUserProfile();
 
   // Memoize user initials to prevent recalculation on rerenders
   const userInitials = useMemo(() => {
@@ -172,7 +175,19 @@ export const Header: React.FC<HeaderProps> = ({
             aria-haspopup="true"
             data-testid="user-menu-button"
           >
-            <div className={styles.avatarInitials}>{userInitials}</div>
+            {profile?.avatar ? (
+              <Avatar className="w-full h-full">
+                <AvatarImage
+                  src={profile.avatar}
+                  alt={user?.fullName || user?.email || "User"}
+                />
+                <AvatarFallback className={styles.avatarInitials}>
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <div className={styles.avatarInitials}>{userInitials}</div>
+            )}
           </button>
 
           {isMenuOpen && (
