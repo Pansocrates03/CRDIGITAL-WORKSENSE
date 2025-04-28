@@ -1,3 +1,7 @@
+import type Item from "./ItemType";
+import type Role from "./RoleType";
+import type Member from "./MembersType";
+
 import { TeamMember } from "./TeamMemberType";
 
 export interface Project {
@@ -6,15 +10,9 @@ export interface Project {
     description: string;
     status: "Active" | "Inactive" | "Completed" | "On Hold";
     lastChange: string;
-    members: Array<{
-      id: string;
-      name?: string;
-      avatar?: string;
-    }>;
-    items: Array<{
-      id: string;
-      status: string;
-    }>;
+    members: Member[];
+    items: Item[];
+    roles: Role[];
   }
 
   export interface ProjectViewData {
