@@ -22,7 +22,7 @@ const router = express.Router();
 const auth = verifyToken;
 
 // Project member middleware
-const memberAuth = [verifyToken, checkProjectMembership];
+export const memberAuth = [verifyToken, checkProjectMembership];
 
 // Permission-based middleware factories
 const withPermission = (permission: string) => [

@@ -10,7 +10,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
 import { AvatarPicker } from "@/components/Account/AvatarPicker";
-import { useUserProfile } from "@/hooks/useuserProfile";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { Pencil } from "lucide-react";
 
 export const AccountPage: React.FC = () => {

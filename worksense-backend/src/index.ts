@@ -9,12 +9,9 @@ import swaggerJsdoc from "swagger-jsdoc";
 
 // Routes Imports
 import sqlRoutes from "./routes/auth.routes.js";
-import membersRoutes from "./routes/members.routes.js";
-import projectRoutes from "./routes/projects.routes.js";
-import itemsRoutes from "./routes/items.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
-import project_Routes from "./routes/projectRoutes.js";
+import project_Routes from "./routes/project.routes.js";
 import sprintsRouter from "./routes/sprints.routes.js";
 // Documenattion Imports
 import { swaggerOptions } from "../swagger/swaggerSetup.js"; // Swagger options
@@ -34,12 +31,9 @@ app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(API_PREFIX, sqlRoutes);
-app.use(API_PREFIX, projectRoutes);
-app.use(API_PREFIX, membersRoutes);
-app.use(API_PREFIX, itemsRoutes);
 app.use(API_PREFIX, aiRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
-app.use(`${API_PREFIX}`, project_Routes);
+app.use(API_PREFIX, project_Routes);
 app.use(API_PREFIX, sprintsRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get("/", (req: any, res: any) => {

@@ -73,9 +73,8 @@ export const checkProjectPermission = (requiredPermission: string) => {
 
       // This should be caught by checkProjectMembership, but check defensively
       if (!roleId) {
-        return res
-          .status(403)
-          .json({ message: "Membership role not determined" });
+        res.status(403).json({ message: "Membership role not determined" });
+        return;
       }
 
       // Get role permissions
@@ -83,7 +82,8 @@ export const checkProjectPermission = (requiredPermission: string) => {
       const roleSnap = await roleRef.get();
 
       if (!roleSnap.exists) {
-        return res.status(403).json({ message: "Role definition not found" });
+        res.status(403).json({ message: "Role definition not found" });
+        return;
       }
 
       const roleData = roleSnap.data();
@@ -93,9 +93,10 @@ export const checkProjectPermission = (requiredPermission: string) => {
       if (permissions.includes(requiredPermission)) {
         next();
       } else {
-        return res.status(403).json({
+        res.status(403).json({
           message: `Requires '${requiredPermission}' permission`,
         });
+        return;
       }
     } catch (error) {
       next(error);

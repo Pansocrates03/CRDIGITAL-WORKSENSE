@@ -1,6 +1,6 @@
 import apiClient from "@/api/apiClient";
 
-const API_URL = "http://localhost:5050"; // Ajusta esto según tu configuración
+const API_URL = "http://localhost:5050/api/v1"; // Ajusta esto según tu configuración
 
 export interface User {
   email: string;
