@@ -335,6 +335,12 @@ export const getProjectAggregatedData = async (
 ): Promise<void> => {
   try {
     const { projectId } = req.params;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      res.status(401).json({ message: "Authentication required" });
+      return;
+    }
 
     // Create a modified request object for each controller call
     const modifiedReq = {
@@ -370,6 +376,30 @@ export const getProjectAggregatedData = async (
       backlogController.listBacklogItems
     );
 
+    // Get user's role and permissions
+    const memberRef = db
+      .collection("projectss")
+      .doc(projectId)
+      .collection("members")
+      .doc(String(userId));
+
+    const memberSnap = await memberRef.get();
+    let userPermissions: string[] = [];
+
+    if (memberSnap.exists) {
+      const memberData = memberSnap.data();
+      if (memberData?.projectRoleId) {
+        const roleRef = db
+          .collection("projectRoles")
+          .doc(memberData.projectRoleId);
+        const roleSnap = await roleRef.get();
+        if (roleSnap.exists) {
+          const roleData = roleSnap.data();
+          userPermissions = roleData?.permissions || [];
+        }
+      }
+    }
+
     // Organize backlog items by type
     const backlog = {
       epics: backlogData.filter((item: any) => item.type === "epic"),
@@ -379,11 +409,12 @@ export const getProjectAggregatedData = async (
       knowledge: backlogData.filter((item: any) => item.type === "knowledge"),
     };
 
-    // Return aggregated data
+    // Return aggregated data with user permissions
     res.status(200).json({
       project: projectData,
       members: membersData,
       backlog,
+      userPermissions,
     });
   } catch (error) {
     next(error);

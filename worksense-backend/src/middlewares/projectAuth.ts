@@ -7,7 +7,6 @@ declare global {
   namespace Express {
     interface Request {
       projectMembership?: {
-        // Optional object to store fetched membership details
         roleId: string;
         // Add permissions array here later if fetched
       };
