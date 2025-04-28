@@ -7,7 +7,6 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext"; // Import useAuth
-import { ProjectProvider } from "./contexts/ProjectContext";
 import { MainLayout } from "./layouts/MainLayout"; // Import the layout
 import LoginPage from "./pages/login/login";
 import CreateProject from "./pages/CreateProject/CreateProject";
@@ -46,12 +45,6 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     "[PrivateRoute] Authenticated. Rendering children within MainLayout."
   );
 
-  let details
-  async function getPS(){
-    details = await projectService.getProjectDetails("sampleProjectId")
-    console.log("projectDetails",details)
-  }
-  getPS()
   // Wrap the authenticated route's content with the MainLayout
   return <MainLayout>{children}</MainLayout>;
 }

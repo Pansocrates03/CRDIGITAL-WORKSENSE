@@ -26,7 +26,6 @@ const CreateProject: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState<SortOption>("a-z");
-  const [projects, setProjects] = useState<ProjectDetails[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [alert, setAlert] = useState<{
     type: "success" | "error";
@@ -35,25 +34,20 @@ const CreateProject: React.FC = () => {
   } | null>(null);
   const [projectCreated, setProjectCreated] = useState(false);
 
-
   // Use Query to fetch user projects
   const { isLoading, data, isError, error, isSuccess } = useQuery({
-        queryKey: ['userProjects'],
-        queryFn: async () => {
-            const res = await projectService.fetchUserProjects();
-            return res;
-        }
-    });
-  if(!data){
-    return <div className={styles.loadingContainer}>Loading...</div>;
-  }
+    queryKey: ['userProjects'],
+    queryFn: async () => {
+      const res = await projectService.fetchUserProjects();
+      return res;
+    }
+  });
 
-  if(!user) {
-    return <div className={styles.loadingContainer}>Loading...</div>;
-  }
-
-  // Filter and sort projects
+  // IMPORTANTE: definir filteredProjects aquí, antes de cualquier retorno condicional
   const filteredProjects = useMemo(() => {
+    // Si no hay datos, devolver array vacío
+    if (!data) return [];
+    
     const searchTermLower = searchTerm.toLowerCase();
 
     // First filter by search term
@@ -74,77 +68,17 @@ const CreateProject: React.FC = () => {
           return 0;
       }
     });
-  }, [projects, searchTerm, currentSort]);
-
-  const handleCreateProject = async (
-    projectName: string,
-    description: string,
-    members: { userId: number; roleId: string }[],
-    shouldPopulateBacklog: boolean
-  ): Promise<string> => {
-    try {
-      const response = await projectService.createProject({
-        name: projectName,
-        description: description,
-      });
-
-      // If there are additional members to add (beyond the current user who's automatically added)
-      if (members.length > 0) {
-        const addMemberPromises = members.map((member) =>
-          projectService.addProjectMember(
-            response.id,
-            member.userId,
-            member.roleId
-          )
-        );
-
-        await Promise.all(addMemberPromises);
-      }
-
-      const newProject: ProjectDetails = {
-        id: response.id || String(Date.now()),
-        name: projectName,
-        description: description,
-        lastChange: new Date()
-          .toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })
-          .toLowerCase(),
-        members: [],
-        items: [],
-      };
-
-      setProjects([...projects, newProject]);
-
-      // Set projectCreated to true to indicate a project was created
-      setProjectCreated(true);
-
-      // Return the project ID first, let the modal handle its closure
-      return response.id;
-    } catch (error) {
-      console.error("Error creating project:", error);
-      setAlert({
-        type: "error",
-        title: "Something went wrong...",
-        message: "Please try again!",
-      });
-      throw error;
-    }
-  };
+  }, [data, searchTerm, currentSort]);
 
   const handleModalClose = () => {
     setIsModalOpen(false);
 
-    // Only show success message if a project was actually created
     if (projectCreated) {
       setAlert({
         type: "success",
         title: "Project Created Successfully!",
         message: `Your project has been created and is ready to use.`,
       });
-      // Reset the projectCreated state
       setProjectCreated(false);
     }
   };
@@ -180,17 +114,18 @@ const CreateProject: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Add handleProjectClick function
   const handleProjectClick = (projectId: string) => {
     navigate(`/project/${projectId}`);
   };
 
-
+  // Renderizado condicional dentro del return en lugar de retornos tempranos
+  if (isLoading || loading || !user) {
+    return <div className={styles.loadingContainer}>Loading...</div>;
+  }
 
   return (
     <main className={styles.mainContent}>
       <section className={styles.projectsSection}>
-
         {/* Header Section */}
         <SectionHeader
           loading={loading}
@@ -207,7 +142,6 @@ const CreateProject: React.FC = () => {
           setIsModalOpen={setIsModalOpen}
         />
 
-
         <div
           className={`${styles.projectCards} ${
             viewMode === "list" ? styles.listView : ""
@@ -218,11 +152,16 @@ const CreateProject: React.FC = () => {
               <div className={styles.loadingSpinner} />
               <div className={styles.loadingText}>Loading projects...</div>
             </div>
+          ) : isError ? (
+            <div className={styles.errorContainer}>
+              <div className={styles.errorIcon}>⚠️</div>
+              <h3>Error loading projects</h3>
+              <p>{error instanceof Error ? error.message : "An unknown error occurred"}</p>
+            </div>
           ) : (
             <>
               {filteredProjects.length > 0 ? (
                 filteredProjects.map((project) => (
-                  /* Render each project card */
                   <ProjectCard
                     key={project.id}
                     project={project}
@@ -252,7 +191,7 @@ const CreateProject: React.FC = () => {
       <NewProjectModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
-        onSubmit={handleCreateProject}
+        onSubmit={() => {console.log("not implemented")}}
         currentUserId={user?.userId ?? -1}
       />
 
