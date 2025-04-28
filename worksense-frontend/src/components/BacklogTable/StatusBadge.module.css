@@ -1,0 +1,39 @@
+/* src/components/BacklogTable/StatusBadge.module.css */
+.statusContainer {
+  display: flex;
+  align-items: center;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusSprintBacklog {
+  background-color: #e0e7ff;
+  color: #4338ca;
+}
+
+.statusInProgress {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.statusInReview {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.statusDone {
+  background-color: #d1fae5;
+  color: #047857;
+}
+
+.statusUnassigned {
+  background-color: #e5e7eb;
+  color: #374151;
+}
