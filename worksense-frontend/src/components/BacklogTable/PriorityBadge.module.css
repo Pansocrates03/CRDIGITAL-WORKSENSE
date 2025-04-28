@@ -1,0 +1,29 @@
+/* src/components/BacklogTable/PriorityBadge.module.css */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.priorityHigh {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.priorityMedium {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.priorityLow {
+  background-color: #d1fae5;
+  color: #047857;
+}
+
+.priorityUnset {
+  background-color: #e5e7eb;
+  color: #374151;
+}
