@@ -63,7 +63,7 @@ export const projectService = {
 
   async createProject(projectData: CreateProjectData): Promise<Project> {
     try {
-      const response = await apiClient.post(`${API_URL}/projects`, projectData);
+      const response = await apiClient.post(`${API_URL}/api/v1`, projectData);
       return response.data;
     } catch (error) {
       console.error("Error creating project:", error);

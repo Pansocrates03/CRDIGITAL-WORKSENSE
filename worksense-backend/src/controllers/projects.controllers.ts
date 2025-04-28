@@ -62,7 +62,7 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
     }
 
     // ✅ Lectura real desde Firebase
-    const projects = await db.collection("projects").get();
+    const projects = await db.collection("projectss").get();
     const list: any[] = [];
 
     for (const doc of projects.docs) {
@@ -70,17 +70,17 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
       const data = doc.data();
 
       const bugsSnapshot = await db
-        .collection("projects")
+        .collection("projectss")
         .doc(projectId)
         .collection("bugs")
         .get();
       const epicsSnapshot = await db
-        .collection("projects")
+        .collection("projectss")
         .doc(projectId)
         .collection("epics")
         .get();
       const membersSnapshot = await db
-        .collection("projects")
+        .collection("projectss")
         .doc(projectId)
         .collection("members")
         .get();
@@ -93,7 +93,7 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
               const epicId = epicDoc.id;
 
               const storiesSnapshot = await db
-                .collection("projects")
+                .collection("projectss")
                 .doc(projectId)
                 .collection("epics")
                 .doc(epicId)
@@ -108,7 +108,7 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
                       const storyId = storyDoc.id;
 
                       const commentsSnapshot = await db
-                        .collection("projects")
+                        .collection("projectss")
                         .doc(projectId)
                         .collection("epics")
                         .doc(epicId)
@@ -118,7 +118,7 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
                         .get();
 
                       const tasksSnapshot = await db
-                        .collection("projects")
+                        .collection("projectss")
                         .doc(projectId)
                         .collection("epics")
                         .doc(epicId)
@@ -179,7 +179,7 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
 export const getProjectById = async (req: Request, res: Response): Promise<void> => {
   try {
     const projectId = req.params.id;
-    const projectDoc = await db.collection("projects").doc(projectId).get();
+    const projectDoc = await db.collection("projectss").doc(projectId).get();
 
     if (!projectDoc.exists) {
       res.status(404).json({ error: "Project not found" });
@@ -190,14 +190,14 @@ export const getProjectById = async (req: Request, res: Response): Promise<void>
 
     // Get items collection
     const itemsSnapshot = await db
-      .collection("projects")
+      .collection("projectss")
       .doc(projectId)
       .collection("items")
       .get();
 
     // Get members collection
     const membersSnapshot = await db
-      .collection("projects")
+      .collection("projectss")
       .doc(projectId)
       .collection("members")
       .get();
@@ -212,7 +212,7 @@ export const getProjectById = async (req: Request, res: Response): Promise<void>
 
             // Get sub-items if they exist
             const subItemsSnapshot = await db
-              .collection("projects")
+              .collection("projectss")
               .doc(projectId)
               .collection("items")
               .doc(itemId)
@@ -221,7 +221,7 @@ export const getProjectById = async (req: Request, res: Response): Promise<void>
 
             // Get comments if they exist
             const commentsSnapshot = await db
-              .collection("projects")
+              .collection("projectss")
               .doc(projectId)
               .collection("items")
               .doc(itemId)
@@ -275,7 +275,7 @@ export const getProjectsByUser = async (req: Request, res: Response): Promise<vo
 
   try {
     // ✅ Lectura real desde Firebase
-    const projectsSnapshot = await db.collection("projects").get();
+    const projectsSnapshot = await db.collection("projectss").get();
     const list: any[] = [];
 
     // Filtrar proyectos donde el usuario es miembro
@@ -285,7 +285,7 @@ export const getProjectsByUser = async (req: Request, res: Response): Promise<vo
 
       // Obtener miembros del proyecto
       const membersSnapshot = await db
-        .collection("projects")
+        .collection("projectss")
         .doc(projectId)
         .collection("members")
         .where("userId", "==", userId)
@@ -295,12 +295,12 @@ export const getProjectsByUser = async (req: Request, res: Response): Promise<vo
       if (membersSnapshot.empty) continue;
 
       const bugsSnapshot = await db
-        .collection("projects")
+        .collection("projectss")
         .doc(projectId)
         .collection("bugs")
         .get();
       const epicsSnapshot = await db
-        .collection("projects")
+        .collection("projectss")
         .doc(projectId)
         .collection("epics")
         .get();
@@ -313,7 +313,7 @@ export const getProjectsByUser = async (req: Request, res: Response): Promise<vo
               const epicId = epicDoc.id;
 
               const storiesSnapshot = await db
-                .collection("projects")
+                .collection("projectss")
                 .doc(projectId)
                 .collection("epics")
                 .doc(epicId)
@@ -328,7 +328,7 @@ export const getProjectsByUser = async (req: Request, res: Response): Promise<vo
                       const storyId = storyDoc.id;
 
                       const commentsSnapshot = await db
-                        .collection("projects")
+                        .collection("projectss")
                         .doc(projectId)
                         .collection("epics")
                         .doc(epicId)
@@ -338,7 +338,7 @@ export const getProjectsByUser = async (req: Request, res: Response): Promise<vo
                         .get();
 
                       const tasksSnapshot = await db
-                        .collection("projects")
+                        .collection("projectss")
                         .doc(projectId)
                         .collection("epics")
                         .doc(epicId)
@@ -412,7 +412,7 @@ export const createProject = async (req: Request, res: Response) => {
     }
 
     // Paso 1: Crear el documento del proyecto
-    const projectRef = await db.collection("projects").add({
+    const projectRef = await db.collection("projectss").add({
       name,
       description,
       createdAt: FieldValue.serverTimestamp(),

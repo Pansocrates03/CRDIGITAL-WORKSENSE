@@ -36,7 +36,7 @@ app.use(sqlRoutes);
 app.use(projectRoutes);
 app.use(membersRoutes);
 app.use(itemsRoutes);
-app.use(aiRoutes);
+app.use(API_PREFIX, aiRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
 app.use(`${API_PREFIX}`, project_Routes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
