@@ -7,7 +7,8 @@ import {
     Plus,
   } from "lucide-react";
 
-type SortOption = "last-change" | "status" | "a-z" | "z-a" | "progress";
+
+type SortOption =  "a-z" | "z-a";
 interface SectionHeaderProps {
     loading: boolean;
     user: {
@@ -117,30 +118,6 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ loading, user, searchTerm
                 </button>
                 {isFilterOpen && (
                   <div className={styles.filterDropdown}>
-                    <button
-                      className={`${styles.filterOption} ${
-                        currentSort === "last-change" ? styles.active : ""
-                      }`}
-                      onClick={() => handleFilterSelect("last-change")}
-                    >
-                      Last Updated
-                    </button>
-                    <button
-                      className={`${styles.filterOption} ${
-                        currentSort === "status" ? styles.active : ""
-                      }`}
-                      onClick={() => handleFilterSelect("status")}
-                    >
-                      Status
-                    </button>
-                    <button
-                      className={`${styles.filterOption} ${
-                        currentSort === "progress" ? styles.active : ""
-                      }`}
-                      onClick={() => handleFilterSelect("progress")}
-                    >
-                      Progress
-                    </button>
                     <button
                       className={`${styles.filterOption} ${
                         currentSort === "a-z" ? styles.active : ""

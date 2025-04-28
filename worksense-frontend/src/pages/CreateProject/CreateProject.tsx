@@ -16,7 +16,7 @@ import NoProjectsAvailable from "./NoProjectsAvailable";
 
 import { useQuery } from "@tanstack/react-query";
 
-type SortOption = "last-change" | "status" | "a-z" | "z-a" | "progress";
+type SortOption =  "a-z" | "z-a";
 
 
 const CreateProject: React.FC = () => {
@@ -25,7 +25,7 @@ const CreateProject: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [currentSort, setCurrentSort] = useState<SortOption>("last-change");
+  const [currentSort, setCurrentSort] = useState<SortOption>("a-z");
   const [projects, setProjects] = useState<ProjectDetails[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [alert, setAlert] = useState<{
@@ -66,37 +66,10 @@ const CreateProject: React.FC = () => {
     // Then sort based on current sort option
     return filtered.sort((a, b) => {
       switch (currentSort) {
-        case "last-change":
-          return (
-            new Date(b.lastChange).getTime() - new Date(a.lastChange).getTime()
-          );
-        case "status":
-          const statusOrder = {
-            Active: 1,
-            "On Hold": 2,
-            Inactive: 3,
-            Completed: 4,
-          };
-          return (
-            statusOrder[a.status as keyof typeof statusOrder] -
-            statusOrder[b.status as keyof typeof statusOrder]
-          );
         case "a-z":
           return a.name.localeCompare(b.name);
         case "z-a":
           return b.name.localeCompare(a.name);
-        case "progress":
-          const getProgress = (project: Project) => {
-            if (project.items.length === 0) return 0;
-            return (
-              (project.items.filter(
-                (item) => item.status === "COMPLETED" || item.status === "DONE"
-              ).length /
-                project.items.length) *
-              100
-            );
-          };
-          return getProgress(b) - getProgress(a);
         default:
           return 0;
       }

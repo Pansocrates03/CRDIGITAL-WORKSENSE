@@ -4,9 +4,12 @@ import styles from "./ProjectPage.module.css";
 import LoadingSpinner from "../../components/Loading/LoadingSpinner";
 
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import ProjectDetails from '@/types/ProjectType';
 import Member from "@/types/MemberType";
+import { projectService } from "@/services/projectService";
+
+import { useQuery } from "@tanstack/react-query";
 
 // Extracted reusable UI components
 const LoadingState = () => (
@@ -60,65 +63,26 @@ const NotFoundState: React.FC<{ onBackToProjects: () => void }> = ({
 export const ProjectPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
-  const { getProjectDetails } = useProject();
-  const [project, setProject] = useState<ProjectDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
+  // Use Query to fetch project and members
+  const { data: project, isLoading, isError, error } = useQuery<ProjectDetails>({
+    queryKey: ["project", id],
+    queryFn: async () => {
+      if (!id) throw new Error("Project ID is required");
+      const res = await projectService.fetchProjectDetails(id);
+      return res;
+    }, 
+  });
 
-  useEffect(() => {
-    async function loadProject() {
-      setLoading(true);
-      setError(null);
-
-      if(!id) {
-        console.log("Could not get ID");
-        return;
-      }
-      
-      try {
-        const projectData = await getProjectDetails(id);
-        setProject(projectData);
-      } catch (err) {
-        setError('Error al cargar el proyecto');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    loadProject();
-  }, [id, getProjectDetails]);
-
-
-  const { getProjectMembers } = useMembers();
-  const [members, setMembers] = useState<Member[] | null>(null);
-
-
-  useEffect(() => {
-    async function loadProjectMembers() {
-      setLoading(true)
-      setError(null)
-
-      if(!id) {
-        console.log("Could not get ID");
-        return;
-      }
-
-      try {
-        const membersData = await getProjectMembers(id);
-        setMembers(membersData)
-      } catch (err) {
-        setError('Error al cargar los miembros');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadProjectMembers()
-  }, [id, getProjectMembers])
+  const { data: members } = useQuery<Member[]>({
+    queryKey: ["projectMembers", id],
+    queryFn: async () => {
+      if (!id) throw new Error("Project ID is required");
+      const res = await projectService.fetchProjectMembers(id);
+      return res;
+    },
+    enabled: !!project, // Only fetch members if project data is available
+  });
 
 
 
@@ -127,8 +91,8 @@ export const ProjectPage: React.FC = () => {
   const handleBackToProjects = () => navigate("/create");
 
   // Render appropriate UI state
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState message={error} onRetry={handleRetry} />;
+  if (isLoading) return <LoadingState />;
+  if (isError) return <ErrorState message={error.message} onRetry={handleRetry} />;
   if (!project) return <NotFoundState onBackToProjects={handleBackToProjects} />;
   if (!members) return <NotFoundState onBackToProjects={handleBackToProjects} />;
 
