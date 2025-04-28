@@ -1,7 +1,8 @@
+// UserProjectsContext.tsx
 import React, { createContext, useState, useContext } from "react";
 import type ProjectDetails from "@/types/ProjectType";
 
-// Tipo para la lista de miembros
+// Tipo para la lista de proyectos
 type ProjectsList = ProjectDetails[];
 
 // Definición del tipo del contexto
@@ -14,10 +15,10 @@ type ProjectsContextType = [
 const initialContext: ProjectsContextType = [[], () => {}];
 
 // Creación del contexto
-export const ProjectsContext = createContext<ProjectsContextType>(initialContext);
+export const ProjectsContext = createContext<ProjectsContextType | undefined>(undefined);
 
-// Provider component
-export const MembersProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+// Provider component - Renombrado para consistencia o mantenido como MembersProvider para compatibilidad
+export const ProjectsProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const projectsState = useState<ProjectsList>([]);
 
   return (

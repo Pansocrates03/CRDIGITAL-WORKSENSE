@@ -7,6 +7,7 @@ import {
     Plus,
   } from "lucide-react";
 
+type SortOption = "last-change" | "status" | "a-z" | "z-a" | "progress";
 interface SectionHeaderProps {
     loading: boolean;
     user: {
@@ -23,7 +24,7 @@ interface SectionHeaderProps {
     isFilterOpen: boolean;
     setIsFilterOpen: (isOpen: boolean) => void;
     currentSort: string;
-    handleFilterSelect: (sortOption: string) => void;
+    handleFilterSelect: (sortOption: SortOption) => void;
     setIsModalOpen: (isOpen: boolean) => void;
 }
 
@@ -53,7 +54,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ loading, user, searchTerm
           <div className={styles.compactControls}>
             <div className={styles.searchContainer}>
               <Search className={styles.searchIcon} size={18} />
-              
+
               <input
                 className={styles.searchInput}
                 placeholder="Search projects..."

@@ -7,6 +7,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext"; // Import useAuth
+import { ProjectProvider } from "./contexts/ProjectContext";
 import { MainLayout } from "./layouts/MainLayout"; // Import the layout
 import LoginPage from "./pages/login/login";
 import CreateProject from "./pages/CreateProject/CreateProject";
@@ -17,6 +18,9 @@ import Settings from "./pages/Settings/Settings";
 import BacklogTablePage from "./pages/BacklogTable/BacklogTablePage";
 import { projectService } from "./services/projectService";
 import MembersPage from "./pages/Members/MembersPage";
+
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
+const queryClient = new QueryClient();
 
 console.log("Running")
 
@@ -54,6 +58,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
+    <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <Router>
         <Routes>
@@ -61,12 +66,13 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
 
           {/* Routes that REQUIRE Authentication and the Sidebar Layout */}
+          
           <Route
             path="/create"
             element={
               <PrivateRoute>
                 {" "}
-                <CreateProject />{" "}
+                  <CreateProject />{" "}
               </PrivateRoute>
             }
           />
@@ -210,6 +216,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

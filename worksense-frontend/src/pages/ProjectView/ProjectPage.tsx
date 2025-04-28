@@ -5,9 +5,7 @@ import LoadingSpinner from "../../components/Loading/LoadingSpinner";
 
 
 import React, { useEffect, useState } from 'react';
-import { useProject } from '@/hooks/useProject';
 import ProjectDetails from '@/types/ProjectType';
-import { useMembers } from "@/hooks/useMembers";
 import Member from "@/types/MemberType";
 
 // Extracted reusable UI components

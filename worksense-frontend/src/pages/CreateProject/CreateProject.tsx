@@ -13,11 +13,11 @@ import ProjectCard from "./ProjectCard";
 
 // Icons
 import NoProjectsAvailable from "./NoProjectsAvailable";
-import { useUserProjects } from "@/hooks/useUserProjects";
 
-
+import { useQuery } from "@tanstack/react-query";
 
 type SortOption = "last-change" | "status" | "a-z" | "z-a" | "progress";
+
 
 const CreateProject: React.FC = () => {
   const navigate = useNavigate();
@@ -27,7 +27,6 @@ const CreateProject: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState<SortOption>("last-change");
   const [projects, setProjects] = useState<ProjectDetails[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [alert, setAlert] = useState<{
     type: "success" | "error";
@@ -36,39 +35,29 @@ const CreateProject: React.FC = () => {
   } | null>(null);
   const [projectCreated, setProjectCreated] = useState(false);
 
-  if(!user) {
+
+  // Use Query to fetch user projects
+  const { isLoading, data, isError, error, isSuccess } = useQuery({
+        queryKey: ['userProjects'],
+        queryFn: async () => {
+            const res = await projectService.fetchUserProjects();
+            return res;
+        }
+    });
+  if(!data){
     return <div className={styles.loadingContainer}>Loading...</div>;
   }
 
-  const { getUserProjects } = useUserProjects();
-  useEffect(() => {
-    async function loadUserProjects() {
-      setIsLoading(true);
-
-      try {
-        const response = await getUserProjects();
-        setProjects(response);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-        setAlert({
-          type: "error",
-          title: "Something went wrong...",
-          message: "Please try again!",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadUserProjects();
-  }, []);
+  if(!user) {
+    return <div className={styles.loadingContainer}>Loading...</div>;
+  }
 
   // Filter and sort projects
   const filteredProjects = useMemo(() => {
     const searchTermLower = searchTerm.toLowerCase();
 
     // First filter by search term
-    let filtered = projects.filter(
+    let filtered = data.filter(
       (project) =>
         project.name.toLowerCase().includes(searchTermLower) ||
         project.description.toLowerCase().includes(searchTermLower)
@@ -139,11 +128,10 @@ const CreateProject: React.FC = () => {
         await Promise.all(addMemberPromises);
       }
 
-      const newProject: Project = {
+      const newProject: ProjectDetails = {
         id: response.id || String(Date.now()),
         name: projectName,
         description: description,
-        status: "Active",
         lastChange: new Date()
           .toLocaleDateString("en-US", {
             month: "short",
