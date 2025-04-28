@@ -3,6 +3,8 @@ import styles from "./Settings.module.css";
 import apiClient from "@/api/apiClient";
 import LoadingSpinner from "@/components/Loading/LoadingSpinner";
 import { FaClipboard } from "react-icons/fa";
+import { TextInput } from "@/components/TextInput/TextInput";
+import { SelectInput } from "@/components/SelectInput/SelectInput";
 
 // Interface for the user creation form
 interface UserCreationForm {
@@ -140,9 +142,7 @@ const Settings: React.FC = () => {
               </button>
             </div>
             <div className={styles.credentialsContent}>
-              <p>
-                <strong>Email:</strong> {createdUser.email}
-              </p>
+              <p><strong>Email:</strong> {createdUser.email}</p>
               <p>
                 <strong>Name:</strong> {createdUser.firstName}{" "}
                 {createdUser.lastName}
@@ -166,44 +166,22 @@ const Settings: React.FC = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.formGroup}>
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={newUser.email}
-                onChange={handleInputChange}
-                className={styles.input}
-                required
-              />
-            </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="firstName">First Name</label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={newUser.firstName}
-                onChange={handleInputChange}
-                className={styles.input}
-                required
-              />
-            </div>
+            <TextInput
+              inputName="email"
+              inputValue={newUser.email}
+              isRequired={true}
+              labelText="Email"
+              onChange={handleInputChange}
+            />
 
-            <div className={styles.formGroup}>
-              <label htmlFor="lastName">Last Name</label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={newUser.lastName}
-                onChange={handleInputChange}
-                className={styles.input}
-                required
-              />
-            </div>
+            <TextInput
+              inputName="firstName"
+              inputValue={newUser.firstName}
+              isRequired={true}
+              labelText="First Name"
+              onChange={handleInputChange}
+            />
 
             <div className={styles.formGroup}>
               <label htmlFor="password">Password</label>
@@ -219,23 +197,25 @@ const Settings: React.FC = () => {
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="platformRole">Platform Role</label>
-              <select
-                id="platformRole"
-                name="platformRole"
-                value={newUser.platformRole}
-                onChange={handleInputChange}
-                className={styles.select}
-                required
-              >
-                <option value="" disabled>
-                  Select platform role
-                </option>
-                <option value="admin">Admin</option>
-                <option value="user">User</option>
-              </select>
-            </div>
+
+            <TextInput
+              inputType="password"
+              inputName="password"
+              inputValue={newUser.password}
+              isRequired={true}
+              labelText="Password"
+              onChange={handleInputChange}
+            />
+
+            <SelectInput
+              inputName="platformRole"
+              inputValue={newUser.gender}
+              options={[{ value: "admin", label: "Admin" }, { value: "user", label: "User"} ]}
+              isRequired={true}
+              labelText="Platform Role"
+              onChange={handleInputChange}
+              placeholder="Select platform role"
+            />
 
             <button type="submit" className={styles.submitButton}>
               Create User

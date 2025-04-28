@@ -9,16 +9,22 @@ import EditTeamModal from "../EditTeamModal/EditTeamModal";
 import MemberInfoPopup from "../MemberInfoPopup/MemberInfoPopup";
 // Type Imports
 import { BacklogItemType } from "@/types";
-import { ProjectViewData } from "@/types/ProjectType";
+import ProjectDetails from "@/types/ProjectType";
 import { TeamMember } from "@/types/TeamMemberType";
+import Member from "@/types/MemberType";
+
+type FullProjectData = {
+  project: ProjectDetails;
+  members: Member[];
+}
 
 
-export const ProjectView: React.FC<ProjectViewData> = ( project ) => {
+export const ProjectView: React.FC<FullProjectData> = ( {project,members} ) => {
   const { id } = useParams<{ id: string }>();
   const [backlogItems, setBacklogItems] = useState<BacklogItemType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(project.team);
+  //const [teamMembers, setTeamMembers] = useState<TeamMember[]>(project.team);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 
   useEffect(() => {
@@ -38,7 +44,7 @@ export const ProjectView: React.FC<ProjectViewData> = ( project ) => {
       fetchBacklogItems();
     }
   }, [id]);
-
+/*
   useEffect(() => {
     setTeamMembers(project.team);
   }, [project.team]);
@@ -46,6 +52,7 @@ export const ProjectView: React.FC<ProjectViewData> = ( project ) => {
   const handleTeamUpdate = (newTeam: TeamMember[]) => {
     setTeamMembers(newTeam);
   };
+  */
 
   const handleAvatarClick = (member: TeamMember, e: React.MouseEvent<HTMLDivElement>) => {
     setSelectedMember(member);
@@ -80,7 +87,8 @@ export const ProjectView: React.FC<ProjectViewData> = ( project ) => {
                   fill="currentColor"
                 />
               </svg>
-              {project.team[0].name}
+              {/*project.team[0].name*/}
+              Esteban
             </span>
           </div>
         </div>
@@ -108,17 +116,18 @@ export const ProjectView: React.FC<ProjectViewData> = ( project ) => {
             </button>
           </div>
           <div className={styles.teamAvatars}>
-            {teamMembers.map((member) => (
+            
+            {members.map((m) => (
               <div 
-                key={member.id} 
+                key={m.userId} 
                 className={styles.avatar}
-                onClick={(e) => handleAvatarClick(member, e)}
+                onClick={(e) => handleAvatarClick(m, e)}
               >
                 <div className={styles.avatarImage}>
-                  <img src={member.avatar} alt={member.name} />
-                  <div className={styles.avatarTooltip}>{member.name}</div>
+                  {/* <img src={m.userId} alt={m.userId} /> */}
+                  <div className={styles.avatarTooltip}>{m.userId}</div>
                 </div>
-                <span className={styles.avatarName}>{member.name}</span>
+                <span className={styles.avatarName}>{m.userId}</span>
               </div>
             ))}
           </div>
@@ -181,7 +190,7 @@ export const ProjectView: React.FC<ProjectViewData> = ( project ) => {
           )}
         </section>
       </div>
-
+{/*
       <EditTeamModal
         isOpen={isEditTeamModalOpen}
         onClose={() => setIsEditTeamModalOpen(false)}
@@ -196,6 +205,7 @@ export const ProjectView: React.FC<ProjectViewData> = ( project ) => {
           onClose={() => setSelectedMember(null)}
         />
       )}
+        */}
     </div>
   );
 };

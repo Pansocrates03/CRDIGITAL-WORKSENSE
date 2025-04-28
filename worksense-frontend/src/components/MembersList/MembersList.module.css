@@ -1,0 +1,105 @@
+.membersListContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  color: var(--foreground, #222);
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.membersListContainer h1 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--primary, #ac1754);
+}
+
+/* Table styles */
+.tableContainer {
+  overflow-x: auto;
+  border: 1px solid #eaeaea;
+  border-radius: 0.5rem;
+  background-color: white;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.table th {
+  background-color: #f9fafb;
+  color: var(--secondary, #666);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.table td {
+  font-size: 0.875rem;
+  color: var(--foreground, #222);
+}
+
+/* Badge for role */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.roleBadge {
+  background-color: #d1fae5;
+  color: #047857;
+}
+
+/* Action buttons container */
+.actionButtons {
+  text-align: center; /* Center-align the buttons */
+  padding-top: 5px; /* Optional: add some spacing on top */
+}
+
+/* Styling individual buttons */
+.button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #555;
+  margin: 0 8px; /* Space out the buttons horizontally */
+}
+
+.button:hover {
+  color: #333;
+}
+
+/* Styling for trash button */
+.trashButton {
+  color: #d9534f; /* Bootstrap-style red */
+}
+
+.trashButton:hover {
+  color: #c9302c; /* Darker red on hover */
+}
+
+
+/* Profile picture styling */
+.pfp {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+}
+
+/* Hover effect for table rows */
+.table tr:hover {
+  background-color: #f7f7f7;
+}
