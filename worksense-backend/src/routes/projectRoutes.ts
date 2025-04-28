@@ -352,6 +352,12 @@ router.get("/:projectId", memberAuth, projectController.getProjectDetails);
  *                       type: array
  *                       items:
  *                         $ref: '#/components/schemas/Knowledge'
+ *                 userPermissions:
+ *                   type: array
+ *                   description: List of permissions granted to the current user based on their role
+ *                   items:
+ *                     type: string
+ *                   example: ["view:project", "edit:backlog", "manage:sprints"]
  *       401:
  *         description: Unauthorized - User is not authenticated
  *       403:
