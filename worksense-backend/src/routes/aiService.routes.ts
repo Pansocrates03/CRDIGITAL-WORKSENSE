@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { generateEpic } from "../controllers/aiService.controllers.js";
-import { verifyToken } from "../middlewares/auth.js";
+import { verifyToken } from "../middlewares/tokenAuth.js";
 
 const router = Router();
 
@@ -8,39 +8,60 @@ const router = Router();
  * @swagger
  * tags:
  *   name: AI Module
- *   description: Operaciones relacionadas con la generación automática mediante IA
+ *   description: Operations related to AI-powered content generation
  */
 
 /**
  * @swagger
  * /projects/{id}/generate-epic:
  *   post:
- *     summary: Genera una épica y sus historias usando IA a partir de un prompt
+ *     summary: Generate an epic and its stories using AI from a prompt
  *     tags: [AI Module]
  *     security:
- *       - bearerAuth: []
+ *       - authToken: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: ID del proyecto al cual se añadirá la épica generada
+ *         description: ID of the project to which the generated epic will be added
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
- *           example:
- *             prompt: "Crear una épica sobre la funcionalidad de autenticación con usuario y contraseña."
+ *           schema:
+ *             type: object
+ *             required:
+ *               - prompt
+ *             properties:
+ *               prompt:
+ *                 type: string
+ *                 description: Description of the epic to generate
+ *                 example: "Create an epic about user authentication with username and password"
  *     responses:
  *       200:
- *         description: Épica generada exitosamente y añadida al proyecto
+ *         description: Epic generated successfully and added to the project
  *         content:
  *           application/json:
- *             example:
- *               message: "Épica creada y guardada"
- *               epicId: "epic123"
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Epic created and saved"
+ *                 epicId:
+ *                   type: string
+ *                   example: "epic123"
+ *       400:
+ *         description: Invalid request data
+ *       401:
+ *         description: Unauthorized - User is not authenticated
+ *       404:
+ *         description: Project not found
+ *       500:
+ *         description: AI service error
  */
-router.post('/projects/:id/generate-epic', verifyToken, generateEpic);
+router.post("/projects/:id/generate-epic", verifyToken, generateEpic);
 
 export default router;
