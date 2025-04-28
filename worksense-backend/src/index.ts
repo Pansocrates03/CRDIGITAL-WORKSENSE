@@ -15,6 +15,7 @@ import itemsRoutes from "./routes/items.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import project_Routes from "./routes/projectRoutes.js";
+import sprintsRouter from "./routes/sprints.routes.js";
 // Documenattion Imports
 import { swaggerOptions } from "../swagger/swaggerSetup.js"; // Swagger options
 
@@ -39,6 +40,7 @@ app.use(API_PREFIX, itemsRoutes);
 app.use(API_PREFIX, aiRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
 app.use(`${API_PREFIX}`, project_Routes);
+app.use(API_PREFIX, sprintsRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get("/", (req: any, res: any) => {
   res.send("API is running...");

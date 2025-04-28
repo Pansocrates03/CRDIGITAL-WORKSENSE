@@ -11,22 +11,6 @@ declare global {
   }
 }
 
-export const getAllUsers = async (req: Request, res: Response) => {
-  try {
-    const pool = await sqlConnect();
-    if (!pool) {
-      res.status(500).json({ message: "Database connection failed" });
-      return;
-    }
-
-    const result = await pool.request().execute("spGetUsers");
-    res.json(result.recordset);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch users" });
-  }
-};
-
-// Note: This appears to be a duplicate of getAllUsers
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const pool = await sqlConnect();
@@ -70,8 +54,51 @@ export const createUser = async (req: Request, res: Response) => {
 };
 
 /**
+ * Get the current user's profile
+ */
+export const getProfile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const pool = await sqlConnect();
+    if (!pool) {
+      res.status(500).json({ message: "Database connection failed" });
+      return;
+    }
+
+    const result = await pool
+      .request()
+      .input("userId", sql.Int, req.user.userId)
+      .execute("spGetUserById");
+
+    if (result.recordset.length === 0) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const user = result.recordset[0];
+    res.json({
+      userId: user.userId,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      fullName:
+        user.firstName && user.lastName
+          ? `${user.firstName} ${user.lastName}`
+          : undefined,
+      nickName: user.nickName,
+      pfp: user.pfp,
+      platformRole: user.platformRole,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to get profile" });
+  }
+};
+
+/**
  * Update the current user's own profile
- * This function is for users updating their own information
  */
 export const updateSelf = async (
   req: Request,
@@ -93,7 +120,31 @@ export const updateSelf = async (
       .input("pfp", sql.NVarChar(255), pfp)
       .execute("spUpdateUserProfile");
 
-    res.json({ message: "Profile updated successfully" });
+    // Get updated profile
+    const result = await pool
+      .request()
+      .input("userId", sql.Int, req.user.userId)
+      .execute("spGetUserById");
+
+    if (result.recordset.length === 0) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const user = result.recordset[0];
+    res.json({
+      userId: user.userId,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      fullName:
+        user.firstName && user.lastName
+          ? `${user.firstName} ${user.lastName}`
+          : undefined,
+      nickName: user.nickName,
+      pfp: user.pfp,
+      platformRole: user.platformRole,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Update failed" });
@@ -219,6 +270,8 @@ export const login = async (req: Request, res: Response) => {
         firstName: loginData.FirstName,
         lastName: loginData.LastName,
         platformRole: loginData.platformRole,
+        pfp: loginData.pfp,
+        nickName: loginData.nickName,
       };
 
       res.status(200).json({ message: "Login successful", token, user });

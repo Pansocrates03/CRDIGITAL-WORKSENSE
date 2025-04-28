@@ -1,248 +1,131 @@
-import React, { useState, useEffect } from "react";
-import styles from "./AccountPage.module.css";
-import { User } from "@/types/UserType";
-import { authService } from "@/services/auth";
-import apiClient from "@/api/apiClient";
-
-// Define UserProfile interface that extends User
-interface UserProfile extends User {
-  avatar: string;
-}
+import React, { useState } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Toaster } from "sonner";
+import { AvatarPicker } from "@/components/Account/AvatarPicker";
+import { useUserProfile } from "@/hooks/useuserProfile";
+import { Pencil } from "lucide-react";
 
 export const AccountPage: React.FC = () => {
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [newAvatarUrl, setNewAvatarUrl] = useState<string>("");
+  const { profile, loading, error, save, setProfile } = useUserProfile();
+  const [editing, setEditing] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
-  // Load user data on component mount
-  useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        // Get user data from localStorage
-        const userData = localStorage.getItem("user");
-        if (!userData) {
-          throw new Error("User data not found");
-        }
-
-        // Parse user data
-        const user: User = JSON.parse(userData);
-
-        // Create user profile
-        const profile: UserProfile = {
-          ...user,
-          avatar:
-            user.pfp ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(
-              user.fullName || user.email
-            )}&background=AC1754&color=FFFFFF`,
-        };
-
-        setUserProfile(profile);
-        setNewAvatarUrl(profile.avatar);
-      } catch (err) {
-        console.error("Error loading user data:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to load user data"
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUserData();
-  }, []);
-
-  // Handle nickname change
-  const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!userProfile) return;
-    setUserProfile({
-      ...userProfile,
-      nickName: e.target.value,
-    });
-  };
-
-  // Handle avatar URL change
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewAvatarUrl(e.target.value);
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!userProfile) return;
-
-    try {
-      setIsLoading(true);
-      setError(null);
-      setSaveSuccess(false);
-
-      // Get auth token
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Authentication token not found");
-      }
-
-      // Prepare data for API
-      const updateData: Record<string, any> = {
-        nickName: userProfile.nickName || "",
-        pfp: newAvatarUrl,
-      };
-
-      // Send update request
-      await apiClient.put("/me", updateData);
-
-      // Update local storage with new data
-      const updatedProfile = {
-        ...userProfile,
-        pfp: newAvatarUrl,
-        avatar: newAvatarUrl,
-      };
-
-      authService.updateUserInStorage(updatedProfile);
-      setUserProfile(updatedProfile);
-
-      setSaveSuccess(true);
-      setIsEditing(false);
-
-      // Hide success message after 3 seconds
-      setTimeout(() => {
-        setSaveSuccess(false);
-      }, 3000);
-    } catch (err) {
-      console.error("Error updating profile:", err);
-      setError(err instanceof Error ? err.message : "Failed to update profile");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Loading state
-  if (isLoading) {
+  if (loading)
+    return <div className="container mx-auto p-8 text-center">Loading…</div>;
+  if (error || !profile)
     return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingSpinner} />
-        <p>Loading your profile...</p>
+      <div className="container mx-auto p-8 text-destructive text-center">
+        {error || "Profile not found"}
       </div>
     );
-  }
 
-  // Error state
-  if (error || !userProfile) {
-    return (
-      <div className={styles.errorContainer}>
-        <div className={styles.errorIcon}>!</div>
-        <h2>Failed to load profile</h2>
-        <p>{error || "User profile not found"}</p>
-        <button
-          className={styles.retryButton}
-          onClick={() => window.location.reload()}
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
+  const handleSave = async () => {
+    await save({ nickName: profile.nickName, pfp: profile.avatar });
+    setEditing(false);
+  };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1>My Account</h1>
-        {!isEditing && (
-          <button
-            className={styles.editButton}
-            onClick={() => setIsEditing(true)}
-          >
-            Edit Profile
-          </button>
-        )}
-      </div>
+    <>
+      <Toaster
+        position="bottom-right"
+        closeButton
+        toastOptions={{
+          classNames: {
+            toast: "rounded-lg border shadow-lg",
+            success: "bg-[#F8EAF0] text-[#AC1754] border-[#AC1754]",
+            error: "bg-[#FFEBEE] text-[#C62828] border-[#C62828]",
+          },
+          duration: 4000,
+        }}
+      />
 
-      {saveSuccess && (
-        <div className={styles.successMessage}>
-          Profile updated successfully!
-        </div>
-      )}
+      <div className="container mx-auto max-w-xl p-6">
+        <Card>
+          <CardHeader className="flex items-center justify-between">
+            <CardTitle>My Account</CardTitle>
+            {!editing && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setEditing(true)}
+                className="p-2 h-8 w-8"
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
+          </CardHeader>
 
-      <div className={styles.profileCard}>
-        <div className={styles.avatarSection}>
-          <img
-            src={isEditing ? newAvatarUrl : userProfile.avatar}
-            alt="Profile"
-            className={styles.avatar}
-          />
-          <h2>{userProfile.fullName || userProfile.email}</h2>
-        </div>
-
-        <form onSubmit={handleSubmit} className={styles.form}>
-          {/* Editable fields */}
-          <div className={styles.formGroup}>
-            <label htmlFor="nickName">Nickname</label>
-            <input
-              type="text"
-              id="nickName"
-              name="nickName"
-              value={userProfile.nickName || ""}
-              onChange={handleNicknameChange}
-              disabled={!isEditing}
-            />
-          </div>
-
-          {isEditing && (
-            <div className={styles.formGroup}>
-              <label htmlFor="avatar">Profile Picture URL</label>
+          <CardContent className="space-y-6">
+            <div className="flex flex-col items-center">
+              <Avatar className="h-24 w-24 mb-4 bg-[#AC1754]">
+                <AvatarImage src={profile.avatar} />
+                <AvatarFallback className="text-white">
+                  {profile.email[0]}
+                </AvatarFallback>
+              </Avatar>
+              <h2 className="text-lg font-semibold text-center">
+                {profile.fullName || profile.email}
+              </h2>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Nickname</label>
               <input
-                type="text"
-                id="avatar"
-                name="avatar"
-                value={newAvatarUrl}
-                onChange={handleAvatarChange}
-                placeholder="Enter image URL"
+                value={profile.nickName || ""}
+                disabled={!editing}
+                onChange={(e) =>
+                  setProfile({ ...profile, nickName: e.target.value })
+                }
+                className="w-full px-3 py-2 rounded-md border disabled:opacity-50"
               />
             </div>
-          )}
+            {editing && (
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setPickerOpen(!pickerOpen)}
+                >
+                  {pickerOpen ? "Hide Avatar Picker" : "Choose Avatar"}
+                </Button>
 
-          {/* Read-only fields */}
-          <div className={styles.formGroup}>
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              value={userProfile.email}
-              disabled
-              className={styles.readOnlyField}
-            />
-          </div>
-
-          {isEditing && (
-            <div className={styles.formActions}>
-              <button
-                type="button"
-                className={styles.cancelButton}
-                onClick={() => {
-                  setIsEditing(false);
-                  setNewAvatarUrl(userProfile.avatar);
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className={styles.saveButton}
-                disabled={isLoading}
-              >
-                {isLoading ? "Saving..." : "Save Changes"}
-              </button>
+                {pickerOpen && (
+                  <AvatarPicker
+                    onSelect={(url) => {
+                      setProfile({ ...profile, avatar: url });
+                      setPickerOpen(false);
+                    }}
+                  />
+                )}
+              </div>
+            )}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Email</label>
+              <input
+                value={profile.email}
+                disabled
+                className="w-full px-3 py-2 rounded-md border bg-muted opacity-70"
+              />
             </div>
+          </CardContent>
+
+          {editing && (
+            <CardFooter className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setEditing(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>Save</Button>
+            </CardFooter>
           )}
-        </form>
+        </Card>
       </div>
-    </div>
+    </>
   );
 };
 
