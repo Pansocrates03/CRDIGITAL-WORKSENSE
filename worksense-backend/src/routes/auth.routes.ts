@@ -1,12 +1,12 @@
 import { Router } from "express";
 import {
-  getAllUsers,
   getUsers,
   createUser,
   updateSelf,
   updateUserByAdmin,
   deleteUser,
   login,
+  getProfile,
 } from "../controllers/auth.controller.js";
 import { verifyToken } from "../middlewares/tokenAuth.js";
 import { checkPlatformAdmin } from "../middlewares/adminAuth.js";
@@ -331,5 +331,7 @@ router.get("/protected", verifyToken, (req, res) => {
  *         description: Unauthorized - User is not authenticated
  */
 router.put("/me", verifyToken, updateSelf);
+
+router.get("/me", verifyToken, getProfile);
 
 export default router;

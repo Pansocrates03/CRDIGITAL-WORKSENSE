@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { User } from "@/types/UserType";
-import apiClient from "@/api/apiClient";
+import { userProfileService } from "@/services/userProfileService";
 import { authService } from "@/services/auth";
 import { toast } from "sonner";
 
@@ -13,38 +13,41 @@ export function useUserProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      const userData = await userProfileService.fetchProfile();
+      const avatar =
+        userData.pfp ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          userData.fullName || userData.email
+        )}&background=AC1754&color=FFFFFF`;
+
+      const profileData = { ...userData, avatar };
+      setProfile(profileData);
+
+      // Update local storage with latest data
+      authService.updateUserInStorage(userData);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to load profile";
+      setError(msg);
+      toast.error("Failed to load profile", { description: msg });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        const stored = localStorage.getItem("user");
-        if (!stored) throw new Error("User data not found");
-        const user: User = JSON.parse(stored);
-        const avatar =
-          user.pfp ||
-          `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            user.fullName || user.email
-          )}&background=AC1754&color=FFFFFF`;
-        setProfile({ ...user, avatar });
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Failed to load";
-        setError(msg);
-        toast.error("Failed to load user data", { description: msg });
-      } finally {
-        setLoading(false);
-      }
-    })();
+    loadProfile();
   }, []);
 
-  /** Guarda nickname o avatar */
   const save = async (data: { nickName?: string; pfp?: string }) => {
     if (!profile) return;
     const id = toast.loading("Saving profile…");
     try {
-      await apiClient.put("/me", data);
+      const updatedUser = await userProfileService.updateProfile(data);
       const updated = {
-        ...profile,
-        ...data,
+        ...updatedUser,
         avatar: data.pfp ?? profile.avatar,
       };
       authService.updateUserInStorage(updated);
@@ -57,5 +60,5 @@ export function useUserProfile() {
     }
   };
 
-  return { profile, loading, error, save, setProfile };
+  return { profile, loading, error, save, setProfile, refresh: loadProfile };
 }

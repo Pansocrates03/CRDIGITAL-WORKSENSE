@@ -101,7 +101,9 @@ export const AvatarPicker: React.FC<Props> = ({ onSelect }) => {
               <img
                 src={url}
                 alt={animal}
-                className="w-14 h-14 rounded-full bg-[#AC1754]"
+                className="w-14 h-14 rounded-full bg-[#AC1754] object-cover object-center"
+                loading="lazy"
+                style={{ imageRendering: "crisp-edges" }}
               />
             </button>
           );
