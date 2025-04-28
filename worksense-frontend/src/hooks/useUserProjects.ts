@@ -9,7 +9,7 @@ export function useUserProjects() {
   const getUserProjects = useCallback(async () => {
 
     // Checamos que si exista la lista de miembros
-    if (projectList) {
+    if (projectList && projectList.length > 0) {
       console.log("Returning cached member data");
       return projectList;
     }

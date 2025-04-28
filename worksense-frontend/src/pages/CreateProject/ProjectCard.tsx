@@ -1,17 +1,10 @@
 import React from 'react';
 import styles from "./CreateProject.module.css";
 import { ArrowRight, Calendar } from "lucide-react";
+import ProjectDetails from '@/types/ProjectType';
 
 type ProjectCardProps = {
-    project: {
-        id: string;
-        name: string;
-        description: string;
-        status: string;
-        items: Array<{ status: string }>;
-        members: Array<{ id: string; name: string; avatar?: string }>;
-        lastChange: string;
-    };
+    project: ProjectDetails;
     handleProjectClick: (id: string) => void;
 }
 
@@ -53,10 +46,11 @@ const projectCard: React.FC<ProjectCardProps>  = ({ project, handleProjectClick 
                     <h4>{project.name}</h4>
                     <div
                     className={`${styles.status} ${getStatusColorClass(
-                        project.status
+                        //project.status
+                        "ACTIVE" // // Cambia esto por project.status si es necesario
                     )}`}
                     >
-                    {project.status}
+                    {/* project.status */}
                     </div>
                 </div>
                 <p className={styles.projectInfo}>
@@ -65,68 +59,13 @@ const projectCard: React.FC<ProjectCardProps>  = ({ project, handleProjectClick 
                 </div>
             </div>
 
-            <div className={styles.progressContainer}>
-                <div className={styles.progressBar}>
-                <div
-                    className={styles.progressFill}
-                    style={{
-                    width: `${
-                        project.items.length > 0
-                        ? (project.items.filter(
-                            (item) =>
-                                item.status === "COMPLETED" ||
-                                item.status === "DONE"
-                            ).length /
-                            project.items.length) *
-                            100
-                        : 0
-                    }%`,
-                    }}
-                />
-                </div>
-                <span className={styles.progressText}>
-                {project.items.length > 0
-                    ? Math.round(
-                        (project.items.filter(
-                        (item) =>
-                            item.status === "COMPLETED" ||
-                            item.status === "DONE"
-                        ).length /
-                        project.items.length) *
-                        100
-                    )
-                    : 0}
-                % Complete
-                </span>
-            </div>
-
             <div className={styles.cardFooter}>
                 <div className={styles.metaInfo}>
-                <div className={styles.memberAvatars}>
-                    {project.members.slice(0, 3).map((member) => (
-                    <div
-                        key={member.id}
-                        className={styles.memberAvatar}
-                        title={member.name}
-                    >
-                        {member.avatar ? (
-                        <img src={member.avatar} alt={member.name} />
-                        ) : (
-                        <div className={styles.avatarInitials}>
-                            {getInitials(member.name || "Unknown")}
-                        </div>
-                        )}
-                    </div>
-                    ))}
-                    {project.members.length > 3 && (
-                    <div className={styles.moreMembers}>
-                        +{project.members.length - 3}
-                    </div>
-                    )}
-                </div>
+                
                 <div className={styles.metaItem}>
                     <Calendar size={16} className={styles.metaIcon} />
-                    <span>{project.lastChange}</span>
+                   {/*<span>{project.lastChange}</span>*/}
+                   <span>Project last change...</span>
                 </div>
                 </div>
                 <div className={styles.cardAction}>

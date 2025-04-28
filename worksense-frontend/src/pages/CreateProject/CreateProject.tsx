@@ -8,13 +8,12 @@ import { Alert } from "../../components/Alert/Alert";
 import { useAuth } from "../../contexts/AuthContext";
 import { projectService } from "../../services/projectService";
 import SectionHeader from "./SectionHeader";
-import { Project } from "../../types/ProjectType";
 import ProjectDetails from "../../types/ProjectType";
 import ProjectCard from "./ProjectCard";
 
 // Icons
-import { Calendar, ArrowRight } from "lucide-react";
 import NoProjectsAvailable from "./NoProjectsAvailable";
+import { useUserProjects } from "@/hooks/useUserProjects";
 
 
 
@@ -27,7 +26,7 @@ const CreateProject: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState<SortOption>("last-change");
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [alert, setAlert] = useState<{
@@ -41,92 +40,28 @@ const CreateProject: React.FC = () => {
     return <div className={styles.loadingContainer}>Loading...</div>;
   }
 
-  // Fetch projects when component mounts
+  const { getUserProjects } = useUserProjects();
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    async function loadUserProjects() {
+      setIsLoading(true);
 
-  const fetchProjects = async () => {
-    setIsLoading(true);
-    try {
-      const projectsData = await projectService.getAllProjects();
-
-      if (!Array.isArray(projectsData)) {
-        console.error("Response data is not an array:", projectsData);
-        return;
+      try {
+        const response = await getUserProjects();
+        setProjects(response);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        setAlert({
+          type: "error",
+          title: "Something went wrong...",
+          message: "Please try again!",
+        });
+      } finally {
+        setIsLoading(false);
       }
-
-      const formattedProjects: Project[] = await Promise.all(
-        projectsData.map(async (project: any) => {
-          // Get project members
-          const members = await projectService.getProjectMembers(project.id);
-          const formattedMembers = members.map((member: any) => {
-            // Generate a light random color
-            const getRandomLightColor = () => {
-              // Using higher values (180-255) for RGB components to ensure lighter colors
-              const r = Math.floor(180 + Math.random() * 75)
-                .toString(16)
-                .padStart(2, "0");
-              const g = Math.floor(180 + Math.random() * 75)
-                .toString(16)
-                .padStart(2, "0");
-              const b = Math.floor(180 + Math.random() * 75)
-                .toString(16)
-                .padStart(2, "0");
-              return `${r}${g}${b}`;
-            };
-
-            return {
-              id: member.userId,
-              name: member.name || "Unknown User",
-              avatar:
-                member.avatar ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  member.name || "Unknown"
-                )}&background=${getRandomLightColor()}&color=000000`,
-            };
-          });
-
-          // Calculate task counts
-          const items = project.items || [];
-          const taskCounts = {
-            todo: items.filter(
-              (item: any) => item.status === "TODO" || item.status === "BACKLOG"
-            ).length,
-            inProgress: items.filter(
-              (item: any) => item.status === "IN_PROGRESS"
-            ).length,
-            completed: items.filter(
-              (item: any) =>
-                item.status === "COMPLETED" || item.status === "DONE"
-            ).length,
-          };
-
-          return {
-            id: project.id || project._id || String(Date.now()),
-            name: project.name || "Unnamed Project",
-            description: project.description || "No description",
-            status: project.status || "Active",
-            lastChange: new Date()
-              .toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })
-              .toLowerCase(),
-            members: formattedMembers,
-            items: items,
-          };
-        })
-      );
-
-      setProjects(formattedProjects);
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-    } finally {
-      setIsLoading(false);
     }
-  };
+
+    loadUserProjects();
+  }, []);
 
   // Filter and sort projects
   const filteredProjects = useMemo(() => {
