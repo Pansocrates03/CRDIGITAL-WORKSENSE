@@ -195,32 +195,70 @@ export const swaggerOptions: Options = {
             id: {
               type: "string",
               description: "Unique identifier for the project",
-              example: "proj123",
+              example: "proj_abc123",
             },
             name: {
               type: "string",
               description: "Name of the project",
-              example: "Worksense Platform",
+              example: "changedName Platform Enhancements",
             },
             description: {
               type: "string",
               description: "Description of the project",
-              example: "A project management platform for teams",
-            },
-            createdAt: {
-              type: "string",
-              format: "date-time",
-              description: "Timestamp when the project was created",
-            },
-            updatedAt: {
-              type: "string",
-              format: "date-time",
-              description: "Timestamp when the project was last updated",
+              example: "There is none because i changed it",
             },
             ownerId: {
-              type: "string",
-              description: "ID of the user who owns the project",
-              example: "user123",
+              type: "integer",
+              description: "ID of the project owner",
+              example: 16,
+            },
+            context: {
+              type: "object",
+              properties: {
+                techStack: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                  },
+                  description: "List of technologies used in the project",
+                  example: ["React"],
+                },
+                objectives: {
+                  type: "string",
+                  description: "Project objectives",
+                  example: "",
+                },
+              },
+            },
+            createdAt: {
+              type: "object",
+              properties: {
+                _seconds: {
+                  type: "integer",
+                  description: "Unix timestamp in seconds",
+                  example: 1745715508,
+                },
+                _nanoseconds: {
+                  type: "integer",
+                  description: "Nanoseconds part of the timestamp",
+                  example: 392000000,
+                },
+              },
+            },
+            updatedAt: {
+              type: "object",
+              properties: {
+                _seconds: {
+                  type: "integer",
+                  description: "Unix timestamp in seconds",
+                  example: 1745788678,
+                },
+                _nanoseconds: {
+                  type: "integer",
+                  description: "Nanoseconds part of the timestamp",
+                  example: 523000000,
+                },
+              },
             },
           },
         },
@@ -589,6 +627,489 @@ export const swaggerOptions: Options = {
               type: "string",
               description: "Error code",
               example: "NOT_FOUND",
+            },
+          },
+        },
+
+        // Add these schema definitions to the components.schemas section
+        Epic: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              description: "Unique identifier for the epic",
+              example: "epic_001",
+            },
+            projectId: {
+              type: "string",
+              description: "ID of the project this epic belongs to",
+              example: "proj_abc123",
+            },
+            type: {
+              type: "string",
+              description: "Type of the item",
+              example: "epic",
+            },
+            title: {
+              type: "string",
+              description: "Title of the epic",
+              example: "User Authentication Module",
+            },
+            description: {
+              type: "string",
+              description: "Description of the epic",
+              example:
+                "Implement complete user login, registration, and profile management.",
+            },
+            priority: {
+              type: "string",
+              description: "Priority of the epic",
+              example: "high",
+            },
+            reporterId: {
+              type: "string",
+              description: "ID of the user who reported the epic",
+              example: "101",
+            },
+            assigneeId: {
+              type: "string",
+              nullable: true,
+              description: "ID of the user assigned to the epic",
+              example: null,
+            },
+            status: {
+              type: "string",
+              description: "Current status of the epic",
+              example: "new",
+            },
+            createdAt: {
+              type: "object",
+              properties: {
+                _seconds: {
+                  type: "integer",
+                  description: "Unix timestamp in seconds",
+                  example: 1745792338,
+                },
+                _nanoseconds: {
+                  type: "integer",
+                  description: "Nanoseconds part of the timestamp",
+                  example: 635000000,
+                },
+              },
+            },
+            updatedAt: {
+              type: "object",
+              properties: {
+                _seconds: {
+                  type: "integer",
+                  description: "Unix timestamp in seconds",
+                  example: 1745792352,
+                },
+                _nanoseconds: {
+                  type: "integer",
+                  description: "Nanoseconds part of the timestamp",
+                  example: 683000000,
+                },
+              },
+            },
+            linkedItems: {
+              type: "array",
+              nullable: true,
+              description: "Items linked to this epic",
+              example: null,
+            },
+          },
+        },
+
+        Story: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              description: "Unique identifier for the story",
+              example: "story_001",
+            },
+            projectId: {
+              type: "string",
+              description: "ID of the project this story belongs to",
+              example: "proj_abc123",
+            },
+            type: {
+              type: "string",
+              description: "Type of the item",
+              example: "story",
+            },
+            title: {
+              type: "string",
+              description: "Title of the story",
+              example: "User Login with Email/Password",
+            },
+            description: {
+              type: "string",
+              description: "Description of the story",
+              example:
+                "As a user, I want to log in using my email and password.",
+            },
+            epicId: {
+              type: "string",
+              nullable: true,
+              description: "ID of the epic this story belongs to",
+              example: "epic_001",
+            },
+            priority: {
+              type: "string",
+              description: "Priority of the story",
+              example: "highest",
+            },
+            storyPoints: {
+              type: "integer",
+              nullable: true,
+              description: "Estimated story points",
+              example: 5,
+            },
+            reporterId: {
+              type: "integer",
+              description: "ID of the user who reported the story",
+              example: 16,
+            },
+            assigneeId: {
+              type: "integer",
+              nullable: true,
+              description: "ID of the user assigned to the story",
+              example: 17,
+            },
+            status: {
+              type: "string",
+              description: "Current status of the story",
+              example: "todo",
+            },
+            createdAt: {
+              type: "object",
+              properties: {
+                _seconds: {
+                  type: "integer",
+                  description: "Unix timestamp in seconds",
+                  example: 1745792542,
+                },
+                _nanoseconds: {
+                  type: "integer",
+                  description: "Nanoseconds part of the timestamp",
+                  example: 435000000,
+                },
+              },
+            },
+            updatedAt: {
+              type: "object",
+              nullable: true,
+              properties: {
+                _seconds: {
+                  type: "integer",
+                  description: "Unix timestamp in seconds",
+                  example: 1745792774,
+                },
+                _nanoseconds: {
+                  type: "integer",
+                  description: "Nanoseconds part of the timestamp",
+                  example: 85000000,
+                },
+              },
+            },
+            linkedItems: {
+              type: "array",
+              nullable: true,
+              description: "Items linked to this story",
+              example: null,
+            },
+          },
+        },
+
+        Bug: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              description: "Unique identifier for the bug",
+              example: "bug001",
+            },
+            projectId: {
+              type: "string",
+              description: "ID of the project this bug belongs to",
+              example: "proj_abc123",
+            },
+            type: {
+              type: "string",
+              description: "Type of the item",
+              example: "bug",
+            },
+            title: {
+              type: "string",
+              description: "Title of the bug",
+              example: "Login button unresponsive on Safari",
+            },
+            description: {
+              type: "string",
+              description: "Description of the bug",
+              example:
+                "Steps: 1. Open on Safari 15. 2. Enter credentials. 3. Click Login. Expected: Login proceeds. Actual: Nothing happens.",
+            },
+            linkedStoryId: {
+              type: "string",
+              nullable: true,
+              description: "ID of the story this bug is linked to",
+              example: "story_001",
+            },
+            priority: {
+              type: "string",
+              description: "Priority of the bug",
+              example: "high",
+            },
+            severity: {
+              type: "string",
+              description: "Severity of the bug",
+              example: "major",
+            },
+            reporterId: {
+              type: "integer",
+              description: "ID of the user who reported the bug",
+              example: 18,
+            },
+            assigneeId: {
+              type: "integer",
+              nullable: true,
+              description: "ID of the user assigned to the bug",
+              example: 17,
+            },
+            status: {
+              type: "string",
+              description: "Current status of the bug",
+              example: "confirmed",
+            },
+            createdAt: {
+              type: "object",
+              properties: {
+                _seconds: {
+                  type: "integer",
+                  description: "Unix timestamp in seconds",
+                  example: 1745792917,
+                },
+                _nanoseconds: {
+                  type: "integer",
+                  description: "Nanoseconds part of the timestamp",
+                  example: 903000000,
+                },
+              },
+            },
+            updatedAt: {
+              type: "object",
+              nullable: true,
+              properties: {
+                _seconds: {
+                  type: "integer",
+                  description: "Unix timestamp in seconds",
+                  example: 1745792931,
+                },
+                _nanoseconds: {
+                  type: "integer",
+                  description: "Nanoseconds part of the timestamp",
+                  example: 104000000,
+                },
+              },
+            },
+            linkedItems: {
+              type: "array",
+              nullable: true,
+              description: "Items linked to this bug",
+              example: null,
+            },
+          },
+        },
+
+        TechTask: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              description: "Unique identifier for the technical task",
+              example: "task_001",
+            },
+            projectId: {
+              type: "string",
+              description: "ID of the project this task belongs to",
+              example: "proj_abc123",
+            },
+            type: {
+              type: "string",
+              description: "Type of the item",
+              example: "techTask",
+            },
+            title: {
+              type: "string",
+              description: "Title of the technical task",
+              example: "set up Firestore indexing for backlog queries",
+            },
+            description: {
+              type: "string",
+              description: "Description of the technical task",
+              example:
+                "Define and deploy necessary composite indexes for filtering/sorting the backlog.",
+            },
+            linkedStoryId: {
+              type: "string",
+              nullable: true,
+              description: "ID of the story this task is linked to",
+              example: null,
+            },
+            priority: {
+              type: "string",
+              description: "Priority of the technical task",
+              example: "medium",
+            },
+            reporterId: {
+              type: "integer",
+              description: "ID of the user who reported the task",
+              example: 16,
+            },
+            assigneeId: {
+              type: "integer",
+              nullable: true,
+              description: "ID of the user assigned to the task",
+              example: 16,
+            },
+            status: {
+              type: "string",
+              description: "Current status of the technical task",
+              example: "todo",
+            },
+            createdAt: {
+              type: "object",
+              properties: {
+                _seconds: {
+                  type: "integer",
+                  description: "Unix timestamp in seconds",
+                  example: 1745793050,
+                },
+                _nanoseconds: {
+                  type: "integer",
+                  description: "Nanoseconds part of the timestamp",
+                  example: 570000000,
+                },
+              },
+            },
+            updatedAt: {
+              type: "object",
+              nullable: true,
+              properties: {
+                _seconds: {
+                  type: "integer",
+                  description: "Unix timestamp in seconds",
+                  example: 1745793061,
+                },
+                _nanoseconds: {
+                  type: "integer",
+                  description: "Nanoseconds part of the timestamp",
+                  example: 218000000,
+                },
+              },
+            },
+            linkedItems: {
+              type: "array",
+              nullable: true,
+              description: "Items linked to this technical task",
+              example: null,
+            },
+          },
+        },
+
+        Knowledge: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              description: "Unique identifier for the knowledge item",
+              example: "know_001",
+            },
+            projectId: {
+              type: "string",
+              description: "ID of the project this knowledge item belongs to",
+              example: "proj_abc123",
+            },
+            type: {
+              type: "string",
+              description: "Type of the item",
+              example: "knowledge",
+            },
+            title: {
+              type: "string",
+              description: "Title of the knowledge item",
+              example: "Decision Log: Authentication Flow",
+            },
+            content: {
+              type: "string",
+              description: "Content of the knowledge item",
+              example:
+                "Decided on JWT-based auth with 1-hour expiry. Role included in payload.",
+            },
+            tags: {
+              type: "array",
+              nullable: true,
+              items: {
+                type: "string",
+              },
+              description: "Tags associated with the knowledge item",
+              example: ["auth", "decision"],
+            },
+            reporterId: {
+              type: "integer",
+              description: "ID of the user who created the knowledge item",
+              example: 16,
+            },
+            assigneeId: {
+              type: "integer",
+              nullable: true,
+              description: "ID of the user assigned to the knowledge item",
+              example: null,
+            },
+            status: {
+              type: "string",
+              description: "Current status of the knowledge item",
+              example: "active",
+            },
+            createdAt: {
+              type: "object",
+              properties: {
+                _seconds: {
+                  type: "integer",
+                  description: "Unix timestamp in seconds",
+                  example: 1745793184,
+                },
+                _nanoseconds: {
+                  type: "integer",
+                  description: "Nanoseconds part of the timestamp",
+                  example: 787000000,
+                },
+              },
+            },
+            updatedAt: {
+              type: "object",
+              nullable: true,
+              properties: {
+                _seconds: {
+                  type: "integer",
+                  description: "Unix timestamp in seconds",
+                  example: 1745793193,
+                },
+                _nanoseconds: {
+                  type: "integer",
+                  description: "Nanoseconds part of the timestamp",
+                  example: 405000000,
+                },
+              },
+            },
+            linkedItems: {
+              type: "array",
+              nullable: true,
+              description: "Items linked to this knowledge item",
+              example: null,
             },
           },
         },
