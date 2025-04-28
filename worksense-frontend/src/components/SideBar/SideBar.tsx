@@ -112,32 +112,32 @@ export const SideBar: React.FC = () => {
         icon: "/backlog.svg",
         path: `/project/${projectId}/product-backlog`,
       },
-      /*{
-        name: "Sprint & Workflow",
-        icon: "/sprint.svg",
-        path: `/project/${projectId}/sprint`,
-      },
+      // {
+      //   name: "Sprint & Workflow",
+      //   icon: "/sprint.svg",
+      //   path: `/project/${projectId}/sprint`,
+      // },
       {
         name: "User Management",
         icon: "/users.svg",
         path: `/project/${projectId}/users`,
       },
-      {
-        name: "Story Management",
-        icon: "/story.svg",
-        path: `/project/${projectId}/stories`,
-      },
-      {
-        name: "Bug Tracking",
-        icon: "/bug.svg",
-        path: `/project/${projectId}/bugs`,
-        badge: 3, // Example of a badge showing number of bugs
-      },
-      {
-        name: "Leaderboard",
-        icon: "/leaderboard.svg",
-        path: `/project/${projectId}/leaderboard`,
-      },*/
+      // {
+      //   name: "Story Management",
+      //   icon: "/story.svg",
+      //   path: `/project/${projectId}/stories`,
+      // },
+      // {
+      //   name: "Bug Tracking",
+      //   icon: "/bug.svg",
+      //   path: `/project/${projectId}/bugs`,
+      //   badge: 3, // Example of a badge showing number of bugs
+      // },
+      // {
+      //   name: "Leaderboard",
+      //   icon: "/leaderboard.svg",
+      //   path: `/project/${projectId}/leaderboard`,
+      // },
     ],
     [projectId]
   );
