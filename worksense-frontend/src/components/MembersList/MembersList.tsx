@@ -1,14 +1,23 @@
 import React from 'react';
 import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
-import styles from './MembersList.module.css'; // Import updated CSS file
+import { 
+  Table, 
+  TableHeader, 
+  TableBody, 
+  TableRow, 
+  TableHead, 
+  TableCell 
+} from "@/components/ui/table"; // Adjust this path if needed
+
+import styles from './MembersList.module.css'; // Keep using your CSS
 
 interface Member {
   id: number;
-  pfp: string;  // URL of profile picture
+  pfp: string;
   name: string;
   email: string;
   role: string;
-  lastLogin: string; // Date string or time ago
+  lastLogin: string;
 }
 
 const members: Member[] = [
@@ -28,7 +37,6 @@ const members: Member[] = [
     role: 'Editor',
     lastLogin: '1 day ago'
   },
-  // Add more members as needed
 ];
 
 const MembersList: React.FC = () => {
@@ -43,45 +51,64 @@ const MembersList: React.FC = () => {
   return (
     <div className={styles.membersListContainer}>
       <div className={styles.tableContainer}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>PFP</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Last Login</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className={styles.table}>
+          <TableHeader className="">
+            <TableRow className="">
+              <TableHead className="bg-[#f9fafb] text-[#666] text-[0.75rem] font-semibold uppercase">
+                PFP
+              </TableHead>
+              <TableHead className="bg-[#f9fafb] text-[#666] text-[0.75rem] font-semibold uppercase">
+                Name
+              </TableHead>
+              <TableHead className="bg-[#f9fafb] text-[#666] text-[0.75rem] font-semibold uppercase">
+                Email
+              </TableHead>
+              <TableHead className="bg-[#f9fafb] text-[#666] text-[0.75rem] font-semibold uppercase">
+                Role
+              </TableHead>
+              <TableHead className="bg-[#f9fafb] text-[#666] text-[0.75rem] font-semibold uppercase">
+                Last Login
+              </TableHead>
+              <TableHead className="bg-[#f9fafb] text-[#666] text-[0.75rem] font-semibold uppercase">
+                Actions
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {members.map((member) => (
-              <tr key={member.id}>
-                <td>
+              <TableRow 
+                key={member.id}
+                className="hover:bg-[#f7f7f7]"
+              >
+                <TableCell>
                   <img src={member.pfp} alt={member.name} className={styles.pfp} />
-                </td>
-                <td>{member.name}</td>
-                <td>{member.email}</td>
-                <td>
-                  <span className={`${styles.badge} ${styles.roleBadge}`}>{member.role}</span>
-                </td>
-                <td>{member.lastLogin}</td>
-                <td className={styles.actionButtons}>
-                    <button onClick={() => handleEdit(member.id)} className={styles.button}>
+                </TableCell>
+                <TableCell className="text-[#222] text-[0.875rem]">{member.name}</TableCell>
+                <TableCell className="text-[#222] text-[0.875rem]">{member.email}</TableCell>
+                <TableCell>
+                  <span className={`${styles.badge} ${styles.roleBadge}`}>
+                    {member.role}
+                  </span>
+                </TableCell>
+                <TableCell className="text-[#222] text-[0.875rem]">{member.lastLogin}</TableCell>
+                <TableCell className={styles.actionButtons}>
+                  <button 
+                    onClick={() => handleEdit(member.id)} 
+                    className={styles.button}
+                  >
                     <FaPencilAlt />
-                    </button>
-                    
-                    <button 
+                  </button>
+                  <button 
                     onClick={() => handleDelete(member.id)} 
                     className={`${styles.button} ${styles.trashButton}`}
-                    >
+                  >
                     <FaTrashAlt />
-                </button>
-                </td>
-              </tr>
+                  </button>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
