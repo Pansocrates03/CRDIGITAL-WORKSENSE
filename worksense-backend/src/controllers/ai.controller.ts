@@ -40,7 +40,7 @@ async function saveItemRecursively(
   let ids = [docRef.id];
 
   if (Array.isArray(item.items) && item.items.length > 0) {
-    const sub = docRef.collection("items");
+    const sub = docRef.collection("backlog");
     for (const child of item.items) {
       // garantizamos child.tag correcto
       ids = ids.concat(
@@ -178,7 +178,7 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
     const itemRef = db
       .collection("projectss")
       .doc(req.params.id)
-      .collection("items");
+      .collection("backlog");
     const snapshot = await itemRef.where("tag", "==", "epic").get();
     const existingNames = snapshot.docs
       .map((doc) => doc.data().name)
@@ -241,8 +241,8 @@ export async function confirmEpicsHandler(req: Request, res: Response) {
   }
 
   // 4) Traer épicas existentes para filtrar duplicados
-  const itemsRef = projectRef.collection("items");
-  const existSnap = await itemsRef.where("tag", "==", "epic").get();
+  const backlogRef = projectRef.collection("backlog");
+  const existSnap = await backlogRef.where("tag", "==", "epic").get();
   const existingNames = new Set(
     existSnap.docs
       .map((d) => d.data().name)
@@ -261,7 +261,7 @@ export async function confirmEpicsHandler(req: Request, res: Response) {
     const epicWithTag = { ...epic, tag: "epic" };
     const ids = await saveItemRecursively(
       batch,
-      itemsRef,
+      backlogRef,
       projectId,
       epicWithTag,
       userId
