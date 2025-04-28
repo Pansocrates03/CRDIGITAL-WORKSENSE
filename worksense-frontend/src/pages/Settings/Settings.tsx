@@ -9,7 +9,6 @@ interface UserCreationForm {
   email: string;
   firstName: string;
   lastName: string;
-  gender: string;
   password: string;
   platformRole: string;
 }
@@ -19,7 +18,6 @@ interface CreatedUser {
   email: string;
   firstName: string;
   lastName: string;
-  gender: string;
   password: string;
   userId?: number;
   platformRole: string;
@@ -30,7 +28,6 @@ const Settings: React.FC = () => {
     email: "",
     firstName: "",
     lastName: "",
-    gender: "",
     password: "",
     platformRole: "",
   });
@@ -59,11 +56,8 @@ const Settings: React.FC = () => {
     setCreatedUser(null);
 
     try {
-      // Convert gender string to number as expected by the backend
       const userData = {
         ...newUser,
-        gender:
-          newUser.gender === "male" ? 1 : newUser.gender === "female" ? 2 : 3,
       };
 
       const response = await apiClient.post("users/", userData);
@@ -74,7 +68,6 @@ const Settings: React.FC = () => {
           email: newUser.email,
           firstName: newUser.firstName,
           lastName: newUser.lastName,
-          gender: newUser.gender,
           password: newUser.password,
           userId: response.data.userId || undefined,
           platformRole: newUser.platformRole,
@@ -85,7 +78,6 @@ const Settings: React.FC = () => {
           email: "",
           firstName: "",
           lastName: "",
-          gender: "",
           password: "",
           platformRole: "",
         });
@@ -211,23 +203,6 @@ const Settings: React.FC = () => {
                 className={styles.input}
                 required
               />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="gender">Gender</label>
-              <select
-                id="gender"
-                name="gender"
-                value={newUser.gender}
-                onChange={handleInputChange}
-                className={styles.select}
-                required
-              >
-                <option value="">Select gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
             </div>
 
             <div className={styles.formGroup}>

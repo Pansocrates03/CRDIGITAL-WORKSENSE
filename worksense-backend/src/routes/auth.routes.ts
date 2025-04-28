@@ -3,7 +3,8 @@ import {
   getAllUsers,
   getUsers,
   createUser,
-  updateUser,
+  updateSelf,
+  updateUserByAdmin,
   deleteUser,
   login,
 } from "../controllers/auth.controller.js";
@@ -78,7 +79,7 @@ const router = Router();
  *       404:
  *         description: User not found
  */
-router.put("/users/:id", verifyToken, checkPlatformAdmin, updateUser);
+router.put("/users/:id", verifyToken, checkPlatformAdmin, updateUserByAdmin);
 
 /**
  * @swagger
@@ -281,5 +282,54 @@ router.post("/login", login);
 router.get("/protected", verifyToken, (req, res) => {
   res.send("Protected route access successful");
 });
+
+/**
+ * @swagger
+ * /me:
+ *   put:
+ *     summary: Update current user's profile
+ *     tags: [Authentication]
+ *     security:
+ *       - authToken: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: New email for the user
+ *               firstName:
+ *                 type: string
+ *                 description: New first name for the user
+ *               lastName:
+ *                 type: string
+ *                 description: New last name for the user
+ *               gender:
+ *                 type: integer
+ *                 description: Gender of the user
+ *               country:
+ *                 type: string
+ *                 description: Country of the user
+ *               nickName:
+ *                 type: string
+ *                 description: Nickname of the user
+ *               timezone:
+ *                 type: integer
+ *                 description: Timezone of the user
+ *               pfp:
+ *                 type: string
+ *                 description: Profile picture URL of the user
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       400:
+ *         description: Invalid request data
+ *       401:
+ *         description: Unauthorized - User is not authenticated
+ */
+router.put("/me", verifyToken, updateSelf);
 
 export default router;

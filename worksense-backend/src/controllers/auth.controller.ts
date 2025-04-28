@@ -44,8 +44,7 @@ export const getUsers = async (req: Request, res: Response) => {
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const { email, firstName, lastName, gender, password, platformRole } =
-      req.body;
+    const { email, firstName, lastName, password, platformRole } = req.body;
 
     const pool = await sqlConnect();
     if (!pool) {
@@ -60,7 +59,6 @@ export const createUser = async (req: Request, res: Response) => {
       .input("email", sql.VarChar, email)
       .input("firstName", sql.VarChar, firstName)
       .input("lastName", sql.VarChar, lastName)
-      .input("gender", sql.Int, gender)
       .input("passwordHash", sql.VarChar, hashedPassword)
       .input("platformRole", sql.VarChar, platformRole)
       .execute("spUserRegistration");
@@ -71,8 +69,97 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-export const updateUser = (req: Request, res: Response) => {
-  res.json({ message: "Update user endpoint" });
+/**
+ * Update the current user's own profile
+ * This function is for users updating their own information
+ */
+export const updateSelf = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { nickName, pfp } = req.body;
+
+    const pool = await sqlConnect();
+    if (!pool) {
+      res.status(500).json({ message: "Database connection failed" });
+      return;
+    }
+
+    await pool
+      .request()
+      .input("userId", sql.Int, req.user.userId)
+      .input("nickName", sql.NVarChar(50), nickName)
+      .input("pfp", sql.NVarChar(255), pfp)
+      .execute("spUpdateUserProfile");
+
+    res.json({ message: "Profile updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Update failed" });
+  }
+};
+
+/**
+ * Update a user's profile by an admin
+ * This function is for admins updating any user's information
+ */
+export const updateUserByAdmin = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { email, firstName, lastName, pfp, platformRole } = req.body;
+
+    // Validate required fields
+    if (!email || !firstName || !lastName) {
+      res
+        .status(400)
+        .json({ message: "Email, first name, and last name are required" });
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      res.status(400).json({ message: "Invalid email format" });
+      return;
+    }
+
+    // Check if user exists
+    const pool = await sqlConnect();
+    if (!pool) {
+      res.status(500).json({ message: "Database connection failed" });
+      return;
+    }
+
+    const userExistsResult = await pool
+      .request()
+      .input("id", sql.Int, id)
+      .execute("spCheckUserExists");
+
+    if (userExistsResult.recordset[0].UserExists !== 1) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    // Update user using the same stored procedure
+    await pool
+      .request()
+      .input("userId", sql.Int, id)
+      .input("email", sql.NVarChar(50), email)
+      .input("firstName", sql.NVarChar(50), firstName)
+      .input("lastName", sql.NVarChar(50), lastName)
+      .input("pfp", sql.NVarChar(255), pfp)
+      .input("platformRole", sql.NVarChar(50), platformRole)
+      .execute("spUpdateUser");
+
+    res.json({ message: "User updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Update failed" });
+  }
 };
 
 export const deleteUser = (req: Request, res: Response) => {
@@ -131,7 +218,6 @@ export const login = async (req: Request, res: Response) => {
         userId: loginData.UserID,
         firstName: loginData.FirstName,
         lastName: loginData.LastName,
-        gender: loginData.Gender,
         platformRole: loginData.platformRole,
       };
 
