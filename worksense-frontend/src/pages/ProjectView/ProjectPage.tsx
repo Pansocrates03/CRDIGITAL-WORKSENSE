@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ProjectView } from "../../components/ProjectView/ProjectView";
-import { ProjectViewData } from "@/types/ProjectType";
-import { projectService } from "../../services/projectService";
 import styles from "./ProjectPage.module.css";
 import LoadingSpinner from "../../components/Loading/LoadingSpinner";
+
+
+import React, { useEffect, useState } from 'react';
+import { useProject } from '@/hooks/useProject';
+import ProjectDetails from '@/types/ProjectType';
+import { useMembers } from "@/hooks/useMembers";
+import Member from "@/types/MemberType";
 
 // Extracted reusable UI components
 const LoadingState = () => (
@@ -58,91 +62,79 @@ const NotFoundState: React.FC<{ onBackToProjects: () => void }> = ({
 export const ProjectPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [project, setProject] = useState<ProjectViewData | null>(null);
+  
+  const { getProjectDetails } = useProject();
+  const [project, setProject] = useState<ProjectDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Memoized navigation handlers
-  const handleRetry = () => {
-    setLoading(true);
-    setError(null);
-    fetchProject();
-  };
 
-  const handleBackToProjects = () => {
-    navigate("/create");
-  };
-
-  // Extract the data fetching logic to a separate function for better readability
-  const fetchProject = async () => {
-    try {
-      if (!id) throw new Error("Project ID is required");
-
-      // Use Promise.all to fetch data in parallel
-      const [projectData, membersData] = await Promise.all([
-        projectService.getProject(id),
-        projectService.getProjectMembers(id),
-      ]);
-
-      // Transform members data
-      const teamMembers = membersData.map((member) => ({
-        id: parseInt(member.userId, 10),
-        name: member.fullName || member.name || "Unknown User",
-        role: member.roleId && typeof member.roleId === 'string' && member.roleId.includes('admin') ? 'Admin' : 'Team Member',
-        avatar: member.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.fullName || member.name || "Unknown")}&background=random`,
-        email: member.email,
-        userId: member.userId,
-        projectId: member.projectId,
-        roleId: member.roleId,
-        status: member.status || "Active",
-        createdAt: member.createdAt,
-        updatedAt: member.updatedAt
-      }));
-
-      console.log("Transformed team members:", teamMembers);
-
-      // Create base project data structure
-      const transformedProject: ProjectViewData = {
-        id: projectData.id || id,
-        name: projectData.name || "Untitled Project",
-        description: projectData.description || "No description available",
-        currentSprint: {
-          number: 1,
-          startDate: new Date().toISOString(),
-          endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        team: teamMembers
-      };
-
-      setProject(transformedProject);
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching project:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch project");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch data on component mount or id change
   useEffect(() => {
-    fetchProject();
-  }, [id]);
+    async function loadProject() {
+      setLoading(true);
+      setError(null);
+
+      if(!id) {
+        console.log("Could not get ID");
+        return;
+      }
+      
+      try {
+        const projectData = await getProjectDetails(id);
+        setProject(projectData);
+      } catch (err) {
+        setError('Error al cargar el proyecto');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    loadProject();
+  }, [id, getProjectDetails]);
+
+
+  const { getProjectMembers } = useMembers();
+  const [members, setMembers] = useState<Member[] | null>(null);
+
+
+  useEffect(() => {
+    async function loadProjectMembers() {
+      setLoading(true)
+      setError(null)
+
+      if(!id) {
+        console.log("Could not get ID");
+        return;
+      }
+
+      try {
+        const membersData = await getProjectMembers(id);
+        setMembers(membersData)
+      } catch (err) {
+        setError('Error al cargar los miembros');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProjectMembers()
+  }, [id, getProjectMembers])
+
+
+
+  // Memoized navigation handlers
+  const handleRetry = () => window.location.reload();
+  const handleBackToProjects = () => navigate("/create");
 
   // Render appropriate UI state
-  if (loading) {
-    return <LoadingState />;
-  }
+  if (loading) return <LoadingState />;
+  if (error) return <ErrorState message={error} onRetry={handleRetry} />;
+  if (!project) return <NotFoundState onBackToProjects={handleBackToProjects} />;
+  if (!members) return <NotFoundState onBackToProjects={handleBackToProjects} />;
 
-  if (error) {
-    return <ErrorState message={error} onRetry={handleRetry} />;
-  }
-
-  if (!project) {
-    return <NotFoundState onBackToProjects={handleBackToProjects} />;
-  }
-
-  return <ProjectView {...project} />;
+  return <ProjectView project={project} members={members} />;
 };
 
 export default ProjectPage;

@@ -15,6 +15,9 @@ import { AccountPage } from "./pages/Account/AccountPage";
 import BacklogPage from "./pages/Backlog/BacklogPage";
 import Settings from "./pages/Settings/Settings";
 import BacklogTablePage from "./pages/BacklogTable/BacklogTablePage";
+import { projectService } from "./services/projectService";
+
+console.log("Running")
 
 // Updated PrivateRoute to wrap content with MainLayout
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -37,6 +40,13 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   console.log(
     "[PrivateRoute] Authenticated. Rendering children within MainLayout."
   );
+
+  let details
+  async function getPS(){
+    details = await projectService.getProjectDetails("sampleProjectId")
+    console.log("projectDetails",details)
+  }
+  getPS()
   // Wrap the authenticated route's content with the MainLayout
   return <MainLayout>{children}</MainLayout>;
 }

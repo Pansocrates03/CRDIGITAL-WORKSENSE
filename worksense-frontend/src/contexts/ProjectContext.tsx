@@ -1,50 +1,41 @@
-import {
-    createContext,
-    useContext,
-    useState,
-    useEffect,
-    ReactNode,
-} from "react";
+import React, { createContext, useState, useContext } from "react";
+import ProjectDetails from "@/types/ProjectType";
 
-import type { Project } from "@/types/ProjectType";
-import { describe } from "node:test";
+// Tipo para el caché de proyectos
+type ProjectsCache = {
+  [id: string]: ProjectDetails;
+};
 
-const ProjectContext = createContext<Project | undefined>(undefined)
+// Definición del tipo del contexto
+type ProjectContextType = [
+  ProjectsCache,
+  React.Dispatch<React.SetStateAction<ProjectsCache>>
+];
 
-export function fetchProject() {
+// Valor inicial del contexto
+const initialContext: ProjectContextType = [{}, () => {}];
 
-    const [getProjectContext, setProjectContext] = useContext(ProjectContext)
+// Creación del contexto
+export const ProjectContext = createContext<ProjectContextType>(initialContext);
 
-    setProjectContext({
-        id: "12345",
-        name: "projectName",
-        description: "pdesnjiksdnfjkdsnfjkds",
-        status: "active",
-        lastChange: "fnjdksfds",
-        members: [],
-        items: [],
-        roles: []
-    })
+// Provider component
+export const ProjectProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+  const projectState = useState<ProjectsCache>({});
+  
+  return (
+    <ProjectContext.Provider value={projectState}>
+      {children}
+    </ProjectContext.Provider>
+  );
+};
 
-}
-
-export function getProjectInfo() {
-    const project = useContext(ProjectContext);
-    if(!project) throw Error("There is no project in the context, you must fetch it first")
-
-    return {
-        id: project.id,
-        name: project.name,
-        description: project.description,
-        status: project.status,
-        lastChange: project.lastChange
-    }
-
-}
-
-export function getProjectRoles() {
-    const project = useContext(ProjectContext);
-    if(!project) throw Error("There is no project in the context, you must fetch it first")
-
-    return project.roles
-}
+// Custom hook para usar el contexto
+export const useProjectContext = () => {
+  const context = useContext(ProjectContext);
+  
+  if (!context) {
+    throw new Error("useProjectContext debe usarse dentro de un ProjectProvider");
+  }
+  
+  return context;
+};

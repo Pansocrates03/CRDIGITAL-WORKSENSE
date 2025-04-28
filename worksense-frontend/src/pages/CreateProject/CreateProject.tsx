@@ -1,13 +1,15 @@
 // src/pages/CreateProject/CreateProject.tsx
-import React, { useState, useMemo, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./CreateProject.module.css";
+import { useEffect, useMemo, useState } from "react";
 
 import NewProjectModal from "../../components/NewProjectModal/NewProjectModal";
 import { Alert } from "../../components/Alert/Alert";
 import { useAuth } from "../../contexts/AuthContext";
 import { projectService } from "../../services/projectService";
-import { Project } from "../../types/ProjectType";
+import ProjectDetails from "../../types/ProjectType";
+import { useUserProjects } from "@/hooks/useUserProjects";
 
 // Icons
 import {
@@ -26,110 +28,58 @@ type SortOption = "last-change" | "status" | "a-z" | "z-a" | "progress";
 const CreateProject: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [isLoading, setLoading ] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState<SortOption>("last-change");
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [projectCreated, setProjectCreated] = useState(false);
   const [alert, setAlert] = useState<{
     type: "success" | "error";
     title: string;
     message: string;
   } | null>(null);
-  const [projectCreated, setProjectCreated] = useState(false);
 
-  // Fetch projects when component mounts
+
+  // NEW ENDPOINT DATA RETRIEVER
+  const { getUserProjects } = useUserProjects()
+  const [ projects, setProjects ] = useState<ProjectDetails[] | null>(null);
+console.log("lol")
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    
+    async function loadUserProjects() {
+      setLoading(true)
+      //setError(null)
 
-  const fetchProjects = async () => {
-    setIsLoading(true);
-    try {
-      const projectsData = await projectService.getAllProjects();
-
-      if (!Array.isArray(projectsData)) {
-        console.error("Response data is not an array:", projectsData);
-        return;
+      try {
+        const projectsData = await getUserProjects();
+        console.log("PDATA",projectsData);
+        setProjects(projectsData)
+      } catch (err) {
+        // setError('Error al cargar los miembros');
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-
-      const formattedProjects: Project[] = await Promise.all(
-        projectsData.map(async (project: any) => {
-          // Get project members
-          const members = await projectService.getProjectMembers(project.id);
-          const formattedMembers = members.map((member: any) => {
-            // Generate a light random color
-            const getRandomLightColor = () => {
-              // Using higher values (180-255) for RGB components to ensure lighter colors
-              const r = Math.floor(180 + Math.random() * 75)
-                .toString(16)
-                .padStart(2, "0");
-              const g = Math.floor(180 + Math.random() * 75)
-                .toString(16)
-                .padStart(2, "0");
-              const b = Math.floor(180 + Math.random() * 75)
-                .toString(16)
-                .padStart(2, "0");
-              return `${r}${g}${b}`;
-            };
-
-            return {
-              id: member.userId,
-              name: member.name || "Unknown User",
-              avatar:
-                member.avatar ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  member.name || "Unknown"
-                )}&background=${getRandomLightColor()}&color=000000`,
-            };
-          });
-
-          // Calculate task counts
-          const items = project.items || [];
-          const taskCounts = {
-            todo: items.filter(
-              (item: any) => item.status === "TODO" || item.status === "BACKLOG"
-            ).length,
-            inProgress: items.filter(
-              (item: any) => item.status === "IN_PROGRESS"
-            ).length,
-            completed: items.filter(
-              (item: any) =>
-                item.status === "COMPLETED" || item.status === "DONE"
-            ).length,
-          };
-
-          return {
-            id: project.id || project._id || String(Date.now()),
-            name: project.name || "Unnamed Project",
-            description: project.description || "No description",
-            status: project.status || "Active",
-            lastChange: new Date()
-              .toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })
-              .toLowerCase(),
-            members: formattedMembers,
-            items: items,
-          };
-        })
-      );
-
-      setProjects(formattedProjects);
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-    } finally {
-      setIsLoading(false);
     }
-  };
+
+    loadUserProjects()
+  }, [getUserProjects])
+
+  console.log("lol")
+
+
+  
+
 
   // Filter and sort projects
+  const filteredProjects = projects;
+  if(!filteredProjects ) throw Error("Filtered projects is null")
+  /*
   const filteredProjects = useMemo(() => {
     const searchTermLower = searchTerm.toLowerCase();
+    if(!projects) throw Error("No projects found");
 
     // First filter by search term
     let filtered = projects.filter(
@@ -141,10 +91,12 @@ const CreateProject: React.FC = () => {
     // Then sort based on current sort option
     return filtered.sort((a, b) => {
       switch (currentSort) {
+
         case "last-change":
           return (
             new Date(b.lastChange).getTime() - new Date(a.lastChange).getTime()
           );
+
         case "status":
           const statusOrder = {
             Active: 1,
@@ -156,12 +108,14 @@ const CreateProject: React.FC = () => {
             statusOrder[a.status as keyof typeof statusOrder] -
             statusOrder[b.status as keyof typeof statusOrder]
           );
+
         case "a-z":
           return a.name.localeCompare(b.name);
         case "z-a":
           return b.name.localeCompare(a.name);
+
         case "progress":
-          const getProgress = (project: Project) => {
+          const getProgress = (project: ProjectDetails) => {
             if (project.items.length === 0) return 0;
             return (
               (project.items.filter(
@@ -172,12 +126,15 @@ const CreateProject: React.FC = () => {
             );
           };
           return getProgress(b) - getProgress(a);
+
         default:
           return 0;
       }
     });
   }, [projects, searchTerm, currentSort]);
+  */
 
+  /*
   const handleCreateProject = async (
     projectName: string,
     description: string,
@@ -236,6 +193,7 @@ const CreateProject: React.FC = () => {
       throw error;
     }
   };
+  */
 
   const handleModalClose = () => {
     setIsModalOpen(false);
@@ -475,10 +433,12 @@ const CreateProject: React.FC = () => {
                           <h4>{project.name}</h4>
                           <div
                             className={`${styles.status} ${getStatusColorClass(
-                              project.status
+                              "DONE"
+                              //project.status
                             )}`}
                           >
-                            {project.status}
+                            DONE
+                            {/* project.status */}
                           </div>
                         </div>
                         <p className={styles.projectInfo}>
@@ -489,6 +449,7 @@ const CreateProject: React.FC = () => {
 
                     <div className={styles.progressContainer}>
                       <div className={styles.progressBar}>
+                        {/*
                         <div
                           className={styles.progressFill}
                           style={{
@@ -505,7 +466,9 @@ const CreateProject: React.FC = () => {
                             }%`,
                           }}
                         />
+                        */}
                       </div>
+                      {/* 
                       <span className={styles.progressText}>
                         {project.items.length > 0
                           ? Math.round(
@@ -520,11 +483,13 @@ const CreateProject: React.FC = () => {
                           : 0}
                         % Complete
                       </span>
+                      */}
                     </div>
 
                     <div className={styles.cardFooter}>
                       <div className={styles.metaInfo}>
                         <div className={styles.memberAvatars}>
+                          {/*
                           {project.members.slice(0, 3).map((member) => (
                             <div
                               key={member.id}
@@ -545,10 +510,11 @@ const CreateProject: React.FC = () => {
                               +{project.members.length - 3}
                             </div>
                           )}
+                            */}
                         </div>
                         <div className={styles.metaItem}>
                           <Calendar size={16} className={styles.metaIcon} />
-                          <span>{project.lastChange}</span>
+                          <span>{/* project.lastChange */}</span>
                         </div>
                       </div>
                       <div className={styles.cardAction}>
@@ -590,12 +556,14 @@ const CreateProject: React.FC = () => {
         </div>
       </section>
 
+{/*
       <NewProjectModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
         onSubmit={handleCreateProject}
         currentUserId={user?.userId ?? -1}
       />
+*/}
 
       {alert && (
         <Alert
