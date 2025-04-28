@@ -18,6 +18,9 @@ import BacklogTablePage from "./pages/BacklogTable/BacklogTablePage";
 import { projectService } from "./services/projectService";
 import MembersPage from "./pages/Members/MembersPage";
 
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
+const queryClient = new QueryClient();
+
 console.log("Running")
 
 // Updated PrivateRoute to wrap content with MainLayout
@@ -42,18 +45,13 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     "[PrivateRoute] Authenticated. Rendering children within MainLayout."
   );
 
-  let details
-  async function getPS(){
-    details = await projectService.getProjectDetails("sampleProjectId")
-    console.log("projectDetails",details)
-  }
-  getPS()
   // Wrap the authenticated route's content with the MainLayout
   return <MainLayout>{children}</MainLayout>;
 }
 
 function App() {
   return (
+    <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <Router>
         <Routes>
@@ -61,12 +59,13 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
 
           {/* Routes that REQUIRE Authentication and the Sidebar Layout */}
+          
           <Route
             path="/create"
             element={
               <PrivateRoute>
                 {" "}
-                <CreateProject />{" "}
+                  <CreateProject />{" "}
               </PrivateRoute>
             }
           />
@@ -210,6 +209,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
