@@ -66,14 +66,13 @@ async function saveItemRecursively(
  * POST /projects/:id/generate-epics
  */
 export const generateEpicHandler = async (req: Request, res: Response) => {
-
-
-    // Validación de autenticación 
-    const userId = (req as any).user?.userId as number | undefined;
-    if (!userId) {
-        return res.status(401).json({ error: "Acceso denegado: usuario no autenticado" });
-    }
-
+  // Validación de autenticación
+  const userId = (req as any).user?.userId as number | undefined;
+  if (!userId) {
+    return res
+      .status(401)
+      .json({ error: "Acceso denegado: usuario no autenticado" });
+  }
 
   // Extracción de projectId
   const projectId = req.params.id;
@@ -97,11 +96,9 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
     // Caso 2: Proyecto encontrado pero sin campos mínimos
     projectData = projectSnap.data();
     if (!projectData?.name || !projectData?.description) {
-      return res
-        .status(400)
-        .json({
-          error: 'El proyecto requiere los campos "name" y "description"',
-        });
+      return res.status(400).json({
+        error: 'El proyecto requiere los campos "name" y "description"',
+      });
     }
   } catch (err) {
     console.error("Error al leer Firestore:", err);
@@ -191,11 +188,9 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
     const unique = epics.filter((e) => !existingNames.includes(e.name));
 
     if (unique.length === 0) {
-      return res
-        .status(409)
-        .json({
-          error: "Todas las épicas sugeridas ya existen en el proyecto.",
-        });
+      return res.status(409).json({
+        error: "Todas las épicas sugeridas ya existen en el proyecto.",
+      });
     }
 
     // Devolvemos sólo las no duplicadas
@@ -217,33 +212,50 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
  * POST /projects/:id/confirm-epics
  */
 export async function confirmEpicsHandler(req: Request, res: Response) {
+  // 1) Autenticación
+  const userId = (req as any).user?.userId as number | undefined;
+  if (!userId) {
+    return res.status(401).json({ error: "Acceso denegado: token inválido." });
+  }
 
-    // 1) Autenticación
-    const userId = (req as any).user?.userId as number | undefined;
-    if (!userId) {
-      return res.status(401).json({ error: 'Acceso denegado: token inválido.' });
-    }
-  
-    // 2) Validar proyecto
-    const projectId = req.params.id;
-    const projectRef = db.collection('projects').doc(projectId);
-    const projectSnap = await projectRef.get();
-    if (!projectSnap.exists) {
-      return res.status(404).json({ error: 'Proyecto no encontrado.' });
-    }
-    const project = projectSnap.data();
-    if (!project?.name || !project?.description) {
-      return res
-        .status(400)
-        .json({ error: 'El proyecto requiere campos name y description.' });
-    }
-  
-    // 3) Validar body.epics
-    const epics: Epic[] = req.body.epics;
-    if (!Array.isArray(epics) || epics.length < 1 || epics.length > 5) {
-      return res
-        .status(400)
-        .json({ error: 'Se requieren entre 1 y 5 épicas en el body.' });
+  // 2) Validar proyecto
+  const projectId = req.params.id;
+  const projectRef = db.collection("projects").doc(projectId);
+  const projectSnap = await projectRef.get();
+  if (!projectSnap.exists) {
+    return res.status(404).json({ error: "Proyecto no encontrado." });
+  }
+  const project = projectSnap.data();
+  if (!project?.name || !project?.description) {
+    return res
+      .status(400)
+      .json({ error: "El proyecto requiere campos name y description." });
+  }
+
+  // 3) Validar body.epics
+  const epics: Epic[] = req.body.epics;
+  if (!Array.isArray(epics) || epics.length < 1 || epics.length > 5) {
+    return res
+      .status(400)
+      .json({ error: "Se requieren entre 1 y 5 épicas en el body." });
+  }
+
+  // 4) Traer épicas existentes para filtrar duplicados
+  const itemsRef = projectRef.collection("items");
+  const existSnap = await itemsRef.where("tag", "==", "epic").get();
+  const existingNames = new Set(
+    existSnap.docs
+      .map((d) => d.data().name)
+      .filter((n): n is string => typeof n === "string")
+  );
+
+  // 5) Batch y guardado recursivo
+  const batch = db.batch();
+  let createdIds: string[] = [];
+
+  for (const epic of epics) {
+    if (existingNames.has(epic.name)) {
+      continue; // saltamos duplicadas
     }
     // definimos el tag de épica
     const epicWithTag = { ...epic, tag: "epic" };
