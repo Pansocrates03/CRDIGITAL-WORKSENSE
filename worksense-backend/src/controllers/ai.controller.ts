@@ -47,9 +47,12 @@ async function saveItemRecursively(
     return ids;
 }
 
+/**
+ * POST /projects/:id/generate-epics
+ */
 export const generateEpicHandler = async (req: Request, res: Response) => {
     // Validación de autenticación 
-    const userId = (req as any).user?.userId;
+    const userId = (req as any).user?.userId as number | undefined;
     if (!userId) {
         return res.status(401).json({ error: "Acceso denegado: usuario no autenticado" });
     }
@@ -189,7 +192,7 @@ export const generateEpicHandler = async (req: Request, res: Response) => {
  */
 export async function confirmEpicsHandler(req: Request, res: Response) {
     // 1) Autenticación
-    const userId = (req as any).user?.userId as number;
+    const userId = (req as any).user?.userId as number | undefined;
     if (!userId) {
       return res.status(401).json({ error: 'Acceso denegado: token inválido.' });
     }
