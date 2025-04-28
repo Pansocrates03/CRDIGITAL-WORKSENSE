@@ -1,49 +1,15 @@
-import apiClient from "../api/apiClient"; // Import the configured instance
+import ProjectDetails from "@/types/ProjectType";
+import apiClient from "../api/apiClient";
+import Member from "@/types/MemberType";
 
-const API_URL = "http://localhost:5050"; // Using the same port as the backend
-
-export interface Project {
-  id: string;
-  name: string;
-  description: string;
-  items: Array<{
-    id: string;
-    name: string;
-    description: string;
-    tag: string;
-    status: string;
-    priority: string;
-    size: string;
-    author: string;
-    assignee: string[];
-    acceptanceCriteria: string[];
-    sprint?: string;
-    items?: Array<any>;
-    comments?: Array<any>;
-    createdAt: string;
-    updatedAt: string;
-  }>;
-  members: Array<{
-    id: string;
-    name?: string;
-    avatar?: string;
-    [key: string]: any;
-  }>;
-  progress?: {
-    webDashboard: number;
-    database: number;
-  };
-}
-
-export interface CreateProjectData {
-  name: string;
-  description: string;
-}
+const API_URL = "http://localhost:5050";
 
 export const projectService = {
-  async getProject(id: string): Promise<Project> {
+
+  // Gets the project details
+  async fetchProjectDetails(id: string): Promise<ProjectDetails> {
     try {
-      const response = await apiClient.get(`${API_URL}/projects/${id}`);
+      const response = await apiClient.get(`${API_URL}/api/v1/${id}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching project:", error);
@@ -51,52 +17,25 @@ export const projectService = {
     }
   },
 
-  async getAllProjects(): Promise<Project[]> {
+  // Gets the list of members in a project
+  async fetchProjectMembers(id: string): Promise<Member[]> {
     try {
-      const response = await apiClient.get(`${API_URL}/projectsbyuser`);
+      const response = await apiClient.get(`${API_URL}/api/v1/${id}/members`);
       return response.data;
     } catch (error) {
-      console.error("Error fetching projects:", error);
+      console.error("Error fetching members");
       throw error;
     }
   },
 
-  async createProject(projectData: CreateProjectData): Promise<Project> {
+  // Gets the list of the projects a member has access to
+  async fetchUserProjects(): Promise<ProjectDetails[]> {
     try {
-      const response = await apiClient.post(`${API_URL}/projects`, projectData);
+      const response = await apiClient.get(`${API_URL}/api/v1/`);
       return response.data;
     } catch (error) {
-      console.error("Error creating project:", error);
+      console.error("Error fetching members");
       throw error;
     }
-  },
-
-  async getProjectMembers(projectId: string): Promise<any[]> {
-    try {
-      const response = await apiClient.get(
-        `${API_URL}/projects/${projectId}/members`
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching project members:", error);
-      throw error;
-    }
-  },
-
-  async addProjectMember(
-    projectId: string,
-    userId: number,
-    roleId: string
-  ): Promise<any> {
-    try {
-      const response = await apiClient.post(
-        `${API_URL}/projects/${projectId}/members`,
-        { userId, roleId }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error adding project member:", error);
-      throw error;
-    }
-  },
+  }
 };
