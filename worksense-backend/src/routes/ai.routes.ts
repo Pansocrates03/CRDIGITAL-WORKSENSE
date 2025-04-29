@@ -15,7 +15,7 @@ const router = Router();
  *   post:
  *     tags:
  *       - AI Module
- *     summary: Genera sugerencias de épicas sin persistir
+ *     summary: Genera sugerencias de épicas basadas en la descripción del proyecto
  *     security:
  *       - authToken: []
  *     parameters:
@@ -40,22 +40,20 @@ const router = Router();
  *                     properties:
  *                       name:
  *                         type: string
+ *                         description: Nombre de la épica
  *                       description:
  *                         type: string
+ *                         description: Descripción detallada de la épica
  *                       priority:
  *                         type: string
- *                         enum:
- *                           - lowest
- *                           - low
- *                           - medium
- *                           - high
- *                           - highest
+ *                         enum: [lowest, low, medium, high, highest]
+ *                         description: Prioridad de la épica
  *       401:
- *         $ref: '#/components/schemas/Error'
+ *         description: No autorizado - Token inválido o expirado
  *       404:
- *         $ref: '#/components/schemas/Error'
+ *         description: Proyecto no encontrado
  *       502:
- *         $ref: '#/components/schemas/Error'
+ *         description: Error al comunicarse con el servicio de IA
  */
 router.post(
   "/:projectId/ai/generate-epic",
@@ -70,7 +68,7 @@ router.post(
  *   post:
  *     tags:
  *       - AI Module
- *     summary: Confirma y persiste épicas sugeridas
+ *     summary: Confirma y persiste las épicas sugeridas en el proyecto
  *     security:
  *       - authToken: []
  *     parameters:
@@ -99,20 +97,18 @@ router.post(
  *                   properties:
  *                     name:
  *                       type: string
+ *                       description: Nombre de la épica
  *                     description:
  *                       type: string
  *                       nullable: true
+ *                       description: Descripción detallada de la épica
  *                     priority:
  *                       type: string
- *                       enum:
- *                         - lowest
- *                         - low
- *                         - medium
- *                         - high
- *                         - highest
+ *                       enum: [lowest, low, medium, high, highest]
+ *                       description: Prioridad de la épica
  *     responses:
  *       201:
- *         description: Épicas guardadas
+ *         description: Épicas guardadas exitosamente
  *         content:
  *           application/json:
  *             schema:
@@ -120,12 +116,15 @@ router.post(
  *               properties:
  *                 message:
  *                   type: string
+ *                   example: "Epics saved"
  *       400:
- *         $ref: '#/components/schemas/Error'
+ *         description: Datos de entrada inválidos
  *       401:
- *         $ref: '#/components/schemas/Error'
+ *         description: No autorizado - Token inválido o expirado
+ *       404:
+ *         description: Proyecto no encontrado
  *       409:
- *         $ref: '#/components/schemas/Error'
+ *         description: Conflicto - Las épicas ya existen en el proyecto
  */
 router.post(
   "/:projectId/ai/confirm-epics",
