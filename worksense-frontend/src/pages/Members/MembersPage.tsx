@@ -1,4 +1,5 @@
-// Main Imports
+// src/pages/MembersPage.tsx
+
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,6 @@ import { PlusIcon } from "lucide-react";
 
 // Components
 import MembersList from '../../components/MembersList/MembersList';
-
 
 const MembersPage: React.FC = () => {
   const params = useParams();
@@ -37,7 +37,8 @@ const MembersPage: React.FC = () => {
 
       <div className="border-b border-border my-4"></div>
 
-      <MembersList />
+      {/* Pass projectId to MembersList */}
+      <MembersList projectId={projectId} />
     </div>
   );
 }
