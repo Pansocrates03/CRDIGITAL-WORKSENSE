@@ -50,15 +50,29 @@ export const projectService = {
     }
   },
 
-// Update a member's role inside a project
-async updateMemberRole(projectId: string, userId: number, roleId: string): Promise<void> {
-  try {
-    await apiClient.put(`${API_URL}/${projectId}/members/${userId}`, {
-      projectRoleId: roleId,
-    });
-  } catch (error) {
-    console.error('Error updating member role:', error);
-    throw error;
+  // Update a member's role inside a project
+  async updateMemberRole(projectId: string, userId: number, roleId: string): Promise<void> {
+    try {
+      await apiClient.put(`${API_URL}/${projectId}/members/${userId}`, {
+        projectRoleId: roleId,
+      });
+    } catch (error) {
+      console.error('Error updating member role:', error);
+      throw error;
+    }
+  },
+
+  // Add a member to a project with a role
+  async addMemberToProject(projectId: string, userId: number, roleId: string): Promise<void> {
+    try {
+      await apiClient.post(`${API_URL}/${projectId}/members`, {
+        userId: userId,
+        projectRoleId: roleId,
+      });
+    } catch (error) {
+      console.error('Error adding member to project:', error);
+      throw error;
+    }
   }
-}
+
 };
