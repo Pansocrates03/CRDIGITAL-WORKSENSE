@@ -40,7 +40,7 @@ export const listMembers = async (
 /**
  * List members of a project with their email information from SQL DB
  */
-export const listMembersWithEmail = async (
+export const listMembersDetail = async (
   req: Request,
   res: Response,
   next: NextFunction

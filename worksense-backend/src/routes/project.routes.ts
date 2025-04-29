@@ -613,14 +613,13 @@ router.get("/:projectId/members", memberAuth, memberController.listMembers);
  *         description: Project not found
  */
 router.get(
-  "/:projectId/members-with-email",
+  "/:projectId/membersDetail",
   memberAuth,
-  memberController.listMembersWithEmail
+  memberController.listMembersDetail
 );
 
 /**
  * @swagger
- * /{projectId}/members:
  *   post:
  *     summary: Add a new member to the project
  *     description: |
