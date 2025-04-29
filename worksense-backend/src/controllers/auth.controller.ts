@@ -206,6 +206,7 @@ export const updateUserByAdmin = async (
       .input("lastName", sql.NVarChar(50), lastName)
       .input("nickName", sql.NVarChar(50), nickName ?? null) // Pass nickName
       .input("pfp", sql.NVarChar(255), pfp ?? null) // Pass pfp
+      .input("platformRole", sql.NVarChar(50), platformRole) // Pass platformRole
       .execute("spUpdateUser");
 
     res.json({ message: "User updated successfully" });
