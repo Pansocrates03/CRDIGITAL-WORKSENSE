@@ -49,4 +49,16 @@ export const projectService = {
       throw error;
     }
   },
+
+// Update a member's role inside a project
+async updateMemberRole(projectId: string, userId: number, roleId: string): Promise<void> {
+  try {
+    await apiClient.put(`${API_URL}/${projectId}/members/${userId}`, {
+      projectRoleId: roleId,
+    });
+  } catch (error) {
+    console.error('Error updating member role:', error);
+    throw error;
+  }
+}
 };

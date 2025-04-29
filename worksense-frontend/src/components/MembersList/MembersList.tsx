@@ -2,40 +2,27 @@
 
 import React from 'react';
 import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
-import { useMembers } from '@/hooks/useMembers'; // Corrected path
 import {
   Table,
   TableHeader,
   TableBody,
   TableRow,
   TableHead,
-  TableCell
-} from "@/components/ui/table";
-
+  TableCell,
+} from '@/components/ui/table';
 import styles from './MembersList.module.css';
+import MemberDetailed from '@/types/MemberDetailedType';
 
-interface MembersListProps {
+interface Props {
   projectId: string;
+  members: MemberDetailed[];
+  onEdit: (member: MemberDetailed) => void;
 }
 
-const MembersList: React.FC<MembersListProps> = ({ projectId }) => {
-  const { data: members = [], isLoading, isError } = useMembers(projectId); // notice = []
-
-  const handleEdit = (id: number) => {
-    console.log(`Editing member with ID: ${id}`);
-  };
-
+const MembersList: React.FC<Props> = ({ members, onEdit }) => {
   const handleDelete = (id: number) => {
-    console.log(`Deleting member with ID: ${id}`);
+    console.log('Delete not implemented yet. Member ID:', id);
   };
-
-  if (isLoading) {
-    return <div>Loading members...</div>;
-  }
-
-  if (isError) {
-    return <div>Error loading members.</div>;
-  }
 
   return (
     <div className={styles.membersListContainer}>
@@ -55,9 +42,8 @@ const MembersList: React.FC<MembersListProps> = ({ projectId }) => {
             {members.map((member) => (
               <TableRow key={member.userId}>
                 <TableCell>
-                  {/* Temporary profile picture */}
-                  <img 
-                    src={`https://placecats.com/50/50`} 
+                  <img
+                    src="https://placecats.com/50/50"
                     alt={member.name}
                     className={styles.pfp}
                   />
@@ -69,12 +55,15 @@ const MembersList: React.FC<MembersListProps> = ({ projectId }) => {
                     {member.projectRoleId}
                   </span>
                 </TableCell>
-                <TableCell>--</TableCell> {/* Placeholder for Last Login */}
+                <TableCell>--</TableCell>
                 <TableCell className={styles.actionButtons}>
-                  <button onClick={() => handleEdit(member.userId)} className={styles.button}>
+                  <button onClick={() => onEdit(member)} className={styles.button}>
                     <FaPencilAlt />
                   </button>
-                  <button onClick={() => handleDelete(member.userId)} className={`${styles.button} ${styles.trashButton}`}>
+                  <button
+                    onClick={() => handleDelete(member.userId)}
+                    className={`${styles.button} ${styles.trashButton}`}
+                  >
                     <FaTrashAlt />
                   </button>
                 </TableCell>
