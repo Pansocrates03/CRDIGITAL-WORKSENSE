@@ -1,27 +1,16 @@
 import React from 'react';
 import styles from './MemberInfoPopup.module.css';
+import MemberDetailed from '@/types/MemberDetailedType';
 
 interface MemberInfoPopupProps {
-  member: {
-    id: number;
-    name: string;
-    role: string;
-    avatar: string;
-    email?: string;
-    userId: string | number;
-    projectId: string;
-    roleId: string;
-    status: string;
-    createdAt?: string;
-    updatedAt?: string;
-  };
+  member: MemberDetailed
   onClose: () => void;
 }
 
 const MemberInfoPopup: React.FC<MemberInfoPopupProps> = ({ member, onClose }) => {
   // Extract first and last name for generating a consistent avatar
   const [firstName = '', lastName = ''] = member.name.split(' ');
-  const avatarUrl = member.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName + ' ' + lastName)}&background=random&color=fff&size=128`;
+  const avatarUrl = member.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName + ' ' + lastName)}&background=random&color=fff&size=128`;
 
   // Format date if available
   const formatDate = (dateString?: string) => {
@@ -76,7 +65,7 @@ const MemberInfoPopup: React.FC<MemberInfoPopupProps> = ({ member, onClose }) =>
           />
           <div className={styles.memberInfo}>
             <h3>{member.name}</h3>
-            <span className={styles.role}>{member.role || 'Team Member'}</span>
+            <span className={styles.role}>{member.projectRoleId || 'Team Member'}</span>
           </div>
         </div>
 
@@ -91,24 +80,28 @@ const MemberInfoPopup: React.FC<MemberInfoPopupProps> = ({ member, onClose }) =>
           </div>
           <div className={styles.detailRow}>
             <span className={styles.label}>Role</span>
-            <span className={styles.value}>{getRoleDisplay(member.roleId)}</span>
+            <span className={styles.value}>{getRoleDisplay(member.projectRoleId)}</span>
           </div>
           <div className={styles.detailRow}>
             <span className={styles.label}>Status</span>
-            <span className={`${styles.value} ${styles.status} ${styles[String(member.status || 'active').toLowerCase()]}`}>
-              {member.status || 'Active'}
+            <span className={`${styles.value} ${styles.status} ${styles[String('active').toLowerCase()]}`}>
+              {'Active'}
             </span>
           </div>
+          {/*
           <div className={styles.detailRow}>
             <span className={styles.label}>Member Since</span>
             <span className={styles.value}>{formatDate(member.createdAt)}</span>
           </div>
+          */}
+          {/*
           {member.updatedAt && (
             <div className={styles.detailRow}>
               <span className={styles.label}>Last Updated</span>
               <span className={styles.value}>{formatDate(member.updatedAt)}</span>
             </div>
           )}
+            */}
         </div>
       </div>
     </div>

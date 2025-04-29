@@ -39,7 +39,7 @@ export const projectService = {
   // Gets the list of members in a project with email and name
   async fetchProjectMembersDetailed(id: string): Promise<MemberDetailed[]> {
     try {
-      const response = await apiClient.get(`${API_URL}/${id}/members-with-email`);
+      const response = await apiClient.get(`${API_URL}/${id}/members-detail`);
       return response.data;
     } catch (error) {
       console.error("Error fetching project members with details:", error);

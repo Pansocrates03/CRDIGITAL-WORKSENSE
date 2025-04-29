@@ -6,6 +6,9 @@ export default interface MemberDetailed {
       _nanoseconds: number,
     },
     name: string,
+    profilePicture: string,
     email: string,
+    lastLogin: string,
+
   }
   

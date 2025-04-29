@@ -8,14 +8,15 @@ import LoadingSpinner from "../Loading/LoadingSpinner";
 import EditTeamModal from "../EditTeamModal/EditTeamModal";
 import MemberInfoPopup from "../MemberInfoPopup/MemberInfoPopup";
 // Type Imports
-import { BacklogItemType } from "@/types";
 import ProjectDetails from "@/types/ProjectType";
-import { TeamMember } from "@/types/TeamMemberType";
-import Member from "@/types/MemberType";
+import MemberDetailed from "@/types/MemberDetailedType";
+
+import { Avatar } from "../ui/avatar";
+import { AvatarImage } from "@radix-ui/react-avatar";
 
 type FullProjectData = {
   project: ProjectDetails;
-  members: Member[];
+  members: MemberDetailed[];
 };
 
 export const ProjectView: React.FC<FullProjectData> = ({
@@ -26,8 +27,8 @@ export const ProjectView: React.FC<FullProjectData> = ({
   const [backlogItems, setBacklogItems] = useState<BacklogItemType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
-  //const [teamMembers, setTeamMembers] = useState<TeamMember[]>(project.team);
-  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  const [teamMembers, setTeamMembers] = useState<MemberDetailed[]>(members);
+  const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(null);
 
   useEffect(() => {
     const fetchBacklogItems = async () => {
@@ -46,18 +47,18 @@ export const ProjectView: React.FC<FullProjectData> = ({
       fetchBacklogItems();
     }
   }, [id]);
-  /*
+  
   useEffect(() => {
-    setTeamMembers(project.team);
-  }, [project.team]);
+    setTeamMembers(members);
+  }, [members]);
 
-  const handleTeamUpdate = (newTeam: TeamMember[]) => {
+  const handleTeamUpdate = (newTeam: MemberDetailed[]) => {
     setTeamMembers(newTeam);
   };
-  */
+
 
   const handleAvatarClick = (
-    member: TeamMember,
+    member: MemberDetailed,
     e: React.MouseEvent<HTMLDivElement>
   ) => {
     setSelectedMember(member);
@@ -104,6 +105,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
       </section>
 
       <div className={styles.mainContent}>
+
         {/* Team Section */}
         <section className={styles.teamSection}>
           <div className={styles.sectionHeader}>
@@ -137,11 +139,11 @@ export const ProjectView: React.FC<FullProjectData> = ({
                 className={styles.avatar}
                 onClick={(e) => handleAvatarClick(m, e)}
               >
-                <div className={styles.avatarImage}>
-                  {/* <img src={m.userId} alt={m.userId} /> */}
-                  <div className={styles.avatarTooltip}>{m.userId}</div>
-                </div>
-                <span className={styles.avatarName}>{m.userId}</span>
+                <Avatar>
+                  <AvatarImage src={m.profilePicture} />
+                  {/* <AvatarFallback delayMs={600}> */}
+                </Avatar>
+                <span className={styles.avatarName}>{m.name}</span>
               </div>
             ))}
           </div>
@@ -211,7 +213,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
           )}
         </section>
       </div>
-      {/*
+
       <EditTeamModal
         isOpen={isEditTeamModalOpen}
         onClose={() => setIsEditTeamModalOpen(false)}
@@ -226,7 +228,6 @@ export const ProjectView: React.FC<FullProjectData> = ({
           onClose={() => setSelectedMember(null)}
         />
       )}
-        */}
     </div>
   );
 };

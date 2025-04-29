@@ -10,6 +10,7 @@ import Member from "@/types/MemberType";
 import { projectService } from "@/services/projectService";
 
 import { useQuery } from "@tanstack/react-query";
+import MemberDetailed from "@/types/MemberDetailedType";
 
 // Extracted reusable UI components
 const LoadingState = () => (
@@ -74,11 +75,11 @@ export const ProjectPage: React.FC = () => {
     }, 
   });
 
-  const { data: members } = useQuery<Member[]>({
+  const { data: members } = useQuery<MemberDetailed[]>({
     queryKey: ["projectMembers", id],
     queryFn: async () => {
       if (!id) throw new Error("Project ID is required");
-      const res = await projectService.fetchProjectMembers(id);
+      const res = await projectService.fetchProjectMembersDetailed(id);
       return res;
     },
     enabled: !!project, // Only fetch members if project data is available
