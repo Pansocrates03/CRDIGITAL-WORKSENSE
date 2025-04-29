@@ -83,39 +83,37 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
 
     // Envío del formulario
     const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if(!validateForm()) return; // Validar antes de continuar (corregido: añadido paréntesis)
-    setIsCreatingProject(true);
-    setErrors({}); // Limpiar errores previos
+        e.preventDefault();
+        if(!validateForm()) return; // Validar antes de continuar (corregido: añadido paréntesis)
+        setIsCreatingProject(true);
+        setErrors({}); // Limpiar errores previos
 
-    console.log("SELECTED MEMBERS",selectedMembers)
+        try {
+            await projectService.createProejct({
+                name: projectName,
+                description: description,
+                context: {},
+                members: selectedMembers,
+            });
 
-    try {
-        await projectService.createProejct({
-            name: projectName,
-            description: description,
-            context: {},
-            members: selectedMembers,
-        });
+            setAlert({
+                type: "success",
+                title: "Proyecto creado con éxito",
+                message: `El proyecto "${projectName}" ha sido creado.`,
+            });
 
-        setAlert({
-        type: "success",
-        title: "Proyecto creado con éxito",
-        message: `El proyecto "${projectName}" ha sido creado.`,
-        });
-
-        // Invalidamos el query de proyectos del usuario para refrescar la lista
-        queryClient.invalidateQueries({ queryKey: ["userProjects"] });
-    } catch (error) {
-        console.error("Error al crear proyecto:", error);
-        setAlert({
-        type: "error",
-        title: "Error al crear proyecto",
-        message: "Ocurrió un error al crear el proyecto. Intenta de nuevo.",
-        });
-    } finally {
-        setIsCreatingProject(false);
-    }
+            // Invalidamos el query de proyectos del usuario para refrescar la lista
+            queryClient.invalidateQueries({ queryKey: ["userProjects"] });
+        } catch (error) {
+            console.error("Error al crear proyecto:", error);
+            setAlert({
+            type: "error",
+            title: "Error al crear proyecto",
+            message: "Ocurrió un error al crear el proyecto. Intenta de nuevo.",
+            });
+        } finally {
+            setIsCreatingProject(false);
+        }
     };
 
     return (
