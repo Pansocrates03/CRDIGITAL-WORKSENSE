@@ -7,15 +7,20 @@ import { UserManagementTab } from "./tabs/UserManagementTab";
 import { useFetchUsers } from "./hooks";
 import { TabType } from "./interfaces";
 import styles from "./Settings.module.css";
+import { authService } from "@/services/auth";
 
 const Settings: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("account");
+  const [user, setUser] = useState(authService.getCurrentUser());
   const { users, usersLoading, usersError, refetchUsers } = useFetchUsers(
     activeTab,
-    "admin"
+    user?.platformRole
   );
+
+  // Check if user is admin (case-insensitive)
+  const isAdmin = user?.platformRole?.toUpperCase() === "ADMIN";
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -46,31 +51,33 @@ const Settings: React.FC = () => {
           </button>
         </div>
 
-        <div className={styles.tabGroup}>
-          <div className={styles.tabGroupTitle}>Admin</div>
-          <button
-            className={`${styles.tabButton} ${
-              activeTab === "userManagement" ? styles.activeTab : ""
-            }`}
-            onClick={() => handleTabChange("userManagement")}
-          >
-            User Management
-          </button>
-        </div>
+        {isAdmin && (
+          <div className={styles.tabGroup}>
+            <div className={styles.tabGroupTitle}>Admin</div>
+            <button
+              className={`${styles.tabButton} ${
+                activeTab === "userManagement" ? styles.activeTab : ""
+              }`}
+              onClick={() => handleTabChange("userManagement")}
+            >
+              User Management
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Content Area */}
       <div className={styles.contentArea}>
         {activeTab === "account" ? (
           <AccountTab />
-        ) : (
+        ) : activeTab === "userManagement" && isAdmin ? (
           <UserManagementTab
             users={users}
             usersLoading={usersLoading}
             usersError={usersError}
             refetchUsers={refetchUsers}
           />
-        )}
+        ) : null}
       </div>
     </div>
   );
