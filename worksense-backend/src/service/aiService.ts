@@ -13,6 +13,9 @@ type FridaResponse = FridaSuccess | FridaFailure;
 const FRIDA_URL = process.env.FRIDA_API_URL;
 if (!FRIDA_URL) throw new Error("FRIDA_API_URL env var missing");
 
+/**
+ * Genera epics a partir de prompt
+ */
 export async function generateEpicsWithFrida({
   projectName,
   projectDescription,
@@ -47,3 +50,40 @@ export async function generateEpicsWithFrida({
     throw err;
   }
 }
+
+/**
+ * Genera historias de usuario a partir de epics
+ */
+export async function generateStoriesWithFrida({
+  projectName,
+  projectDescription,
+  epicName,
+  epicDescription,
+}: {
+  projectName: string;
+  projectDescription: string;
+  epicName: string;
+  epicDescription: string;
+}): Promise<string> {
+  const prompt = `You are Frida, an AI assistant specialized in Scrum project planning. Generate 3–5 user stories for the epic "{epicName}" (description: "{epicDescription}") within the project "{projectName}" described as "{projectDescription}". Each story must include name, description and priority (low|medium|high) and an array "assignees". Respond only with JSON under key "stories".`;
+  try {
+    const { data } = await axios.post<FridaResponse>(
+      `${FRIDA_URL}/epics/generate-from-prompt`,
+      { prompt, data: { projectName, projectDescription, epicName, epicDescription } },
+      { headers: { "Content-Type": "application/json" }, timeout: 30000 }
+    );
+
+    if (data.success && typeof data.data === "string" && data.data.trim()) {
+      return data.data;
+    }
+    throw new Error(`Frida error: ${(data as FridaFailure).message || "unknown"}`);
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const e = err as AxiosError;
+      throw new Error(`Frida request failed${e.response ? ` – ${e.response.status}` : ""}: ${e.message}`);
+    }
+    throw err;
+  }
+}
+
+  
