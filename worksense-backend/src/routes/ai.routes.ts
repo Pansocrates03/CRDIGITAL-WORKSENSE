@@ -1,4 +1,3 @@
-// src/routes/ai.routes.ts
 import { Router } from "express";
 import { verifyToken } from "../middlewares/tokenAuth.js";
 import {
@@ -12,25 +11,22 @@ const router = Router();
 
 /**
  * @swagger
- * /projects/{projectId}/ai/generate-epic:
+ * /{projectId}/ai/generate-epic:
  *   post:
  *     tags:
  *       - AI Module
  *     summary: Genera sugerencias de épicas sin persistir
- *     description: |
- *       Llama al servicio de IA para generar de 3 a 5 épicas sugeridas
- *       basadas en el nombre y la descripción del proyecto.
  *     security:
  *       - authToken: []
  *     parameters:
- *       - name: projectId
- *         in: path
- *         description: Identificador del proyecto
+ *       - in: path
+ *         name: projectId
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID del proyecto
  *     responses:
- *       '200':
+ *       200:
  *         description: Lista de épicas sugeridas
  *         content:
  *           application/json:
@@ -40,31 +36,26 @@ const router = Router();
  *                 epics:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Epic'
- *       '400':
- *         description: Parámetros invalidos o respuesta de IA malformada
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       '401':
- *         description: Token de autenticación faltante o inválido
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       '404':
- *         description: Proyecto no encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       '502':
- *         description: Error al comunicarse con la IA
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *                     type: object
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       priority:
+ *                         type: string
+ *                         enum:
+ *                           - lowest
+ *                           - low
+ *                           - medium
+ *                           - high
+ *                           - highest
+ *       401:
+ *         $ref: '#/components/schemas/Error'
+ *       404:
+ *         $ref: '#/components/schemas/Error'
+ *       502:
+ *         $ref: '#/components/schemas/Error'
  */
 router.post(
   "/:projectId/ai/generate-epic",
@@ -75,23 +66,20 @@ router.post(
 
 /**
  * @swagger
- * /projects/{projectId}/ai/confirm-epics:
+ * /{projectId}/ai/confirm-epics:
  *   post:
  *     tags:
  *       - AI Module
- *     summary: Persiste las épicas confirmadas en Firestore
- *     description: |
- *       Recibe un array de épicas generadas por IA y las guarda
- *       (con sus historias y tareas) usando un batch de Firestore.
+ *     summary: Confirma y persiste épicas sugeridas
  *     security:
  *       - authToken: []
  *     parameters:
- *       - name: projectId
- *         in: path
- *         description: Identificador del proyecto
+ *       - in: path
+ *         name: projectId
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID del proyecto
  *     requestBody:
  *       required: true
  *       content:
@@ -104,10 +92,27 @@ router.post(
  *               epics:
  *                 type: array
  *                 items:
- *                   $ref: '#/components/schemas/Epic'
+ *                   type: object
+ *                   required:
+ *                     - name
+ *                     - priority
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     description:
+ *                       type: string
+ *                       nullable: true
+ *                     priority:
+ *                       type: string
+ *                       enum:
+ *                         - lowest
+ *                         - low
+ *                         - medium
+ *                         - high
+ *                         - highest
  *     responses:
- *       '201':
- *         description: Épicas guardadas exitosamente
+ *       201:
+ *         description: Épicas guardadas
  *         content:
  *           application/json:
  *             schema:
@@ -115,31 +120,12 @@ router.post(
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Epics saved
- *       '400':
- *         description: Body inválido (no array o fuera de rango)
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       '401':
- *         description: Token inválido
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       '404':
- *         description: Proyecto no encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       '409':
- *         description: Ninguna épica nueva para guardar (todas duplicadas)
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *       400:
+ *         $ref: '#/components/schemas/Error'
+ *       401:
+ *         $ref: '#/components/schemas/Error'
+ *       409:
+ *         $ref: '#/components/schemas/Error'
  */
 router.post(
   "/:projectId/ai/confirm-epics",
