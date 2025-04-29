@@ -1,7 +1,8 @@
 :root {
   --primary-color: var(--color-purple);
   --secondary-color: #253c4f;
-  --background-color: #f2f3f4;
+  --accent-color: #176aac;
+  --background-color: #ffffff;
   --text-color: #1e293b;
   --border-color: #e2e8f0;
 }
@@ -161,4 +162,14 @@
   .metrics-grid {
     grid-template-columns: 1fr !important;
   }
+}
+
+a {
+  font-weight: 500;
+  color: #176aac;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #1e7fc0;
 }

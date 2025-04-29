@@ -60,7 +60,7 @@ export const SideBar: React.FC = () => {
       setError(null);
 
       try {
-        const projectData = await projectService.getProject(projectId);
+        const projectData = await projectService.fetchProjectDetails(projectId);
         if (isMounted) {
           setProjectName(projectData.name || "Untitled Project");
         }
@@ -191,11 +191,7 @@ export const SideBar: React.FC = () => {
           ) : (
             <div className={styles.projectInfo}>
               <div className={styles.projectIcon}>
-                <span
-                  style={{ fontSize: "1.5rem", color: "var(--color-purple)" }}
-                >
-                  {projectName.charAt(0).toUpperCase()}
-                </span>
+                <span>{projectName.charAt(0).toUpperCase()}</span>
               </div>
               <h3 className={styles.projectTitle} title={projectName}>
                 {projectName}

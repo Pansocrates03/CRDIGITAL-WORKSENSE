@@ -71,7 +71,6 @@
   color: var(--muted-foreground);
   cursor: pointer;
   border-radius: 4px;
-  transition: all 0.2s ease;
   text-align: left;
   width: 100%;
   position: relative;
@@ -216,13 +215,12 @@
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
   margin-top: 0.5rem;
   align-self: flex-start;
 }
 
 .submitButton:hover {
-  background-color: #901346;
+  background-color: #176aac;
 }
 
 .submitButton:active {
