@@ -197,10 +197,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
             <span>{users.length} Active Users</span>
           </div>
         </div>
-        <Button
-          className={styles.submitButton}
-          onClick={() => setIsCreateModalOpen(true)}
-        >
+        <Button variant="default" onClick={() => setIsCreateModalOpen(true)}>
           Add User
         </Button>
       </div>
