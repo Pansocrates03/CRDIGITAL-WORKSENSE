@@ -1,227 +1,138 @@
 // src/components/BacklogTable/BacklogTable.tsx
-import { FC, useMemo } from "react";
-import { BacklogData, ColumnDefinition } from "./types";
-import { StatusBadge } from "./StatusBadge";
-import { PriorityBadge } from "./PriorityBadge";
-import { AssigneeDisplay } from "./AssigneeDisplay";
-import { LabelsList } from "./LabelsList";
-import { SectionHeader } from "./SectionHeader";
-import { EpicRow } from "./EpicRow";
-import { StoryRow } from "./StoryRow";
-import styles from "./BacklogTable.module.css";
-import LoadingSpinner from "@/components/Loading/LoadingSpinner";
 
-interface BacklogTableProps {
-  data?: BacklogData;
-  activeColumns: string[];
-  expandedEpics: string[];
-  onToggleEpic: (epicId: string) => void;
-  isLoading: boolean;
+import React, { useState } from "react";
+import { EpicRow } from "@/components/BacklogTable/EpicRow";
+import { StoryRow } from "@/components/BacklogTable/StoryRow";
+import { SectionHeader } from "@/components/BacklogTable/SectionHeader";
+import styles from "./BacklogTable.module.css";
+
+export interface Story {
+  id: string;
+  title: string;
+  status: string;
+  assignee: string;
+  points?: number;
+  epic?: string;
+  labels?: string[];
 }
 
-export const BacklogTable: FC<BacklogTableProps> = ({
-  data,
-  activeColumns,
-  expandedEpics,
-  onToggleEpic,
-  isLoading,
-}) => {
-  const allColumns: ColumnDefinition[] = useMemo(
-    () => [
-      {
-        id: "title",
-        label: "Title",
-        field: "title",
-        width: "300px",
-        render: (item) => `${item.title || '-'}`,
-      },
-      {
-        id: "status",
-        label: "Status",
-        field: "status",
-        width: "150px",
-        render: (item) => <StatusBadge status={item.status || "unassigned"} />,
-      },
-      {
-        id: "assignee",
-        label: "Assignee",
-        field: "assignee",
-        width: "180px",
-        render: (item) => <AssigneeDisplay assignee={item.assignee || "-"} />,
-      },
-      {
-        id: "size",
-        label: "Size",
-        field: "size",
-        width: "100px",
-        render: (item) => (
-          <span className={`${styles.badge} ${styles.sizeBadge}`}>
-            {item.size || "-"}
-          </span>
-        ),
-      },
-      {
-        id: "priority",
-        label: "Priority",
-        field: "priority",
-        width: "120px",
-        render: (item) => <PriorityBadge priority={item.priority || "-"} />,
-      },
-      {
-        id: "dueDate",
-        label: "Due Date",
-        field: "dueDate",
-        width: "120px",
-        render: (item) => item.dueDate || "-",
-      },
-      {
-        id: "points",
-        label: "Points",
-        field: "points",
-        width: "100px",
-        render: (item) => item.points?.toString() || "-",
-      },
-      {
-        id: "labels",
-        label: "Labels",
-        field: "labels",
-        width: "200px",
-        render: (item) => <LabelsList labels={item.labels} />,
-      },
-    ],
-    []
-  );
+export interface Epic {
+  id: string;
+  title: string;
+  stories: Story[];
+}
 
-  const visibleColumns = useMemo(
-    () => allColumns.filter((col) => activeColumns.includes(col.id)),
-    [allColumns, activeColumns]
-  );
+export interface Item extends Story {}
 
-  if (isLoading) {
-    return (
-      <div className={styles.backlogTableContainer}>
-        <LoadingSpinner text="Loading backlog..." size="medium" fullScreen={false} />
-      </div>
+export interface BacklogData {
+  epics: Epic[];
+  userStories: Story[];
+  bugs: Item[];
+  techTasks: Item[];
+  knowledge: Item[];
+}
+
+interface BacklogTableProps {
+  backlogData: BacklogData;
+  searchTerm: string;
+}
+
+export const BacklogTable: React.FC<BacklogTableProps> = ({ backlogData, searchTerm }) => {
+  const [expandedEpics, setExpandedEpics] = useState<string[]>([]);
+
+  const toggleEpic = (epicId: string) => {
+    setExpandedEpics((prev) =>
+      prev.includes(epicId)
+        ? prev.filter((id) => id !== epicId)
+        : [...prev, epicId]
     );
-  }
+  };
 
-  if (!data) {
-    return (
-      <div className={styles.backlogTableContainer}>
-        <div className={styles.tableContainer}>
-          <p>No backlog data available.</p>
-        </div>
-      </div>
-    );
-  }
+  const filterBySearch = (item: { title: string }) => {
+    if (!searchTerm) return true;
+    return item.title.toLowerCase().includes(searchTerm.toLowerCase());
+  };
 
-  const renderEmptyRow = (text: string) => (
-    <tr>
-      <td colSpan={visibleColumns.length} style={{ textAlign: "center", padding: "1rem", color: "#666" }}>
-        {text}
-      </td>
-    </tr>
-  );
+  const matchesEpicOrStories = (epic: Epic) => {
+    if (filterBySearch(epic)) return true;
+    return epic.stories.some(filterBySearch);
+  };
 
   return (
-    <div className={styles.backlogTableContainer}>
-      <div className={styles.tableContainer}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              {visibleColumns.map((column) => (
-                <th key={`header-${column.id}`} style={{ width: column.width }}>
-                  {column.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {/* Epics */}
-            <SectionHeader title="Epics" colSpan={visibleColumns.length} />
-            {data.epics.length === 0
-              ? renderEmptyRow("No epics found")
-              : data.epics.flatMap((epic) => {
-                  const rows = [
-                    <EpicRow
-                      key={`epic-${epic.id}`}
-                      epic={epic}
-                      isExpanded={expandedEpics.includes(epic.id)}
-                      onToggle={onToggleEpic}
-                      colSpan={visibleColumns.length}
-                    />
-                  ];
-                  if (expandedEpics.includes(epic.id)) {
-                    rows.push(
-                      ...epic.stories.map((story, index) => (
-                        <StoryRow
-                          key={`epic-story-${story.id}`}
-                          item={story}
-                          columns={visibleColumns}
-                          index={index}
-                          isEpicStory
-                        />
-                      ))
-                    );
-                  }
-                  return rows;
-                })
-            }
+    <div className={styles.tableWrapper}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Assignee</th>
+            <th>Points</th>
+          </tr>
+        </thead>
+        <tbody>
+          {/* Epics */}
+          <SectionHeader title="Epics" colSpan={4} />
+          {backlogData.epics.filter(matchesEpicOrStories).length === 0 ? (
+            <tr><td colSpan={4}>No epics found</td></tr>
+          ) : (
+            backlogData.epics.filter(matchesEpicOrStories).map((epic) => (
+              <React.Fragment key={epic.id}>
+                <EpicRow
+                  epic={epic}
+                  isExpanded={expandedEpics.includes(epic.id)}
+                  onToggle={toggleEpic}
+                  colSpan={4}
+                />
+                {expandedEpics.includes(epic.id) &&
+                  epic.stories.filter(filterBySearch).map((story, index) => (
+                    <StoryRow key={story.id} story={story} indent />
+                  ))}
+              </React.Fragment>
+            ))
+          )}
 
-            {/* User Stories */}
-            <SectionHeader title="User Stories" colSpan={visibleColumns.length} />
-            {data.userStories.length === 0
-              ? renderEmptyRow("No user stories found")
-              : data.userStories.map((story) => (
-                  <StoryRow
-                    key={`story-${story.id}`}
-                    item={story}
-                    columns={visibleColumns}
-                  />
-              ))
-            }
+          {/* User Stories */}
+          <SectionHeader title="User Stories" colSpan={4} />
+          {backlogData.userStories.filter(filterBySearch).length === 0 ? (
+            <tr><td colSpan={4}>No user stories found</td></tr>
+          ) : (
+            backlogData.userStories.filter(filterBySearch).map((story) => (
+              <StoryRow key={story.id} story={story} />
+            ))
+          )}
 
-            {/* Bugs */}
-            <SectionHeader title="Bugs" colSpan={visibleColumns.length} />
-            {data.bugs.length === 0
-              ? renderEmptyRow("No bugs found")
-              : data.bugs.map((bug) => (
-                  <StoryRow
-                    key={`bug-${bug.id}`}
-                    item={bug}
-                    columns={visibleColumns}
-                  />
-              ))
-            }
+          {/* Bugs */}
+          <SectionHeader title="Bugs" colSpan={4} />
+          {backlogData.bugs.filter(filterBySearch).length === 0 ? (
+            <tr><td colSpan={4}>No bugs found</td></tr>
+          ) : (
+            backlogData.bugs.filter(filterBySearch).map((bug) => (
+              <StoryRow key={bug.id} story={bug} />
+            ))
+          )}
 
-            {/* Tech Tasks */}
-            <SectionHeader title="Tech Tasks" colSpan={visibleColumns.length} />
-            {data.techTasks.length === 0
-              ? renderEmptyRow("No tech tasks found")
-              : data.techTasks.map((task) => (
-                  <StoryRow
-                    key={`task-${task.id}`}
-                    item={task}
-                    columns={visibleColumns}
-                  />
-              ))
-            }
+          {/* Tech Tasks */}
+          <SectionHeader title="Tech Tasks" colSpan={4} />
+          {backlogData.techTasks.filter(filterBySearch).length === 0 ? (
+            <tr><td colSpan={4}>No tech tasks found</td></tr>
+          ) : (
+            backlogData.techTasks.filter(filterBySearch).map((task) => (
+              <StoryRow key={task.id} story={task} />
+            ))
+          )}
 
-            {/* Knowledge Items */}
-            <SectionHeader title="Knowledge Items" colSpan={visibleColumns.length} />
-            {data.knowledge.length === 0
-              ? renderEmptyRow("No knowledge items found")
-              : data.knowledge.map((item) => (
-                  <StoryRow
-                    key={`knowledge-${item.id}`}
-                    item={item}
-                    columns={visibleColumns}
-                  />
-              ))
-            }
-          </tbody>
-        </table>
-      </div>
+          {/* Knowledge */}
+          <SectionHeader title="Knowledge Items" colSpan={4} />
+          {backlogData.knowledge.filter(filterBySearch).length === 0 ? (
+            <tr><td colSpan={4}>No knowledge items found</td></tr>
+          ) : (
+            backlogData.knowledge.filter(filterBySearch).map((item) => (
+              <StoryRow key={item.id} story={item} />
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 };
+

@@ -1,0 +1,53 @@
+/* src/components/BacklogTable/SearchFilter.module.css */
+.searchContainer {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border: 1px solid #eaeaea;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 0.5rem 0.75rem;
+    transition: all 0.3s ease;
+  }
+  
+  .searchContainer:focus-within {
+    border-color: var(--primary-color, #ac1754);
+    box-shadow: 0 0 0 2px rgba(172, 23, 84, 0.1);
+  }
+  
+  .searchIcon {
+    color: #6b7280;
+    margin-right: 0.5rem;
+  }
+  
+  .searchInput {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.875rem;
+    color: var(--foreground, #222);
+    background-color: transparent;
+    padding: 0.25rem 0;
+  }
+  
+  .searchInput::placeholder {
+    color: #9ca3af;
+  }
+  
+  .clearButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6b7280;
+    font-size: 1rem;
+    padding: 0;
+    margin-left: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .clearButton:hover {
+    color: #374151;
+  }

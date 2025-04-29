@@ -1,60 +1,68 @@
 /* src/pages/BacklogTable/BacklogTablePage.module.css */
-
-.backlogPageContainer {
-  width: 100%;
-  height: 100%;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.tableWrapper {
+.tableContainer {
   overflow-x: auto;
+  border: 1px solid #eaeaea;
+  border-radius: 0.5rem;
+  background-color: white;
   margin-top: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #ffffff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .table th,
 .table td {
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   text-align: left;
-  font-size: 0.875rem;
-  color: #333333;
   border-bottom: 1px solid #eaeaea;
 }
 
 .table th {
   background-color: #f9fafb;
+  color: var(--secondary, #666);
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
 }
 
-.table tbody tr:hover {
+.table td {
+  font-size: 0.875rem;
+  color: var(--foreground, #222);
+}
+
+/* Sección de cabeceras (Epics, User Stories, etc.) */
+.sectionHeader {
+  background-color: #f9fafb;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: none;
+  padding: 0.75rem 1rem;
+}
+
+/* Para filas de épicas */
+.epicRow {
+  cursor: pointer;
+}
+
+.epicRow td {
+  background-color: #f9fafb;
+  font-weight: 500;
+}
+
+.epicRow:hover td {
   background-color: #f3f4f6;
 }
 
-.sectionHeader {
-  background-color: #f9fafb;
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: #888;
-  padding-top: 1rem;
+/* Para historias dentro de épicas */
+.nestedRow td:first-child {
+  padding-left: 2.5rem;
 }
 
-.epicRow:hover {
-  background-color: #e5e7eb;
-}
-
+/* Error message */
 .error {
   display: flex;
   justify-content: center;
@@ -64,4 +72,47 @@
   color: #dc3545;
 }
 
+/* Action buttons container */
+.actionButtons {
+  white-space: nowrap;
+  text-align: center;
+}
 
+/* Styling individual buttons */
+.button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #6b7280;
+  padding: 4px 6px;
+  margin: 0 2px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.button:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+/* Styling for trash button */
+.trashButton {
+  color: #ef4444;
+}
+
+.trashButton:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
