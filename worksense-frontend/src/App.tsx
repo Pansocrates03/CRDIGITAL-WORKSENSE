@@ -72,8 +72,7 @@ function App() {
               path="/account"
               element={
                 <PrivateRoute>
-                  {" "}
-                  <AccountPage />{" "}
+                  <Navigate to="/settings?tab=account" replace />
                 </PrivateRoute>
               }
             />
