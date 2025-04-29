@@ -17,13 +17,10 @@ interface Props {
   projectId: string;
   members: MemberDetailed[];
   onEdit: (member: MemberDetailed) => void;
+  onDelete: (member: MemberDetailed) => void;
 }
 
-const MembersList: React.FC<Props> = ({ members, onEdit }) => {
-  const handleDelete = (id: number) => {
-    console.log('Delete not implemented yet. Member ID:', id);
-  };
-
+const MembersList: React.FC<Props> = ({ members, onEdit, onDelete }) => {
   return (
     <div className={styles.membersListContainer}>
       <div className={styles.tableContainer}>
@@ -61,7 +58,7 @@ const MembersList: React.FC<Props> = ({ members, onEdit }) => {
                     <FaPencilAlt />
                   </button>
                   <button
-                    onClick={() => handleDelete(member.userId)}
+                    onClick={() => onDelete(member)}
                     className={`${styles.button} ${styles.trashButton}`}
                   >
                     <FaTrashAlt />

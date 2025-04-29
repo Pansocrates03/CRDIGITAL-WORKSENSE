@@ -73,6 +73,15 @@ export const projectService = {
       console.error('Error adding member to project:', error);
       throw error;
     }
-  }
+  },
 
+  // Remove a member from a project
+  async removeMemberFromProject(projectId: string, userId: number): Promise<void> {
+    try {
+      await apiClient.delete(`${API_URL}/${projectId}/members/${userId}`);
+    } catch (error) {
+      console.error('Error removing member from project:', error);
+      throw error;
+    }
+  },
 };

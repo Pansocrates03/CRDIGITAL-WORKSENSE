@@ -2,12 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { PlusIcon } from 'lucide-react';
+
+// Components
+import { Button } from '@/components/ui/button';
 import MembersList from '@/components/MembersList/MembersList';
 import EditMemberModal from '../../components/EditMemberModal/EditMemberModal';
-import { projectService } from '@/services/projectService';
+import { Alert } from '@/components/Alert/Alert';
+
+// Types
 import MemberDetailed from '@/types/MemberDetailedType';
+
+// Services
+import { projectService } from '@/services/projectService';
+
 
 const MembersPage: React.FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
@@ -15,6 +23,10 @@ const MembersPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Alert states
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<MemberDetailed | null>(null);
 
   const availableRoles = ['product-owner', 'scrum-master', 'developer', 'viewer'];
 
@@ -42,6 +54,23 @@ const MembersPage: React.FC = () => {
       setIsModalOpen(false);
     } catch (error) {
       console.error('Failed to update role:', error);
+    }
+  };
+
+  const handleDeleteMember = async (member: MemberDetailed) => {
+    setMemberToDelete(member);
+    setShowDeleteAlert(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!memberToDelete || !projectId) return;
+    try {
+      await projectService.removeMemberFromProject(projectId, memberToDelete.userId);
+      await fetchMembers();
+      setShowDeleteAlert(false);
+      setMemberToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete member:', error);
     }
   };
 
@@ -74,7 +103,12 @@ const MembersPage: React.FC = () => {
 
       <div className="border-b border-border my-4"></div>
 
-      <MembersList projectId={projectId!} members={members} onEdit={handleEditClick} />
+      <MembersList 
+        projectId={projectId!} 
+        members={members} 
+        onEdit={handleEditClick} 
+        onDelete={handleDeleteMember}
+      />
 
       <EditMemberModal
         isOpen={isModalOpen}
@@ -83,6 +117,21 @@ const MembersPage: React.FC = () => {
         availableRoles={availableRoles}
         onSubmit={handleRoleUpdate}
       />
+
+      {showDeleteAlert && memberToDelete && (
+        <Alert
+          type="error"
+          title="Delete Member"
+          message={`Are you sure you want to remove ${memberToDelete.name} from this project?`}
+          onClose={() => {
+            setShowDeleteAlert(false);
+            setMemberToDelete(null);
+          }}
+          onAction={handleConfirmDelete}
+          actionLabel="Delete"
+        />
+      )}
+
     </div>
   );
 };
