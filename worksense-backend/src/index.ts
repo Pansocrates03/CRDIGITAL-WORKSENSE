@@ -40,7 +40,7 @@ app.use(itemsRoutes);
 app.use(aiRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
 app.use(`${API_PREFIX}`, project_Routes);
-app.use(API_PREFIX, sprintsRouter);
+app.use(`${API_PREFIX}`, sprintsRouter);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get("/", (req: any, res: any) => {
   res.send("API is running...");
