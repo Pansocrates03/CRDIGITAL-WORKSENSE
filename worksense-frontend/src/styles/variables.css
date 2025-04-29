@@ -7,6 +7,8 @@
   --color-gray: #d0d1d2;
   --color-light-gray: #f8f8f8;
   --color-pink-light: #f8eaf0;
+  --color-accent: #176aac; /* New accent color */
+  --color-accent-light: #1e7fc0; /* Lighter version for hover states */
 
   /* Definición de la fuente principal - Inter es más moderna */
   --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,

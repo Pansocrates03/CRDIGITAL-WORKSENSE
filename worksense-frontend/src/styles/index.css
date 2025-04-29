@@ -6,7 +6,7 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(0.96 0 0); /* F2F3F4 */
+  --background: #f4f7fa; /* F2F3F4 */
   --foreground: oklch(0.145 0 0);
 
   /* Your primary color - AC1754 (Pink) */
@@ -21,14 +21,16 @@
   --tertiary: oklch(0.31 0.05 240);
   --tertiary-foreground: oklch(0.985 0 0);
 
+  /* Your accent color - 176AAC (Blue) */
+  --accent: #176aac;
+  --accent-foreground: oklch(0.985 0 0);
+
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
@@ -46,8 +48,8 @@
   --sidebar-foreground: oklch(0.31 0.05 240); /* 253C4F */
   --sidebar-primary: oklch(0.45 0.27 350); /* AC1754 */
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.67 0 0); /* A6A6A6 */
-  --sidebar-accent-foreground: oklch(0.145 0 0);
+  --sidebar-accent: var(--accent); /* Using new accent color */
+  --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 }

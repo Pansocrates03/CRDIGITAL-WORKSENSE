@@ -57,8 +57,8 @@
 }
 
 .roleBadge {
-  background-color: #d1fae5;
-  color: #047857;
+  background-color: rgba(23, 106, 172, 0.1);
+  color: #176aac;
 }
 
 /* Action buttons container */
@@ -89,7 +89,6 @@
 .trashButton:hover {
   color: #c9302c; /* Darker red on hover */
 }
-
 
 /* Profile picture styling */
 .pfp {

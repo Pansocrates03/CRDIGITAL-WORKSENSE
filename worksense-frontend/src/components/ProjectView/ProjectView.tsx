@@ -1,4 +1,4 @@
-  // Core Imports
+// Core Imports
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import apiClient from "../../api/apiClient";
@@ -16,10 +16,12 @@ import Member from "@/types/MemberType";
 type FullProjectData = {
   project: ProjectDetails;
   members: Member[];
-}
+};
 
-
-export const ProjectView: React.FC<FullProjectData> = ( {project,members} ) => {
+export const ProjectView: React.FC<FullProjectData> = ({
+  project,
+  members,
+}) => {
   const { id } = useParams<{ id: string }>();
   const [backlogItems, setBacklogItems] = useState<BacklogItemType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +36,7 @@ export const ProjectView: React.FC<FullProjectData> = ( {project,members} ) => {
         const items = response.data;
         setBacklogItems(items);
       } catch (error) {
-        console.error('Error fetching backlog items:', error);
+        console.error("Error fetching backlog items:", error);
       } finally {
         setLoading(false);
       }
@@ -44,7 +46,7 @@ export const ProjectView: React.FC<FullProjectData> = ( {project,members} ) => {
       fetchBacklogItems();
     }
   }, [id]);
-/*
+  /*
   useEffect(() => {
     setTeamMembers(project.team);
   }, [project.team]);
@@ -54,7 +56,10 @@ export const ProjectView: React.FC<FullProjectData> = ( {project,members} ) => {
   };
   */
 
-  const handleAvatarClick = (member: TeamMember, e: React.MouseEvent<HTMLDivElement>) => {
+  const handleAvatarClick = (
+    member: TeamMember,
+    e: React.MouseEvent<HTMLDivElement>
+  ) => {
     setSelectedMember(member);
   };
 
@@ -63,9 +68,7 @@ export const ProjectView: React.FC<FullProjectData> = ( {project,members} ) => {
       {/* Header Section */}
       <div className={styles.header}>
         <div className={styles.projectIcon}>
-          <span style={{ fontSize: "1.5rem", color: "var(--color-purple)" }}>
-            {project.name.charAt(0).toUpperCase()}
-          </span>
+          <span>{project.name.charAt(0).toUpperCase()}</span>
         </div>
         <div className={styles.projectInfo}>
           <h1>{project.name}</h1>
@@ -105,21 +108,32 @@ export const ProjectView: React.FC<FullProjectData> = ( {project,members} ) => {
         <section className={styles.teamSection}>
           <div className={styles.sectionHeader}>
             <h2>Project Team</h2>
-            <button 
-              className={styles.editButton} 
+            <button
+              className={styles.editButton}
               onClick={() => setIsEditTeamModalOpen(true)}
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11.5 2.5L13.5 4.5M12.5 1.5L8 6L7 9L10 8L14.5 3.5C14.8978 3.10217 15.1213 2.56261 15.1213 2C15.1213 1.43739 14.8978 0.897825 14.5 0.5C14.1022 0.102175 13.5626 -0.121281 13 -0.121281C12.4374 -0.121281 11.8978 0.102175 11.5 0.5L12.5 1.5ZM2 3H6M2 7H8M2 11H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M11.5 2.5L13.5 4.5M12.5 1.5L8 6L7 9L10 8L14.5 3.5C14.8978 3.10217 15.1213 2.56261 15.1213 2C15.1213 1.43739 14.8978 0.897825 14.5 0.5C14.1022 0.102175 13.5626 -0.121281 13 -0.121281C12.4374 -0.121281 11.8978 0.102175 11.5 0.5L12.5 1.5ZM2 3H6M2 7H8M2 11H14"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
               Edit Team
             </button>
           </div>
           <div className={styles.teamAvatars}>
-            
             {members.map((m) => (
-              <div 
-                key={m.userId} 
+              <div
+                key={m.userId}
                 className={styles.avatar}
                 onClick={(e) => handleAvatarClick(m, e)}
               >
@@ -143,19 +157,22 @@ export const ProjectView: React.FC<FullProjectData> = ( {project,members} ) => {
               </div>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  {backlogItems.filter(item => item.type === 'epic').length}
+                  {backlogItems.filter((item) => item.type === "epic").length}
                   <span className={styles.statLabel}>Epics</span>
                 </div>
               </div>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  {backlogItems.filter(item => item.status === 'in-progress').length}
+                  {
+                    backlogItems.filter((item) => item.status === "in-progress")
+                      .length
+                  }
                   <span className={styles.statLabel}>In Progress</span>
                 </div>
               </div>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  {backlogItems.filter(item => item.status === 'done').length}
+                  {backlogItems.filter((item) => item.status === "done").length}
                   <span className={styles.statLabel}>Completed</span>
                 </div>
               </div>
@@ -174,7 +191,9 @@ export const ProjectView: React.FC<FullProjectData> = ( {project,members} ) => {
                 <div key={item.id} className={styles.backlogItem}>
                   <div className={styles.backlogItemHeader}>
                     <span className={styles.itemType}>{item.type}</span>
-                    <span className={`${styles.itemStatus} ${styles[item.status]}`}>
+                    <span
+                      className={`${styles.itemStatus} ${styles[item.status]}`}
+                    >
                       {item.status}
                     </span>
                   </div>
@@ -182,7 +201,9 @@ export const ProjectView: React.FC<FullProjectData> = ( {project,members} ) => {
                   <p>{item.description}</p>
                   <div className={styles.itemMeta}>
                     <span>Priority: {item.priority}</span>
-                    {item.size !== undefined && item.size > 0 && <span>Size: {item.size}</span>}
+                    {item.size !== undefined && item.size > 0 && (
+                      <span>Size: {item.size}</span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -190,7 +211,7 @@ export const ProjectView: React.FC<FullProjectData> = ( {project,members} ) => {
           )}
         </section>
       </div>
-{/*
+      {/*
       <EditTeamModal
         isOpen={isEditTeamModalOpen}
         onClose={() => setIsEditTeamModalOpen(false)}
