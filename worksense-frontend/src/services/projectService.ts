@@ -2,8 +2,16 @@ import ProjectDetails from "@/types/ProjectType";
 import apiClient from "../api/apiClient";
 import Member from "@/types/MemberType";
 import MemberDetailed from "@/types/MemberDetailedType";
+import { id } from "date-fns/locale";
 
 const API_URL = "http://localhost:5050/api/v1";
+
+interface CreateProject {
+  name: string,
+  description: string,
+  context: object,
+  members: Array<Member>
+}
 
 export const projectService = {
   // Gets the project details
@@ -50,6 +58,7 @@ export const projectService = {
     }
   },
 
+
   // Update a member's role inside a project
   async updateMemberRole(projectId: string, userId: number, roleId: string): Promise<void> {
     try {
@@ -84,4 +93,32 @@ export const projectService = {
       throw error;
     }
   },
+
+  async createProejct(receivedData: CreateProject): Promise<ProjectDetails> {
+    try {
+      // Primero se debe crear el proyecto
+      const response = await apiClient.post(`${API_URL}/`, {
+        name: receivedData.name,
+        description: receivedData.description,
+        context: null,
+      });
+
+      // Luego se deben agregar los miembros al proyecto
+      for (let i = 0; i < receivedData.members.length; i++) {
+        const member = receivedData.members[i];
+        await apiClient.post(`${API_URL}/${response.data.id}/members`, {
+          projectRoleId: "product-owner",
+          userId: member.userId, // Asegúrate de que `member` contenga el ID del miembro
+        });
+        
+      }
+
+      // En caso de que se haya seleccionado, se deben crear los EPICs y los SPRINTS 
+      
+      return response.data;
+    } catch (error) {
+      console.error("Error creating project:", error);
+      throw error;
+    }
+  }
 };

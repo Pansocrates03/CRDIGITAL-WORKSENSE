@@ -8,12 +8,10 @@ import { Alert } from "../../components/Alert/Alert";
 import { useAuth } from "../../contexts/AuthContext";
 import { projectService } from "../../services/projectService";
 import SectionHeader from "./SectionHeader";
-import ProjectDetails from "../../types/ProjectType";
 import ProjectCard from "./ProjectCard";
 
 // Icons
 import NoProjectsAvailable from "./NoProjectsAvailable";
-
 import { useQuery } from "@tanstack/react-query";
 
 type SortOption =  "a-z" | "z-a";
@@ -191,7 +189,6 @@ const CreateProject: React.FC = () => {
       <NewProjectModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
-        onSubmit={() => {console.log("not implemented")}}
         currentUserId={user?.userId ?? -1}
       />
 

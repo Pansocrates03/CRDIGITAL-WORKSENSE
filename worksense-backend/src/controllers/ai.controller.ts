@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { db } from "../models/firebase.js";
-import { generateEpicsWithFrida } from "../service/aiService.js";
-import { parseIAResponse } from "../utils/parseIAResponse.js";
+import { generateEpicsWithFrida, generateStoriesWithFrida} from "../service/aiService.js";
+import { parseIAResponse, parseStoriesResponse, ParsedStorySuggestion } from "../utils/parseIAResponse.js";
 import { getItemCollection } from "../utils/helpers/firestoreHelpers.js";
 import { FieldValue } from "firebase-admin/firestore";
 import { Priority } from "../../types/backlog.js";
@@ -42,8 +42,60 @@ export async function generateEpicHandler(
   }
 }
 
+export async function generateStoriesHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { projectId } = req.params;
+    const { epicId } = req.body;
+    if (!projectId || !epicId) {
+      return res.status(400).json({ message: "Project ID and epic ID required" });
+    }
+    // Valida Proyecto
+    const projectSnap = await db.collection("projectss").doc(projectId).get();
+    if (!projectSnap.exists) {
+      return res.status(404).json({ message: "Proyecto no encontrado" });
+    }
+    const { name: projectName, description: projectDescription } = projectSnap.data() as any;
+
+    // Valida Epic
+    const epicCol = getItemCollection(projectId, "epic");
+    const epicDoc = await epicCol.doc(epicId).get();
+    if (!epicDoc.exists) return res.status(404).json({ message: "Épica no encontrada"});
+    const epicData = epicDoc.data() as any;
+
+    // Llama a Frida IA
+    const raw = await generateStoriesWithFrida({
+      projectName,
+      projectDescription,
+      epicName: epicData.title,
+      epicDescription: epicData.description || "",
+    });
+    const suggestions: ParsedStorySuggestion[] = parseStoriesResponse(raw);
+
+    // Filtra duplicados por título.
+    const existingTitles = new Set(
+      (await getItemCollection(projectId, "story").get()).docs.map(
+        (d) => d.data().title)
+    );
+    const unique = suggestions.filter((s) => !existingTitles.has(s.name));
+
+    return res.json({ stories: unique });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // ----------------  Confirm ----------------
 interface ConfirmedEpicDto {
+  name: string;
+  description: string | null;
+  priority: Priority;
+}
+
+interface ConfirmedStoryDto {
   name: string;
   description: string | null;
   priority: Priority;
@@ -89,6 +141,55 @@ export async function confirmEpicsHandler(
 
     await batch.commit();
     res.status(201).json({ message: "Epics saved" });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function confirmStoriesHandler(
+  req: Request<{ projectId: string }, any, { epicId: string; stories: ConfirmedStoryDto[] }>,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { projectId } = req.params;
+    const { epicId, stories } = req.body;
+    if (!projectId || !epicId) return res.status(400).json({ message: "Project ID and epic ID required" });
+    if (!Array.isArray(stories) || !stories.length) return res.status(400).json({ message: "No stories provided" });
+    
+    // Valida Proyecto y épica
+    const projectSnap = await db.collection("projectss").doc(projectId).get();
+    if (!projectSnap.exists) return res.status(404).json({ message: "Proyecto no encontrado" });
+    const epicCol = getItemCollection(projectId, "epic");
+    if (!(await epicCol.doc(epicId).get()).exists) return res.status(404).json({ message: "Épica no encontrada" });
+
+    // Prepara batch
+    const col = getItemCollection(projectId, "story");
+    const existingTitles = new Set(
+      (await col.get()).docs.map((d) => d.data().title)
+    );
+    const batch = db.batch();
+    const now = FieldValue.serverTimestamp();
+
+    stories.forEach(st => {
+      if (!st.name || existingTitles.has(st.name)) return; // skip dupes / empty
+      batch.set(col.doc(), {
+        projectId,
+        type: "story",
+        title: st.name.trim(),
+        description: st.description,
+        priority: st.priority,
+        status: "new",
+        reporterId: req.user?.userId ?? null,
+        assigneeId: null,
+        linkedItems: [epicId],
+        createdAt: now,
+        updatedAt: now,
+      });
+    });
+
+    await batch.commit();
+    res.status(201).json({ message: "Historias guardadas" });
   } catch (err) {
     next(err);
   }
