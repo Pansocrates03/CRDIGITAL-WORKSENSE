@@ -26,10 +26,10 @@ export const StoryRow: FC<StoryRowProps> = ({
         >
           {column.id === "title" && isEpicStory && index !== undefined ? (
             <div className={styles.titleWithEpic}>
-              <span>{`${index + 1}. ${column.render(item)}`}</span>
+              <span>{`${index + 1}. ${column.render(item) || "-"}`}</span>
             </div>
           ) : (
-            column.render(item)
+            column.render(item) || "-"
           )}
         </td>
       ))}

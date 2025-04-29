@@ -1,6 +1,6 @@
 // src/components/BacklogTable/BacklogTable.tsx
 import { FC, useMemo } from "react";
-import { BacklogData, ColumnDefinition, Story, Item } from "./types";
+import { BacklogData, ColumnDefinition } from "./types";
 import { StatusBadge } from "./StatusBadge";
 import { PriorityBadge } from "./PriorityBadge";
 import { AssigneeDisplay } from "./AssigneeDisplay";
@@ -9,12 +9,14 @@ import { SectionHeader } from "./SectionHeader";
 import { EpicRow } from "./EpicRow";
 import { StoryRow } from "./StoryRow";
 import styles from "./BacklogTable.module.css";
+import LoadingSpinner from "@/components/Loading/LoadingSpinner";
 
 interface BacklogTableProps {
-  data: BacklogData;
+  data?: BacklogData;
   activeColumns: string[];
   expandedEpics: string[];
   onToggleEpic: (epicId: string) => void;
+  isLoading: boolean;
 }
 
 export const BacklogTable: FC<BacklogTableProps> = ({
@@ -22,30 +24,30 @@ export const BacklogTable: FC<BacklogTableProps> = ({
   activeColumns,
   expandedEpics,
   onToggleEpic,
+  isLoading,
 }) => {
-  // Definir todas las columnas posibles
   const allColumns: ColumnDefinition[] = useMemo(
     () => [
       {
         id: "title",
         label: "Title",
         field: "title",
-        width: "300px", // Ancho aumentado para acomodar títulos más largos
-        render: (item) => `${item.title} #${item.id}`,
+        width: "300px",
+        render: (item) => `${item.title || '-'}`,
       },
       {
         id: "status",
         label: "Status",
         field: "status",
         width: "150px",
-        render: (item) => <StatusBadge status={item.status} />,
+        render: (item) => <StatusBadge status={item.status || "unassigned"} />,
       },
       {
         id: "assignee",
         label: "Assignee",
         field: "assignee",
         width: "180px",
-        render: (item) => <AssigneeDisplay assignee={item.assignee} />,
+        render: (item) => <AssigneeDisplay assignee={item.assignee || "-"} />,
       },
       {
         id: "size",
@@ -54,7 +56,7 @@ export const BacklogTable: FC<BacklogTableProps> = ({
         width: "100px",
         render: (item) => (
           <span className={`${styles.badge} ${styles.sizeBadge}`}>
-            {item.size}
+            {item.size || "-"}
           </span>
         ),
       },
@@ -63,7 +65,7 @@ export const BacklogTable: FC<BacklogTableProps> = ({
         label: "Priority",
         field: "priority",
         width: "120px",
-        render: (item) => <PriorityBadge priority={item.priority} />,
+        render: (item) => <PriorityBadge priority={item.priority || "-"} />,
       },
       {
         id: "dueDate",
@@ -90,10 +92,35 @@ export const BacklogTable: FC<BacklogTableProps> = ({
     []
   );
 
-  // Filtrar solo las columnas activas
   const visibleColumns = useMemo(
     () => allColumns.filter((col) => activeColumns.includes(col.id)),
     [allColumns, activeColumns]
+  );
+
+  if (isLoading) {
+    return (
+      <div className={styles.backlogTableContainer}>
+        <LoadingSpinner text="Loading backlog..." size="medium" fullScreen={false} />
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className={styles.backlogTableContainer}>
+        <div className={styles.tableContainer}>
+          <p>No backlog data available.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const renderEmptyRow = (text: string) => (
+    <tr>
+      <td colSpan={visibleColumns.length} style={{ textAlign: "center", padding: "1rem", color: "#666" }}>
+        {text}
+      </td>
+    </tr>
   );
 
   return (
@@ -103,63 +130,95 @@ export const BacklogTable: FC<BacklogTableProps> = ({
           <thead>
             <tr>
               {visibleColumns.map((column) => (
-                <th
-                  key={`header-${column.id}`}
-                  style={{ width: column.width }}
-                >
+                <th key={`header-${column.id}`} style={{ width: column.width }}>
                   {column.label}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {/* Sección Épicas */}
+            {/* Epics */}
             <SectionHeader title="Epics" colSpan={visibleColumns.length} />
-            
-            {data.epics.map((epic) => (
-              <>
-                <EpicRow 
-                  key={epic.id}
-                  epic={epic}
-                  isExpanded={expandedEpics.includes(epic.id)}
-                  onToggle={onToggleEpic}
-                  colSpan={visibleColumns.length}
-                />
-                
-                {expandedEpics.includes(epic.id) &&
-                  epic.stories.map((story, index) => (
-                    <StoryRow
-                      key={`epic-story-${story.id}`}
-                      item={story}
-                      columns={visibleColumns}
-                      index={index}
-                      isEpicStory={true}
+            {data.epics.length === 0
+              ? renderEmptyRow("No epics found")
+              : data.epics.flatMap((epic) => {
+                  const rows = [
+                    <EpicRow
+                      key={`epic-${epic.id}`}
+                      epic={epic}
+                      isExpanded={expandedEpics.includes(epic.id)}
+                      onToggle={onToggleEpic}
+                      colSpan={visibleColumns.length}
                     />
-                  ))}
-              </>
-            ))}
+                  ];
+                  if (expandedEpics.includes(epic.id)) {
+                    rows.push(
+                      ...epic.stories.map((story, index) => (
+                        <StoryRow
+                          key={`epic-story-${story.id}`}
+                          item={story}
+                          columns={visibleColumns}
+                          index={index}
+                          isEpicStory
+                        />
+                      ))
+                    );
+                  }
+                  return rows;
+                })
+            }
 
-            {/* Sección Historias de Usuario */}
+            {/* User Stories */}
             <SectionHeader title="User Stories" colSpan={visibleColumns.length} />
-            
-            {data.userStories.map((story) => (
-              <StoryRow
-                key={`story-${story.id}`}
-                item={story}
-                columns={visibleColumns}
-              />
-            ))}
+            {data.userStories.length === 0
+              ? renderEmptyRow("No user stories found")
+              : data.userStories.map((story) => (
+                  <StoryRow
+                    key={`story-${story.id}`}
+                    item={story}
+                    columns={visibleColumns}
+                  />
+              ))
+            }
 
-            {/* Sección Bugs */}
+            {/* Bugs */}
             <SectionHeader title="Bugs" colSpan={visibleColumns.length} />
-            
-            {data.bugs.map((bug) => (
-              <StoryRow
-                key={`bug-${bug.id}`}
-                item={bug}
-                columns={visibleColumns}
-              />
-            ))}
+            {data.bugs.length === 0
+              ? renderEmptyRow("No bugs found")
+              : data.bugs.map((bug) => (
+                  <StoryRow
+                    key={`bug-${bug.id}`}
+                    item={bug}
+                    columns={visibleColumns}
+                  />
+              ))
+            }
+
+            {/* Tech Tasks */}
+            <SectionHeader title="Tech Tasks" colSpan={visibleColumns.length} />
+            {data.techTasks.length === 0
+              ? renderEmptyRow("No tech tasks found")
+              : data.techTasks.map((task) => (
+                  <StoryRow
+                    key={`task-${task.id}`}
+                    item={task}
+                    columns={visibleColumns}
+                  />
+              ))
+            }
+
+            {/* Knowledge Items */}
+            <SectionHeader title="Knowledge Items" colSpan={visibleColumns.length} />
+            {data.knowledge.length === 0
+              ? renderEmptyRow("No knowledge items found")
+              : data.knowledge.map((item) => (
+                  <StoryRow
+                    key={`knowledge-${item.id}`}
+                    item={item}
+                    columns={visibleColumns}
+                  />
+              ))
+            }
           </tbody>
         </table>
       </div>
