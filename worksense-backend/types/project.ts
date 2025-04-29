@@ -30,8 +30,6 @@ export interface ProjectMemberData {
 // Represents a complete member object, often used for API responses
 // Combines the stored data with the document ID (userId)
 export interface ProjectMember extends ProjectMemberData {
-  // userId is already included via ProjectMemberData
-  // Optional enriched fields:
   name?: string; // Example: "John Doe"
   fullName?: string; // Example: "John Doe"
   email?: string; // User's email from SQL database

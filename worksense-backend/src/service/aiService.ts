@@ -1,66 +1,49 @@
-// import axios from 'axios';
+import axios, { AxiosError } from "axios";
 
-// interface AiPayload {
-//   prompt: string;
-//   data: {
-//     projectName: string;
-//     projectDescription: string;
-//   };
-// }
-
-// export const generateItemWithAI = async (payload: AiPayload): Promise<any> => {
-//   try {
-//     const response = await axios.post('https://stk-formador-25.azurewebsites.net/epics/generate-from-prompt/', payload);
-//     return response.data;
-//   } catch (error: any) {
-//     console.error('Error llamando a la IA:', error);
-//     throw new Error('Fallo al generar ítems con IA');
-//   }
-// };
-
-import axios from 'axios';
-
-interface AiPayload {
-  prompt: string;
-}
-
-interface FridaResponse {
-  success: boolean;
+interface FridaSuccess {
+  success: true;
   data: string;
-  message?: string;
-  error?: any;
 }
+interface FridaFailure {
+  success: false;
+  message: string;
+}
+type FridaResponse = FridaSuccess | FridaFailure;
 
 const FRIDA_URL = process.env.FRIDA_API_URL;
-if (!FRIDA_URL) {
-  throw new Error('FRIDA_API_URL no está definida en las variables de entorno');
-}
+if (!FRIDA_URL) throw new Error("FRIDA_API_URL env var missing");
 
-export async function generateItemWithAI({ prompt }: AiPayload): Promise<string> {
+export async function generateEpicsWithFrida({
+  projectName,
+  projectDescription,
+}: {
+  projectName: string;
+  projectDescription: string;
+}): Promise<string> {
+  const prompt = `You are Frida, an AI assistant specialized in Scrum project planning. Generate 3–5 epics for the project \"{projectName}\" described as \"{projectDescription}\". Each epic must include name, description and priority (lowest|low|medium|high|highest). Respond only with JSON under key \"epics\".`;
+
   try {
-    const response = await axios.post<FridaResponse>(
+    const { data } = await axios.post<FridaResponse>(
       `${FRIDA_URL}/epics/generate-from-prompt/`,
-      // Cuerpo con prompt + data vacío
-      { prompt, data: {} },
-      {
-        headers: { 
-          'Accept': 'application/json',
-          'Content-Type': 'application/json' 
-        }
-      }
+      { prompt, data: { projectName, projectDescription } },
+      { headers: { "Content-Type": "application/json" }, timeout: 30000 }
     );
 
-    if (!response.data.success) {
-      throw new Error(`IA respondió con un error: ${JSON.stringify(response.data)}`);
+    if (data.success && typeof data.data === "string" && data.data.trim()) {
+      return data.data;
     }
-
-    if (typeof response.data.data !== 'string') {
-        throw new Error('La respuesta de IA no es una cadena de texto válida');
+    throw new Error(
+      `Frida error: ${(data as FridaFailure).message || "unknown"}`
+    );
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const e = err as AxiosError;
+      throw new Error(
+        `Frida request failed${e.response ? ` – ${e.response.status}` : ""}: ${
+          e.message
+        }`
+      );
     }
-
-    return response.data.data;
-  } catch (err: any) {
-    console.error('Error generando con IA:', err.response?.data || err.message);
-    throw new Error('Error al generar ítems con IA');
+    throw err;
   }
 }

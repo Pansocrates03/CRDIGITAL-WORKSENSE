@@ -2,7 +2,7 @@
 import axios from "axios";
 import { authService } from "../services/auth.ts";
 
-const API_URL = "http://localhost:5050";
+const API_URL = "http://localhost:5050/api/v1";
 
 const apiClient = axios.create({
   baseURL: API_URL,

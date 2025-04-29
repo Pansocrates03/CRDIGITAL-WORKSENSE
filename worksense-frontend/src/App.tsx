@@ -15,13 +15,12 @@ import AccountPage from "./pages/Account/AccountPage";
 import BacklogPage from "./pages/Backlog/BacklogPage";
 import Settings from "./pages/Settings/Settings";
 import BacklogTablePage from "./pages/BacklogTable/BacklogTablePage";
-import { projectService } from "./services/projectService";
 import MembersPage from "./pages/Members/MembersPage";
 
-import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 const queryClient = new QueryClient();
 
-console.log("Running")
+console.log("Running");
 
 // Updated PrivateRoute to wrap content with MainLayout
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -52,163 +51,163 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Login Page - Does NOT use MainLayout */}
-          <Route path="/login" element={<LoginPage />} />
+      <AuthProvider>
+        <Router>
+          <Routes>
+            {/* Login Page - Does NOT use MainLayout */}
+            <Route path="/login" element={<LoginPage />} />
 
-          {/* Routes that REQUIRE Authentication and the Sidebar Layout */}
-          
-          <Route
-            path="/create"
-            element={
-              <PrivateRoute>
-                {" "}
+            {/* Routes that REQUIRE Authentication and the Sidebar Layout */}
+
+            <Route
+              path="/create"
+              element={
+                <PrivateRoute>
+                  {" "}
                   <CreateProject />{" "}
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/account"
-            element={
-              <PrivateRoute>
-                {" "}
-                <AccountPage />{" "}
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <PrivateRoute>
-                {" "}
-                <Settings />{" "}
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/project/:id/overview"
-            element={
-              <PrivateRoute>
-                {" "}
-                <ProjectPage />{" "}
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/project/:id/backlog"
-            element={
-              <PrivateRoute>
-                {" "}
-                <BacklogPage />{" "}
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/project/:id/product-backlog" // Nueva ruta para el backlog
-            element={
-              <PrivateRoute>
-                <BacklogTablePage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/project/:id/sprint"
-            element={
-              <PrivateRoute>
-                {" "}
-                <ProjectPage />{" "}
-                {/* Replace with specific SprintPage if you have one */}{" "}
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/project/:id/users"
-            element={
-              <PrivateRoute>
-                <MembersPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/project/:id/bugs"
-            element={
-              <PrivateRoute>
-                {" "}
-                <ProjectPage />{" "}
-                {/* Replace with specific BugsPage if you have one */}{" "}
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/project/:id/stories"
-            element={
-              <PrivateRoute>
-                {" "}
-                <ProjectPage />{" "}
-                {/* Replace with specific StoriesPage if you have one */}{" "}
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/project/:id/leaderboard"
-            element={
-              <PrivateRoute>
-                {" "}
-                <ProjectPage />{" "}
-                {/* Replace with specific LeaderboardPage if you have one */}{" "}
-              </PrivateRoute>
-            }
-          />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/account"
+              element={
+                <PrivateRoute>
+                  {" "}
+                  <AccountPage />{" "}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <PrivateRoute>
+                  {" "}
+                  <Settings />{" "}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/project/:id/overview"
+              element={
+                <PrivateRoute>
+                  {" "}
+                  <ProjectPage />{" "}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/project/:id/backlog"
+              element={
+                <PrivateRoute>
+                  {" "}
+                  <BacklogPage />{" "}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/project/:id/product-backlog" // Nueva ruta para el backlog
+              element={
+                <PrivateRoute>
+                  <BacklogTablePage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/project/:id/sprint"
+              element={
+                <PrivateRoute>
+                  {" "}
+                  <ProjectPage />{" "}
+                  {/* Replace with specific SprintPage if you have one */}{" "}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/project/:id/users"
+              element={
+                <PrivateRoute>
+                  <MembersPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/project/:id/bugs"
+              element={
+                <PrivateRoute>
+                  {" "}
+                  <ProjectPage />{" "}
+                  {/* Replace with specific BugsPage if you have one */}{" "}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/project/:id/stories"
+              element={
+                <PrivateRoute>
+                  {" "}
+                  <ProjectPage />{" "}
+                  {/* Replace with specific StoriesPage if you have one */}{" "}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/project/:id/leaderboard"
+              element={
+                <PrivateRoute>
+                  {" "}
+                  <ProjectPage />{" "}
+                  {/* Replace with specific LeaderboardPage if you have one */}{" "}
+                </PrivateRoute>
+              }
+            />
 
-          {/* Redirect base project path if needed, still within layout */}
-          <Route
-            path="/project/:id"
-            element={
-              <PrivateRoute>
-                {" "}
-                <Navigate to="overview" replace />{" "}
-              </PrivateRoute>
-            }
-          />
+            {/* Redirect base project path if needed, still within layout */}
+            <Route
+              path="/project/:id"
+              element={
+                <PrivateRoute>
+                  {" "}
+                  <Navigate to="overview" replace />{" "}
+                </PrivateRoute>
+              }
+            />
 
-          {/* Documentation Routes - Also use MainLayout */}
-          <Route
-            path="/guides"
-            element={
-              <PrivateRoute>
-                {" "}
-                <div>Guides Page Content</div>{" "}
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/api"
-            element={
-              <PrivateRoute>
-                {" "}
-                <div>API Reference Page Content</div>{" "}
-              </PrivateRoute>
-            }
-          />
+            {/* Documentation Routes - Also use MainLayout */}
+            <Route
+              path="/guides"
+              element={
+                <PrivateRoute>
+                  {" "}
+                  <div>Guides Page Content</div>{" "}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/api"
+              element={
+                <PrivateRoute>
+                  {" "}
+                  <div>API Reference Page Content</div>{" "}
+                </PrivateRoute>
+              }
+            />
 
-          {/* Fallback Route */}
-          {/* Redirects authenticated users to /create, unauthenticated handled by PrivateRoute */}
-          <Route
-            path="*"
-            element={
-              <PrivateRoute>
-                <Navigate to="/create" replace />
-              </PrivateRoute>
-            }
-          />
+            {/* Fallback Route */}
+            {/* Redirects authenticated users to /create, unauthenticated handled by PrivateRoute */}
+            <Route
+              path="*"
+              element={
+                <PrivateRoute>
+                  <Navigate to="/create" replace />
+                </PrivateRoute>
+              }
+            />
 
-          {/* Alternative Fallback: Check auth status explicitly */}
-          {/* <Route path="*" element={<RootFallback />} /> */}
-        </Routes>
-      </Router>
-    </AuthProvider>
+            {/* Alternative Fallback: Check auth status explicitly */}
+            {/* <Route path="*" element={<RootFallback />} /> */}
+          </Routes>
+        </Router>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

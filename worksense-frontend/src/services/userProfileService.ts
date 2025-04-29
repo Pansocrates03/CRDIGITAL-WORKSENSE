@@ -1,7 +1,7 @@
 import apiClient from "@/api/apiClient";
 import { User } from "@/types/UserType";
 
-const API_URL = "http://localhost:5050";
+const API_URL = "http://localhost:5050/api/v1";
 
 export const userProfileService = {
   async fetchProfile(): Promise<User> {
