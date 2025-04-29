@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 
 const BASE = "https://anonymous-animals.azurewebsites.net/animal/";
 const SEEDS = [
@@ -98,13 +99,14 @@ export const AvatarPicker: React.FC<Props> = ({ onSelect }) => {
               onClick={() => onSelect(url)}
               className="focus:outline-none transition-transform duration-200 hover:scale-105 rounded-full flex items-center justify-center"
             >
-              <img
-                src={url}
-                alt={animal}
-                className="w-12 h-12 rounded-full bg-[#AC1754] object-cover object-center p-1"
-                loading="lazy"
-                style={{ imageRendering: "crisp-edges" }}
-              />
+              <Avatar className="size-12">
+                <AvatarImage
+                  src={url}
+                  alt={animal}
+                  loading="lazy"
+                  style={{ imageRendering: "crisp-edges" }}
+                />
+              </Avatar>
             </button>
           );
         })}

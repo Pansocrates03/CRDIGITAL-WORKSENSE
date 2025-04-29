@@ -72,11 +72,9 @@ export const AccountTab: React.FC = () => {
 
         <CardContent className="space-y-6">
           <div className="flex flex-col items-center">
-            <Avatar className="h-24 w-24 mb-4 bg-[#AC1754]">
+            <Avatar className="size-24 mb-4">
               <AvatarImage src={profile.avatar} />
-              <AvatarFallback className="text-white">
-                {profile.email[0]}
-              </AvatarFallback>
+              <AvatarFallback>{profile.email[0]}</AvatarFallback>
             </Avatar>
             <h2 className="text-lg font-semibold text-center">
               {profile.fullName || profile.email}
