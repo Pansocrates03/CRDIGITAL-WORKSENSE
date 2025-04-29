@@ -55,7 +55,7 @@ export const AccountTab: React.FC = () => {
         }}
       />
 
-      <Card>
+      <Card className={styles.accountCard}>
         <CardHeader className="flex items-center justify-between">
           <CardTitle>My Account</CardTitle>
           {!editing && (

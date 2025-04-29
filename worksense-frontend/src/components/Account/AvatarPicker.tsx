@@ -89,14 +89,14 @@ export const AvatarPicker: React.FC<Props> = ({ onSelect }) => {
         placeholder="Search animals…"
         className="w-full px-3 py-2 mb-4 rounded-md border"
       />
-      <div className="grid grid-cols-4 gap-3 max-h-64 overflow-y-auto">
+      <div className="grid grid-cols-4 gap-4 max-h-64 overflow-y-auto place-items-center">
         {list.map((animal) => {
           const url = `${BASE}${animal}`;
           return (
             <button
               key={animal}
               onClick={() => onSelect(url)}
-              className="focus:outline-none transition-transform duration-200 hover:scale-105 rounded-full"
+              className="focus:outline-none transition-transform duration-200 hover:scale-105 rounded-full flex items-center justify-center"
             >
               <img
                 src={url}
