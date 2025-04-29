@@ -20,7 +20,7 @@ const Settings: React.FC = () => {
   );
 
   // Check if user is admin (case-insensitive)
-  const isAdmin = user?.platformRole?.toUpperCase() === "ADMIN";
+  const isAdmin = user?.platformRole?.toLowerCase() === "admin";
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);

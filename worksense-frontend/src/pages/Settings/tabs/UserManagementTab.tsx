@@ -3,11 +3,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { UserListItem } from "../interfaces";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Pencil, Trash2, Users, MoreVertical } from "lucide-react";
+import { Pencil, Users, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { createPortal } from "react-dom";
 import apiClient from "@/api/apiClient";
 import styles from "../Settings.module.css";
+import { CreateUserModal } from "../CreateUserModal";
 
 interface MenuPosition {
   top: number;
@@ -29,11 +30,9 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
 }) => {
   const [editingUser, setEditingUser] = useState<UserListItem | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<UserListItem | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [formData, setFormData] = useState<Partial<UserListItem>>({});
   const menuButtonRefs = useRef<{ [key: number]: HTMLButtonElement | null }>(
@@ -74,7 +73,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
       setActiveMenuId(userId);
       setMenuPosition({
         top: rect.bottom + window.scrollY + 4,
-        left: rect.right - 150, // Menu width is 150px
+        left: rect.right - 150,
       });
     }
   };
@@ -111,12 +110,6 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
     }));
   };
 
-  const handleDeleteClick = (user: UserListItem) => {
-    setUserToDelete(user);
-    setIsDeleteModalOpen(true);
-    setActiveMenuId(null);
-  };
-
   const handleEditSubmit = async () => {
     if (
       !editingUser ||
@@ -130,36 +123,28 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
 
     try {
       setIsUpdating(true);
-      // Only send the data expected by the backend controller for the SP call
       const updateData = {
         email: formData.email,
         firstName: formData.firstName,
         lastName: formData.lastName,
-        nickName: formData.nickName ?? null, // Send null if empty/undefined
-        pfp: formData.pfp ?? null, // Send null if empty/undefined
-        // platformRole is managed separately if needed, but not sent to spUpdateUser via this controller
+        nickName: formData.nickName ?? null,
+        pfp: formData.pfp ?? null,
+        platformRole: formData.platformRole,
       };
-
-      console.log("Sending update data:", updateData);
 
       const response = await apiClient.put(
         `/users/${editingUser.id}`,
         updateData
       );
 
-      console.log("API Response:", response);
-
-      // Check for successful status codes (e.g., 200 OK, 204 No Content)
       if (response.status >= 200 && response.status < 300) {
         toast.success(
           `User ${formData.firstName} ${formData.lastName} updated successfully`
         );
         setIsEditModalOpen(false);
         setEditingUser(null);
-        refetchUsers(); // Refresh the users list
+        refetchUsers();
       } else {
-        // Handle unexpected successful status codes if necessary
-        console.warn("Update successful but status code was:", response.status);
         toast.error("Update succeeded but received an unexpected status.");
       }
     } catch (error: any) {
@@ -167,39 +152,30 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
         error.response?.data?.message || "Failed to update user";
       toast.error(errorMessage);
       console.error("Error updating user:", error);
-      console.error("Error details:", error.response?.data);
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!userToDelete) return;
-
+  const handleCreateUser = async (userData: any) => {
     try {
-      setIsDeleting(true);
-      const response = await apiClient.delete(`/users/${userToDelete.id}`);
+      const response = await apiClient.post("/users", userData);
 
-      // Close modal and clear state first
-      setIsDeleteModalOpen(false);
-      setUserToDelete(null);
-
-      // Small delay to ensure state is updated before showing toast
-      setTimeout(() => {
-        if (response.status === 200) {
-          toast.success(
-            `User ${userToDelete.firstName} ${userToDelete.lastName} deleted successfully`
-          );
-          refetchUsers(); // Refresh the users list after successful deletion
-        }
-      }, 100);
+      if (response.status >= 200 && response.status < 300) {
+        toast.success(
+          `User ${userData.firstName} ${userData.lastName} created successfully`
+        );
+        refetchUsers();
+        setIsCreateModalOpen(false);
+      } else {
+        toast.error("Creation succeeded but received an unexpected status.");
+      }
     } catch (error: any) {
       const errorMessage =
-        error.response?.data?.message || "Failed to delete user";
+        error.response?.data?.message || "Failed to create user";
       toast.error(errorMessage);
-      console.error("Error deleting user:", error);
-    } finally {
-      setIsDeleting(false);
+      console.error("Error creating user:", error);
+      throw error; // Re-throw to let the modal handle the error state
     }
   };
 
@@ -221,7 +197,12 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
             <span>{users.length} Active Users</span>
           </div>
         </div>
-        <Button className={styles.submitButton}>Add User</Button>
+        <Button
+          className={styles.submitButton}
+          onClick={() => setIsCreateModalOpen(true)}
+        >
+          Add User
+        </Button>
       </div>
 
       <div className={styles.tableContainer}>
@@ -308,13 +289,6 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                       <Pencil className="h-4 w-4" />
                       <span>Edit</span>
                     </button>
-                    <button
-                      className={`${styles.menuItem} ${styles.deleteMenuItem}`}
-                      onClick={() => handleDeleteClick(user)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span>Delete</span>
-                    </button>
                   </React.Fragment>
                 )
             )}
@@ -377,8 +351,11 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                   onChange={handleInputChange}
                   disabled={isUpdating}
                 >
-                  <option value="ADMIN">Admin</option>
-                  <option value="USER">User</option>
+                  <option value="" disabled>
+                    Select a role
+                  </option>
+                  <option value="admin">Admin</option>
+                  <option value="user">User</option>
                 </select>
               </div>
             </div>
@@ -402,49 +379,12 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {isDeleteModalOpen && userToDelete && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContainer}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Delete User</h3>
-              <button
-                className={styles.closeButton}
-                onClick={() => setIsDeleteModalOpen(false)}
-                disabled={isDeleting}
-              >
-                ×
-              </button>
-            </div>
-            <div className={styles.modalContent}>
-              <p className={styles.deleteWarning}>
-                Are you sure you want to delete {userToDelete.firstName}{" "}
-                {userToDelete.lastName}?
-              </p>
-              <p className={styles.deleteSubtext}>
-                This action cannot be undone. The user will lose access to their
-                account immediately.
-              </p>
-            </div>
-            <div className={styles.modalActions}>
-              <button
-                className={styles.cancelButton}
-                onClick={() => setIsDeleteModalOpen(false)}
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-              <button
-                className={`${styles.createButton} ${styles.deleteButton}`}
-                onClick={handleDeleteConfirm}
-                disabled={isDeleting}
-              >
-                {isDeleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Create User Modal */}
+      <CreateUserModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateUser}
+      />
     </div>
   );
 };
