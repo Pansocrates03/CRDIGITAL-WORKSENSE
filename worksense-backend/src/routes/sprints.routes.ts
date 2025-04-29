@@ -111,7 +111,7 @@ router.post(
  * @swagger
  * /projectss/{projectId}/sprints/{sprintId}/board:
  *   get:
- *     summary: Obtener el tablero del sprint con todos los items organizados por estado
+ *     summary: Obtener el tablero del sprint con todos los items en un sprint
  *     tags: [Sprints]
  *     security:
  *       - bearerAuth: []
