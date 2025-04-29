@@ -205,7 +205,7 @@ router.post(
 router.post(
   "/:projectId/ai/stories/generate-stories",
   memberAuth,
-  checkProjectPermission("read:backlog"),
+  checkProjectPermission("edit:backlog"),
   generateStoriesHandler
 );
 
@@ -283,7 +283,7 @@ router.post(
 router.post(
   "/:projectId/ai/stories/confirm-stories",
   memberAuth,
-  checkProjectPermission("write:backlog"),
+  checkProjectPermission("edit:backlog"),
   confirmStoriesHandler
 );
 
