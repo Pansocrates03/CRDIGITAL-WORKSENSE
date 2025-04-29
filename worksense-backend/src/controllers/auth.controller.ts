@@ -275,6 +275,7 @@ export const login = async (req: Request, res: Response) => {
         platformRole: loginData.platformRole,
         pfp: loginData.pfp,
         nickName: loginData.nickName,
+        lastLogin: loginData.lastSignIn,
       };
 
       res.status(200).json({ message: "Login successful", token, user });

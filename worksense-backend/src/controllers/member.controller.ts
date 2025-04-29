@@ -109,6 +109,7 @@ export const listMembersWithEmail = async (
               ...member,
               name: `${userData.firstName} ${userData.lastName}`,
               email: userData.email,
+              lastLogin: userData.lastSignIn,
             };
           }
           return member;
