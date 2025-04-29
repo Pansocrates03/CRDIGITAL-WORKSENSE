@@ -1,29 +1,31 @@
-import { Epic, Story } from "./types";
+// src/components/BacklogTable/data.ts
+import { BacklogData } from "./types";
 
-export const backlogData = {
+// Datos de ejemplo para el backlog
+export const backlogData: BacklogData = {
   epics: [
     {
       id: "epic-3",
-      title: "Épica 3: Gestión de Flujo de Trabajo Ágil y Sprints",
+      title: "Epic 3: Agile Workflow Management and Sprints",
       stories: [
         {
           id: "HU10",
-          title: "Asignar ítems al Sprint Backlog",
+          title: "Assign items to Sprint Backlog",
           status: "Sprint Backlog",
-          assignee: "Usuario A",
+          assignee: "User A",
           size: "L",
-          priority: "Alta",
+          priority: "High",
           dueDate: "2025-05-15",
           points: 8,
           labels: ["Sprint", "Backend"],
         },
         {
           id: "HU11",
-          title: "Crear y activar un nuevo Sprint",
+          title: "Create and activate a new Sprint",
           status: "Sprint Backlog",
-          assignee: "Usuario B",
+          assignee: "User B",
           size: "M",
-          priority: "Media",
+          priority: "Medium",
           dueDate: "2025-05-20",
           points: 5,
           labels: ["Sprint", "Frontend"],
@@ -34,29 +36,29 @@ export const backlogData = {
   userStories: [
     {
       id: "HU20",
-      title: "Configurar notificaciones",
+      title: "Configure notifications",
       status: "In Progress",
-      assignee: "Usuario C",
+      assignee: "User C",
       size: "S",
-      priority: "Baja",
+      priority: "Low",
       dueDate: "2025-05-10",
       points: 3,
       epic: "epic-3",
-      labels: ["Usabilidad"],
+      labels: ["Usability"],
     },
   ],
   bugs: [
     {
       id: "BUG15",
-      title: "Error en login",
+      title: "Login error",
       status: "In Review",
-      assignee: "Usuario D",
+      assignee: "User D",
       size: "M",
-      priority: "Alta",
+      priority: "High",
       dueDate: "2025-04-30",
       points: 2,
       epic: "",
-      labels: ["Crítico", "Frontend"],
+      labels: ["Critical", "Frontend"],
     },
   ],
 };

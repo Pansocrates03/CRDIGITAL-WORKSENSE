@@ -1,26 +1,28 @@
-// src/pages/MembersPage.tsx
-
-import React from 'react';
-import { useParams } from 'react-router-dom';
+// src/components/BacklogTable/BacklogHeader.tsx
+import { FC } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
+import styles from "./BacklogHeader.module.css";
 
-// Components
-import MembersList from '../../components/MembersList/MembersList';
+interface BacklogHeaderProps {
+  projectId?: string;
+  onAddItem: () => void;
+}
 
-const MembersPage: React.FC = () => {
-  const params = useParams();
-  const projectId = params?.id as string;
-
+export const BacklogHeader: FC<BacklogHeaderProps> = ({ 
+  projectId, 
+  onAddItem 
+}) => {
   return (
-    <div>
+    <>
       <div className="flex items-baseline justify-between w-full">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground">
-            Members
+            Product Backlog
           </h2>
           <p className="text-muted-foreground mt-1">
-            Manage project members: add, update roles, or remove members from the project.
+            Track and manage all user stories, epics, and bugs associated with
+            the project.
           </p>
         </div>
 
@@ -28,19 +30,14 @@ const MembersPage: React.FC = () => {
           variant="default"
           size="default"
           className="bg-[#ac1754] hover:bg-[#8e0e3d] flex-shrink-0"
-          onClick={() => alert(projectId)}
+          onClick={onAddItem}
         >
           <PlusIcon className="mr-1 h-4 w-4" />
-          Add User
+          Add Item
         </Button>
       </div>
 
       <div className="border-b border-border my-4"></div>
-
-      {/* Pass projectId to MembersList */}
-      <MembersList projectId={projectId} />
-    </div>
+    </>
   );
-}
-
-export default MembersPage;
+};

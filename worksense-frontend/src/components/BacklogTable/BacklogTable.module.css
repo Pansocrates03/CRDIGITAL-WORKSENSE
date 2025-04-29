@@ -1,0 +1,73 @@
+/* src/components/BacklogTable/BacklogTable.module.css */
+.backlogTableContainer {
+  display: flex;
+  flex-direction: column;
+  color: var(--foreground, #222);
+  overflow-y: auto;
+}
+
+/* Table styles */
+.tableContainer {
+  overflow-x: auto;
+  border: 1px solid #eaeaea;
+  border-radius: 0.5rem;
+  background-color: white;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.table th {
+  background-color: #f9fafb;
+  color: var(--secondary, #666);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.table td {
+  font-size: 0.875rem;
+  color: var(--foreground, #222);
+}
+
+/* Badge for status, priority and size */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.sizeBadge {
+  background-color: #e0e7ff;
+  color: #4338ca;
+}
+
+/* Hover effect for table rows */
+.table tr:hover {
+  background-color: #f7f7f7;
+}
+
+/* Section header styling - used by SectionHeader component */
+.sectionHeaderRow {
+  background-color: #f9fafb;
+}
+
+.sectionHeader {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: var(--primary, #ac1754);
+  border-bottom: 1px solid #eaeaea;
+  font-size: 0.875rem;
+}
