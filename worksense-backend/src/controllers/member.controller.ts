@@ -110,6 +110,7 @@ export const listMembersWithEmail = async (
               name: `${userData.firstName} ${userData.lastName}`,
               email: userData.email,
               lastLogin: userData.lastSignIn,
+              profilePicture: userData.pfp,
             };
           }
           return member;
