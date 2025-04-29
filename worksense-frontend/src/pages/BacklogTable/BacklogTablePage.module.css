@@ -1,34 +1,67 @@
 /* src/pages/BacklogTable/BacklogTablePage.module.css */
 
 .backlogPageContainer {
-  padding: 0;
   width: 100%;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-/* Si necesitas estilos específicos para elementos del encabezado que no están 
-   cubiertos por las clases Tailwind en BacklogHeader.tsx */
-.pageTitle {
-  color: var(--foreground);
+.tableWrapper {
+  overflow-x: auto;
+  margin-top: 1rem;
 }
 
-.pageDescription {
-  color: var(--muted-foreground);
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.addButton {
-  background-color: #ac1754;
+.table th,
+.table td {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.875rem;
+  color: #333333;
+  border-bottom: 1px solid #eaeaea;
 }
 
-.addButton:hover {
-  background-color: #8e0e3d;
+.table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
 }
 
-/* Estilos para el contenedor principal que envuelve toda la página */
-.contentWrapper {
+.table tbody tr:hover {
+  background-color: #f3f4f6;
+}
+
+.sectionHeader {
+  background-color: #f9fafb;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #888;
+  padding-top: 1rem;
+}
+
+.epicRow:hover {
+  background-color: #e5e7eb;
+}
+
+.error {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.2rem;
+  color: #dc3545;
 }
 
-/* Estos estilos solo serían necesarios si haces alguna personalización adicional
-   que no esté cubierta por los componentes individuales */
+
