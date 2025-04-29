@@ -161,7 +161,9 @@ export const updateUserByAdmin = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { email, firstName, lastName, pfp, platformRole } = req.body;
+    // Extract all fields needed by spUpdateUser + platformRole (even if not used by SP)
+    const { email, firstName, lastName, nickName, pfp, platformRole } =
+      req.body;
 
     // Validate required fields
     if (!email || !firstName || !lastName) {
@@ -195,15 +197,15 @@ export const updateUserByAdmin = async (
       return;
     }
 
-    // Update user using the same stored procedure
+    // Update user using the defined stored procedure parameters
     await pool
       .request()
       .input("userId", sql.Int, id)
       .input("email", sql.NVarChar(50), email)
       .input("firstName", sql.NVarChar(50), firstName)
       .input("lastName", sql.NVarChar(50), lastName)
-      .input("pfp", sql.NVarChar(255), pfp)
-      .input("platformRole", sql.NVarChar(50), platformRole)
+      .input("nickName", sql.NVarChar(50), nickName ?? null) // Pass nickName
+      .input("pfp", sql.NVarChar(255), pfp ?? null) // Pass pfp
       .execute("spUpdateUser");
 
     res.json({ message: "User updated successfully" });

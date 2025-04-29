@@ -149,6 +149,51 @@ router.get("/users/:id", verifyToken, getUsers);
 /**
  * @swagger
  * /users:
+ *   get:
+ *     summary: Get all users (admin only)
+ *     tags: [Platform Admin]
+ *     security:
+ *       - authToken: []
+ *     responses:
+ *       200:
+ *         description: List of all users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: User ID
+ *                   email:
+ *                     type: string
+ *                     description: User email
+ *                   firstName:
+ *                     type: string
+ *                     description: User first name
+ *                   lastName:
+ *                     type: string
+ *                     description: User last name
+ *                   platformRole:
+ *                     type: string
+ *                     description: User platform role
+ *                   pfp:
+ *                     type: string
+ *                     description: User profile picture URL
+ *       401:
+ *         description: Unauthorized - User is not authenticated
+ *       403:
+ *         description: Forbidden - User does not have admin privileges
+ *       500:
+ *         description: Server error
+ */
+router.get("/users", verifyToken, checkPlatformAdmin, getUsers);
+
+/**
+ * @swagger
+ * /users:
  *   post:
  *     summary: Create a new user (admin only)
  *     tags: [Platform Admin]

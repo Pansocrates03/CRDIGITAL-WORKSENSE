@@ -1,228 +1,84 @@
-import React, { useState } from "react";
+// components/Settings/Settings.tsx
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Toaster } from "sonner";
+import { AccountTab } from "./tabs/AccountTab";
+import { UserManagementTab } from "./tabs/UserManagementTab";
+import { useFetchUsers } from "./hooks";
+import { TabType } from "./interfaces";
 import styles from "./Settings.module.css";
-import apiClient from "@/api/apiClient";
-import LoadingSpinner from "@/components/Loading/LoadingSpinner";
-import { FaClipboard } from "react-icons/fa";
-import { TextInput } from "@/components/TextInput/TextInput";
-import { SelectInput } from "@/components/SelectInput/SelectInput";
-
-// Interface for the user creation form
-interface UserCreationForm {
-  email: string;
-  firstName: string;
-  lastName: string;
-  password: string;
-  platformRole: string;
-}
-
-// Interface for the created user response
-interface CreatedUser {
-  email: string;
-  firstName: string;
-  lastName: string;
-  password: string;
-  userId?: number;
-  platformRole: string;
-}
+import { authService } from "@/services/auth";
 
 const Settings: React.FC = () => {
-  const [newUser, setNewUser] = useState<UserCreationForm>({
-    email: "",
-    firstName: "",
-    lastName: "",
-    password: "",
-    platformRole: "",
-  });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [createdUser, setCreatedUser] = useState<CreatedUser | null>(null);
-  const [copySuccess, setCopySuccess] = useState<boolean>(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<TabType>("account");
+  const [user, setUser] = useState(authService.getCurrentUser());
+  const { users, usersLoading, usersError, refetchUsers } = useFetchUsers(
+    activeTab,
+    user?.platformRole
+  );
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setNewUser((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  // Check if user is admin (case-insensitive)
+  const isAdmin = user?.platformRole?.toUpperCase() === "ADMIN";
 
-    // Clear any previous messages when user types
-    if (error) setError(null);
-  };
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab") as TabType;
+    if (tab) setActiveTab(tab);
+  }, [location.search]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    setCreatedUser(null);
-
-    try {
-      const userData = {
-        ...newUser,
-      };
-
-      const response = await apiClient.post("users/", userData);
-
-      if (response.status === 201) {
-        // Store the created user information including password
-        setCreatedUser({
-          email: newUser.email,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName,
-          password: newUser.password,
-          userId: response.data.userId || undefined,
-          platformRole: newUser.platformRole,
-        });
-
-        // Reset form
-        setNewUser({
-          email: "",
-          firstName: "",
-          lastName: "",
-          password: "",
-          platformRole: "",
-        });
-      }
-    } catch (err) {
-      console.error("Error creating user:", err);
-      setError("Failed to create user. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const dismissCreatedUser = () => {
-    setCreatedUser(null);
-  };
-
-  const copyToClipboard = () => {
-    if (createdUser) {
-      const credentials = `Email: ${createdUser.email}\nPassword: ${createdUser.password}`;
-      navigator.clipboard.writeText(credentials).then(() => {
-        setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 2000);
-      });
-    }
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    navigate(`/settings?tab=${tab}`, { replace: true });
   };
 
   return (
     <div className={styles.settingsContainer}>
-      <h1 className={styles.title}>Settings</h1>
+      <Toaster position="bottom-right" />
 
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>User Management</h2>
+      {/* Vertical Tab Navigation */}
+      <div className={styles.tabNavigation}>
+        <div className={styles.tabGroup}>
+          <div className={styles.tabGroupTitle}>General</div>
+          <button
+            className={`${styles.tabButton} ${
+              activeTab === "account" ? styles.activeTab : ""
+            }`}
+            onClick={() => handleTabChange("account")}
+          >
+            Account
+          </button>
+        </div>
 
-        {error && <div className={styles.errorMessage}>{error}</div>}
-
-        {isLoading ? (
-          <div className={styles.loadingContainer}>
-            <LoadingSpinner
-              text="Creating user..."
-              subtext="Please wait while we process your request"
-              size="medium"
-            />
-          </div>
-        ) : createdUser ? (
-          <div className={styles.credentialsContainer}>
-            <div className={styles.credentialsHeader}>
-              <h3 className={styles.credentialsTitle}>
-                User Created Successfully
-              </h3>
-              <button
-                className={styles.copyButton}
-                onClick={copyToClipboard}
-                title="Copy credentials"
-              >
-                <FaClipboard />
-                <span className={styles.copyLabel}>Copy</span>
-                {copySuccess && (
-                  <span className={styles.copyTooltip}>Copied!</span>
-                )}
-              </button>
-            </div>
-            <div className={styles.credentialsContent}>
-              <p><strong>Email:</strong> {createdUser.email}</p>
-              <p>
-                <strong>Name:</strong> {createdUser.firstName}{" "}
-                {createdUser.lastName}
-              </p>
-              <p>
-                <strong>Password:</strong> {createdUser.password}
-              </p>
-              <p>
-                <strong>Platform Role:</strong> {createdUser.platformRole}
-              </p>
-              <p className={styles.credentialsNote}>
-                Please save these credentials. You will need them to log in.
-              </p>
-            </div>
+        {isAdmin && (
+          <div className={styles.tabGroup}>
+            <div className={styles.tabGroupTitle}>Admin</div>
             <button
-              className={styles.dismissButton}
-              onClick={dismissCreatedUser}
+              className={`${styles.tabButton} ${
+                activeTab === "userManagement" ? styles.activeTab : ""
+              }`}
+              onClick={() => handleTabChange("userManagement")}
             >
-              Dismiss
+              User Management
             </button>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className={styles.form}>
-
-            <TextInput
-              inputName="email"
-              inputValue={newUser.email}
-              isRequired={true}
-              labelText="Email"
-              onChange={handleInputChange}
-            />
-
-            <TextInput
-              inputName="firstName"
-              inputValue={newUser.firstName}
-              isRequired={true}
-              labelText="First Name"
-              onChange={handleInputChange}
-            />
-
-            <div className={styles.formGroup}>
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={newUser.password}
-                onChange={handleInputChange}
-                className={styles.input}
-                required
-                minLength={6}
-              />
-            </div>
-
-
-            <TextInput
-              inputType="password"
-              inputName="password"
-              inputValue={newUser.password}
-              isRequired={true}
-              labelText="Password"
-              onChange={handleInputChange}
-            />
-
-            <SelectInput
-              inputName="platformRole"
-              inputValue={newUser.gender}
-              options={[{ value: "admin", label: "Admin" }, { value: "user", label: "User"} ]}
-              isRequired={true}
-              labelText="Platform Role"
-              onChange={handleInputChange}
-              placeholder="Select platform role"
-            />
-
-            <button type="submit" className={styles.submitButton}>
-              Create User
-            </button>
-          </form>
         )}
-      </section>
+      </div>
+
+      {/* Content Area */}
+      <div className={styles.contentArea}>
+        {activeTab === "account" ? (
+          <AccountTab />
+        ) : activeTab === "userManagement" && isAdmin ? (
+          <UserManagementTab
+            users={users}
+            usersLoading={usersLoading}
+            usersError={usersError}
+            refetchUsers={refetchUsers}
+          />
+        ) : null}
+      </div>
     </div>
   );
 };

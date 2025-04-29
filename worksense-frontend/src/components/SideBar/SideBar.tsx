@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./SideBar.module.css";
 import worksenseLogo from "@/assets/images/worksenseLogo.svg";
 import settingsIcon from "@/assets/images/settings.svg";
@@ -146,7 +146,6 @@ export const SideBar: React.FC = () => {
   const mainNavItems = useMemo<NavItem[]>(
     () => [
       { name: "My Projects", icon: "/bookOpen.svg", path: "/create" },
-      { name: "Account", icon: "/Home.svg", path: "/account" },
       { name: "Settings", icon: settingsIcon, path: "/settings" },
     ],
     []

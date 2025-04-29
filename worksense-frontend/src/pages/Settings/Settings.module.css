@@ -1,13 +1,17 @@
 .settingsContainer {
   padding: 2rem;
-  max-width: 800px;
+  max-width: 1400px;
   margin: 0 auto;
+  display: flex;
+  gap: 3rem;
+  height: calc(100vh - 4rem); /* Account for padding */
+  overflow: hidden;
 }
 
 .title {
   color: var(--color-charcoal);
   margin-bottom: 2rem;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 600;
 }
 
@@ -15,17 +19,181 @@
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
+  padding: 2rem;
   margin-bottom: 2rem;
+  height: calc(100vh - 8rem);
+  display: flex;
+  flex-direction: column;
 }
 
 .sectionTitle {
   color: var(--color-charcoal);
-  margin-bottom: 1.5rem;
-  font-size: 1.25rem;
+  margin: 0;
+  font-size: 1.1rem;
   font-weight: 500;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.75rem;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Tab Navigation */
+.tabNavigation {
+  width: 200px; /* Fixed width for the navigation panel */
+  padding: 1rem;
+  border-right: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Space between tab groups */
+}
+
+.tabGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* Space within a tab group */
+}
+
+.tabGroupTitle {
+  font-size: 0.8rem; /* Smaller font size */
+  font-weight: 600; /* Make it bolder */
+  color: #666; /* Dimmer color */
+  text-transform: uppercase; /* Uppercase for header style */
+  letter-spacing: 0.05em; /* Add some letter spacing */
+  margin-bottom: 0.25rem; /* Small space below title */
+  padding: 0.25rem 0.5rem; /* Add some padding */
+  cursor: default; /* Ensure default cursor, not pointer */
+}
+
+.tabButton {
+  background-color: transparent;
+  border: none;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+  position: relative;
+}
+
+.tabButton:hover {
+  color: var(--foreground);
+}
+
+.activeTab {
+  color: var(--color-purple);
+  font-weight: 600;
+}
+
+.activeTab::after {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0.5rem;
+  height: 2px;
+  background-color: var(--color-purple);
+  border-radius: 1px;
+}
+
+.activeTab:hover {
+  color: var(--color-purple);
+}
+
+/* Content area */
+.contentArea {
+  flex: 1;
+  min-width: 0;
+  max-width: 1000px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Account Tab Styles */
+.accountContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.accountHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.editButton {
+  padding: 0.5rem;
+  height: 2rem;
+  width: 2rem;
+}
+
+.accountContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.avatarContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.avatar {
+  height: 6rem;
+  width: 6rem;
+  background-color: var(--color-purple);
+}
+
+.userName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--color-charcoal);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-charcoal);
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.disabledInput {
+  background-color: #f7fafc;
+  opacity: 0.7;
+}
+
+.avatarButton {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+/* User Management Tab Styles */
+.userManagementContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+  height: 100%;
 }
 
 .form {
@@ -101,7 +269,7 @@
 
 .credentialsTitle {
   color: var(--color-purple);
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   margin: 0;
 }
@@ -116,7 +284,7 @@
 
 .credentialsContent p {
   margin-bottom: 0.75rem;
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: var(--color-charcoal);
 }
 
@@ -130,6 +298,7 @@
   border-top: 1px dashed #e9ecef;
   font-style: italic;
   color: #6c757d;
+  font-size: 0.85rem;
 }
 
 .dismissButton {
@@ -138,12 +307,12 @@
   border: none;
   border-radius: 4px;
   padding: 0.6rem 1.25rem;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
+  margin-left: auto;
   display: block;
-  margin: 0 auto;
 }
 
 .dismissButton:hover {
@@ -156,9 +325,10 @@
 
 .buttonContainer {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 1rem;
   margin-top: 1rem;
+  width: 100%;
 }
 
 .copyButton {
@@ -173,7 +343,7 @@
   gap: 6px;
   border-radius: 4px;
   transition: all 0.2s ease;
-  font-size: 14px;
+  font-size: 0.85rem;
 }
 
 .copyButton:hover {
@@ -188,6 +358,7 @@
 .copyLabel {
   font-weight: 500;
   color: var(--color-charcoal);
+  font-size: 0.85rem;
 }
 
 .copyTooltip {
@@ -198,7 +369,7 @@
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 0.75rem;
   white-space: nowrap;
   animation: fadeIn 0.2s ease;
 }
@@ -229,13 +400,12 @@
 }
 
 .modalContainer {
-  background: var(--color-white);
-  border-radius: 12px;
-  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
   width: 100%;
   max-width: 500px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  border: 1px solid var(--color-gray);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .modalHeader {
@@ -246,83 +416,481 @@
 }
 
 .modalTitle {
-  font-size: 1.5rem;
-  color: var(--color-charcoal);
+  font-size: 1.25rem;
   font-weight: 600;
+  color: var(--color-charcoal);
   margin: 0;
 }
 
 .closeButton {
   background: none;
   border: none;
-  color: var(--color-charcoal);
   font-size: 1.5rem;
+  color: var(--muted-foreground);
   cursor: pointer;
   padding: 0.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s ease;
+  border-radius: 4px;
 }
 
 .closeButton:hover {
-  background-color: var(--color-light-gray);
+  background-color: var(--muted);
+  color: var(--foreground);
+}
+
+.modalContent {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--color-charcoal);
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  background-color: white;
+}
+
+.input:disabled {
+  background-color: var(--muted);
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .modalActions {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
-  margin-top: 2rem;
 }
 
 .cancelButton {
-  background-color: transparent;
-  border: 1px solid var(--color-gray);
-  color: var(--color-charcoal);
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--muted);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
 }
 
 .cancelButton:hover {
-  background-color: var(--color-light-gray);
+  background-color: var(--muted-hover);
 }
 
 .createButton {
+  padding: 0.5rem 1rem;
   background-color: var(--color-purple);
-  color: var(--color-white);
-  padding: 0.75rem 1.5rem;
+  color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease,
-    box-shadow 0.2s ease;
-  box-shadow: 0 2px 4px rgba(172, 23, 84, 0.2);
 }
 
 .createButton:hover {
   background-color: var(--color-purple-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(172, 23, 84, 0.3);
 }
 
-.createButton:active {
-  background-color: var(--color-purple-dark);
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(172, 23, 84, 0.2);
+.deleteButton {
+  background-color: var(--destructive);
 }
 
-.createButton:disabled {
-  background-color: var(--color-pink-light);
-  color: var(--color-purple);
+.deleteButton:hover {
+  background-color: var(--destructive-dark);
+}
+
+.userListSection {
+  margin-top: 0;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.userListTitle {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  position: relative;
+  padding-left: 1rem;
+}
+
+.userListTitle::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 1rem;
+  background-color: var(--color-purple);
+  border-radius: 2px;
+}
+
+.tableContainer {
+  width: 100%;
+  overflow: auto;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-top: 1rem;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  table-layout: fixed;
+}
+
+/* Column widths */
+.table th:nth-child(1) {
+  width: 30%;
+}
+.table th:nth-child(2) {
+  width: 35%;
+}
+.table th:nth-child(3) {
+  width: 20%;
+}
+.table th:nth-child(4) {
+  width: 15%;
+}
+
+.table thead {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}
+
+.table th {
+  padding: 1.5rem 2rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  border-bottom: 1px solid var(--border);
+  background: white;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table td {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9rem;
+  background: white;
+}
+
+/* Add specific padding for the first column to prevent avatar cutoff */
+.table td:first-child {
+  padding-left: 3rem;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover td {
+  background-color: var(--muted);
+}
+
+.userCell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  padding-left: 1rem;
+  margin-left: -0.5rem;
+}
+
+.userAvatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-left: 0.25rem;
+}
+
+.userName {
+  font-weight: 500;
+  color: var(--foreground);
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.admin {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.user {
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+
+.actionButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.button:hover {
+  background: var(--muted);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+.trashButton:hover {
+  background: var(--destructive);
+  color: white;
+  border-color: var(--destructive);
+}
+
+.userManagementHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.title {
+  color: var(--color-charcoal);
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.subtitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+}
+
+.subtitleIcon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--muted-foreground);
+}
+
+.createUserButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 2rem;
+}
+
+.createUserButton:hover {
+  background-color: var(--primary);
+  opacity: 0.9;
+}
+
+.buttonIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.selectedUserActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: var(--muted);
+  border-radius: var(--radius) var(--radius) 0 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.selectedUserInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.selectedUserDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.userEmail {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+.tableRow {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.tableRow:hover {
+  background-color: var(--muted);
+}
+
+.selectedRow {
+  background-color: var(--muted);
+}
+
+.selectedRow td {
+  border-bottom: 2px solid var(--primary);
+}
+
+.actionMenuContainer {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 1rem;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: var(--muted-foreground);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menuButton:hover {
+  background-color: var(--muted);
+  color: var(--foreground);
+}
+
+.actionMenu {
+  position: fixed;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
+  z-index: 9999;
+  overflow: visible;
+  border: 1px solid var(--border);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--foreground);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.menuItem:hover {
+  background-color: var(--muted);
+}
+
+.deleteMenuItem {
+  color: var(--destructive);
+}
+
+.deleteMenuItem:hover {
+  background-color: var(--destructive-light);
+  color: var(--destructive);
+}
+
+.deleteWarning {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--foreground);
+  margin-bottom: 0.75rem;
+}
+
+.deleteSubtext {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin-bottom: 0;
+}
+
+.deleteButton:disabled,
+.cancelButton:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
