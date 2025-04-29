@@ -554,7 +554,7 @@ router.get("/:projectId/members", memberAuth, memberController.listMembers);
 
 /**
  * @swagger
- * /{projectId}/members-with-email:
+ * /{projectId}/members-detail:
  *   get:
  *     summary: List all members of a project with their email addresses
  *     tags: [Project Members]
@@ -605,6 +605,13 @@ router.get("/:projectId/members", memberAuth, memberController.listMembers);
  *                     type: string
  *                     description: Email address of the user
  *                     example: "prueba16@email.com"
+ *                   lastLogin:
+ *                     type: object
+ *                     description: Last login timestamp
+ *                     example: 1745715722
+ *                   profilePicture:
+ *                     type: string
+ *                     description: Profile picture URL
  *       401:
  *         description: Unauthorized - User is not authenticated
  *       403:
@@ -613,7 +620,7 @@ router.get("/:projectId/members", memberAuth, memberController.listMembers);
  *         description: Project not found
  */
 router.get(
-  "/:projectId/membersDetail",
+  "/:projectId/members-detail",
   memberAuth,
   memberController.listMembersDetail
 );
