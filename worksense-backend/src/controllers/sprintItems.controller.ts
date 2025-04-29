@@ -113,27 +113,13 @@ export const getSprintBoard: RequestHandler = async (
       .orderBy("order")
       .get();
 
-    // 3. Organizar items por estado
-    interface SprintBoard {
-      todo: SprintItem[];
-      "in-progress": SprintItem[];
-      review: SprintItem[];
-      done: SprintItem[];
-    }
+    // 3. Crear array con todos los items
+    const items = itemsSnap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as (SprintItem & { id: string })[];
 
-    const board: SprintBoard = {
-      todo: [],
-      "in-progress": [],
-      review: [],
-      done: []
-    };
-
-    itemsSnap.forEach(doc => {
-      const item = { id: doc.id, ...doc.data() } as SprintItem & { id: string };
-      board[item.status].push(item);
-    });
-
-    res.status(200).json(board);
+    res.status(200).json({ items });
 
   } catch (error) {
     next(error);
