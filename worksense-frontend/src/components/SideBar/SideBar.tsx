@@ -109,7 +109,7 @@ export const SideBar: React.FC = () => {
       },
       {
         name: "Backlog",
-        icon: "/backlog.svg",
+        icon: "/backlogPage.svg",
         path: `/project/${projectId}/product-backlog`,
       },
       // {
