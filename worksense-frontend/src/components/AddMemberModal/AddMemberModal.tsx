@@ -1,6 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import styles from "./AddMemberModal.module.css";
 import LoadingSpinner from "../Loading/LoadingSpinner";
+import MemberSelection from "../NewProjectModal/MemberSelection";
+import { User } from "@/types/UserType";
+import apiClient from "../../api/apiClient";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import Member from "@/types/MemberType";
+import { useAuth } from "@/contexts/AuthContext";
+
 
 interface AddMemberModalProps {
   isOpen: boolean;
@@ -11,6 +18,7 @@ interface AddMemberModalProps {
   submitButtonText?: string;
 }
 
+
 export const AddMemberModal: React.FC<AddMemberModalProps> = ({
   isOpen,
   onClose,
@@ -18,15 +26,45 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
   title = "Add Member",
   submitButtonText = "Add Member",
 }) => {
+  const { user, loading } = useAuth();
+  const currentUserId = user?.userId ?? -1;
+  const queryClient = useQueryClient();
+
+  const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
   const [userId, setUserId] = useState("");
   const [roleId, setRoleId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{
     userId?: string;
     roleId?: string;
+    members?: string;
   }>({});
   const modalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  if(!user) return null;
+
+  // Función para obtener usuarios desde la API usando React Query
+  const { isLoading: isUsersLoading, data: users = [], isError, error } = useQuery({
+    queryKey: ["users"],
+    queryFn: async (): Promise<User[]> => {
+        const response = await apiClient.get("/users");
+        return response.data;
+    },
+});
+
+    const handleAddMember = (member: Member) => {
+        console.log("Adding member", member);
+        setSelectedMembers((prevMembers) => {
+          const updatedMembers = [...prevMembers, member];
+          console.log("Selected members after adding", updatedMembers);
+          return updatedMembers;
+        });
+      };
+
+      const handleRemoveMember = (userId: number) => {
+        setSelectedMembers(selectedMembers.filter((m) => m.userId !== userId));
+        };
 
   // Reset form when opening and auto-focus the input
   useEffect(() => {
@@ -54,6 +92,16 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
+    const availableUsers = useMemo(() => {
+      return users.filter(
+          (user) =>
+          user.userId !== currentUserId &&
+          !selectedMembers.some((member) => member.userId === user.userId)
+      );
+      }, [users, selectedMembers, currentUserId]);
+
+
+
   // Handle click outside to close
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -70,24 +118,11 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [isOpen, onClose]);
 
-  const validateForm = (): boolean => {
-    const newErrors: { userId?: string; roleId?: string } = {};
 
-    if (!userId.trim()) {
-      newErrors.userId = "User ID is required";
-    }
-
-    if (!roleId.trim()) {
-      newErrors.roleId = "Role is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
+    if (true) {
       setIsSubmitting(true);
       try {
         onSubmit(userId, roleId);
@@ -110,42 +145,15 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className={styles.modalForm}>
-          <div className={styles.formGroup}>
-            <label htmlFor="userId" className={styles.label}>
-              User
-            </label>
-            <input
-              ref={inputRef}
-              id="userId"
-              type="text"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              className={styles.input}
-              placeholder="Enter user ID"
-              disabled={isSubmitting}
+          <MemberSelection
+              users={users}
+              selectedMembers={selectedMembers}
+              onAddMember={handleAddMember}
+              onRemoveMember={handleRemoveMember}
+              isLoading={isUsersLoading}
+              error={errors.members}
+              availableUsers={availableUsers}
             />
-            {errors.userId && (
-              <p className={styles.errorMessage}>{errors.userId}</p>
-            )}
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="roleId" className={styles.label}>
-              Role
-            </label>
-            <input
-              id="roleId"
-              type="text"
-              value={roleId}
-              onChange={(e) => setRoleId(e.target.value)}
-              className={styles.input}
-              placeholder="Enter role ID"
-              disabled={isSubmitting}
-            />
-            {errors.roleId && (
-              <p className={styles.errorMessage}>{errors.roleId}</p>
-            )}
-          </div>
 
           <div className={styles.formActions}>
             <button

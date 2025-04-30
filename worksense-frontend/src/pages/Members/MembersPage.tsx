@@ -15,6 +15,7 @@ import MemberDetailed from '@/types/MemberDetailedType';
 
 // Services
 import { projectService } from '@/services/projectService';
+import AddMemberModal from '@/components/AddMemberModal/AddMemberModal';
 
 
 const MembersPage: React.FC = () => {
@@ -46,6 +47,11 @@ const MembersPage: React.FC = () => {
     setSelectedMember(member);
     setIsModalOpen(true);
   };
+  const handleAddMemberClick = async () => {
+    console.log("Add member clicked");
+    setSelectedMember(null);
+    setIsModalOpen(true);
+  }
 
   const handleRoleUpdate = async (userId: number, role: string) => {
     try {
@@ -95,9 +101,10 @@ const MembersPage: React.FC = () => {
           variant="default"
           size="default"
           className="bg-[#ac1754] hover:bg-[#8e0e3d] flex-shrink-0"
+          onClick={() => handleAddMemberClick()}
         >
           <PlusIcon className="mr-1 h-4 w-4" />
-          Add User
+          <span>Add Member</span>
         </Button>
       </div>
 
@@ -117,6 +124,23 @@ const MembersPage: React.FC = () => {
         availableRoles={availableRoles}
         onSubmit={handleRoleUpdate}
       />
+
+      <AddMemberModal
+        isOpen={isModalOpen && selectedMember === null}
+        onClose={() => setIsModalOpen(false)}
+        projectId={projectId!}
+        onSubmit={() => {console.log("Member added")}} // Placeholder for actual add member function)}
+        />
+
+{/* 
+<EditTeamModal
+        isOpen={isEditTeamModalOpen}
+        onClose={() => setIsEditTeamModalOpen(false)}
+        projectId={id || ''}
+        currentTeam={teamMembers}
+        onTeamUpdate={handleTeamUpdate}
+      />
+      */}
 
       {showDeleteAlert && memberToDelete && (
         <Alert

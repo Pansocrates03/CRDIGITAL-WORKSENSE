@@ -14,6 +14,8 @@ import MemberDetailed from "@/types/MemberDetailedType";
 import { Avatar } from "../ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
 
+import RecentBacklogItems from "./RecentBacklogItems"
+
 type FullProjectData = {
   project: ProjectDetails;
   members: MemberDetailed[];
@@ -24,12 +26,13 @@ export const ProjectView: React.FC<FullProjectData> = ({
   members,
 }) => {
   const { id } = useParams<{ id: string }>();
-  const [backlogItems, setBacklogItems] = useState<BacklogItemType[]>([]);
+
+  const backlogItems: any[] = [];
   const [loading, setLoading] = useState(true);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
   const [teamMembers, setTeamMembers] = useState<MemberDetailed[]>(members);
   const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(null);
-
+/*
   useEffect(() => {
     const fetchBacklogItems = async () => {
       try {
@@ -47,6 +50,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
       fetchBacklogItems();
     }
   }, [id]);
+  */
   
   useEffect(() => {
     setTeamMembers(members);
@@ -110,27 +114,6 @@ export const ProjectView: React.FC<FullProjectData> = ({
         <section className={styles.teamSection}>
           <div className={styles.sectionHeader}>
             <h2>Project Team</h2>
-            <button
-              className={styles.editButton}
-              onClick={() => setIsEditTeamModalOpen(true)}
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M11.5 2.5L13.5 4.5M12.5 1.5L8 6L7 9L10 8L14.5 3.5C14.8978 3.10217 15.1213 2.56261 15.1213 2C15.1213 1.43739 14.8978 0.897825 14.5 0.5C14.1022 0.102175 13.5626 -0.121281 13 -0.121281C12.4374 -0.121281 11.8978 0.102175 11.5 0.5L12.5 1.5ZM2 3H6M2 7H8M2 11H14"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Edit Team
-            </button>
           </div>
           <div className={styles.teamAvatars}>
             {members.map((m) => (
@@ -139,7 +122,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
                 className={styles.avatar}
                 onClick={(e) => handleAvatarClick(m, e)}
               >
-                <Avatar>
+                <Avatar className="size-16">
                   <AvatarImage src={m.profilePicture} />
                   {/* <AvatarFallback delayMs={600}> */}
                 </Avatar>
@@ -147,6 +130,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
               </div>
             ))}
           </div>
+
 
           <div className={styles.teamStats}>
             <h3>Project Statistics</h3>
@@ -183,35 +167,10 @@ export const ProjectView: React.FC<FullProjectData> = ({
         </section>
 
         {/* Backlog Preview Section */}
-        <section className={styles.backlogPreview}>
-          <h2>Recent Backlog Items</h2>
-          {loading ? (
-            <LoadingSpinner text="Loading backlog items..." />
-          ) : (
-            <div className={styles.backlogItems}>
-              {backlogItems.slice(0, 5).map((item) => (
-                <div key={item.id} className={styles.backlogItem}>
-                  <div className={styles.backlogItemHeader}>
-                    <span className={styles.itemType}>{item.type}</span>
-                    <span
-                      className={`${styles.itemStatus} ${styles[item.status]}`}
-                    >
-                      {item.status}
-                    </span>
-                  </div>
-                  <h4>{item.name}</h4>
-                  <p>{item.description}</p>
-                  <div className={styles.itemMeta}>
-                    <span>Priority: {item.priority}</span>
-                    {item.size !== undefined && item.size > 0 && (
-                      <span>Size: {item.size}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+        <RecentBacklogItems 
+          isloading={loading}
+          items={backlogItems}
+        />
       </div>
 
       <EditTeamModal

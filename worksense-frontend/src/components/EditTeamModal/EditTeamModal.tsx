@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import styles from './EditTeamModal.module.css';
 import apiClient from '../../api/apiClient';
-import { TeamMember } from "@/types/TeamMemberType";
+
+import { Avatar } from "../ui/avatar";
+import { AvatarImage } from "@radix-ui/react-avatar";
+import MemberDetailed from '@/types/MemberDetailedType';
 
 // Add helper function for generating avatars
 const generateAvatar = (firstName: string, lastName: string) => {
@@ -22,8 +25,8 @@ interface EditTeamModalProps {
   isOpen: boolean;
   onClose: () => void;
   projectId: string;
-  currentTeam: TeamMember[];
-  onTeamUpdate: (newTeam: TeamMember[]) => void;
+  currentTeam: MemberDetailed[];
+  onTeamUpdate: (newTeam: MemberDetailed[]) => void;
 }
 
 const EditTeamModal: React.FC<EditTeamModalProps> = ({
@@ -44,7 +47,7 @@ const EditTeamModal: React.FC<EditTeamModalProps> = ({
         const response = await apiClient.get('/users');
         // Filter out users that are already in the team
         const filteredUsers = response.data.filter(
-          (user: User) => !currentTeam.some(member => member.id === user.id)
+          (user: User) => !currentTeam.some(member => member.userId === user.id)
         );
         setAvailableUsers(filteredUsers);
         if (filteredUsers.length > 0) {
@@ -79,18 +82,17 @@ const EditTeamModal: React.FC<EditTeamModalProps> = ({
         roleId: 'admin'
       });
 
-      const newMember: TeamMember = {
-        id: selectedUser.id,
-        name: `${selectedUser.firstName} ${selectedUser.lastName}`,
-        role: 'Team Member',
-        avatar: generateAvatar(selectedUser.firstName, selectedUser.lastName),
+      const newMember: MemberDetailed = {
         userId: selectedUser.id,
-        projectId: projectId,
-        roleId: response.data.roleId || '/projects/${projectId}/roles/member',
-        status: 'Active',
+        name: `${selectedUser.firstName} ${selectedUser.lastName}`,
+        projectRoleId: 'Team Member',
+        profilePicture: generateAvatar(selectedUser.firstName, selectedUser.lastName),
         email: selectedUser.email,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        joinedAt: {
+          _seconds: Math.floor(Date.now() / 1000),
+          _nanoseconds: 0,
+        },
+        lastLogin: ""
       };
       
       onTeamUpdate([...currentTeam, newMember]);
@@ -154,11 +156,13 @@ const EditTeamModal: React.FC<EditTeamModalProps> = ({
             <h3>Current Team Members</h3>
             <div className={styles.teamList}>
               {currentTeam.map(member => (
-                <div key={member.id} className={styles.teamMember}>
-                  <img src={member.avatar} alt={member.name} className={styles.memberAvatar} />
+                <div key={member.userId} className={styles.teamMember}>
+                  <Avatar className='size-16'>
+                    <AvatarImage src={member.profilePicture} alt={member.name} className={styles.avatarImage} />
+                  </Avatar>
                   <div className={styles.memberInfo}>
                     <span className={styles.memberName}>{member.name}</span>
-                    <span className={styles.memberRole}>{member.role}</span>
+                    <span className={styles.memberRole}>{member.projectRoleId}</span>
                     {member.email && <span className={styles.memberEmail}>{member.email}</span>}
                   </div>
                 </div>

@@ -6,7 +6,13 @@ import { projectService } from "@/services/projectService";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import styles from "./NewProjectModal.module.css";
 import { User } from "@/types/UserType";
-import apiClient from "../../api/apiClient";    
+import apiClient from "../../api/apiClient";  
+
+type localFormError = {
+  projectName?: string;
+  description?: string;
+  members?: string;
+}
 
 const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentUserId, onClose }) => {
     const queryClient = useQueryClient();
@@ -16,6 +22,7 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
     const [description, setDescription] = useState("");
     const [shouldPopulateBacklog, setShouldPopulateBacklog] = useState(false);
     const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
+    
 
     // Referencias para el modal y el input
     const inputRef = useRef<HTMLInputElement>(null);
@@ -37,7 +44,7 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
     } | null>(null);
     
     // Errores del formulario y estado de envío
-    const [errors, setErrors] = useState({});
+    const [errors, setErrors] = useState<localFormError>({});
     const [isCreatingProject, setIsCreatingProject] = useState(false);
 
     const availableUsers = useMemo(() => {
@@ -60,7 +67,7 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
 
       // Validación del formulario antes de enviar
     const validateForm = (): boolean => {
-        const newErrors = {};
+        const newErrors: localFormError = {};
         if (!projectName.trim()) newErrors.projectName = "El nombre es obligatorio";
         if (!description.trim())
         newErrors.description = "La descripción es obligatoria";
