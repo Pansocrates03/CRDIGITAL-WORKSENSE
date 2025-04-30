@@ -110,6 +110,7 @@ export const listMembersDetail = async (
               name: `${userData.firstName} ${userData.lastName}`,
               email: userData.email,
               lastLogin: userData.lastSignIn,
+              nickname: userData.nickname,
               profilePicture: userData.pfp,
             };
           }
