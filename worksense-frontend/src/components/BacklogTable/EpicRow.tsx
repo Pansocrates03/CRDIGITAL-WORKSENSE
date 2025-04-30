@@ -1,41 +1,72 @@
-// src/components/EpicRow.tsx
-import { FC } from "react";
+// src/components/BacklogTable/EpicRow.tsx
+import React, { FC } from "react";
+import { FaTrashAlt, FaPencilAlt } from "react-icons/fa";
 import styles from "./EpicRow.module.css";
 
-interface EpicRowProps {
-  epic: {
-    id: string;
-    title: string;
-    stories: any[]; // Aquí esperamos un array de historias relacionadas
-  };
-  isExpanded: boolean;
-  onToggle: (id: string) => void;
-  colSpan: number;
+interface Story {
+  id: string;
+  title: string;
+  // otros campos relevantes
 }
 
-export const EpicRow: FC<EpicRowProps> = ({ epic, isExpanded, onToggle, colSpan }) => {
-  const hasStories = epic.stories && epic.stories.length > 0;
+interface Epic {
+  id: string;
+  title: string;
+  type: string;
+  status: string;
+  stories: Story[];
+  // otros campos relevantes
+}
+
+interface EpicRowProps {
+  epic: Epic;
+  isExpanded: boolean;
+  onToggle: (epicId: string) => void;
+  colSpan: number;
+  onEdit?: (epicId: string) => void;
+  onDelete?: (epicId: string) => void;
+}
+
+export const EpicRow: FC<EpicRowProps> = ({ 
+  epic, 
+  isExpanded, 
+  onToggle, 
+  colSpan,
+  onEdit = () => console.log('Edit epic:', epic.id),
+  onDelete = () => console.log('Delete epic:', epic.id)
+}) => {
+  // Prevent click propagation when clicking the action buttons
+  const handleActionClick = (e: React.MouseEvent, action: () => void) => {
+    e.stopPropagation();
+    action();
+  };
 
   return (
-    <tr
-      className={hasStories ? styles.epicRow : ""}
-      onClick={() => hasStories && onToggle(epic.id)}
-      style={{ cursor: hasStories ? "pointer" : "default", backgroundColor: "#f3f4f6", userSelect: "none" }}
-    >
-      <td colSpan={colSpan}>
-        <div className={styles.epicTitle}>
+    <tr className={styles.epicRow} onClick={() => onToggle(epic.id)}>
+      <td colSpan={colSpan - 1}>
+        <div className={styles.epicHeader}>
           <span className={styles.expandIcon}>
-            {hasStories ? (isExpanded ? "▼" : "▶") : ""}
+            {isExpanded ? "▼" : "►"}
           </span>
-          <div className={styles.epicTitleText}>
-            <strong>{epic.title}</strong>
-            {hasStories && (
-              <span className={styles.estimateBadge}>
-                {epic.stories.length} story{epic.stories.length !== 1 ? "ies" : ""}
-              </span>
-            )}
-          </div>
+          {epic.title}
+          <span className={styles.storiesCount}>
+            ({epic.stories.length} stories)
+          </span>
         </div>
+      </td>
+      <td className={styles.epicActions} onClick={(e) => e.stopPropagation()}>
+        <button 
+          onClick={(e) => handleActionClick(e, () => onEdit(epic.id))} 
+          className={styles.button}
+        >
+          <FaPencilAlt />
+        </button>
+        <button 
+          onClick={(e) => handleActionClick(e, () => onDelete(epic.id))} 
+          className={`${styles.button} ${styles.trashButton}`}
+        >
+          <FaTrashAlt />
+        </button>
       </td>
     </tr>
   );

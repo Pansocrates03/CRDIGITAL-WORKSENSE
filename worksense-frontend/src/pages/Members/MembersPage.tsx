@@ -21,6 +21,7 @@ import { projectService } from '@/services/projectService';
 import { useMembers, useDeleteMember } from '@/hooks/useMembers';
 import { useUsers } from '@/hooks/useUsers';
 
+
 const MembersPage: React.FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
@@ -43,6 +44,11 @@ const MembersPage: React.FC = () => {
     setSelectedMember(member);
     setIsModalOpen(true);
   };
+  const handleAddMemberClick = async () => {
+    console.log("Add member clicked");
+    setSelectedMember(null);
+    setIsModalOpen(true);
+  }
 
   const handleRoleUpdate = async (userId: number, role: string) => {
     try {
@@ -114,7 +120,7 @@ const MembersPage: React.FC = () => {
           onClick={() => setIsAddingMembers(true)}
         >
           <PlusIcon className="mr-1 h-4 w-4" />
-          Add User
+          <span>Add Member</span>
         </Button>
       </div>
 
@@ -182,6 +188,23 @@ const MembersPage: React.FC = () => {
         availableRoles={availableRoles}
         onSubmit={handleRoleUpdate}
       />
+
+      <AddMemberModal
+        isOpen={isModalOpen && selectedMember === null}
+        onClose={() => setIsModalOpen(false)}
+        projectId={projectId!}
+        onSubmit={() => {console.log("Member added")}} // Placeholder for actual add member function)}
+        />
+
+{/* 
+<EditTeamModal
+        isOpen={isEditTeamModalOpen}
+        onClose={() => setIsEditTeamModalOpen(false)}
+        projectId={id || ''}
+        currentTeam={teamMembers}
+        onTeamUpdate={handleTeamUpdate}
+      />
+      */}
 
       {showDeleteAlert && memberToDelete && (
         <Alert

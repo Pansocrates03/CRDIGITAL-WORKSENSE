@@ -1,39 +1,35 @@
 /* src/components/BacklogTable/EpicRow.module.css */
 .epicRow {
   cursor: pointer;
-  background-color: #f3f4f6;
+  background-color: #f9fafb;
 }
 
 .epicRow:hover {
-  background-color: #e5e7eb;
+  background-color: #f3f4f6;
 }
 
-.epicTitleCell {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #eaeaea;
-}
-
-.epicTitle {
+.epicHeader {
   display: flex;
   align-items: center;
+  font-weight: 500;
+  color: #374151;
 }
 
 .expandIcon {
-  margin-right: 0.5rem;
-  font-size: 0.875rem;
+  margin-right: 0.75rem;
+  font-size: 0.7rem;
+  color: #6b7280;
 }
 
-.epicTitleText {
+.storiesCount {
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.epicActions {
+  margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-}
-
-.estimateBadge {
-  margin-left: 0.5rem;
-  padding: 0.125rem 0.375rem;
-  border-radius: 9999px;
-  background-color: #e0e7ff;
-  color: #4338ca;
-  font-size: 0.75rem;
 }

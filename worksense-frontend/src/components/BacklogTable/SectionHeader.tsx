@@ -1,5 +1,5 @@
 // src/components/BacklogTable/SectionHeader.tsx
-import { FC } from "react";
+import React, { FC } from "react";
 import styles from "./SectionHeader.module.css";
 
 interface SectionHeaderProps {
@@ -9,7 +9,7 @@ interface SectionHeaderProps {
 
 export const SectionHeader: FC<SectionHeaderProps> = ({ title, colSpan }) => {
   return (
-    <tr className={styles.sectionHeaderRow}>
+    <tr>
       <td colSpan={colSpan} className={styles.sectionHeader}>
         {title}
       </td>
