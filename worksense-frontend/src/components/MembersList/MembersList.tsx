@@ -13,6 +13,45 @@ import {
 import styles from './MembersList.module.css';
 import MemberDetailed from '@/types/MemberDetailedType';
 
+const formatRoleName = (roleId: string) => {
+  if (!roleId) return 'Unknown Role';
+  return roleId
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+const formatLastLogin = (dateString: string) => {
+  if (!dateString) return '--';
+  
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  
+  const timeString = date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
+  if (diffInDays === 0) {
+    return `Today at ${timeString}`;
+  } else if (diffInDays === 1) {
+    return `Yesterday at ${timeString}`;
+  } else if (diffInDays < 7) {
+    return `${diffInDays} days ago at ${timeString}`;
+  } else {
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  }
+};
+
 interface Props {
   projectId: string;
   members: MemberDetailed[];
@@ -39,20 +78,30 @@ const MembersList: React.FC<Props> = ({ members, onEdit, onDelete }) => {
             {members.map((member) => (
               <TableRow key={member.userId}>
                 <TableCell>
-                  <img
-                    src="https://placecats.com/50/50"
-                    alt={member.name}
-                    className={styles.pfp}
-                  />
+                  <div className={styles.pfpContainer}>
+                    <img
+                      src={member.profilePicture || "/default-avatar.png"}
+                      alt={member.name}
+                      className={styles.pfp}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/default-avatar.png";
+                      }}
+                    />
+                  </div>
                 </TableCell>
                 <TableCell>{member.name}</TableCell>
                 <TableCell>{member.email}</TableCell>
                 <TableCell>
                   <span className={`${styles.badge} ${styles.roleBadge}`}>
-                    {member.projectRoleId}
+                    {formatRoleName(member.projectRoleId)}
                   </span>
                 </TableCell>
-                <TableCell>--</TableCell>
+                <TableCell>
+                  <span className={styles.lastLogin}>
+                    {formatLastLogin(member.lastLogin)}
+                  </span>
+                </TableCell>
                 <TableCell className={styles.actionButtons}>
                   <button onClick={() => onEdit(member)} className={styles.button}>
                     <FaPencilAlt />

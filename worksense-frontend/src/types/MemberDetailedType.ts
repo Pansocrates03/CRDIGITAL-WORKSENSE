@@ -9,6 +9,5 @@ export default interface MemberDetailed {
     profilePicture: string,
     email: string,
     lastLogin: string,
-
   }
   

@@ -3,7 +3,13 @@ import styles from "./NewProjectModal.module.css";
 import { User, ProjectMember } from "../../types";
 
 // Define available roles
-const ROLES = [{ id: "admin", name: "Admin" }];
+const ROLES = [
+  { id: "", name: "Select Role" },
+  { id: "product-owner", name: "Product Owner" },
+  { id: "scrum-master", name: "Scrum Master" },
+  { id: "developer", name: "Developer" },
+  { id: "viewer", name: "Viewer" }
+];
 
 // Component for selecting and adding members
 const MemberSelection: React.FC<{
@@ -24,10 +30,10 @@ const MemberSelection: React.FC<{
   availableUsers,
 }) => {
   const [selectedUserId, setSelectedUserId] = useState<string>("");
-  const [selectedRoleId, setSelectedRoleId] = useState<string>("admin");
+  const [selectedRoleId, setSelectedRoleId] = useState<string>("");
 
   const handleAddMember = () => {
-    if (selectedUserId) {
+    if (selectedUserId && selectedRoleId) {
       const newMember: ProjectMember = {
         userId: parseInt(selectedUserId),
         roleId: selectedRoleId,
@@ -35,7 +41,7 @@ const MemberSelection: React.FC<{
 
       onAddMember(newMember);
       setSelectedUserId("");
-      setSelectedRoleId("admin");
+      setSelectedRoleId("");
     }
   };
 
@@ -72,7 +78,7 @@ const MemberSelection: React.FC<{
           type="button"
           className={styles.addButton}
           onClick={handleAddMember}
-          disabled={!selectedUserId}
+          disabled={!selectedUserId || !selectedRoleId}
         >
           +
         </button>
@@ -88,7 +94,9 @@ const MemberSelection: React.FC<{
                 <span className={styles.username}>
                   {user ? `${user.firstName} ${user.lastName}` : "Unknown User"}
                 </span>
-                <span className={styles.memberRole}>Admin</span>
+                <span className={styles.memberRole}>
+                  {ROLES.find(role => role.id === member.roleId)?.name || "Unknown Role"}
+                </span>
                 <button
                   type="button"
                   className={styles.removeMember}

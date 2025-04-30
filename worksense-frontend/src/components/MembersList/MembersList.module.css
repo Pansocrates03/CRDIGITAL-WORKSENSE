@@ -57,8 +57,13 @@
 }
 
 .roleBadge {
-  background-color: rgba(23, 106, 172, 0.1);
-  color: #176aac;
+  background-color: rgba(172, 23, 84, 0.1);
+  color: #ac1754;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
 }
 
 /* Action buttons container */
@@ -91,13 +96,30 @@
 }
 
 /* Profile picture styling */
-.pfp {
+.pfpContainer {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  background-color: #ac1754;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pfp {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* Hover effect for table rows */
 .table tr:hover {
   background-color: #f7f7f7;
+}
+
+.lastLogin {
+  color: var(--muted-foreground, #666);
+  font-size: 0.875rem;
+  white-space: nowrap;
 }
