@@ -85,12 +85,6 @@ const MembersPage: React.FC = () => {
   const handleAddMembersSubmit = async () => {
     try {
       for (const member of selectedMembers) {
-        const requestBody = {
-          projectId: projectId,
-          userId: member.userId,
-          projectRoleId: member.projectRoleId
-        };
-        console.log('Adding member with request body:', requestBody);
         await projectService.addMemberToProject(projectId!, member.userId, member.projectRoleId);
       }
       setSelectedMembers([]);
