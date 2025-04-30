@@ -1,9 +1,9 @@
 // src/pages/MembersPage.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { PlusIcon } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {  useQueryClient } from '@tanstack/react-query';
 
 // Components
 import { Button } from '@/components/ui/button';
