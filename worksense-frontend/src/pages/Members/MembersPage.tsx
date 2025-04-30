@@ -15,12 +15,11 @@ import MemberDetailed from '@/types/MemberDetailedType';
 
 // Services
 import { projectService } from '@/services/projectService';
+import { useMembers, useDeleteMember } from '@/hooks/useMembers';
 
 
 const MembersPage: React.FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
-  const [members, setMembers] = useState<MemberDetailed[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -30,17 +29,8 @@ const MembersPage: React.FC = () => {
 
   const availableRoles = ['product-owner', 'scrum-master', 'developer', 'viewer'];
 
-  const fetchMembers = async () => {
-    setIsLoading(true);
-    try {
-      const data = await projectService.fetchProjectMembersDetailed(projectId!);
-      setMembers(data);
-    } catch (error) {
-      console.error('Failed to load members:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: members = [], isLoading } = useMembers(projectId!);
+  const deleteMemberMutation = useDeleteMember(projectId!);
 
   const handleEditClick = (member: MemberDetailed) => {
     setSelectedMember(member);
@@ -50,7 +40,6 @@ const MembersPage: React.FC = () => {
   const handleRoleUpdate = async (userId: number, role: string) => {
     try {
       await projectService.updateMemberRole(projectId!, userId, role);
-      await fetchMembers(); // Refresh list
       setIsModalOpen(false);
     } catch (error) {
       console.error('Failed to update role:', error);
@@ -65,20 +54,13 @@ const MembersPage: React.FC = () => {
   const handleConfirmDelete = async () => {
     if (!memberToDelete || !projectId) return;
     try {
-      await projectService.removeMemberFromProject(projectId, memberToDelete.userId);
-      await fetchMembers();
+      await deleteMemberMutation.mutateAsync(memberToDelete.userId);
       setShowDeleteAlert(false);
       setMemberToDelete(null);
     } catch (error) {
       console.error('Failed to delete member:', error);
     }
   };
-
-  useEffect(() => {
-    if (projectId) {
-      fetchMembers();
-    }
-  }, [projectId]);
 
   if (isLoading) return <div>Loading members...</div>;
 
