@@ -3,25 +3,31 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { PlusIcon } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // Components
 import { Button } from '@/components/ui/button';
 import MembersList from '@/components/MembersList/MembersList';
 import EditMemberModal from '../../components/EditMemberModal/EditMemberModal';
 import { Alert } from '@/components/Alert/Alert';
+import MemberSelection from '@/components/NewProjectModal/MemberSelection';
 
 // Types
 import MemberDetailed from '@/types/MemberDetailedType';
+import Member from '@/types/MemberType';
 
 // Services
 import { projectService } from '@/services/projectService';
 import { useMembers, useDeleteMember } from '@/hooks/useMembers';
-
+import { useUsers } from '@/hooks/useUsers';
 
 const MembersPage: React.FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
   const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddingMembers, setIsAddingMembers] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
 
   // Alert states
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
@@ -31,6 +37,7 @@ const MembersPage: React.FC = () => {
 
   const { data: members = [], isLoading } = useMembers(projectId!);
   const deleteMemberMutation = useDeleteMember(projectId!);
+  const { isLoading: isUsersLoading, data: users = [] } = useUsers();
 
   const handleEditClick = (member: MemberDetailed) => {
     setSelectedMember(member);
@@ -62,6 +69,39 @@ const MembersPage: React.FC = () => {
     }
   };
 
+  const handleAddMember = (member: { userId: number; roleId: string }) => {
+    const newMember: Member = {
+      userId: member.userId,
+      projectRoleId: member.roleId,
+      joinedAt: {}
+    };
+    setSelectedMembers((prevMembers) => [...prevMembers, newMember]);
+  };
+
+  const handleRemoveMember = (userId: number) => {
+    setSelectedMembers(selectedMembers.filter((m) => m.userId !== userId));
+  };
+
+  const handleAddMembersSubmit = async () => {
+    try {
+      for (const member of selectedMembers) {
+        const requestBody = {
+          projectId: projectId,
+          userId: member.userId,
+          projectRoleId: member.projectRoleId
+        };
+        console.log('Adding member with request body:', requestBody);
+        await projectService.addMemberToProject(projectId!, member.userId, member.projectRoleId);
+      }
+      setSelectedMembers([]);
+      setIsAddingMembers(false);
+      // Invalidate the members query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['members', projectId] });
+    } catch (error) {
+      console.error('Failed to add members:', error);
+    }
+  };
+
   if (isLoading) return <div>Loading members...</div>;
 
   return (
@@ -77,6 +117,7 @@ const MembersPage: React.FC = () => {
           variant="default"
           size="default"
           className="bg-[#ac1754] hover:bg-[#8e0e3d] flex-shrink-0"
+          onClick={() => setIsAddingMembers(true)}
         >
           <PlusIcon className="mr-1 h-4 w-4" />
           Add User
@@ -84,6 +125,54 @@ const MembersPage: React.FC = () => {
       </div>
 
       <div className="border-b border-border my-4"></div>
+
+      {isAddingMembers && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg p-6 w-full max-w-2xl shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Add New Members</h3>
+              <button
+                onClick={() => {
+                  setIsAddingMembers(false);
+                  setSelectedMembers([]);
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                ×
+              </button>
+            </div>
+            <MemberSelection
+              users={users}
+              selectedMembers={selectedMembers}
+              onAddMember={handleAddMember}
+              onRemoveMember={handleRemoveMember}
+              isLoading={isUsersLoading}
+              availableUsers={users.filter(
+                (user) => 
+                  !selectedMembers.some((member) => member.userId === user.userId) &&
+                  !members.some((member) => member.userId === user.userId)
+              )}
+            />
+            <div className="flex justify-end gap-2 mt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsAddingMembers(false);
+                  setSelectedMembers([]);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAddMembersSubmit}
+                disabled={selectedMembers.length === 0}
+              >
+                Add Members
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <MembersList 
         projectId={projectId!} 
@@ -113,7 +202,6 @@ const MembersPage: React.FC = () => {
           actionLabel="Delete"
         />
       )}
-
     </div>
   );
 };
