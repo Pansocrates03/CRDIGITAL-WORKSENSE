@@ -113,7 +113,7 @@ function App() {
               }
             />
             <Route
-              path="/project/:id/sprint"
+              path="/projects/:id/sprints/:sprintId"
               element={
                 <PrivateRoute>
                   <SprintPage />

@@ -1,1 +1,1 @@
-export const API_URL = "http://cg84cocoscc04c8s4gckwok4.4.236.22.176.sslip.io"
+export const API_URL = "http://localhost:5050";

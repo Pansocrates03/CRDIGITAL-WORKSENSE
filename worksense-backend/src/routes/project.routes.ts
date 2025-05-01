@@ -1,6 +1,7 @@
 // routes/projectRoutes.ts
 import express from "express";
 import * as projectController from "../controllers/project.controller.js";
+import * as bulkController from "../controllers/bulk.controller.js";
 import {
   auth,
   memberAuth,
@@ -406,6 +407,81 @@ router.get(
   memberAuth,
   projectController.getProjectAggregatedData
 );
+
+/**
+ * @swagger
+ * /api/v1/projects/bulk:
+ *   post:
+ *     summary: Create a new project with members, backlog items, sprints, and tasks
+ *     tags: [Projects]
+ *     security:
+ *       - authToken: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               project:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   description:
+ *                     type: string
+ *                   startDate:
+ *                     type: string
+ *                     format: date
+ *                   endDate:
+ *                     type: string
+ *                     format: date
+ *               members:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     userId:
+ *                       type: string
+ *                     roleId:
+ *                       type: string
+ *               backlogItems:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     type:
+ *                       type: string
+ *                     title:
+ *                       type: string
+ *                     description:
+ *                       type: string
+ *                     priority:
+ *                       type: string
+ *               sprints:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     goal:
+ *                       type: string
+ *                     startDate:
+ *                       type: string
+ *                       format: date
+ *                     endDate:
+ *                       type: string
+ *                       format: date
+ *     responses:
+ *       201:
+ *         description: Project and related entities created successfully
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.post("/bulk", auth, bulkController.createBulkProject);
 
 // Mount the sub-routers
 router.use("/:projectId/backlog", backlogRouter);
