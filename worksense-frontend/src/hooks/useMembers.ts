@@ -21,3 +21,15 @@ export function useDeleteMember(projectId: string) {
     },
   });
 }
+
+export function useUpdateMemberRole(projectId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: number; role: string }) => 
+      projectService.updateMemberRole(projectId, userId, role),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['members', projectId] });
+    },
+  });
+}

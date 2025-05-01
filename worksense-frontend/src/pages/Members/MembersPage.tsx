@@ -9,8 +9,8 @@ import {  useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import MembersList from '@/components/MembersList/MembersList';
 import EditMemberModal from '../../components/EditMemberModal/EditMemberModal';
-import { Alert } from '@/components/Alert/Alert';
 import MemberSelection from '@/components/NewProjectModal/MemberSelection';
+import { DeleteMemberAlert } from './DeleteMemberAlert';
 
 // Types
 import MemberDetailed from '@/types/MemberDetailedType';
@@ -18,13 +18,15 @@ import Member from '@/types/MemberType';
 
 // Services
 import { projectService } from '@/services/projectService';
-import { useMembers, useDeleteMember } from '@/hooks/useMembers';
+import { useMembers, useDeleteMember, useUpdateMemberRole } from '@/hooks/useMembers';
 import { useUsers } from '@/hooks/useUsers';
-
+import { useAuth } from '@/hooks/useAuth';
 
 const MembersPage: React.FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const { data: user } = useAuth();
+  const { data: members = [], isLoading } = useMembers(projectId!);
   const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddingMembers, setIsAddingMembers] = useState(false);
@@ -35,24 +37,20 @@ const MembersPage: React.FC = () => {
   const [memberToDelete, setMemberToDelete] = useState<MemberDetailed | null>(null);
 
   const availableRoles = ['product-owner', 'scrum-master', 'developer', 'viewer'];
+  const isProductOwner = members.some(member => member.userId === user?.userId && member.projectRoleId === 'product-owner');
 
-  const { data: members = [], isLoading } = useMembers(projectId!);
   const deleteMemberMutation = useDeleteMember(projectId!);
+  const updateMemberRoleMutation = useUpdateMemberRole(projectId!);
   const { isLoading: isUsersLoading, data: users = [] } = useUsers();
 
   const handleEditClick = (member: MemberDetailed) => {
     setSelectedMember(member);
     setIsModalOpen(true);
   };
-  const handleAddMemberClick = async () => {
-    console.log("Add member clicked");
-    setSelectedMember(null);
-    setIsModalOpen(true);
-  }
 
   const handleRoleUpdate = async (userId: number, role: string) => {
     try {
-      await projectService.updateMemberRole(projectId!, userId, role);
+      await updateMemberRoleMutation.mutateAsync({ userId, role });
       setIsModalOpen(false);
     } catch (error) {
       console.error('Failed to update role:', error);
@@ -113,20 +111,22 @@ const MembersPage: React.FC = () => {
             Manage project members: add, update roles, or remove members from the project.
           </p>
         </div>
-        <Button
-          variant="default"
-          size="default"
-          className="bg-[#ac1754] hover:bg-[#8e0e3d] flex-shrink-0"
-          onClick={() => setIsAddingMembers(true)}
-        >
-          <PlusIcon className="mr-1 h-4 w-4" />
-          <span>Add Member</span>
-        </Button>
+        {isProductOwner && (
+          <Button
+            variant="default"
+            size="default"
+            className="bg-[#ac1754] hover:bg-[#8e0e3d] flex-shrink-0"
+            onClick={() => setIsAddingMembers(true)}
+          >
+            <PlusIcon className="mr-1 h-4 w-4" />
+            Add User
+          </Button>
+        )}
       </div>
 
       <div className="border-b border-border my-4"></div>
 
-      {isAddingMembers && (
+      {isAddingMembers && isProductOwner && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-background rounded-lg p-6 w-full max-w-2xl shadow-lg">
             <div className="flex justify-between items-center mb-4">
@@ -177,47 +177,31 @@ const MembersPage: React.FC = () => {
       <MembersList 
         projectId={projectId!} 
         members={members} 
-        onEdit={handleEditClick} 
-        onDelete={handleDeleteMember}
+        onEdit={isProductOwner ? handleEditClick : undefined} 
+        onDelete={isProductOwner ? handleDeleteMember : undefined}
       />
 
-      <EditMemberModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        member={selectedMember}
-        availableRoles={availableRoles}
-        onSubmit={handleRoleUpdate}
-      />
+      {isProductOwner && (
+        <>
+          <EditMemberModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            member={selectedMember}
+            availableRoles={availableRoles}
+            onSubmit={handleRoleUpdate}
+          />
 
-      <AddMemberModal
-        isOpen={isModalOpen && selectedMember === null}
-        onClose={() => setIsModalOpen(false)}
-        projectId={projectId!}
-        onSubmit={() => {console.log("Member added")}} // Placeholder for actual add member function)}
-        />
-
-{/* 
-<EditTeamModal
-        isOpen={isEditTeamModalOpen}
-        onClose={() => setIsEditTeamModalOpen(false)}
-        projectId={id || ''}
-        currentTeam={teamMembers}
-        onTeamUpdate={handleTeamUpdate}
-      />
-      */}
-
-      {showDeleteAlert && memberToDelete && (
-        <Alert
-          type="error"
-          title="Delete Member"
-          message={`Are you sure you want to remove ${memberToDelete.name} from this project?`}
-          onClose={() => {
-            setShowDeleteAlert(false);
-            setMemberToDelete(null);
-          }}
-          onAction={handleConfirmDelete}
-          actionLabel="Delete"
-        />
+          {showDeleteAlert && memberToDelete && (
+            <DeleteMemberAlert
+              memberName={memberToDelete.name}
+              onClose={() => {
+                setShowDeleteAlert(false);
+                setMemberToDelete(null);
+              }}
+              onDelete={handleConfirmDelete}
+            />
+          )}
+        </>
       )}
     </div>
   );

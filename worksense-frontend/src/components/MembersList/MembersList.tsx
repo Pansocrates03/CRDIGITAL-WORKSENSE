@@ -52,11 +52,18 @@ const formatLastLogin = (dateString: string) => {
   }
 };
 
+const getInitials = (name: string) => {
+  const parts = name.split(' ');
+  return parts.length > 1 
+    ? `${parts[0][0]}${parts[parts.length - 1][0]}`
+    : parts[0][0];
+};
+
 interface Props {
   projectId: string;
   members: MemberDetailed[];
-  onEdit: (member: MemberDetailed) => void;
-  onDelete: (member: MemberDetailed) => void;
+  onEdit?: (member: MemberDetailed) => void;
+  onDelete?: (member: MemberDetailed) => void;
 }
 
 const MembersList: React.FC<Props> = ({ members, onEdit, onDelete }) => {
@@ -79,15 +86,23 @@ const MembersList: React.FC<Props> = ({ members, onEdit, onDelete }) => {
               <TableRow key={member.userId}>
                 <TableCell>
                   <div className={styles.pfpContainer}>
-                    <img
-                      src={member.profilePicture || "/default-avatar.png"}
-                      alt={member.name}
-                      className={styles.pfp}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = "/default-avatar.png";
-                      }}
-                    />
+                    {member.profilePicture ? (
+                      <img
+                        src={member.profilePicture}
+                        alt={member.name}
+                        className={styles.pfp}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const initials = target.nextElementSibling as HTMLElement;
+                          if (initials) initials.style.display = 'flex';
+                        }}
+                      />
+                    ) : (
+                      <div className={styles.avatarInitials}>
+                        {getInitials(member.name)}
+                      </div>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>{member.name}</TableCell>
@@ -102,16 +117,22 @@ const MembersList: React.FC<Props> = ({ members, onEdit, onDelete }) => {
                     {formatLastLogin(member.lastLogin)}
                   </span>
                 </TableCell>
-                <TableCell className={styles.actionButtons}>
-                  <button onClick={() => onEdit(member)} className={styles.button}>
-                    <FaPencilAlt />
-                  </button>
-                  <button
-                    onClick={() => onDelete(member)}
-                    className={`${styles.button} ${styles.trashButton}`}
-                  >
-                    <FaTrashAlt />
-                  </button>
+                <TableCell>
+                  <div className={styles.actionButtons}>
+                    {onEdit && (
+                      <button onClick={() => onEdit(member)} className={styles.button}>
+                        <FaPencilAlt />
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button
+                        onClick={() => onDelete(member)}
+                        className={`${styles.button} ${styles.trashButton}`}
+                      >
+                        <FaTrashAlt />
+                      </button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
