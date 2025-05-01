@@ -1,4 +1,3 @@
-
 // src/routes/projectRoutes.ts
 import express from "express";
 import {
@@ -543,6 +542,7 @@ export default router;
  *       404:
  *         description: Sprint no encontrado
  */
+/*
 router.post(
   "/projectss/:projectId/sprints/:sprintId/complete",
   verifyToken,
