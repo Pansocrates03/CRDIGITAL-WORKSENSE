@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/table';
 import styles from './MembersList.module.css';
 import MemberDetailed from '@/types/MemberDetailedType';
+import { generateAvatar } from '@/utils/avatarUtils';
 
 const formatRoleName = (roleId: string) => {
   if (!roleId) return 'Unknown Role';
@@ -52,6 +53,13 @@ const formatLastLogin = (dateString: string) => {
   }
 };
 
+const getInitials = (name: string) => {
+  const parts = name.split(' ');
+  return parts.length > 1 
+    ? `${parts[0][0]}${parts[parts.length - 1][0]}`
+    : parts[0][0];
+};
+
 interface Props {
   projectId: string;
   members: MemberDetailed[];
@@ -79,15 +87,22 @@ const MembersList: React.FC<Props> = ({ members, onEdit, onDelete }) => {
               <TableRow key={member.userId}>
                 <TableCell>
                   <div className={styles.pfpContainer}>
-                    <img
-                      src={member.profilePicture || "/default-avatar.png"}
-                      alt={member.name}
-                      className={styles.pfp}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = "/default-avatar.png";
-                      }}
-                    />
+                    {member.profilePicture ? (
+                      <img
+                        src={member.profilePicture}
+                        alt={member.name}
+                        className={styles.pfp}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const initials = target.nextElementSibling as HTMLElement;
+                          if (initials) initials.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className={styles.avatarInitials}>
+                      {getInitials(member.name)}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>{member.name}</TableCell>
