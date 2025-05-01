@@ -1,0 +1,85 @@
+/* src/components/BacklogTable/ActionMenu.module.css */
+.actionMenuContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menuButton:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.menuButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(172, 23, 84, 0.3);
+}
+
+.menuDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 120px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  z-index: 10;
+  animation: fadeIn 0.2s ease-out;
+  overflow: hidden;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #4b5563;
+}
+
+.menuItem:hover {
+  background-color: #f9fafb;
+}
+
+.menuIcon {
+  margin-right: 8px;
+  color: currentColor;
+}
+
+.deleteItem {
+  color: #ac1754; 
+}
+
+.deleteItem:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
