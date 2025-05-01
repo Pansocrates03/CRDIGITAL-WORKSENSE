@@ -8,13 +8,13 @@ export type SprintItemStatus = "todo" | "in-progress" | "review" | "done";
 export interface SprintItem {
   // Campos de referencia al item original
   type: BacklogItemType;
-  originalId: string;     // ID del item en el backlog
-  originalType: string;   // Tipo del item en el backlog
+  originalId: string; // ID del item en el backlog
+  originalType: string; // Tipo del item en el backlog
 
   // Campos específicos del sprint
   status: SprintItemStatus;
   sprintAssigneeId: number | null;
-  order: number;         // Para ordenamiento dentro de la columna
+  order: number; // Para ordenamiento dentro de la columna
 
   // Campos de auditoría
   addedAt: Timestamp;
@@ -23,10 +23,8 @@ export interface SprintItem {
 
 // DTO para crear un item en el sprint
 export interface CreateSprintItemDTO {
-  type: BacklogItemType;
-  originalId: string;
-  originalType: string;
-  sprintAssigneeId?: number | null;
+  backlogId: string;
+  assigneeId?: number | null;
 }
 
 // DTO para actualizar un item en el sprint
@@ -34,4 +32,4 @@ export interface UpdateSprintItemDTO {
   status?: SprintItemStatus;
   sprintAssigneeId?: number | null;
   order?: number;
-} 
+}

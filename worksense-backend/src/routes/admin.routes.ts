@@ -1,8 +1,8 @@
 // routes/adminRoutes.ts
 import express from "express";
 import * as adminController from "../controllers/admin.controller.js";
-import { verifyToken } from "../middlewares/tokenAuth.js";
-import { checkPlatformAdmin } from "../middlewares/adminAuth.js";
+import { verifyToken } from "../middlewares/bundleMiddleware/tokenAuth.js";
+import { checkPlatformAdmin } from "../middlewares/bundleMiddleware/adminAuth.js";
 
 const router = express.Router();
 

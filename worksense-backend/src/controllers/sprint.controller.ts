@@ -1,73 +1,163 @@
-import { Request, Response } from "express";
-import { db } from "../models/firebase.js";
-import { Timestamp } from "firebase-admin/firestore";
+// src/controllers/sprintController.ts
+import { Request, Response, NextFunction, RequestHandler } from "express";
+import { db } from "../models/firebase.js"; // Adjust path if needed
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
-// POST /projects/:projectId/sprints
-export const createSprint = async (req: Request, res: Response) => {
+// --- Sprint Management ---
+
+/**
+ * @description Create a new sprint for a project.
+ *              Sprints are stored in a top-level 'sprints' collection.
+ *              Determines initial status ('Active' or 'Planned') based on other sprints for the SAME project.
+ * @route POST /api/v1/projects/:projectId/sprints
+ * @access Private (requires auth, project membership, permissions)
+ */
+export const createSprint: RequestHandler = async (req, res, next) => {
   try {
-    // 1. Obtener projectId de los parámetros
-    const { projectId } = req.params;
-    if (!projectId) {
-      res.status(400).json({ error: "Falta el projectId en la ruta" });
-      return;
-    }
-
-    // 2. Validar datos de entrada
+    const { projectId } = req.params; // Assumed to be present by routing
     const { name, goal, startDate, endDate } = req.body;
+
+    // --- Input Validation ---
     if (!startDate || !endDate) {
-      res.status(400).json({ error: "startDate y endDate son requeridos" });
-      return;
+      return res
+        .status(400)
+        .json({ message: "startDate and endDate are required" });
     }
     const newStart = new Date(startDate);
     const newEnd = new Date(endDate);
     if (isNaN(newStart.getTime()) || isNaN(newEnd.getTime())) {
-      res.status(400).json({ error: "Fechas inválidas" });
-      return;
+      return res.status(400).json({ message: "Invalid date format provided" });
     }
     if (newStart >= newEnd) {
-      res.status(400).json({ error: "startDate debe ser menor a endDate" });
-      return;
+      return res
+        .status(400)
+        .json({ message: "startDate must be before endDate" });
     }
+    // --- End Validation ---
 
-    // 3. Verificar si ya hay un sprint activo
-    const sprintsRef = db.collection("projectss").doc(projectId).collection("sprints");
-    const activeSprintSnap = await sprintsRef.where("status", "==", "active").limit(1).get();
-    let newSprintStatus = "active";
-    if (!activeSprintSnap.empty) {
-      newSprintStatus = "planned"; // o "inactive" si prefieres
-    }
+    const sprintsCollection = db.collection("sprints"); // Top-level collection
 
-    // 4. Verificar que no haya solapamiento de fechas
-    const overlapSnap = await sprintsRef
-      .where("startDate", "<=", newEnd)
-      .where("endDate", ">=", newStart)
+    // --- Determine Sprint Status ---
+    // Check if there's already an active sprint *for this specific project*
+    const activeSprintSnap = await sprintsCollection
+      .where("projectId", "==", projectId) // Essential filter for top-level collection
+      .where("status", "==", "Active")
       .limit(1)
       .get();
-    if (!overlapSnap.empty) {
-      res.status(400).json({ error: "Ya existe un sprint en esas fechas" });
-      return;
-    }
+    const newSprintStatus = activeSprintSnap.empty ? "Active" : "Planned";
 
-    // 5. Crear el documento del sprint
-    const now = Timestamp.now();
+    // --- Prepare Data ---
     const sprintData = {
-      projectId,
-      name: name || null,
+      projectId: projectId, // Store projectId to link back to the project
+      name: name || `Sprint ${newStart.toLocaleDateString()}`,
       goal: goal || null,
       startDate: Timestamp.fromDate(newStart),
       endDate: Timestamp.fromDate(newEnd),
       status: newSprintStatus,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     };
 
-    const sprintRef = await sprintsRef.add(sprintData);
+    // --- Create in Firestore ---
+    const sprintRef = await sprintsCollection.add(sprintData);
+    const newSprintSnap = await sprintRef.get();
 
-    // 6. Devolver el sprint creado
-    const sprintSnap = await sprintRef.get();
-    res.status(201).json({ id: sprintRef.id, ...sprintSnap.data() });
+    res.status(201).json({ id: sprintRef.id, ...newSprintSnap.data() });
   } catch (error) {
-    console.error("Error al crear el sprint:", error);
-    res.status(500).json({ error: "Error interno al crear el sprint" });
+    console.error(
+      `Error creating sprint for project ${req.params.projectId}:`,
+      error
+    );
+    next(error);
   }
-}; 
+};
+
+/**
+ * @description Get sprints for a specific project, optionally filtered by status.
+ *              Queries the top-level 'sprints' collection using the projectId.
+ * @route GET /api/v1/projects/:projectId/sprints(?status=Planned&status=Active)
+ * @access Private (requires auth, project membership)
+ */
+export const getSprints: RequestHandler = async (req, res, next) => {
+  try {
+    const { projectId } = req.params; // Assumed present
+
+    // Start query on the top-level collection
+    let query = db.collection("sprints").where("projectId", "==", projectId); // Essential filter
+
+    // --- Filtering by Status  ---
+    const { status } = req.query;
+    if (status) {
+      const statusArray = Array.isArray(status) ? status : [status as string];
+      query = query.where("status", "in", statusArray);
+    }
+
+    // --- Ordering ---
+    query = query.orderBy("endDate", "desc");
+    // Note: Composite index likely required in Firestore for projectId+status+endDate or projectId+endDate.
+
+    // --- Fetch and Format ---
+    const sprintsSnap = await query.get();
+    const sprints = sprintsSnap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.status(200).json(sprints);
+  } catch (error) {
+    console.error(
+      `Error getting sprints for project ${req.params.projectId}:`,
+      error
+    );
+    next(error);
+  }
+};
+
+/**
+ * @description Get a single sprint by its ID, ensuring it belongs to the specified project.
+ *              Fetches from the top-level 'sprints' collection and verifies projectId.
+ * @route GET /api/v1/projects/:projectId/sprints/:sprintId
+ * @access Private (requires auth, project membership)
+ */
+export const getSprintById: RequestHandler = async (req, res, next) => {
+  try {
+    const { projectId, sprintId } = req.params; // Assumed present
+
+    if (!sprintId) {
+      // Basic validation
+      return res
+        .status(400)
+        .json({ message: "sprintId parameter is required" });
+    }
+
+    // --- Fetch from Firestore (Top-Level) ---
+    const sprintRef = db.collection("sprints").doc(sprintId);
+    const sprintSnap = await sprintRef.get();
+
+    // --- Existence Check ---
+    if (!sprintSnap.exists) {
+      return res.status(404).json({ message: "Sprint not found" });
+    }
+
+    const sprintData = sprintSnap.data();
+
+    // --- Verification Step (ESSENTIAL for Top-Level Collection) ---
+    if (!sprintData || sprintData.projectId !== projectId) {
+      console.warn(
+        `Attempt to access sprint ${sprintId} via incorrect project ${projectId}. Actual project: ${sprintData?.projectId}`
+      );
+      // Return 404 to prevent leaking info about sprint existence across projects.
+      return res
+        .status(404)
+        .json({ message: "Sprint not found within the specified project" });
+    }
+
+    res.status(200).json({ id: sprintSnap.id, ...sprintData });
+  } catch (error) {
+    console.error(
+      `Error getting sprint ${req.params.sprintId} for project ${req.params.projectId}:`,
+      error
+    );
+    next(error);
+  }
+};

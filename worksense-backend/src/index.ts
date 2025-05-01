@@ -13,6 +13,7 @@ import aiRoutes from "./routes/ai.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import project_Routes from "./routes/project.routes.js";
 import sprintsRouter from "./routes/sprints.routes.js";
+import taskRoutes from "./routes/task.routes.js";
 // Documenattion Imports
 import { swaggerOptions } from "../swagger/swaggerSetup.js"; // Swagger options
 
@@ -33,8 +34,8 @@ app.use(express.json());
 app.use(API_PREFIX, sqlRoutes);
 app.use(API_PREFIX, aiRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
-app.use(API_PREFIX, project_Routes);
-app.use(API_PREFIX, sprintsRouter);
+app.use(`${API_PREFIX}/projects`, project_Routes);
+
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get("/", (req: any, res: any) => {
   res.send("API is running...");
@@ -47,4 +48,9 @@ app.use((err: any, req: any, res: any, next: any) => {
   });
 });
 
-app.listen(PORT, () => console.log(URL));
+// Start Server
+app.listen(PORT, () =>
+  console.log(
+    `Server running at http://localhost:${PORT}, API Prefix: ${API_PREFIX}`
+  )
+);
