@@ -81,7 +81,7 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
     };
 
     try {
-      await apiClient.post(`/${projectId}/backlog/items`, payload);
+      await apiClient.post(`/projects/${projectId}/backlog/items`, payload);
       setFormData(initialState);
       onItemCreated();
       onClose();

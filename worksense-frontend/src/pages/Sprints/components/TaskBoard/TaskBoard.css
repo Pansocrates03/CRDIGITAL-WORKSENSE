@@ -1,0 +1,73 @@
+/* TaskBoard_v2.css */
+
+.task-board {
+  display: flex; /* Arrange columns horizontally */
+  gap: 16px; /* Space between columns */
+  padding: 20px; /* Padding around the entire board area */
+  height: calc(
+    100vh - 120px
+  ); /* Example: Adjust based on header/other elements */
+  /* Ensure it doesn't overlap header/footer */
+
+  /* Horizontal Scrolling */
+  overflow-x: auto; /* Enable horizontal scrollbar ONLY if needed */
+  overflow-y: hidden; /* Prevent vertical scrolling on the board itself */
+
+  /* Optional background for the board area */
+  /* background-color: #e5e7eb; */ /* Light grey background */
+
+  /* Align columns to the top if they have different heights initially */
+  align-items: flex-start;
+}
+
+/* Style scrollbar (optional, browser-specific) */
+.task-board::-webkit-scrollbar {
+  height: 10px; /* Height of the horizontal scrollbar */
+}
+
+.task-board::-webkit-scrollbar-track {
+  background-color: #f3f4f6; /* Background of the scrollbar track */
+  border-radius: 10px;
+}
+
+.task-board::-webkit-scrollbar-thumb {
+  background-color: #9ca3af; /* Color of the scrollbar thumb */
+  border-radius: 10px;
+  border: 2px solid #f3f4f6; /* Creates padding around thumb */
+}
+
+.task-board::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280; /* Darker thumb on hover */
+}
+
+/* Styling for empty state */
+.task-board--empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px; /* Give it some size */
+  color: #6b7280;
+  font-style: italic;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  margin: 20px; /* Add margin if needed */
+}
+
+.add-column-placeholder {
+  flex-shrink: 0;
+  width: 280px;
+  height: 80px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #666;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.add-column-placeholder:hover {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-color: #aaa;
+}

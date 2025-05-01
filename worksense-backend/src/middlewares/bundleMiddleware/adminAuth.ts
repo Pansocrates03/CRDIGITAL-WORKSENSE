@@ -2,7 +2,7 @@
 
 import { Request, Response, NextFunction } from "express";
 // *** USE YOUR EXISTING SQL IMPORTS ***
-import { sqlConnect, sql } from "../models/sqlModel.js"; // Adjust path as needed
+import { sqlConnect, sql } from "../../models/sqlModel.js"; // Adjust path as needed
 
 /**
  * Check if user has admin platform role

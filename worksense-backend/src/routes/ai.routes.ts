@@ -1,13 +1,13 @@
 import { Router } from "express";
-import { verifyToken } from "../middlewares/tokenAuth.js";
+import { verifyToken } from "../middlewares/bundleMiddleware/tokenAuth.js";
 import {
   generateEpicHandler,
   confirmEpicsHandler,
   generateStoriesHandler,
   confirmStoriesHandler,
 } from "../controllers/ai.controller.js";
-import { memberAuth } from "./project.routes.js";
-import { checkProjectPermission } from "../middlewares/projectAuth.js";
+import { memberAuth } from "../middlewares/projectMiddlewareBundle.js";
+import { checkProjectPermission } from "../middlewares/bundleMiddleware/projectAuth.js";
 
 const router = Router();
 
@@ -286,6 +286,5 @@ router.post(
   checkProjectPermission("edit:backlog"),
   confirmStoriesHandler
 );
-
 
 export default router;

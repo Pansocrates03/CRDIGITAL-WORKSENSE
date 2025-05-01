@@ -1,0 +1,116 @@
+/* TaskColumn_v2.css */
+
+.task-column {
+  /* Sizing & Box Model */
+  width: 300px; /* Fixed width */
+  flex-shrink: 0; /* Prevent column from shrinking in flex container */
+  background-color: #f9fafb; /* Very light grey, slightly different from card */
+  border-radius: 10px; /* Slightly larger radius */
+  padding: 16px 12px; /* Vertical and horizontal padding */
+  display: flex;
+  flex-direction: column; /* Stack header and body */
+  /* Define max-height based on viewport, adjust as needed */
+  /* Subtract space for global header, board padding, etc. */
+  max-height: calc(100vh - 180px);
+  /* Use box-shadow for subtle separation instead of border */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+/* --- Header --- */
+.task-column__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px; /* Space below header */
+  flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.task-column__title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Space between title and count */
+}
+
+.task-column__title {
+  font-size: 0.95rem; /* 15px */
+  font-weight: 600; /* Semibold */
+  color: #1f2937; /* Dark grey/black */
+  margin: 0; /* Reset browser default */
+  line-height: 1; /* Prevent extra space */
+}
+
+.task-column__count {
+  font-size: 0.75rem; /* 12px */
+  font-weight: 500;
+  color: #6b7280; /* Medium grey */
+  background-color: #e5e7eb; /* Lighter grey background */
+  padding: 3px 7px; /* Slightly adjust padding */
+  border-radius: 6px; /* Slightly less rounded */
+  line-height: 1;
+}
+
+.task-column__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* Space between action buttons */
+}
+
+.task-column__action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px; /* Slightly smaller padding */
+  border-radius: 6px; /* Match count radius */
+  color: #9ca3af; /* Lighter grey for icons */
+  display: flex; /* Center icon */
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.task-column__action-btn:hover {
+  background-color: #f3f4f6; /* Subtle hover background */
+  color: #374151; /* Darker icon color on hover */
+}
+
+/* --- Body (Task List Area) --- */
+.task-column__body {
+  flex-grow: 1; /* Allow body to take available vertical space */
+  overflow-y: auto; /* Enable vertical scrolling ONLY for the body */
+  min-height: 50px; /* Ensure it has some height even when empty */
+  /* Add slight negative margin/padding to hide scrollbar visually if desired */
+  /* Example: margin: 0 -12px; padding: 0 12px; */
+  /* Adjust padding to compensate for scrollbar width */
+  padding-right: 6px; /* Space for scrollbar */
+  margin-right: -6px; /* Pull scrollbar slightly out */
+}
+
+/* Style scrollbar (optional, browser-specific) */
+.task-column__body::-webkit-scrollbar {
+  width: 6px; /* Thin scrollbar */
+}
+.task-column__body::-webkit-scrollbar-track {
+  background: transparent; /* No visible track */
+  margin: 4px 0; /* Margin top/bottom */
+}
+.task-column__body::-webkit-scrollbar-thumb {
+  background-color: #d1d5db; /* Medium grey thumb */
+  border-radius: 10px;
+}
+.task-column__body::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af; /* Darker on hover */
+}
+
+.task-column__empty-message {
+  text-align: center;
+  padding: 30px 10px; /* More padding */
+  font-size: 0.85rem;
+  color: #9ca3af; /* Lighter grey */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px; /* Give it some defined space */
+  border: 1px dashed #e5e7eb; /* Optional dashed border */
+  border-radius: 6px;
+  margin-top: 8px;
+}

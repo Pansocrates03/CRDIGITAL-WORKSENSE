@@ -50,7 +50,9 @@ const BacklogTablePage: FC = () => {
     queryKey: ["backlog", projectId],
     queryFn: async () => {
       if (!projectId) return [];
-      const res = await apiClient.get(`/${projectId}/backlog/items`);
+      
+
+      const res = await apiClient.get(`/projects/${projectId}/backlog/items`);
       return res.data;
     },
     enabled: !!projectId,
@@ -60,7 +62,7 @@ const BacklogTablePage: FC = () => {
     queryKey: ["projectMembers", projectId],
     queryFn: async () => {
       if (!projectId) return [];
-      const res = await apiClient.get(`/${projectId}/members-detail`);
+      const res = await apiClient.get(`/projects/${projectId}/members-detail`);
       return res.data;
     },
     enabled: !!projectId,
@@ -230,4 +232,3 @@ const BacklogTablePage: FC = () => {
 };
 
 export default BacklogTablePage;
-

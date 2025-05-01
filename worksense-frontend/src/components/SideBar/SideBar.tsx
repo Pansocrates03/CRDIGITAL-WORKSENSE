@@ -107,11 +107,11 @@ export const SideBar: React.FC = () => {
         icon: "/backlogPage.svg",
         path: `/project/${projectId}/product-backlog`,
       },
-      // {
-      //   name: "Sprint & Workflow",
-      //   icon: "/sprint.svg",
-      //   path: `/project/${projectId}/sprint`,
-      // },
+      {
+        name: "Sprint & Workflow",
+        icon: "/sprint.svg",
+        path: `/project/${projectId}/sprint`,
+      },
       {
         name: "User Management",
         icon: "/users.svg",

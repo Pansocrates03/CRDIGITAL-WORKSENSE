@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { db } from "../models/firebase.js"; // Adjust path
-import { ProjectMemberData } from "../../types/project.js"; // Import needed type
+import { db } from "../../models/firebase.js"; // Adjust path
+import { ProjectMemberData } from "../../../types/project.js"; // Import needed type
 
 // Extend Request type to potentially hold project-specific details
 declare global {
