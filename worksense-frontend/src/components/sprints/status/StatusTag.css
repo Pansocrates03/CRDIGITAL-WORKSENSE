@@ -1,0 +1,26 @@
+/* New Pill Shape Tag Styling */
+.status-tag {
+  display: inline-block;
+  padding: 3px 10px; /* Adjust padding */
+  border-radius: 12px; /* Pill shape */
+  font-size: 0.75rem; /* 12px */
+  font-weight: 500;
+  line-height: 1.3; /* Adjust line height */
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Color Variants based on new design */
+.status-tag--started {
+  background-color: #e0f2fe; /* Light blue */
+  color: #0284c7; /* Medium blue text */
+}
+.status-tag--not-started {
+  background-color: #f1f5f9; /* Light grey */
+  color: #64748b; /* Medium grey text */
+}
+.status-tag--default {
+  background-color: #f1f5f9; /* Default grey */
+  color: #64748b;
+}
+/* Add more status variants if needed */

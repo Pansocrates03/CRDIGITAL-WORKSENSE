@@ -6,3 +6,9 @@ export default interface ProjectDetails {
   context: {};
   createdAt: {};
 }
+
+export interface CreateProject {
+  name: string;
+  description: string;
+  context: object;
+}

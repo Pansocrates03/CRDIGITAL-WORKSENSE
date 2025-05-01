@@ -9,14 +9,12 @@ import {
 import { AuthProvider, useAuth } from "./contexts/AuthContext"; // Import useAuth
 import { MainLayout } from "./layouts/MainLayout"; // Import the layout
 import LoginPage from "./pages/login/login";
-import CreateProject from "./pages/CreateProject/CreateProject";
-import { ProjectPage } from "./pages/ProjectView/ProjectPage";
-import AccountPage from "./pages/Account/AccountPage";
-import BacklogPage from "./pages/Backlog/BacklogPage";
-import Settings from "./pages/Settings/Settings";
-import BacklogTablePage from "./pages/BacklogTable/BacklogTablePage";
-import MembersPage from "./pages/Members/MembersPage";
-
+import CreateProject from "./pages/home/CreateProject/CreateProject";
+import { ProjectPage } from "./pages/project/ProjectView/ProjectPage";
+import Settings from "./pages/home/Settings/Settings";
+import BacklogTablePage from "./pages/project/Backlog/BacklogTable/BacklogTablePage";
+import MembersPage from "./pages/project/Members/MembersPage";
+import SprintPage from "./pages/project/Sprint/SprintPage.js";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 const queryClient = new QueryClient();
 
@@ -95,15 +93,6 @@ function App() {
               }
             />
             <Route
-              path="/project/:id/backlog"
-              element={
-                <PrivateRoute>
-                  {" "}
-                  <BacklogPage />{" "}
-                </PrivateRoute>
-              }
-            />
-            <Route
               path="/project/:id/product-backlog" // Nueva ruta para el backlog
               element={
                 <PrivateRoute>
@@ -115,9 +104,7 @@ function App() {
               path="/project/:id/sprint"
               element={
                 <PrivateRoute>
-                  {" "}
-                  <ProjectPage />{" "}
-                  {/* Replace with specific SprintPage if you have one */}{" "}
+                  <SprintPage />
                 </PrivateRoute>
               }
             />

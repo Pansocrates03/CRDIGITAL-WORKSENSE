@@ -14,7 +14,6 @@ function Avatar({
       data-slot="avatar"
       className={cn(
         "relative flex shrink-0 overflow-hidden rounded-full bg-[#AC1754] object-cover object-center p-1",
-        "border-2 border-white shadow-sm",
         className
       )}
       {...props}

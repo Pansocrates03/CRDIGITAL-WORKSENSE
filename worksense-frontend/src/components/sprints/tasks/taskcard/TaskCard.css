@@ -1,0 +1,150 @@
+/* TaskCard_v2.css - Styles for the new design */
+
+.task-card {
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9; /* Lighter border */
+  border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); /* Subtle shadow */
+  transition: box-shadow 0.2s ease-in-out;
+  overflow: hidden; /* Contain header bars and cover image radius */
+  cursor: grab;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+.task-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Special styling for placeholder cards (like the graphic) */
+.task-card--placeholder {
+  border: none;
+  background-color: transparent; /* Or match column background */
+  box-shadow: none;
+  padding: 0;
+}
+.task-card__cover-image--placeholder {
+  border-radius: 8px; /* Ensure radius matches normal cards */
+  display: block; /* Remove extra space below image */
+}
+/* --- NEW Progress Bar Styles --- */
+.task-card__progress-bar-container {
+  height: 6px; /* Match desired height */
+  background-color: #f3f4f6; /* Light grey background for the track */
+  width: 100%;
+  border-radius: 8px 8px 0 0; /* Match top corners of card radius, sharp bottom */
+  overflow: hidden; /* Ensure progress fill respects radius */
+}
+
+.task-card__progress-bar {
+  height: 100%;
+  background-color: #ac1754; /* Default Progress color: Tailwind green-400 */
+  /* You could make this color dynamic based on progress % or priority later */
+  /* e.g., background-color: var(--progress-color); */
+  border-radius: 8px 8px 0 0; /* Match container radius */
+  transition: width 0.4s ease-out; /* Smooth transition for width changes */
+  /* Width is set via inline style */
+}
+/* --- Header Color Bars --- */
+.task-card__header-bars {
+  display: flex;
+  height: 6px; /* Height of the color bars */
+}
+
+.task-card__bar {
+  flex-grow: 1; /* Each bar takes equal width */
+  /* Colors are set via inline style */
+}
+
+/* --- Cover Image --- */
+.task-card__cover-image {
+  width: 100%;
+  height: auto; /* Maintain aspect ratio */
+  max-height: 150px; /* Limit height */
+  object-fit: cover; /* Cover the area */
+  display: block; /* Remove bottom space */
+}
+
+/* --- Main Content Padding --- */
+.task-card__content {
+  padding: 12px 14px;
+}
+
+/* --- Title Area --- */
+.task-card__title-area {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.task-card__title {
+  font-size: 0.9rem; /* ~14.5px */
+  font-weight: 500; /* Medium weight */
+  color: #1f2937; /* Dark grey/black */
+  margin: 0;
+  line-height: 1.4;
+}
+/* Checkmark styling handled by react-icons component props */
+
+/* --- Tags Area --- */
+.task-card__tags-area {
+  display: flex;
+  flex-wrap: wrap; /* Allow wrapping if needed */
+  gap: 6px; /* Space between tags */
+  margin-bottom: 12px;
+  min-height: 24px; /* Ensure space even if no tags */
+}
+
+/* --- Details Row --- */
+.task-card__details-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  min-height: 24px; /* Ensure consistent height */
+}
+
+/* Assignee & Date (Left Side) */
+.task-card__assignee-date {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* Space between avatar and date */
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.task-card__assignee-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #e5e7eb; /* Placeholder bg */
+  object-fit: cover;
+}
+
+.task-card__date {
+  font-size: 0.78rem; /* ~12.5px */
+  color: #6b7280; /* Medium grey */
+  white-space: nowrap; /* Prevent date wrapping */
+}
+
+/* Meta Icons (Right Side) */
+.task-card__meta-icons {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Space between icons */
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.task-card__meta-icons span {
+  display: inline-flex; /* Align icon and number vertically */
+  align-items: center;
+  gap: 3px; /* Space between icon and number */
+}
+
+/* Adjust icon size/alignment if needed */
+.task-card__meta-icons svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2; /* Adjust icon stroke */
+}

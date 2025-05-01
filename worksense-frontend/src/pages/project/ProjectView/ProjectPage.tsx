@@ -1,11 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ProjectView } from "../../components/ProjectView/ProjectView";
+import { ProjectView } from "../../../components/ProjectView/ProjectView";
 import styles from "./ProjectPage.module.css";
-import LoadingSpinner from "../../components/Loading/LoadingSpinner";
+import LoadingSpinner from "../../../components/Loading/LoadingSpinner";
 
-
-import React from 'react';
-import ProjectDetails from '@/types/ProjectType';
+import React from "react";
+import ProjectDetails from "@/types/ProjectType";
 import Member from "@/types/MemberType";
 import { projectService } from "@/services/projectService";
 
@@ -51,8 +50,8 @@ const NotFoundState: React.FC<{ onBackToProjects: () => void }> = ({
     <div className={styles.messageContainer}>
       <h2 className={styles.stateTitle}>Project Not Found</h2>
       <p className={styles.stateDescription}>
-        We couldn't find the project you're looking for. It may have been deleted
-        or you may not have access to it.
+        We couldn't find the project you're looking for. It may have been
+        deleted or you may not have access to it.
       </p>
       <button className={styles.actionButton} onClick={onBackToProjects}>
         Back to Projects
@@ -66,13 +65,18 @@ export const ProjectPage: React.FC = () => {
   const navigate = useNavigate();
 
   // Use Query to fetch project and members
-  const { data: project, isLoading, isError, error } = useQuery<ProjectDetails>({
+  const {
+    data: project,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<ProjectDetails>({
     queryKey: ["project", id],
     queryFn: async () => {
       if (!id) throw new Error("Project ID is required");
       const res = await projectService.fetchProjectDetails(id);
       return res;
-    }, 
+    },
   });
 
   const { data: members } = useQuery<MemberDetailed[]>({
@@ -85,17 +89,18 @@ export const ProjectPage: React.FC = () => {
     enabled: !!project, // Only fetch members if project data is available
   });
 
-
-
   // Memoized navigation handlers
   const handleRetry = () => window.location.reload();
   const handleBackToProjects = () => navigate("/create");
 
   // Render appropriate UI state
   if (isLoading) return <LoadingState />;
-  if (isError) return <ErrorState message={error.message} onRetry={handleRetry} />;
-  if (!project) return <NotFoundState onBackToProjects={handleBackToProjects} />;
-  if (!members) return <NotFoundState onBackToProjects={handleBackToProjects} />;
+  if (isError)
+    return <ErrorState message={error.message} onRetry={handleRetry} />;
+  if (!project)
+    return <NotFoundState onBackToProjects={handleBackToProjects} />;
+  if (!members)
+    return <NotFoundState onBackToProjects={handleBackToProjects} />;
 
   return <ProjectView project={project} members={members} />;
 };

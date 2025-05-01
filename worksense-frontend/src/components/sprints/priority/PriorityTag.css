@@ -1,0 +1,32 @@
+/* New Pill Shape Tag Styling */
+.priority-tag {
+  display: inline-block;
+  padding: 3px 10px; /* Match status tag padding */
+  border-radius: 12px; /* Pill shape */
+  font-size: 0.75rem; /* 12px */
+  font-weight: 600; /* Slightly bolder */
+  line-height: 1.3; /* Adjust line height */
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Level Variants based on new design (P1 Red, P2 Orange, P3 Green/Blue?) */
+.priority-tag--p1 {
+  background-color: #fee2e2; /* Light Red */
+  color: #dc2626; /* Red text */
+}
+.priority-tag--p2 {
+  background-color: #ffedd5; /* Light Orange */
+  color: #f97316; /* Orange text */
+}
+.priority-tag--p3 {
+  /* Using teal/green from image */
+  background-color: #d1fae5; /* Light Green */
+  color: #059669; /* Green text */
+  /* Or maybe light blue? */
+  /* background-color: #e0f2fe; */
+  /* color: #0284c7; */
+}
+.priority-tag--default {
+  display: none; /* Don't show default/null priority */
+}

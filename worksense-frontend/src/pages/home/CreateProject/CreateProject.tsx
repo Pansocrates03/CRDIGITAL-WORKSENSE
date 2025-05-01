@@ -3,10 +3,10 @@ import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./CreateProject.module.css";
 
-import NewProjectModal from "../../components/NewProjectModal/NewProjectModal";
-import { Alert } from "../../components/Alert/Alert";
-import { useAuth } from "../../contexts/AuthContext";
-import { projectService } from "../../services/projectService";
+import NewProjectModal from "@/components/NewProjectModal/NewProjectModal";
+import { Alert } from "@/components/Alert/Alert";
+import { useAuth } from "@/contexts/AuthContext";
+import { projectService } from "@/services/projectService";
 import SectionHeader from "./SectionHeader";
 import ProjectCard from "./ProjectCard";
 
@@ -14,8 +14,7 @@ import ProjectCard from "./ProjectCard";
 import NoProjectsAvailable from "./NoProjectsAvailable";
 import { useQuery } from "@tanstack/react-query";
 
-type SortOption =  "a-z" | "z-a";
-
+type SortOption = "a-z" | "z-a";
 
 const CreateProject: React.FC = () => {
   const navigate = useNavigate();
@@ -34,18 +33,18 @@ const CreateProject: React.FC = () => {
 
   // Use Query to fetch user projects
   const { isLoading, data, isError, error, isSuccess } = useQuery({
-    queryKey: ['userProjects'],
+    queryKey: ["userProjects"],
     queryFn: async () => {
       const res = await projectService.fetchUserProjects();
       return res;
-    }
+    },
   });
 
   // IMPORTANTE: definir filteredProjects aquí, antes de cualquier retorno condicional
   const filteredProjects = useMemo(() => {
     // Si no hay datos, devolver array vacío
     if (!data) return [];
-    
+
     const searchTermLower = searchTerm.toLowerCase();
 
     // First filter by search term
@@ -154,7 +153,11 @@ const CreateProject: React.FC = () => {
             <div className={styles.errorContainer}>
               <div className={styles.errorIcon}>⚠️</div>
               <h3>Error loading projects</h3>
-              <p>{error instanceof Error ? error.message : "An unknown error occurred"}</p>
+              <p>
+                {error instanceof Error
+                  ? error.message
+                  : "An unknown error occurred"}
+              </p>
             </div>
           ) : (
             <>
@@ -179,7 +182,7 @@ const CreateProject: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <NoProjectsAvailable setIsModalOpen={setIsModalOpen}/>
+                <NoProjectsAvailable setIsModalOpen={setIsModalOpen} />
               )}
             </>
           )}

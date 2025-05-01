@@ -13,7 +13,11 @@ declare global {
 /**
  * Verify JWT token middleware
  */
-export function verifyToken(req: Request, res: Response, next: NextFunction) {
+export function verifyToken(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
   const token = req.header("auth-token");
 
   if (!token) {

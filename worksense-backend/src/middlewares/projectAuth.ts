@@ -24,17 +24,19 @@ export const checkProjectMembership = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { projectId } = req.params;
     const userId = req.user?.userId;
 
     if (!userId) {
-      return res.status(401).json({ message: "Authentication required" });
+      res.status(401).json({ message: "Authentication required" });
+      return;
     }
 
     if (!projectId) {
-      return res.status(400).json({ message: "Project ID required" });
+      res.status(400).json({ message: "Project ID required" });
+      return;
     }
 
     // Check if user is a member
@@ -47,7 +49,8 @@ export const checkProjectMembership = async (
     const memberSnap = await memberRef.get();
 
     if (!memberSnap.exists) {
-      return res.status(403).json({ message: "Not a member of this project" });
+      res.status(403).json({ message: "Not a member of this project" });
+      return;
     }
 
     // Attach role to request for permission checks
@@ -67,7 +70,11 @@ export const checkProjectMembership = async (
  * @param requiredPermission The permission key string (e.g., 'edit:project', 'manage:members')
  */
 export const checkProjectPermission = (requiredPermission: string) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     try {
       const roleId = req.projectMembership?.roleId;
 
