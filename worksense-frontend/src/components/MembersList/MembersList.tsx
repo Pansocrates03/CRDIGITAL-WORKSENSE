@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/table';
 import styles from './MembersList.module.css';
 import MemberDetailed from '@/types/MemberDetailedType';
-import { generateAvatar } from '@/utils/avatarUtils';
 
 const formatRoleName = (roleId: string) => {
   if (!roleId) return 'Unknown Role';
@@ -99,10 +98,11 @@ const MembersList: React.FC<Props> = ({ members, onEdit, onDelete }) => {
                           if (initials) initials.style.display = 'flex';
                         }}
                       />
-                    ) : null}
-                    <div className={styles.avatarInitials}>
-                      {getInitials(member.name)}
-                    </div>
+                    ) : (
+                      <div className={styles.avatarInitials}>
+                        {getInitials(member.name)}
+                      </div>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>{member.name}</TableCell>
