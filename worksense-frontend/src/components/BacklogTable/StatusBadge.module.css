@@ -4,6 +4,7 @@
   align-items: center;
 }
 
+/* Base badge style */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -11,29 +12,109 @@
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 500;
+  border: 1px solid transparent;
 }
 
-.statusSprintBacklog {
-  background-color: #e0e7ff;
-  color: #4338ca;
+/* Status styles - using color scheme from CreateItemModal */
+.statusTodo,
+.statusToDo {
+  background-color: #ac175415;
+  color: #ac1754;
+  border-color: #ac175430;
 }
 
 .statusInProgress {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: #ac175430;
+  color: #ac1754;
+  border-color: #ac175450;
 }
 
-.statusInReview {
-  background-color: #fef3c7;
-  color: #92400e;
+.statusInReview,
+.statusReview {
+  background-color: #ac175430;
+  color: #ac1754;
+  border-color: #ac175450;
 }
 
 .statusDone {
-  background-color: #d1fae5;
-  color: #047857;
+  background-color: #ac175450;
+  color: #ac1754;
+  border-color: #ac175470;
+}
+
+.statusBlocked {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-color: #ef4444;
 }
 
 .statusUnassigned {
-  background-color: #e5e7eb;
-  color: #374151;
+  background-color: #f3f4f6;
+  color: #6b7280;
+  border-color: #d1d5db;
+}
+
+/* Keep backward compatibility */
+.statusSprintBacklog {
+  background-color: #ac175415;
+  color: #ac1754;
+  border-color: #ac175430;
+}
+
+/* Severity styles */
+.severityMinor {
+  background-color: #ac175415;
+  color: #ac1754;
+  border-color: #ac175430;
+}
+
+.severityMajor {
+  background-color: #ac175430;
+  color: #ac1754;
+  border-color: #ac175450;
+}
+
+.severityCritical {
+  background-color: #ac175450;
+  color: #ac1754;
+  border-color: #ac175470;
+}
+
+.severityBlocker {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-color: #ef4444;
+}
+
+/* Priority styles */
+.priorityHighest {
+  background-color: #ac1754;
+  color: white;
+  border: 2px solid #ac1754;
+  font-weight: 600;
+}
+
+.priorityHigh {
+  background-color: #ac175415;
+  color: #ac1754;
+  border: 2px solid #ac1754;
+  font-weight: 600;
+}
+
+.priorityMedium {
+  background-color: #ac175415;
+  color: #ac1754;
+  border: 1px solid #ac1754;
+}
+
+.priorityLow {
+  background-color: #ac175415;
+  color: #ac1754;
+  border: 1px solid rgba(172, 23, 84, 0.5);
+}
+
+.priorityLowest {
+  background-color: #ac175415;
+  color: #ac1754;
+  border: 1px dashed rgba(172, 23, 84, 0.3);
 }
