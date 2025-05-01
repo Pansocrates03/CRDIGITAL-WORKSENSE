@@ -9,9 +9,9 @@ import {  useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import MembersList from '@/components/MembersList/MembersList';
 import EditMemberModal from '../../components/EditMemberModal/EditMemberModal';
-import { Alert } from '@/components/Alert/Alert';
-import styles from './MembersAlert.module.css';
 import MemberSelection from '@/components/NewProjectModal/MemberSelection';
+import styles from './MembersAlert.module.css';
+import { DeleteMemberAlert } from './DeleteMemberAlert';
 
 // Types
 import MemberDetailed from '@/types/MemberDetailedType';
@@ -186,17 +186,13 @@ const MembersPage: React.FC = () => {
       />
 
       {showDeleteAlert && memberToDelete && (
-        <Alert
-          type="error"
-          title="Delete Member"
-          message={`Are you sure you want to remove ${memberToDelete.name} from this project?`}
+        <DeleteMemberAlert
+          memberName={memberToDelete.name}
           onClose={() => {
             setShowDeleteAlert(false);
             setMemberToDelete(null);
           }}
-          onAction={handleConfirmDelete}
-          actionLabel="Delete"
-          className={styles}
+          onDelete={handleConfirmDelete}
         />
       )}
     </div>
