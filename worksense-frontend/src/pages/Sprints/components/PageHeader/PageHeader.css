@@ -1,29 +1,290 @@
 /* src/components/PageHeader.css */
 .page-header {
-  background-color: var(--background); /* White background */
-  padding: 20px 25px 0 25px; /* Add padding, no bottom padding here */
-  margin-bottom: 10px; /* Space below header before board */
+  background-color: var(--background);
+  padding: 20px 25px 0 25px;
+  margin-bottom: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
 .page-header__top {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start; /* Align items top */
-  margin-bottom: 20px; /* Space between top section and tabs */
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.page-header__title-group {
+  flex-grow: 1;
+}
+
+.page-header__title-selector-group {
+  display: flex;
+  align-items: baseline;
+  gap: 15px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
 }
 
 .page-header__title-group h1 {
-  font-size: 1.8rem; /* Larger title */
+  font-size: 1.8rem;
   font-weight: 700;
-  color: #111827; /* Very dark grey */
-  margin: 0 0 4px 0; /* Adjust margins */
+  color: #111827;
+  margin: 0;
+  line-height: 1.2;
+  flex-shrink: 0;
 }
 
 .page-header__title-group p {
   font-size: 0.95rem;
-  color: #6b7280; /* Medium grey */
   margin: 0;
 }
 
-/* Tab section doesn't need specific styles other than what Tabs.css provides */
-/* .page-header__tabs { } */
+/* Sprint Selector Styles */
+.page-header__sprint-selector {
+  position: relative;
+}
+
+#header-sprint-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: transparent;
+  border: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1em 1em;
+}
+
+#header-sprint-select:disabled {
+  color: #9ca3af;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Dropdown Menu Styles */
+.page-header__dropdown-content-radix {
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 4px;
+  min-width: 200px;
+  outline: none;
+}
+
+.page-header__dropdown-item-radix {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.page-header__dropdown-item-radix:hover {
+  background-color: #ac1755ed;
+  color: white;
+}
+
+.page-header__dropdown-item-radix[data-state="checked"] {
+  font-weight: 600;
+  color: #ac1754;
+}
+
+.page-header__dropdown-item-radix .sprint-status-muted {
+  font-size: 0.85em;
+  color: #6b7280;
+  margin-left: 2px;
+}
+
+/* Remove focus outline from dropdown items */
+.page-header__dropdown-item-radix:focus {
+  outline: none;
+}
+
+/* Loading / Error messages within the header selector */
+.page-header__sprint-selector-message {
+  display: inline-block;
+  padding: 4px 4px;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #6b7280;
+  border-radius: 4px;
+  min-width: 100px; /* Give it some space */
+  text-align: center;
+}
+.page-header__sprint-selector-message--error {
+  color: #dc2626; /* Red for error */
+  font-style: normal;
+  font-weight: 500;
+  border: 1px solid #fecaca; /* Light red border */
+  background-color: #fef2f2; /* Very light red bg */
+  cursor: help; /* Indicate hoverable for tooltip */
+}
+
+/* Optional: Simple tooltip for error */
+.page-header__sprint-error-tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  background-color: #374151; /* Dark background */
+  color: #ffffff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  z-index: 10;
+  bottom: 110%; /* Position above the error message */
+  left: 50%;
+  transform: translateX(-50%);
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+/* Show tooltip on hover of the error message */
+.page-header__sprint-selector-message--error:hover
+  + .page-header__sprint-error-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* --- Styles for Tabs and TeamAvatars --- */
+/* Ensure TeamAvatars styles don't conflict */
+/* Tabs styles likely come from Tabs.css */
+.page-header__tabs {
+  /* Maybe add a border-top or some spacing if needed */
+  /* border-top: 1px solid #e5e7eb; */
+  /* margin-top: 15px; */ /* Adjust if needed */
+}
+
+/* --- Wrapper for title/trigger + description --- */
+.page-header__title-trigger-wrapper {
+  /* Can be simple block or flex if needed */
+}
+
+.page-header__description {
+  /* New class for description if needed */
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin: 6px 0 0 0; /* Space below trigger, reset default */
+}
+
+/* --- NEW Styles for Custom Sprint Dropdown --- */
+.page-header__sprint-selector-custom {
+  position: relative; /* Needed for absolute positioning of dropdown */
+  display: inline-block; /* Allow it to sit nicely near other elements */
+}
+
+.page-header__sprint-trigger {
+  display: inline-flex; /* Align title and icon */
+  align-items: baseline; /* Align text baseline */
+  gap: 6px; /* Space between title text and icon */
+  background: none;
+  border: none;
+  padding: 0; /* Remove default button padding */
+  margin: 0; /* Remove default button margin */
+  cursor: pointer;
+  border-radius: 4px; /* Slight radius for focus */
+}
+/* Style the h1 inside the button */
+.page-header__sprint-trigger h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.2;
+  transition: color 0.2s ease;
+}
+.page-header__sprint-trigger:hover h1 {
+  color: #ac1754; /* Change title color on hover */
+}
+.page-header__sprint-trigger:focus-visible {
+  outline: 2px solid #ac1754; /* Accessibility focus */
+  outline-offset: 2px;
+}
+.page-header__sprint-trigger:disabled h1 {
+  color: #9ca3af; /* Dim title when disabled */
+}
+.page-header__sprint-trigger:disabled {
+  cursor: not-allowed;
+}
+
+/* --- NEW Styles for Radix Dropdown Trigger --- */
+.page-header__sprint-trigger-radix {
+  display: inline-flex;
+  align-items: baseline; /* Align text baseline */
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 2px 4px; /* Minimal padding for focus outline */
+  margin: 0;
+  cursor: pointer;
+  border-radius: 4px; /* For focus outline */
+  transition: color 0.2s ease; /* Transition color if needed */
+}
+/* Style the h1 inside the trigger */
+.page-header__sprint-trigger-radix h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.2;
+  transition: color 0.2s ease;
+}
+.page-header__sprint-trigger-radix:not(:disabled):hover h1 {
+  color: #ac1754; /* Or your hover color */
+}
+/* Focus state handled well by Radix + Tailwind/cn by default, but you can add specifics */
+.page-header__sprint-trigger-radix:focus-visible {
+  outline: 2px solid #ac1754; /* Example focus outline */
+  outline-offset: 2px;
+}
+/* Disabled state */
+.page-header__sprint-trigger-radix:disabled {
+  cursor: not-allowed;
+}
+.page-header__sprint-trigger-radix:disabled h1 {
+  color: #9ca3af;
+}
+
+.page-header__sprint-icon-radix {
+  color: #6b7280;
+  font-size: 0.9em;
+  transition: transform 0.2s ease, color 0.2s ease;
+  /* Radix handles open state via data attribute, flipping icon might need JS or different CSS selector if needed */
+  /* e.g., targeting [data-state=open] on the trigger */
+  /* For simplicity, let's rely on Radix default behavior or omit rotation */
+}
+.page-header__sprint-trigger-radix:not(:disabled):hover
+  .page-header__sprint-icon-radix {
+  color: #ac1754; /* Or your hover color */
+}
+.page-header__sprint-trigger-radix:disabled .page-header__sprint-icon-radix {
+  color: #9ca3af;
+}
+
+/* --- Custom Styling for Radix Content/Items (if needed beyond Tailwind/cn) --- */
+
+/* Example: Add padding or specific font to items if base styles don't cover it */
+.page-header__dropdown-content-radix {
+  /* Add custom styles here if the default Radix/Tailwind styles need overrides */
+  /* e.g., max-height: 40vh; */
+}
+
+.page-header__dropdown-item-radix {
+  /* Add custom styles here */
+  /* e.g., font-size: 14px; */
+  /* Use Radix data attributes for state styling if needed */
+  /* e.g., '&[data-highlighted]' for keyboard navigation highlight */
+  /* e.g., '&[data-state="checked"]' for the selected radio item */
+}
+.page-header__dropdown-item-radix[data-state="checked"] {
+  font-weight: 600; /* Example: Make selected bold */
+  color: #ac1754; /* Example: Highlight color */
+}
+
+.page-header__dropdown-item-radix .sprint-status-muted {
+  font-size: 0.85em;
+  color: #6b7280; /* Dimmer status text */
+  margin-left: 2px;
+}
+.page-header__dropdown-item-radix[data-state="checked"] .sprint-status-muted {
+  color: #ac1754; /* Darker pink status for selected */
+}

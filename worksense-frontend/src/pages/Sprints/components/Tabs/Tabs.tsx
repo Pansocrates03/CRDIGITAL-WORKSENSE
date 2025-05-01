@@ -3,8 +3,22 @@ import React from "react";
 import { FiLayout, FiList, FiGrid, FiClock } from "react-icons/fi"; // Example icons
 import "./Tabs.css"; // Create this CSS file
 
+interface TabItem {
+  id: string;
+  label: string;
+}
+
+interface TabsProps {
+  items?: TabItem[];
+  activeTabId: string;
+  onTabClick: (tabId: string) => void;
+}
+
 // Map tab IDs to icons (customize as needed)
-const iconMap = {
+const iconMap: Record<
+  string,
+  React.ComponentType<{ className?: string; size?: number }> | null
+> = {
   overview: null, // No icon for overview in example
   board: FiLayout,
   list: FiList,
@@ -12,7 +26,7 @@ const iconMap = {
   timeline: FiClock,
 };
 
-function Tabs({ items = [], activeTabId, onTabClick }) {
+function Tabs({ items = [], activeTabId, onTabClick }: TabsProps) {
   return (
     <nav className="tabs-navigation">
       {items.map((item) => {

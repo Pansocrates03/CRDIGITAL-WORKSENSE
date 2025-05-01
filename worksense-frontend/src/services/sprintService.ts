@@ -1,41 +1,42 @@
 // src/services/sprintService.ts
 
 import apiClient from "../api/apiClient"; // Assuming apiClient is configured
-import { Sprint } from "../types/SprintType"; // Adjust path as needed
-import { ApiResponseTask } from "../types/SprintType"; // Adjust path as needed
-
-// Use the same API_URL pattern for consistency, unless apiClient has baseURL set
-const API_URL = "http://localhost:5050/api/v1";
+import { Sprint, ApiResponseTask } from "../types/SprintType"; // Adjust path as needed
 
 export const sprintService = {
   /**
    * Fetches all tasks/items assigned to a specific sprint for a project.
-   * REQUIRED for displaying the sprint board items.
+   * Uses the backend route: GET /projects/:projectId/sprints/:sprintId/tasks
+   * (Which internally calls taskController.getSprintTasks for Scenario A)
    */
   async getSprintTasks(
     projectId: string,
     sprintId: string
   ): Promise<ApiResponseTask[]> {
     try {
-      // *** Verify this endpoint path with your backend implementation ***
+      // Corrected URL: using /sprints/ (plural) to match sprint.routes.ts
       const response = await apiClient.get(
-        `${API_URL}/projects/${projectId}/sprints/${sprintId}/tasks`
+        // This path assumes your sprint router handles tasks under it
+        `/projects/${projectId}/sprints/${sprintId}/tasks`
+        // If task fetching is NOT nested under sprints route, adjust this URL
+        // e.g., `/tasks?projectId=${projectId}&sprintId=${sprintId}` if task routes handle it
       );
-      // Ensure the backend response data is an array of tasks matching ApiResponseTask
+      console.log(`API Response for Sprint ${sprintId} Tasks:`, response.data);
       return response.data as ApiResponseTask[];
     } catch (error) {
       console.error(`Error fetching tasks for sprint ${sprintId}:`, error);
-      throw error; // Re-throw for the calling component to handle UI feedback
+      throw error;
     }
   },
 
   /**
    * Fetches details for a single sprint.
+   * Uses backend route: GET /projects/:projectId/sprints/:sprintId
    */
   async getSprintDetails(projectId: string, sprintId: string): Promise<Sprint> {
     try {
       const response = await apiClient.get(
-        `${API_URL}/projects/${projectId}/sprints/${sprintId}`
+        `/projects/${projectId}/sprints/${sprintId}`
       );
       return response.data as Sprint;
     } catch (error) {
@@ -46,11 +47,13 @@ export const sprintService = {
 
   /**
    * Fetches all sprints belonging to a specific project.
+   * Uses backend route: GET /projects/:projectId/sprints
    */
   async getAllSprintsForProject(projectId: string): Promise<Sprint[]> {
     try {
+      // Ensure backend supports filtering by status if needed, e.g., ?status=Active&status=Planned
       const response = await apiClient.get(
-        `${API_URL}/projects/${projectId}/sprints`
+        `/projects/${projectId}/sprints` // Fetch all first, filter client-side if needed
       );
       return response.data as Sprint[];
     } catch (error) {
@@ -61,16 +64,18 @@ export const sprintService = {
 
   /**
    * Creates a new sprint within a project.
-   * @param projectId The ID of the project.
-   * @param sprintData Data for the new sprint (e.g., name, goal, dates). Exclude id, projectId.
+   * Uses backend route: POST /projects/:projectId/sprints
    */
   async createSprint(
     projectId: string,
-    sprintData: Omit<Sprint, "id" | "projectId" | "createdAt" | "updatedAt">
+    sprintData: Omit<
+      Sprint,
+      "id" | "projectId" | "createdAt" | "updatedAt" | "status"
+    > // Status is set by backend
   ): Promise<Sprint> {
     try {
       const response = await apiClient.post(
-        `${API_URL}/projects/${projectId}/sprints`,
+        `/projects/${projectId}/sprints`,
         sprintData
       );
       return response.data as Sprint;
@@ -81,19 +86,19 @@ export const sprintService = {
   },
 
   /**
-   * Updates an existing sprint.
-   * @param projectId The ID of the project.
-   * @param sprintId The ID of the sprint to update.
-   * @param updateData The fields to update.
+   * Updates an existing sprint (metadata like name, goal, dates).
+   * Uses backend route: PUT/PATCH /projects/:projectId/sprints/:sprintId
    */
   async updateSprint(
     projectId: string,
     sprintId: string,
-    updateData: Partial<Omit<Sprint, "id" | "projectId">>
+    updateData: Partial<Omit<Sprint, "id" | "projectId" | "status">> // Exclude status if updated separately
   ): Promise<Sprint> {
     try {
+      // Using PUT might require sending the full object, PATCH is better for partial
       const response = await apiClient.put(
-        `${API_URL}/projects/${projectId}/sprints/${sprintId}`,
+        // Or PATCH if backend supports it
+        `/projects/${projectId}/sprints/${sprintId}`,
         updateData
       );
       return response.data as Sprint;
@@ -105,36 +110,37 @@ export const sprintService = {
 
   /**
    * Deletes a sprint.
+   * Uses backend route: DELETE /projects/:projectId/sprints/:sprintId
    */
   async deleteSprint(projectId: string, sprintId: string): Promise<void> {
     try {
-      await apiClient.delete(
-        `${API_URL}/projects/${projectId}/sprints/${sprintId}`
-      );
+      await apiClient.delete(`/projects/${projectId}/sprints/${sprintId}`);
     } catch (error) {
       console.error(`Error deleting sprint ${sprintId}:`, error);
       throw error;
     }
   },
 
+  /**
+   * Updates the status of a sprint.
+   * Uses backend route: PATCH /projects/:projectId/sprints/:sprintId/status
+   */
   async updateSprintStatus(
     projectId: string,
     sprintId: string,
-    updateData: Partial<Omit<Sprint, "id" | "projectId">>
+    // Send only the status field in the body for this specific endpoint
+    statusData: { status: Sprint["status"] }
   ): Promise<Sprint> {
     try {
       const response = await apiClient.patch(
-        `${API_URL}/projects/${projectId}/sprints/${sprintId}/status`,
-        updateData
+        `/projects/${projectId}/sprints/${sprintId}/status`,
+        statusData // Send object { status: "NewStatus" }
       );
+      // Backend returns the updated sprint object
       return response.data as Sprint;
     } catch (error) {
       console.error(`Error updating sprint status ${sprintId}:`, error);
       throw error;
     }
   },
-
-  // Add other sprint-specific actions if needed (e.g., startSprint, completeSprint)
-  // async startSprint(projectId: string, sprintId: string): Promise<Sprint> { ... }
-  // async completeSprint(projectId: string, sprintId: string): Promise<Sprint> { ... }
 };

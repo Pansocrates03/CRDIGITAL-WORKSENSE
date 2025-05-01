@@ -493,6 +493,35 @@ const router = express.Router({ mergeParams: true });
  *         description: Sprint not found
  */
 
+// Create a new sprint
+router.post("/", memberAuth, withPermission("manage:sprints"), createSprint);
+
+// Get all sprints for a project
+router.get("/", memberAuth, getSprints);
+
+// Get a specific sprint by ID
+router.get("/:sprintId", memberAuth, getSprintById);
+
+// Update sprint status
+router.patch(
+  "/:sprintId/status",
+  memberAuth,
+  withPermission("manage:sprints"),
+  updateSprintStatus
+);
+
+// Add a task to a sprint
+router.post(
+  "/:sprintId/tasks",
+  memberAuth,
+  withPermission("manage:sprints"),
+  createTask
+);
+
+// Get all tasks in a sprint
+router.get("/:sprintId/tasks", memberAuth, getSprintTasks);
+
+// Get a specific task in a sprint
 router.get("/:sprintId/tasks/:taskId", memberAuth, getTaskById);
 
 export default router;
