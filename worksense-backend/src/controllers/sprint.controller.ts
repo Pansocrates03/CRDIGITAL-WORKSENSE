@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import { db } from "../models/firebase.js"; // Adjust path if needed
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
-
+import { SprintStatus } from "../types/sprint.js";
 // --- Sprint Management ---
 
 /**
@@ -156,6 +156,84 @@ export const getSprintById: RequestHandler = async (req, res, next) => {
   } catch (error) {
     console.error(
       `Error getting sprint ${req.params.sprintId} for project ${req.params.projectId}:`,
+      error
+    );
+    next(error);
+  }
+};
+
+/**
+ * @description Update the status of a sprint.
+ * @route PATCH /api/v1/projects/:projectId/sprints/:sprintId/status
+ * @access Private (requires auth, project membership, permissions)
+ */
+
+/**
+ * @description Update the status of a sprint, ensuring only one active sprint per project.
+ * @route PATCH /api/v1/projects/:projectId/sprints/:sprintId/status
+ * @access Private (requires auth, project membership, permissions)
+ */
+export const updateSprintStatus: RequestHandler = async (req, res, next) => {
+  try {
+    const { projectId, sprintId } = req.params;
+    const { status } = req.body as { status: SprintStatus };
+
+    // --- Input Validation ---
+    if (!status || !["Active", "Planned", "Completed"].includes(status)) {
+      return res.status(400).json({
+        message: "Valid status (Active, Planned, or Completed) is required",
+      });
+    }
+
+    const sprintRef = db.collection("sprints").doc(sprintId);
+    const sprintSnap = await sprintRef.get();
+
+    // --- Existence & Ownership Checks ---
+    if (!sprintSnap.exists) {
+      return res.status(404).json({ message: "Sprint not found" });
+    }
+
+    const sprintData = sprintSnap.data();
+    if (!sprintData || sprintData.projectId !== projectId) {
+      return res.status(403).json({
+        message: "Sprint not found within the specified project",
+      });
+    }
+
+    // --- Status Transition Validation ---
+    if (status === "Active") {
+      // Check if there's already an active sprint
+      const activeSprintSnap = await db
+        .collection("sprints")
+        .where("projectId", "==", projectId)
+        .where("status", "==", "Active")
+        .where("id", "!=", sprintId) // Exclude current sprint
+        .limit(1)
+        .get();
+
+      if (!activeSprintSnap.empty) {
+        return res.status(400).json({
+          message: "Another sprint is already active for this project",
+        });
+      }
+    }
+
+    // --- Update Sprint Status ---
+    await sprintRef.update({
+      status,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    // Fetch updated data
+    const updatedSnap = await sprintRef.get();
+
+    res.status(200).json({
+      id: sprintId,
+      ...updatedSnap.data(),
+    });
+  } catch (error) {
+    console.error(
+      `Error updating status for sprint ${req.params.sprintId}:`,
       error
     );
     next(error);

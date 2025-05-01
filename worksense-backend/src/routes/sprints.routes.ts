@@ -66,6 +66,55 @@ const router = express.Router({ mergeParams: true });
  */
 router.post("/", withPermission("manage:sprints"), createSprint);
 
+// Add to imports at the top
+import { updateSprintStatus } from "../controllers/sprint.controller.js";
+
+// Add this route with the others
+/**
+ * @swagger
+ * /sprints/{sprintId}/status:
+ *   patch:
+ *     summary: Update the status of a sprint
+ *     tags: [Sprints]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: sprintId
+ *         in: path
+ *         required: true
+ *         description: ID of the sprint to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [Active, Planned, Completed]
+ *     responses:
+ *       200:
+ *         description: Sprint status updated successfully
+ *       400:
+ *         description: Invalid request or another sprint is already active
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Sprint not found
+ */
+router.patch(
+  "/:sprintId/status",
+  withPermission("manage:sprints"),
+  updateSprintStatus
+);
+
 /**
  * @swagger
  * /sprints:

@@ -33,3 +33,11 @@ export interface UpdateSprintItemDTO {
   sprintAssigneeId?: number | null;
   order?: number;
 }
+
+// Sprint status type
+export type SprintStatus = "Active" | "Planned" | "Completed";
+
+// DTO for updating sprint status
+export interface UpdateSprintStatusDTO {
+  status: SprintStatus;
+}
