@@ -1,6 +1,7 @@
 import apiClient from "@/api/apiClient";
+import { API_URL } from "../../config/env.config";
 
-const API_URL = "http://localhost:5050/api/v1"; // Ajusta esto según tu configuración
+const FULL_API_URL = API_URL + "/api/v1"; // Ajusta esto según tu configuración
 
 export interface User {
   email: string;
@@ -29,7 +30,7 @@ export const authService = {
     try {
       console.log("Intentando login con:", { email, password: "***" });
       const response = await apiClient.post(
-        `${API_URL}/login`,
+        `${FULL_API_URL}/login`,
         {
           email,
           password,
@@ -41,7 +42,7 @@ export const authService = {
         }
       );
 
-      console.log("Respuesta del servidor:", response.data);
+      //console.log("Respuesta del servidor:", response.data);
 
       if (response.data.token) {
         const tokenToSet = response.data.token;

@@ -2,9 +2,10 @@ import ProjectDetails from "@/types/ProjectType";
 import apiClient from "../api/apiClient";
 import Member from "@/types/MemberType";
 import MemberDetailed from "@/types/MemberDetailedType";
-import { id } from "date-fns/locale";
 
-const API_URL = "http://localhost:5050/api/v1";
+import { API_URL } from "../../config/env.config"
+
+const FULL_API_URL = API_URL + "/api/v1";
 
 interface CreateProject {
   name: string,
@@ -17,7 +18,7 @@ export const projectService = {
   // Gets the project details
   async fetchProjectDetails(id: string): Promise<ProjectDetails> {
     try {
-      const response = await apiClient.get(`${API_URL}/${id}`);
+      const response = await apiClient.get(`${FULL_API_URL}/${id}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching project details:", error);
@@ -28,7 +29,7 @@ export const projectService = {
   // Gets the list of members in a project
   async fetchProjectMembers(id: string): Promise<Member[]> {
     try {
-      const response = await apiClient.get(`${API_URL}/${id}/members`);
+      const response = await apiClient.get(`${FULL_API_URL}/${id}/members`);
       return response.data;
     } catch (error) {
       console.error("Error fetching project members:", error);
@@ -39,7 +40,7 @@ export const projectService = {
   // Gets the list of members in a project with email and name
   async fetchProjectMembersDetailed(id: string): Promise<MemberDetailed[]> {
     try {
-      const response = await apiClient.get(`${API_URL}/${id}/members-detail`);
+      const response = await apiClient.get(`${FULL_API_URL}/${id}/members-detail`);
       return response.data;
     } catch (error) {
       console.error("Error fetching project members with details:", error);
@@ -50,7 +51,7 @@ export const projectService = {
   // Gets the list of the projects a member has access to
   async fetchUserProjects(): Promise<ProjectDetails[]> {
     try {
-      const response = await apiClient.get(`${API_URL}/`);
+      const response = await apiClient.get(`${FULL_API_URL}/`);
       return response.data;
     } catch (error) {
       console.error("Error fetching user projects:", error);
@@ -62,7 +63,7 @@ export const projectService = {
   // Update a member's role inside a project
   async updateMemberRole(projectId: string, userId: number, roleId: string): Promise<void> {
     try {
-      await apiClient.put(`${API_URL}/${projectId}/members/${userId}`, {
+      await apiClient.put(`${FULL_API_URL}/${projectId}/members/${userId}`, {
         projectRoleId: roleId,
       });
     } catch (error) {
@@ -74,7 +75,7 @@ export const projectService = {
   // Add a member to a project with a role
   async addMemberToProject(projectId: string, userId: number, roleId: string): Promise<void> {
     try {
-      await apiClient.post(`${API_URL}/${projectId}/members`, {
+      await apiClient.post(`${FULL_API_URL}/${projectId}/members`, {
         userId: userId,
         projectRoleId: roleId,
       });
@@ -87,7 +88,7 @@ export const projectService = {
   // Remove a member from a project
   async removeMemberFromProject(projectId: string, userId: number): Promise<void> {
     try {
-      await apiClient.delete(`${API_URL}/${projectId}/members/${userId}`);
+      await apiClient.delete(`${FULL_API_URL}/${projectId}/members/${userId}`);
     } catch (error) {
       console.error('Error removing member from project:', error);
       throw error;
@@ -97,7 +98,7 @@ export const projectService = {
   async createProejct(receivedData: CreateProject): Promise<ProjectDetails> {
     try {
       // Primero se debe crear el proyecto
-      const response = await apiClient.post(`${API_URL}/`, {
+      const response = await apiClient.post(`${FULL_API_URL}/`, {
         name: receivedData.name,
         description: receivedData.description,
         context: null,
@@ -106,7 +107,7 @@ export const projectService = {
       // Luego se deben agregar los miembros al proyecto
       for (let i = 0; i < receivedData.members.length; i++) {
         const member = receivedData.members[i];
-        await apiClient.post(`${API_URL}/${response.data.id}/members`, {
+        await apiClient.post(`${FULL_API_URL}/${response.data.id}/members`, {
           projectRoleId: "product-owner",
           userId: member.userId, // Asegúrate de que `member` contenga el ID del miembro
         });
