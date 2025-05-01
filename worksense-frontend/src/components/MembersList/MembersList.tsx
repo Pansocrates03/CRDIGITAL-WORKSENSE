@@ -63,8 +63,8 @@ const getInitials = (name: string) => {
 interface Props {
   projectId: string;
   members: MemberDetailed[];
-  onEdit: (member: MemberDetailed) => void;
-  onDelete: (member: MemberDetailed) => void;
+  onEdit?: (member: MemberDetailed) => void;
+  onDelete?: (member: MemberDetailed) => void;
 }
 
 const MembersList: React.FC<Props> = ({ members, onEdit, onDelete }) => {
@@ -119,15 +119,19 @@ const MembersList: React.FC<Props> = ({ members, onEdit, onDelete }) => {
                 </TableCell>
                 <TableCell>
                   <div className={styles.actionButtons}>
-                    <button onClick={() => onEdit(member)} className={styles.button}>
-                      <FaPencilAlt />
-                    </button>
-                    <button
-                      onClick={() => onDelete(member)}
-                      className={`${styles.button} ${styles.trashButton}`}
-                    >
-                      <FaTrashAlt />
-                    </button>
+                    {onEdit && (
+                      <button onClick={() => onEdit(member)} className={styles.button}>
+                        <FaPencilAlt />
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button
+                        onClick={() => onDelete(member)}
+                        className={`${styles.button} ${styles.trashButton}`}
+                      >
+                        <FaTrashAlt />
+                      </button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

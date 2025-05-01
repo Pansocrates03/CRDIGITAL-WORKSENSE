@@ -20,10 +20,13 @@ import Member from '@/types/MemberType';
 import { projectService } from '@/services/projectService';
 import { useMembers, useDeleteMember, useUpdateMemberRole } from '@/hooks/useMembers';
 import { useUsers } from '@/hooks/useUsers';
+import { useAuth } from '@/hooks/useAuth';
 
 const MembersPage: React.FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const { data: user } = useAuth();
+  const { data: members = [], isLoading } = useMembers(projectId!);
   const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddingMembers, setIsAddingMembers] = useState(false);
@@ -34,8 +37,8 @@ const MembersPage: React.FC = () => {
   const [memberToDelete, setMemberToDelete] = useState<MemberDetailed | null>(null);
 
   const availableRoles = ['product-owner', 'scrum-master', 'developer', 'viewer'];
+  const isProductOwner = members.some(member => member.userId === user?.userId && member.projectRoleId === 'product-owner');
 
-  const { data: members = [], isLoading } = useMembers(projectId!);
   const deleteMemberMutation = useDeleteMember(projectId!);
   const updateMemberRoleMutation = useUpdateMemberRole(projectId!);
   const { isLoading: isUsersLoading, data: users = [] } = useUsers();
@@ -108,20 +111,22 @@ const MembersPage: React.FC = () => {
             Manage project members: add, update roles, or remove members from the project.
           </p>
         </div>
-        <Button
-          variant="default"
-          size="default"
-          className="bg-[#ac1754] hover:bg-[#8e0e3d] flex-shrink-0"
-          onClick={() => setIsAddingMembers(true)}
-        >
-          <PlusIcon className="mr-1 h-4 w-4" />
-          Add User
-        </Button>
+        {isProductOwner && (
+          <Button
+            variant="default"
+            size="default"
+            className="bg-[#ac1754] hover:bg-[#8e0e3d] flex-shrink-0"
+            onClick={() => setIsAddingMembers(true)}
+          >
+            <PlusIcon className="mr-1 h-4 w-4" />
+            Add User
+          </Button>
+        )}
       </div>
 
       <div className="border-b border-border my-4"></div>
 
-      {isAddingMembers && (
+      {isAddingMembers && isProductOwner && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-background rounded-lg p-6 w-full max-w-2xl shadow-lg">
             <div className="flex justify-between items-center mb-4">
@@ -172,27 +177,31 @@ const MembersPage: React.FC = () => {
       <MembersList 
         projectId={projectId!} 
         members={members} 
-        onEdit={handleEditClick} 
-        onDelete={handleDeleteMember}
+        onEdit={isProductOwner ? handleEditClick : undefined} 
+        onDelete={isProductOwner ? handleDeleteMember : undefined}
       />
 
-      <EditMemberModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        member={selectedMember}
-        availableRoles={availableRoles}
-        onSubmit={handleRoleUpdate}
-      />
+      {isProductOwner && (
+        <>
+          <EditMemberModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            member={selectedMember}
+            availableRoles={availableRoles}
+            onSubmit={handleRoleUpdate}
+          />
 
-      {showDeleteAlert && memberToDelete && (
-        <DeleteMemberAlert
-          memberName={memberToDelete.name}
-          onClose={() => {
-            setShowDeleteAlert(false);
-            setMemberToDelete(null);
-          }}
-          onDelete={handleConfirmDelete}
-        />
+          {showDeleteAlert && memberToDelete && (
+            <DeleteMemberAlert
+              memberName={memberToDelete.name}
+              onClose={() => {
+                setShowDeleteAlert(false);
+                setMemberToDelete(null);
+              }}
+              onDelete={handleConfirmDelete}
+            />
+          )}
+        </>
       )}
     </div>
   );
