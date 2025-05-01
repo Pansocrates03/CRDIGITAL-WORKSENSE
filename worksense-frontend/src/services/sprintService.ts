@@ -2,7 +2,7 @@
 
 import apiClient from "../api/apiClient"; // Assuming apiClient is configured
 import { Sprint } from "../types/SprintType"; // Adjust path as needed
-import { ApiResponseTask } from "../types/TaskType"; // Adjust path as needed
+import { ApiResponseTask } from "../types/SprintType"; // Adjust path as needed
 
 // Use the same API_URL pattern for consistency, unless apiClient has baseURL set
 const API_URL = "http://localhost:5050/api/v1";
@@ -113,6 +113,23 @@ export const sprintService = {
       );
     } catch (error) {
       console.error(`Error deleting sprint ${sprintId}:`, error);
+      throw error;
+    }
+  },
+
+  async updateSprintStatus(
+    projectId: string,
+    sprintId: string,
+    updateData: Partial<Omit<Sprint, "id" | "projectId">>
+  ): Promise<Sprint> {
+    try {
+      const response = await apiClient.patch(
+        `${API_URL}/projects/${projectId}/sprints/${sprintId}/status`,
+        updateData
+      );
+      return response.data as Sprint;
+    } catch (error) {
+      console.error(`Error updating sprint status ${sprintId}:`, error);
       throw error;
     }
   },

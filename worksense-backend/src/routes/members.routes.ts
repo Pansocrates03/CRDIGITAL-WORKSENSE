@@ -21,7 +21,7 @@ const router = express.Router({ mergeParams: true });
  *     summary: List all members of a project
  *     tags: [Project Members]
  *     security:
- *       - authToken: []
+ *       - auth-token: []
  *     parameters:
  *       - in: path
  *         name: projectId
@@ -65,6 +65,8 @@ const router = express.Router({ mergeParams: true });
  *         description: Forbidden - User is not a member of the project
  *       404:
  *         description: Project not found
+ *       500:
+ *         description: Internal server error
  */
 
 router.get("/", memberAuth, memberController.listMembers);
@@ -76,7 +78,7 @@ router.get("/", memberAuth, memberController.listMembers);
  *     summary: List all members of a project with their email addresses
  *     tags: [Project Members]
  *     security:
- *       - authToken: []
+ *       - auth-token: []
  *     parameters:
  *       - in: path
  *         name: projectId
@@ -116,30 +118,39 @@ router.get("/", memberAuth, memberController.listMembers);
  *                         example: 754000000
  *                   name:
  *                     type: string
- *                     description: Full name of the user
- *                     example: "prueba16 prueba16"
+ *                     description: Full name of the user (from SQL database)
+ *                     example: "John Doe"
  *                   email:
  *                     type: string
- *                     description: Email address of the user
- *                     example: "prueba16@email.com"
+ *                     description: Email address of the user (from SQL database)
+ *                     example: "john.doe@example.com"
  *                   lastLogin:
- *                     type: object
- *                     description: Last login timestamp
+ *                     type: integer
+ *                     description: Last login timestamp in seconds (from SQL database)
  *                     example: 1745715722
+ *                   nickname:
+ *                     type: string
+ *                     description: User's nickname (from SQL database)
+ *                     example: "johndoe"
  *                   profilePicture:
  *                     type: string
- *                     description: Profile picture URL
+ *                     description: URL to user's profile picture (from SQL database)
+ *                     example: "https://example.com/profile.jpg"
  *       401:
  *         description: Unauthorized - User is not authenticated
  *       403:
  *         description: Forbidden - User is not a member of the project
  *       404:
  *         description: Project not found
+ *       500:
+ *         description: Internal server error or database connection error
  */
+
 router.get("/members-detail", memberAuth, memberController.listMembersDetail);
 
 /**
  * @swagger
+ * /{projectId}/members:
  *   post:
  *     summary: Add a new member to the project
  *     description: |
@@ -149,7 +160,7 @@ router.get("/members-detail", memberAuth, memberController.listMembersDetail);
  *       The `userId` must exist in the SQL database and the `projectRoleId` must exist in the Firestore `/projectRoles` collection.
  *     tags: [Project Members]
  *     security:
- *       - authToken: []
+ *       - auth-token: []
  *     parameters:
  *       - in: path
  *         name: projectId
@@ -176,22 +187,6 @@ router.get("/members-detail", memberAuth, memberController.listMembersDetail);
  *                 type: string
  *                 description: Firestore Document ID of the role to assign to the user
  *                 example: "developer"
- *           examples:
- *             developer:
- *               summary: Adding a developer
- *               value:
- *                 userId: 102
- *                 projectRoleId: "developer"
- *             viewer:
- *               summary: Adding a viewer
- *               value:
- *                 userId: 103
- *                 projectRoleId: "viewer"
- *             customRole:
- *               summary: Adding with custom role ID
- *               value:
- *                 userId: 105
- *                 projectRoleId: "role_xyz987"
  *     responses:
  *       201:
  *         description: Member added successfully
@@ -220,14 +215,19 @@ router.get("/members-detail", memberAuth, memberController.listMembersDetail);
  *                       description: Nanoseconds part of the timestamp
  *                       example: 754000000
  *       400:
- *         description: Invalid request data
+ *         description: Invalid request data or project role not found
  *       401:
  *         description: Unauthorized - User is not authenticated
  *       403:
  *         description: Forbidden - User does not have permission to manage members
  *       404:
- *         description: Project or user not found
+ *         description: User not found in SQL database
+ *       409:
+ *         description: User is already a member of the project
+ *       500:
+ *         description: Database connection error
  */
+
 router.post("/", withPermission("manage:members"), memberController.addMember);
 
 /**
@@ -242,7 +242,7 @@ router.post("/", withPermission("manage:members"), memberController.addMember);
  *       The `projectRoleId` must exist in the Firestore `/projectRoles` collection.
  *     tags: [Project Members]
  *     security:
- *       - authToken: []
+ *       - auth-token: []
  *     parameters:
  *       - in: path
  *         name: projectId
@@ -271,19 +271,6 @@ router.post("/", withPermission("manage:members"), memberController.addMember);
  *                 type: string
  *                 description: Firestore Document ID of the new role to assign to the user
  *                 example: "developer"
- *           examples:
- *             toDeveloper:
- *               summary: Change to developer role
- *               value:
- *                 projectRoleId: "developer"
- *             toViewer:
- *               summary: Change to viewer role
- *               value:
- *                 projectRoleId: "viewer"
- *             toCustomRole:
- *               summary: Change to custom role
- *               value:
- *                 projectRoleId: "role_xyz987"
  *     responses:
  *       200:
  *         description: Member role updated successfully
@@ -312,14 +299,17 @@ router.post("/", withPermission("manage:members"), memberController.addMember);
  *                       description: Nanoseconds part of the timestamp
  *                       example: 754000000
  *       400:
- *         description: Invalid request data
+ *         description: Invalid request data or project role not found
  *       401:
  *         description: Unauthorized - User is not authenticated
  *       403:
  *         description: Forbidden - User does not have permission to manage members
  *       404:
- *         description: Project or user not found
+ *         description: Member not found
+ *       500:
+ *         description: Database connection error
  */
+
 router.put(
   "/:userId",
   withPermission("manage:members"),
@@ -338,7 +328,7 @@ router.put(
  *       The project owner cannot be removed from the project.
  *     tags: [Project Members]
  *     security:
- *       - authToken: []
+ *       - auth-token: []
  *     parameters:
  *       - in: path
  *         name: projectId
@@ -379,8 +369,11 @@ router.put(
  *       403:
  *         description: Forbidden - User does not have permission to manage members or trying to remove project owner
  *       404:
- *         description: Project or user not found
+ *         description: Project or member not found
+ *       500:
+ *         description: Database connection error
  */
+
 router.delete(
   "/:userId",
   withPermission("manage:members"),

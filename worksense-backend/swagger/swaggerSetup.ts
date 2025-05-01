@@ -48,15 +48,24 @@ export const swaggerOptions: Options = {
       },
       {
         name: "Projects",
-        description: "Operations related to managing projects",
+        description:
+          "Project management operations including creation, updates, and member management",
       },
       {
         name: "Project Members",
-        description: "Managing members within a specific project",
+        description: "Operations for managing project members and their roles",
       },
       {
-        name: "Backlog Items",
-        description: "Managing backlog items (Epics, Stories, Bugs, etc.)",
+        name: "Sprints",
+        description: "Sprint management operations within projects",
+      },
+      {
+        name: "Tasks",
+        description: "Task management operations within projects",
+      },
+      {
+        name: "Backlog",
+        description: "Backlog management operations within projects",
       },
       {
         name: "AI Module",

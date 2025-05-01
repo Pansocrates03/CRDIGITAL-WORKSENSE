@@ -40,7 +40,7 @@ export const projectService = {
   async fetchProjectMembersDetailed(id: string): Promise<MemberDetailed[]> {
     try {
       const response = await apiClient.get(
-        `${API_URL}/projects/${id}/members-detail`
+        `${API_URL}/projects/${id}/members/members-detail`
       );
       return response.data;
     } catch (error) {
