@@ -16,6 +16,140 @@ const router = express.Router({ mergeParams: true });
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     BacklogItemBase:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: Unique identifier for the backlog item
+ *         projectId:
+ *           type: string
+ *           description: ID of the project this item belongs to
+ *         type:
+ *           type: string
+ *           enum: [epic, story, bug, techTask, knowledge]
+ *           description: Type of the backlog item
+ *         title:
+ *           type: string
+ *           description: Title of the backlog item
+ *         description:
+ *           type: string
+ *           description: Description of the backlog item
+ *         priority:
+ *           type: string
+ *           enum: [lowest, low, medium, high, highest]
+ *           description: Priority of the backlog item
+ *         status:
+ *           type: string
+ *           enum: [new, todo, refining, in-progress, review, done, active]
+ *           description: Current status of the backlog item
+ *         reporterId:
+ *           type: string
+ *           description: ID of the user who created the item
+ *         assigneeId:
+ *           type: string
+ *           nullable: true
+ *           description: ID of the user assigned to the item
+ *         createdAt:
+ *           type: object
+ *           properties:
+ *             _seconds:
+ *               type: integer
+ *             _nanoseconds:
+ *               type: integer
+ *           description: Timestamp when the item was created
+ *         updatedAt:
+ *           type: object
+ *           properties:
+ *             _seconds:
+ *               type: integer
+ *             _nanoseconds:
+ *               type: integer
+ *           description: Timestamp when the item was last updated
+ *
+ *     Epic:
+ *       allOf:
+ *         - $ref: '#/components/schemas/BacklogItemBase'
+ *         - type: object
+ *           properties:
+ *             type:
+ *               type: string
+ *               enum: [epic]
+ *               description: Type is always 'epic'
+ *
+ *     Story:
+ *       allOf:
+ *         - $ref: '#/components/schemas/BacklogItemBase'
+ *         - type: object
+ *           properties:
+ *             type:
+ *               type: string
+ *               enum: [story]
+ *               description: Type is always 'story'
+ *             epicId:
+ *               type: string
+ *               nullable: true
+ *               description: ID of the parent epic
+ *             storyPoints:
+ *               type: integer
+ *               nullable: true
+ *               description: Story points estimate
+ *
+ *     Bug:
+ *       allOf:
+ *         - $ref: '#/components/schemas/BacklogItemBase'
+ *         - type: object
+ *           properties:
+ *             type:
+ *               type: string
+ *               enum: [bug]
+ *               description: Type is always 'bug'
+ *             linkedStoryId:
+ *               type: string
+ *               nullable: true
+ *               description: ID of the linked story
+ *             severity:
+ *               type: string
+ *               enum: [minor, major, critical]
+ *               description: Severity level of the bug
+ *
+ *     TechTask:
+ *       allOf:
+ *         - $ref: '#/components/schemas/BacklogItemBase'
+ *         - type: object
+ *           properties:
+ *             type:
+ *               type: string
+ *               enum: [techTask]
+ *               description: Type is always 'techTask'
+ *             linkedStoryId:
+ *               type: string
+ *               nullable: true
+ *               description: ID of the linked story
+ *
+ *     Knowledge:
+ *       allOf:
+ *         - $ref: '#/components/schemas/BacklogItemBase'
+ *         - type: object
+ *           properties:
+ *             type:
+ *               type: string
+ *               enum: [knowledge]
+ *               description: Type is always 'knowledge'
+ *             content:
+ *               type: string
+ *               description: Content of the knowledge item
+ *             tags:
+ *               type: array
+ *               items:
+ *                 type: string
+ *               description: Tags associated with the knowledge item
+ */
+
+/**
+ * @swagger
  * /{projectId}/backlog/items:
  *   post:
  *     summary: Create a new backlog item
@@ -58,7 +192,7 @@ const router = express.Router({ mergeParams: true });
  *                 example: "As a user, I want to log in using my email and password."
  *               priority:
  *                 type: string
- *                 enum: [low, medium, high, highest]
+ *                 enum: [lowest, low, medium, high, highest]
  *                 description: Priority of the backlog item
  *                 example: "high"
  *               status:
@@ -92,52 +226,6 @@ const router = express.Router({ mergeParams: true });
  *                   type: string
  *                 description: Tags for knowledge items
  *                 example: ["auth", "decision"]
- *           examples:
- *             epic:
- *               summary: Creating an epic
- *               value:
- *                 type: "epic"
- *                 title: "User Authentication Module"
- *                 description: "Implement complete user login, registration, and profile management."
- *                 priority: "high"
- *                 status: "new"
- *             story:
- *               summary: Creating a story
- *               value:
- *                 type: "story"
- *                 title: "User Login with Email/Password"
- *                 description: "As a user, I want to log in using my email and password."
- *                 epicId: "epic_001"
- *                 priority: "high"
- *                 storyPoints: 5
- *                 status: "todo"
- *             bug:
- *               summary: Creating a bug
- *               value:
- *                 type: "bug"
- *                 title: "Login button unresponsive on Safari"
- *                 description: "Steps: 1. Open on Safari 15. 2. Enter credentials. 3. Click Login."
- *                 linkedStoryId: "story_001"
- *                 priority: "high"
- *                 severity: "major"
- *                 status: "new"
- *             techTask:
- *               summary: Creating a tech task
- *               value:
- *                 type: "techTask"
- *                 title: "Set up Firestore indexing"
- *                 description: "Define and deploy necessary composite indexes."
- *                 linkedStoryId: "story_001"
- *                 priority: "medium"
- *                 status: "todo"
- *             knowledge:
- *               summary: Creating a knowledge item
- *               value:
- *                 type: "knowledge"
- *                 title: "Decision Log: Authentication Flow"
- *                 content: "Decided on JWT-based auth with 1-hour expiry."
- *                 tags: ["auth", "decision"]
- *                 status: "active"
  *     responses:
  *       201:
  *         description: Backlog item created successfully
@@ -212,89 +300,6 @@ router.post(
  *                   - $ref: '#/components/schemas/Bug'
  *                   - $ref: '#/components/schemas/TechTask'
  *                   - $ref: '#/components/schemas/Knowledge'
- *               example:
- *                 - id: "epic_001"
- *                   projectId: "proj_abc123"
- *                   type: "epic"
- *                   title: "User Authentication Module"
- *                   description: "Implement complete user login, registration, and profile management."
- *                   priority: "high"
- *                   reporterId: "101"
- *                   assigneeId: null
- *                   status: "new"
- *                   createdAt:
- *                     _seconds: 1745792338
- *                     _nanoseconds: 635000000
- *                   updatedAt:
- *                     _seconds: 1745792352
- *                     _nanoseconds: 683000000
- *                   linkedItems: null
- *                 - id: "story_001"
- *                   projectId: "proj_abc123"
- *                   type: "story"
- *                   title: "User Login with Email/Password"
- *                   description: "As a user, I want to log in using my email and password."
- *                   epicId: "epic_001"
- *                   priority: "highest"
- *                   storyPoints: 5
- *                   reporterId: 16
- *                   assigneeId: 17
- *                   status: "todo"
- *                   createdAt:
- *                     _seconds: 1745792542
- *                     _nanoseconds: 435000000
- *                   linkedItems: null
- *                 - id: "bug001"
- *                   projectId: "proj_abc123"
- *                   type: "bug"
- *                   title: "Login button unresponsive on Safari"
- *                   description: "Steps: 1. Open on Safari 15. 2. Enter credentials. 3. Click Login. Expected: Login proceeds. Actual: Nothing happens."
- *                   linkedStoryId: "story_001"
- *                   priority: "high"
- *                   severity: "major"
- *                   reporterId: 18
- *                   assigneeId: 17
- *                   status: "confirmed"
- *                   createdAt:
- *                     _seconds: 1745792917
- *                     _nanoseconds: 903000000
- *                   UpdatedAt:
- *                     _seconds: 1745792931
- *                     _nanoseconds: 104000000
- *                   linkedItems: null
- *                 - id: "task_001"
- *                   projectId: "proj_abc123"
- *                   type: "techTask"
- *                   title: "set up Firestore indexing for backlog queries"
- *                   description: "Define and deploy necessary composite indexes for filtering/sorting the backlog."
- *                   linkedStoryId: null
- *                   priority: "medium"
- *                   reporterId: 16
- *                   assigneeId: 16
- *                   status: "todo"
- *                   createdAt:
- *                     _seconds: 1745793050
- *                     _nanoseconds: 570000000
- *                   updatedAt:
- *                     _seconds: 1745793061
- *                     _nanoseconds: 218000000
- *                   linkedItems: null
- *                 - id: "know_001"
- *                   projectId: "proj_abc123"
- *                   type: "knowledge"
- *                   title: "Decision Log: Authentication Flow"
- *                   content: "Decided on JWT-based auth with 1-hour expiry. Role included in payload."
- *                   tags: ["auth", "decision"]
- *                   reporterId: 16
- *                   assigneeId: null
- *                   status: "active"
- *                   createdAt:
- *                     _seconds: 1745793184
- *                     _nanoseconds: 787000000
- *                   updatedAt:
- *                     _seconds: 1745793193
- *                     _nanoseconds: 405000000
- *                   linkedItems: null
  *       401:
  *         description: Unauthorized - User is not authenticated
  *       403:
@@ -325,36 +330,25 @@ router.get("/items", memberAuth, backlogController.listBacklogItems);
  *         schema:
  *           type: string
  *         description: ID of the backlog item
+ *       - in: query
+ *         name: type
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [epic, story, bug, techTask, knowledge]
+ *         description: Type of the backlog item
  *     responses:
  *       200:
  *         description: Backlog item details
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                 type:
- *                   type: string
- *                 title:
- *                   type: string
- *                 description:
- *                   type: string
- *                 status:
- *                   type: string
- *                 priority:
- *                   type: string
- *                 assigneeId:
- *                   type: string
- *                 parentId:
- *                   type: string
- *                 createdAt:
- *                   type: string
- *                   format: date-time
- *                 updatedAt:
- *                   type: string
- *                   format: date-time
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/Epic'
+ *                 - $ref: '#/components/schemas/Story'
+ *                 - $ref: '#/components/schemas/Bug'
+ *                 - $ref: '#/components/schemas/TechTask'
+ *                 - $ref: '#/components/schemas/Knowledge'
  *       401:
  *         description: Unauthorized - User is not authenticated
  *       403:
@@ -390,6 +384,13 @@ router.get("/items/:itemId", memberAuth, backlogController.getBacklogItem);
  *           type: string
  *         description: ID of the backlog item
  *         example: "story_001"
+ *       - in: query
+ *         name: type
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [epic, story, bug, techTask, knowledge]
+ *         description: Type of the backlog item
  *     requestBody:
  *       required: true
  *       content:
@@ -407,7 +408,7 @@ router.get("/items/:itemId", memberAuth, backlogController.getBacklogItem);
  *                 example: "As a user, I want to log in using my email and password with 2FA support."
  *               priority:
  *                 type: string
- *                 enum: [low, medium, high, highest]
+ *                 enum: [lowest, low, medium, high, highest]
  *                 description: New priority for the backlog item
  *                 example: "high"
  *               status:
@@ -442,29 +443,6 @@ router.get("/items/:itemId", memberAuth, backlogController.getBacklogItem);
  *                   type: string
  *                 description: New tags (for knowledge items)
  *                 example: ["auth", "security", "decision"]
- *           examples:
- *             story:
- *               summary: Updating a story
- *               value:
- *                 title: "Updated User Login Story"
- *                 description: "As a user, I want to log in using my email and password with 2FA support."
- *                 priority: "high"
- *                 status: "in-progress"
- *                 storyPoints: 8
- *             bug:
- *               summary: Updating a bug
- *               value:
- *                 title: "Login button unresponsive on Safari and Chrome"
- *                 description: "Updated steps: 1. Open on Safari 15 or Chrome 120. 2. Enter credentials. 3. Click Login."
- *                 priority: "high"
- *                 severity: "critical"
- *                 status: "in-progress"
- *             knowledge:
- *               summary: Updating a knowledge item
- *               value:
- *                 title: "Updated Decision Log: Authentication Flow"
- *                 content: "Updated decision: Using JWT with refresh tokens."
- *                 tags: ["auth", "security", "decision"]
  *     responses:
  *       200:
  *         description: Backlog item updated successfully
@@ -518,6 +496,13 @@ router.put(
  *           type: string
  *         description: ID of the backlog item to delete
  *         example: "story_001"
+ *       - in: query
+ *         name: type
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [epic, story, bug, techTask, knowledge]
+ *         description: Type of the backlog item
  *     responses:
  *       200:
  *         description: Backlog item deleted successfully
