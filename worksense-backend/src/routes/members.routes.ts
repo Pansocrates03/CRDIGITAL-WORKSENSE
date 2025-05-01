@@ -16,7 +16,7 @@ const router = express.Router({ mergeParams: true });
 
 /**
  * @swagger
- * /{projectId}/members:
+ * /projects/{projectId}/members:
  *   get:
  *     summary: List all members of a project
  *     tags: [Project Members]
@@ -73,7 +73,7 @@ router.get("/", memberAuth, memberController.listMembers);
 
 /**
  * @swagger
- * /{projectId}/members-detail:
+ * /projects/{projectId}/members-detail:
  *   get:
  *     summary: List all members of a project with their email addresses
  *     tags: [Project Members]
@@ -150,7 +150,7 @@ router.get("/members-detail", memberAuth, memberController.listMembersDetail);
 
 /**
  * @swagger
- * /{projectId}/members:
+ * /projects/{projectId}/members:
  *   post:
  *     summary: Add a new member to the project
  *     description: |
@@ -232,7 +232,7 @@ router.post("/", withPermission("manage:members"), memberController.addMember);
 
 /**
  * @swagger
- * /{projectId}/members/{userId}:
+ * /projects/{projectId}/members/{userId}:
  *   put:
  *     summary: Update a member's role in the project
  *     description: |
@@ -318,7 +318,7 @@ router.put(
 
 /**
  * @swagger
- * /{projectId}/members/{userId}:
+ * /projects/{projectId}/members/{userId}:
  *   delete:
  *     summary: Remove a member from the project
  *     description: |

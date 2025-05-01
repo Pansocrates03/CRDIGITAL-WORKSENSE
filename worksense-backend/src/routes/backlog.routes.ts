@@ -150,7 +150,7 @@ const router = express.Router({ mergeParams: true });
 
 /**
  * @swagger
- * /{projectId}/backlog/items:
+ * /projects/{projectId}/backlog/items:
  *   post:
  *     summary: Create a new backlog item
  *     description: |
@@ -255,7 +255,7 @@ router.post(
 
 /**
  * @swagger
- * /{projectId}/backlog/items:
+ * /projects/{projectId}/backlog/items:
  *   get:
  *     summary: List all backlog items for a project
  *     description: |
@@ -311,7 +311,7 @@ router.get("/items", memberAuth, backlogController.listBacklogItems);
 
 /**
  * @swagger
- * /{projectId}/backlog/items/{itemId}:
+ * /projects/{projectId}/backlog/items/{itemId}:
  *   get:
  *     summary: Get a specific backlog item by ID
  *     tags: [Backlog Items]
@@ -360,7 +360,7 @@ router.get("/items/:itemId", memberAuth, backlogController.getBacklogItem);
 
 /**
  * @swagger
- * /{projectId}/backlog/items/{itemId}:
+ * /projects/{projectId}/backlog/items/{itemId}:
  *   put:
  *     summary: Update a backlog item
  *     description: |
@@ -472,7 +472,7 @@ router.put(
 
 /**
  * @swagger
- * /{projectId}/backlog/items/{itemId}:
+ * /projects/{projectId}/backlog/items/{itemId}:
  *   delete:
  *     summary: Delete a backlog item
  *     description: |
