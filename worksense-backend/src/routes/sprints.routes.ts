@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createSprint } from "../controllers/sprint.controller.js";
+import { createSprint, completeSprint } from "../controllers/sprint.controller.js";
 import { addItemToSprint, getSprintBoard, updateSprintItem, removeSprintItem } from "../controllers/sprintItems.controller.js";
 import { verifyToken } from "../middlewares/tokenAuth.js";
 import { checkProjectMembership, checkProjectPermission } from "../middlewares/projectAuth.js";
@@ -228,6 +228,59 @@ router.delete(
   checkProjectMembership,
   checkProjectPermission("manage:sprints"),
   removeSprintItem
+);
+
+/**
+ * @swagger
+ * /projectss/{projectId}/sprints/{sprintId}/complete:
+ *   post:
+ *     summary: Marcar un sprint como completado
+ *     tags: [Sprints]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: projectId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: sprintId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Sprint marcado como completado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 completedAt:
+ *                   type: object
+ *                 completionMetrics:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: number
+ *                     completedItems:
+ *                       type: number
+ *                     itemsByStatus:
+ *                       type: object
+ *       400:
+ *         description: El sprint ya está completado
+ *       404:
+ *         description: Sprint no encontrado
+ */
+router.post(
+  "/projectss/:projectId/sprints/:sprintId/complete",
+  verifyToken,
+  checkProjectMembership,
+  checkProjectPermission("manage:sprints"),
+  completeSprint
 );
 
 export default router; 

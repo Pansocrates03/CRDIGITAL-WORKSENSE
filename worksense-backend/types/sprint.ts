@@ -4,6 +4,35 @@ import { BacklogItemType } from "./backlog.js";
 // Estados posibles para items en el sprint board
 export type SprintItemStatus = "todo" | "in-progress" | "review" | "done";
 
+// Estados posibles para un sprint
+export type SprintStatus = "active" | "planned" | "completed";
+
+// Interfaz para las métricas del sprint al completarse
+export interface SprintCompletionMetrics {
+  totalItems: number;
+  completedItems: number;
+  itemsByStatus: {
+    todo: number;
+    "in-progress": number;
+    review: number;
+    done: number;
+  };
+}
+
+// Interfaz para un sprint
+export interface Sprint {
+  projectId: string;
+  name: string | null;
+  goal: string | null;
+  startDate: Timestamp;
+  endDate: Timestamp;
+  status: SprintStatus;
+  completedAt?: Timestamp;
+  completionMetrics?: SprintCompletionMetrics;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 // Interfaz base para items en el sprint board
 export interface SprintItem {
   // Campos de referencia al item original
