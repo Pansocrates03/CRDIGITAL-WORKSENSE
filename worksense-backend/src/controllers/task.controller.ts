@@ -5,8 +5,11 @@ import { FieldValue } from "firebase-admin/firestore";
 import {
   CreateSprintItemDTO,
   UpdateSprintItemDTO,
+  ApiResponseTask,
+  Assignee,
 } from "../../types/sprint.js"; // Adjust path if needed
 import { getItemRef } from "../utils/helpers/firestoreHelpers.js"; // Adjust path if needed
+import { sql, sqlConnect } from "../models/sqlModel.js";
 
 // --- Task Management ---
 
@@ -85,21 +88,56 @@ export const createTask: RequestHandler = async (req, res, next) => {
     const nextOrder = lastOrder + 1000; // Simple increment strategy
 
     // --- Prepare Task Data ---
-    // Inherit title/description from backlog item
     const backlogData = backlogItemSnap.data();
-    const taskData = {
+
+    // Fetch assignee information if assigneeId is provided
+    let assignees: Assignee[] = [];
+    if (assigneeId) {
+      try {
+        const pool = await sqlConnect();
+        if (pool) {
+          const result = await pool
+            .request()
+            .input("UserIds", sql.NVarChar(sql.MAX), assigneeId.toString())
+            .execute("spGetUsersByIds");
+
+          if (result.recordset && result.recordset.length > 0) {
+            const userData = result.recordset[0];
+            assignees = [
+              {
+                id: userData.id,
+                name: `${userData.firstName} ${userData.lastName}`,
+                avatarUrl: userData.pfp,
+              },
+            ];
+          }
+        }
+      } catch (sqlError) {
+        console.error("SQL error fetching assignee data:", sqlError);
+        // Fallback to basic assignee info if SQL fails
+        assignees = [{ id: assigneeId }];
+      }
+    }
+
+    const taskData: ApiResponseTask = {
+      id: "",
       projectId,
       sprintId,
       backlogId,
-      type: backlogData?.type,
-      title: backlogData?.title || "Untitled Task", // Inherit title
-      description: backlogData?.description || null, // Inherit description
-      status: "ToDo", // Default status
-      assigneeId: assigneeId || null,
-      order: nextOrder,
+      title: backlogData?.title || "",
+      status: "todo",
+      priority: backlogData?.priority || null,
+      type: backlogData?.type || "Task",
+      assignees,
       subtasksCompleted: 0,
-      subtasksTotal: 0,
-      priority: backlogData?.priority || null, // Inherit priority
+      subtasksTotal: backlogData?.subtasksTotal || 0,
+      coverImageUrl: backlogData?.coverImageUrl || null,
+      startDate: null,
+      endDate: null,
+      commentsCount: 0,
+      linksCount: 0,
+      description: backlogData?.description || null,
+      order: nextOrder,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     };
