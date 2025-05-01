@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import MembersList from '@/components/MembersList/MembersList';
 import EditMemberModal from '../../components/EditMemberModal/EditMemberModal';
 import MemberSelection from '@/components/NewProjectModal/MemberSelection';
-import styles from './MembersAlert.module.css';
 import { DeleteMemberAlert } from './DeleteMemberAlert';
 
 // Types

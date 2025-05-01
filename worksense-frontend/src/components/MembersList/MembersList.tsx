@@ -102,16 +102,18 @@ const MembersList: React.FC<Props> = ({ members, onEdit, onDelete }) => {
                     {formatLastLogin(member.lastLogin)}
                   </span>
                 </TableCell>
-                <TableCell className={styles.actionButtons}>
-                  <button onClick={() => onEdit(member)} className={styles.button}>
-                    <FaPencilAlt />
-                  </button>
-                  <button
-                    onClick={() => onDelete(member)}
-                    className={`${styles.button} ${styles.trashButton}`}
-                  >
-                    <FaTrashAlt />
-                  </button>
+                <TableCell>
+                  <div className={styles.actionButtons}>
+                    <button onClick={() => onEdit(member)} className={styles.button}>
+                      <FaPencilAlt />
+                    </button>
+                    <button
+                      onClick={() => onDelete(member)}
+                      className={`${styles.button} ${styles.trashButton}`}
+                    >
+                      <FaTrashAlt />
+                    </button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
