@@ -1,25 +1,31 @@
-// src/components/BacklogTable/CreateItemModal.tsx
+// src/components/BacklogTable/UpdateItemModal.tsx
 import React, { FC, useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import ItemModalForm, { BacklogItemFormData } from "./ItemModalForm";
 import { Epic, User } from "./types";
 
-interface CreateItemModalProps {
+interface BacklogItem extends BacklogItemFormData {
+  id: string;
+}
+
+interface UpdateItemModalProps {
   projectId: string;
   isOpen: boolean;
   onClose: () => void;
-  onItemCreated: () => void;
+  onItemUpdated: () => void;
   onError?: (message: string) => void;
+  item: BacklogItem | null;
 }
 
-const CreateItemModal: FC<CreateItemModalProps> = ({
+const UpdateItemModal: FC<UpdateItemModalProps> = ({
   projectId,
   isOpen,
   onClose,
-  onItemCreated,
+  onItemUpdated,
+  item,
   onError,
 }) => {
-  const initialState: BacklogItemFormData = {
+  const [formData, setFormData] = useState<BacklogItemFormData>({
     title: "",
     type: "story",
     status: "",
@@ -30,32 +36,41 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
     assigneeId: "",
     content: "",
     tags: [],
-  };
-
-  const [formData, setFormData] = useState(initialState);
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [epics, setEpics] = useState<Epic[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [originalItem, setOriginalItem] = useState<BacklogItem | null>(null);
 
   useEffect(() => {
-    if (!isOpen) {
-      setFormData(initialState);
-      setIsSubmitting(false);
-      setError(null);
+    if (isOpen && item) {
+      setFormData({ ...item });
+      setOriginalItem(item);
+      fetchOptionsData();
+    } else if (!isOpen) {
+      setFormData({
+        title: "",
+        type: "story",
+        status: "",
+        priority: "medium",
+        epicId: "",
+        storyPoints: null,
+        severity: "major",
+        assigneeId: "",
+        content: "",
+        tags: [],
+      });
+      setOriginalItem(null);
     }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (isOpen) fetchOptionsData();
-  }, [isOpen, projectId]);
+  }, [isOpen, item]);
 
   const fetchOptionsData = async () => {
     try {
       const epicsRes = await apiClient.get(`/${projectId}/backlog/items`);
       setEpics(
         Array.isArray(epicsRes.data)
-          ? epicsRes.data.filter((item: any) => item.type === "epic")
+          ? epicsRes.data.filter((i: any) => i.type === "epic")
           : []
       );
 
@@ -70,23 +85,28 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!item) return;
+
     setIsSubmitting(true);
     setError(null);
 
     const payload = {
       ...formData,
-      storyPoints: formData.storyPoints
-        ? parseInt(formData.storyPoints as unknown as string)
-        : null,
+      storyPoints:
+        formData.storyPoints && typeof formData.storyPoints === "string"
+          ? parseInt(formData.storyPoints)
+          : formData.storyPoints,
     };
 
     try {
-      await apiClient.post(`/${projectId}/backlog/items`, payload);
-      setFormData(initialState);
-      onItemCreated();
+      await apiClient.put(
+        `/${projectId}/backlog/items/${item.id}?type=${formData.type}`,
+        payload
+      );
+      onItemUpdated();
       onClose();
     } catch (err: any) {
-      const msg = err.response?.data?.message || "Failed to create item";
+      const msg = err.response?.data?.message || "Failed to update item";
       setError(msg);
       onError?.(msg);
     } finally {
@@ -94,26 +114,29 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
     }
   };
 
-  const handleClear = () => {
-    setFormData({ ...initialState, type: formData.type });
+  const handleReset = () => {
+    if (originalItem) {
+      setFormData({ ...originalItem });
+    }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !item) return null;
 
   return (
     <ItemModalForm
-      mode="create"
+      mode="update"
       formData={formData}
       onChange={setFormData}
       onSubmit={handleSubmit}
       onClose={onClose}
-      onClearOrReset={handleClear}
+      onClearOrReset={handleReset}
       loading={isSubmitting}
       error={error || undefined}
       users={users}
       epics={epics}
+      disableTypeChange
     />
   );
 };
 
-export default CreateItemModal;
+export default UpdateItemModal;
