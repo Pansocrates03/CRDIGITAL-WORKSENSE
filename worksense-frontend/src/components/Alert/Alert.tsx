@@ -8,6 +8,7 @@ interface AlertProps {
   onClose: () => void;
   onAction?: () => void;
   actionLabel?: string;
+  className?: Record<string, string>;
 }
 
 export const Alert: React.FC<AlertProps> = ({
@@ -17,11 +18,12 @@ export const Alert: React.FC<AlertProps> = ({
   onClose,
   onAction,
   actionLabel,
+  className,
 }) => {
   return (
-    <div className={styles.overlay}>
-      <div className={styles.alertContainer}>
-        <div className={`${styles.icon} ${styles[type]}`}>
+    <div className={className?.overlay}>
+      <div className={className?.alertContainer}>
+        <div className={`${className?.icon} ${className?.[type]}`}>
           {type === "success" ? (
             <svg
               width="28"
@@ -50,18 +52,18 @@ export const Alert: React.FC<AlertProps> = ({
             </svg>
           )}
         </div>
-        <h2 className={styles.title}>{title}</h2>
-        <p className={styles.message}>{message}</p>
-        <div className={styles.actions}>
+        <h2 className={className?.title}>{title}</h2>
+        <p className={className?.message}>{message}</p>
+        <div className={className?.actions}>
           <button
-            className={`${styles.button} ${styles.closeButton}`}
+            className={`${className?.button} ${className?.closeButton}`}
             onClick={onClose}
           >
             Close
           </button>
           {actionLabel && onAction && (
             <button
-              className={`${styles.button} ${styles.actionButton}`}
+              className={`${className?.button} ${className?.actionButton}`}
               onClick={onAction}
             >
               {actionLabel}

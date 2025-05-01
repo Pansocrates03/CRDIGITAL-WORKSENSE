@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import MembersList from '@/components/MembersList/MembersList';
 import EditMemberModal from '../../components/EditMemberModal/EditMemberModal';
 import { Alert } from '@/components/Alert/Alert';
+import styles from './MembersAlert.module.css';
 import MemberSelection from '@/components/NewProjectModal/MemberSelection';
 
 // Types
@@ -18,9 +19,8 @@ import Member from '@/types/MemberType';
 
 // Services
 import { projectService } from '@/services/projectService';
-import { useMembers, useDeleteMember } from '@/hooks/useMembers';
+import { useMembers, useDeleteMember, useUpdateMemberRole } from '@/hooks/useMembers';
 import { useUsers } from '@/hooks/useUsers';
-
 
 const MembersPage: React.FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
@@ -38,21 +38,17 @@ const MembersPage: React.FC = () => {
 
   const { data: members = [], isLoading } = useMembers(projectId!);
   const deleteMemberMutation = useDeleteMember(projectId!);
+  const updateMemberRoleMutation = useUpdateMemberRole(projectId!);
   const { isLoading: isUsersLoading, data: users = [] } = useUsers();
 
   const handleEditClick = (member: MemberDetailed) => {
     setSelectedMember(member);
     setIsModalOpen(true);
   };
-  const handleAddMemberClick = async () => {
-    console.log("Add member clicked");
-    setSelectedMember(null);
-    setIsModalOpen(true);
-  }
 
   const handleRoleUpdate = async (userId: number, role: string) => {
     try {
-      await projectService.updateMemberRole(projectId!, userId, role);
+      await updateMemberRoleMutation.mutateAsync({ userId, role });
       setIsModalOpen(false);
     } catch (error) {
       console.error('Failed to update role:', error);
@@ -120,7 +116,7 @@ const MembersPage: React.FC = () => {
           onClick={() => setIsAddingMembers(true)}
         >
           <PlusIcon className="mr-1 h-4 w-4" />
-          <span>Add Member</span>
+          Add User
         </Button>
       </div>
 
@@ -189,23 +185,6 @@ const MembersPage: React.FC = () => {
         onSubmit={handleRoleUpdate}
       />
 
-      <AddMemberModal
-        isOpen={isModalOpen && selectedMember === null}
-        onClose={() => setIsModalOpen(false)}
-        projectId={projectId!}
-        onSubmit={() => {console.log("Member added")}} // Placeholder for actual add member function)}
-        />
-
-{/* 
-<EditTeamModal
-        isOpen={isEditTeamModalOpen}
-        onClose={() => setIsEditTeamModalOpen(false)}
-        projectId={id || ''}
-        currentTeam={teamMembers}
-        onTeamUpdate={handleTeamUpdate}
-      />
-      */}
-
       {showDeleteAlert && memberToDelete && (
         <Alert
           type="error"
@@ -217,6 +196,7 @@ const MembersPage: React.FC = () => {
           }}
           onAction={handleConfirmDelete}
           actionLabel="Delete"
+          className={styles}
         />
       )}
     </div>

@@ -1,0 +1,106 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.alertContainer {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 400px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--color-gray, #d0d1d2);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.error {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  color: var(--color-charcoal, #253c4f);
+}
+
+.message {
+  font-size: 16px;
+  color: var(--color-charcoal-dark, #3b465b);
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: auto;
+}
+
+.button {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.closeButton {
+  background-color: transparent;
+  color: var(--color-purple, #ac1754);
+  text-decoration: underline;
+  border: 1px solid var(--color-gray, #d0d1d2);
+}
+
+.closeButton:hover {
+  background-color: var(--color-pink-light, #f8eaf0);
+  border-color: var(--color-purple, #ac1754);
+}
+
+.actionButton {
+  background-color: var(--color-purple, #ac1754);
+  color: white;
+  box-shadow: 0 2px 4px rgba(172, 23, 84, 0.2);
+}
+
+.actionButton:hover {
+  background-color: var(--color-purple-dark, #8e0e3d);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(172, 23, 84, 0.3);
+}
+
+.actionButton:active {
+  background-color: var(--color-purple-dark, #8e0e3d);
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(172, 23, 84, 0.2);
+} 
