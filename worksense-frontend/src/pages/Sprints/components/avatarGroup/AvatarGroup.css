@@ -1,0 +1,43 @@
+.avatar-group {
+  display: flex;
+  align-items: center;
+  padding-left: 2px; /* Small offset so border doesn't clip */
+}
+
+.avatar-group__avatar {
+  width: 28px; /* Slightly larger */
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #ffffff; /* White border for overlap */
+  margin-left: -8px; /* Overlap amount */
+  background-color: #e5e7eb; /* Placeholder bg */
+  object-fit: cover; /* Ensure image covers */
+  transition: transform 0.1s ease-in-out;
+}
+
+/* Bring avatar to front on hover */
+.avatar-group__avatar:hover {
+  transform: scale(1.1);
+  z-index: 1;
+}
+
+/* First avatar doesn't need left margin */
+.avatar-group__avatar:first-child {
+  margin-left: 0;
+}
+
+.avatar-group__more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #f3f4f6; /* Light grey background */
+  color: #4b5563; /* Darker grey text */
+  font-size: 0.7rem; /* Small text */
+  font-weight: 500;
+  margin-left: -8px; /* Overlap */
+  border: 2px solid #ffffff;
+  z-index: 0; /* Below hovered avatars */
+}

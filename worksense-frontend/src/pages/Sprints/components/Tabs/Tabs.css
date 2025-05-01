@@ -1,0 +1,39 @@
+/* src/components/Tabs.css */
+.tabs-navigation {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb; /* Bottom border for the whole nav */
+}
+
+.tabs-navigation__item {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 16px; /* Adjust padding */
+  margin-bottom: -1px; /* Overlap bottom border */
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.9rem; /* Adjust font size */
+  font-weight: 500;
+  color: #6b7280; /* Default color: Medium grey */
+  border-bottom: 2px solid transparent; /* Placeholder for active underline */
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.tabs-navigation__item:hover {
+  color: #1f2937; /* Darker grey on hover */
+}
+
+.tabs-navigation__item--active {
+  color: #ac1754; /* Active color: Purple */
+  font-weight: 600;
+  border-bottom-color: #ac1754; /* Active underline color */
+}
+
+.tabs-navigation__icon {
+  margin-right: 6px; /* Space between icon and label */
+  /* Icon color inherits from button text color */
+}
+
+.tabs-navigation__label {
+  line-height: 1; /* Prevent extra spacing */
+}

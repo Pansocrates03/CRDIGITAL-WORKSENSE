@@ -13,11 +13,11 @@ interface CreateItemModalProps {
   onItemCreated: () => void;
 }
 
-const CreateItemModal: FC<CreateItemModalProps> = ({ 
-  projectId, 
-  isOpen, 
+const CreateItemModal: FC<CreateItemModalProps> = ({
+  projectId,
+  isOpen,
   onClose,
-  onItemCreated 
+  onItemCreated,
 }) => {
   const initialState = {
     title: "",
@@ -29,25 +29,29 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
     severity: "major",
     assigneeId: "",
     content: "",
-    tags: []
+    tags: [],
   };
 
   const [formData, setFormData] = useState(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
-    
+
     if (name === "storyPoints") {
       setFormData({
         ...formData,
-        [name]: value ? parseInt(value) : null
+        [name]: value ? parseInt(value) : null,
       });
     } else {
       setFormData({
         ...formData,
-        [name]: value
+        [name]: value,
       });
     }
   };
@@ -77,7 +81,7 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
     { value: "story", label: "Story" },
     { value: "bug", label: "Bug" },
     { value: "techTask", label: "Tech Task" },
-    { value: "knowledge", label: "Knowledge" }
+    { value: "knowledge", label: "Knowledge" },
   ];
 
   const statusOptions = [
@@ -87,7 +91,7 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
     { value: "review", label: "Review" },
     { value: "done", label: "Done" },
     { value: "blocked", label: "Blocked" },
-    { value: "new", label: "New" }
+    { value: "new", label: "New" },
   ];
 
   const priorityOptions = [
@@ -95,25 +99,28 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
     { value: "low", label: "Low" },
     { value: "medium", label: "Medium" },
     { value: "high", label: "High" },
-    { value: "highest", label: "Highest" }
+    { value: "highest", label: "Highest" },
   ];
 
   const severityOptions = [
     { value: "minor", label: "Minor" },
     { value: "major", label: "Major" },
     { value: "critical", label: "Critical" },
-    { value: "blocker", label: "Blocker" }
+    { value: "blocker", label: "Blocker" },
   ];
 
   return (
-    <div className={styles.modalOverlay} onClick={(e) => {
-      if (e.target === e.currentTarget) onClose();
-    }}>
+    <div
+      className={styles.modalOverlay}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h2>Create New Backlog Item</h2>
-          <button 
-            className={styles.closeButton} 
+          <button
+            className={styles.closeButton}
             onClick={onClose}
             aria-label="Close"
           >
@@ -201,7 +208,9 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
                   id="storyPoints"
                   name="storyPoints"
                   type="number"
-                  value={formData.storyPoints === null ? "" : formData.storyPoints}
+                  value={
+                    formData.storyPoints === null ? "" : formData.storyPoints
+                  }
                   onChange={handleChange}
                   placeholder="Story Points"
                 />

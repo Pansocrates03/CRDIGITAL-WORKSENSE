@@ -18,6 +18,7 @@ import BacklogTablePage from "./pages/BacklogTable/BacklogTablePage";
 import MembersPage from "./pages/Members/MembersPage";
 
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import SprintPage from "./pages/Sprints/SprintPage";
 const queryClient = new QueryClient();
 
 console.log("Running");
@@ -115,9 +116,7 @@ function App() {
               path="/project/:id/sprint"
               element={
                 <PrivateRoute>
-                  {" "}
-                  <ProjectPage />{" "}
-                  {/* Replace with specific SprintPage if you have one */}{" "}
+                  <SprintPage />
                 </PrivateRoute>
               }
             />
