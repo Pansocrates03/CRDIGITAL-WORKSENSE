@@ -1,31 +1,31 @@
 import admin from "firebase-admin";
 import { Firestore } from "firebase-admin/firestore";
-import { readFileSync, existsSync } from "fs";
 import dotenv from "dotenv";
 dotenv.config();
 
 let db: Firestore;
 
-const firebaseConfigPath = "./config/firebaseServiceAccount.json";
-
 try {
-  if (existsSync(firebaseConfigPath)) {
-    const serviceAccount = JSON.parse(
-      readFileSync(firebaseConfigPath, "utf-8")
-    );
+  // Procesamiento de la clave privada mejorado
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY 
+    ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+    : undefined;
 
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-
-    db = admin.firestore();
-    console.log("✅ Conexión a Firebase establecida correctamente");
-  } else {
-    console.warn(
-      "⚠️ Archivo de credenciales de Firebase no encontrado. Funcionando en modo simulado."
-    );
-    db = createMockDB();
+  // Validar existencia de variables de entorno esenciales
+  if (!process.env.FIREBASE_PROJECT_ID || !privateKey || !process.env.FIREBASE_CLIENT_EMAIL) {
+    throw new Error("Variables de entorno de Firebase no configuradas correctamente");
   }
+
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      privateKey: privateKey,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL
+    }),
+  });
+
+  db = admin.firestore();
+  console.log("✅ Conexión a Firebase establecida correctamente");
 } catch (error) {
   console.error("❌ Error al inicializar Firebase:", error);
   db = createMockDB();
