@@ -283,4 +283,5 @@ router.post("/:sprintId/tasks", withPermission("manage:sprints"), createTask);
  */
 router.get("/:sprintId/tasks", memberAuth, getSprintTasks);
 
+router.get("/:sprintId/tasks/:taskId", memberAuth, getTaskById);
 export default router;

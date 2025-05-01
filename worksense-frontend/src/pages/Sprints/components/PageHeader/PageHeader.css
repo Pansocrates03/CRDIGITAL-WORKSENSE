@@ -1,6 +1,6 @@
 /* src/components/PageHeader.css */
 .page-header {
-  background-color: #ffffff; /* White background */
+  background-color: var(--background); /* White background */
   padding: 20px 25px 0 25px; /* Add padding, no bottom padding here */
   margin-bottom: 10px; /* Space below header before board */
 }

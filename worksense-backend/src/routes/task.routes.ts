@@ -6,6 +6,7 @@ import {
   updateTask,
   updateTaskStatus,
   removeTask,
+  getTaskById,
 } from "../controllers/task.controller.js";
 import {
   auth,
@@ -21,6 +22,8 @@ const router = Router({ mergeParams: true });
  *   name: Tasks
  *   description: Task management operations
  */
+
+router.get("/:taskId", memberAuth, getTaskById);
 
 /**
  * @swagger

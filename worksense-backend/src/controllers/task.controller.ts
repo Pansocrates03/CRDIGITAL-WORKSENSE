@@ -154,6 +154,38 @@ export const createTask: RequestHandler = async (req, res, next) => {
 };
 
 /**
+ * @description Get a task by its ID.
+ * @route GET /api/v1/projects/:projectId/tasks/:taskId
+ * @access Private (requires auth, project membership)
+ */
+export const getTaskById: RequestHandler = async (req, res, next) => {
+  try {
+    const { projectId, taskId } = req.params;
+
+    // --- Verification: Check if the task exists and belongs to the project ---
+    const taskRef = db.collection("tasks").doc(taskId);
+    const taskSnap = await taskRef.get();
+    if (!taskSnap.exists) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    if (taskSnap.data()?.projectId !== projectId) {
+      return res.status(403).json({
+        message: "Forbidden: Task does not belong to the specified project",
+      });
+    }
+
+    // --- Fetch Task Data ---
+    const taskData = taskSnap.data() as ApiResponseTask;
+
+    // --- Format Response ---
+    res.status(200).json(taskData);
+  } catch (error) {
+    console.error(`Error getting task ${req.params.taskId}:`, error);
+    next(error);
+  }
+};
+
+/**
  * @description Get all tasks for a specific sprint within a project.
  *              Verifies sprint existence and project relationship first.
  * @route GET /api/v1/projects/:projectId/sprints/:sprintId/tasks
