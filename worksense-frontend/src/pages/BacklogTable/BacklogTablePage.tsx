@@ -309,44 +309,49 @@ const BacklogTablePage: FC = () => {
           </thead>
           <tbody>
             <BacklogTableSection title="Epics">
-              {categorized.epics.map((epic) => (
-                <React.Fragment key={epic.id}>
-                  <EpicRow
-                    epic={{
-                      ...epic,
-                      stories: getEpicStories(epic.id),
-                    }}
-                    isExpanded={expandedEpics.includes(epic.id)}
-                    onToggle={() =>
-                      setExpandedEpics((prev) =>
-                        prev.includes(epic.id)
-                          ? prev.filter((id) => id !== epic.id)
-                          : [...prev, epic.id]
-                      )
-                    }
-                    colSpan={5}
-                    onEdit={() => handleEdit(epic)}
-                    onDelete={() => handleDeleteEpic(epic.id)}
-                    onGenerateStories={handleGenerateStories}
-                  />
-                  {expandedEpics.includes(epic.id) &&
-                    renderRows(getEpicStories(epic.id), true)}
-                </React.Fragment>
-              ))}
+              {categorized.epics
+                .filter((epic) => {
+                  if (matchesSearch(epic)) return true;
+                  const epicStories = getEpicStories(epic.id);
+                  return epicStories.some((story) => matchesSearch(story));
+                })
+                .map((epic) => (
+                  <React.Fragment key={epic.id}>
+                    <EpicRow
+                      epic={{
+                        ...epic,
+                        stories: getEpicStories(epic.id),
+                      }}
+                      isExpanded={expandedEpics.includes(epic.id)}
+                      onToggle={() =>
+                        setExpandedEpics((prev) =>
+                          prev.includes(epic.id)
+                            ? prev.filter((id) => id !== epic.id)
+                            : [...prev, epic.id]
+                        )
+                      }
+                      colSpan={5}
+                      onEdit={() => handleEdit(epic)}
+                      onDelete={() => handleDeleteEpic(epic.id)}
+                      onGenerateStories={handleGenerateStories}
+                    />
+                    {expandedEpics.includes(epic.id) &&
+                      renderRows(
+                        getEpicStories(epic.id).filter(matchesSearch),
+                        true
+                      )}
+                  </React.Fragment>
+                ))}
             </BacklogTableSection>
-
             <BacklogTableSection title="User Stories">
               {renderRows(categorized.standaloneStories)}
             </BacklogTableSection>
-
             <BacklogTableSection title="Bugs">
               {renderRows(categorized.bugs)}
             </BacklogTableSection>
-
             <BacklogTableSection title="Tech Tasks">
               {renderRows(categorized.techTasks)}
             </BacklogTableSection>
-
             <BacklogTableSection title="Knowledge Items">
               {renderRows(categorized.knowledge)}
             </BacklogTableSection>
@@ -404,7 +409,7 @@ const BacklogTablePage: FC = () => {
             setShowDetailsModal(false);
           }}
           item={selectedItem}
-          memberMap={memberMap} // Add this line to pass the memberMap
+          memberMap={memberMap}
         />
       )}
 

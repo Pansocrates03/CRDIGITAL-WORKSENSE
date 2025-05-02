@@ -43,10 +43,40 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
   const [users, setUsers] = useState<User[]>([]);
   const [originalItem, setOriginalItem] = useState<BacklogItem | null>(null);
 
+  // Initialize form data when modal opens with an item
   useEffect(() => {
     if (isOpen && item) {
-      setFormData({ ...item });
-      setOriginalItem(item);
+      console.log("Initial item data:", item);
+      console.log("Item content:", item.content);
+      console.log("Item description:", item.description);
+
+      // Check if the item has a description but no content
+      const itemWithContentFromDescription = { ...item };
+
+      // If there's a description but no content, map the description to content
+      if (
+        !itemWithContentFromDescription.content &&
+        itemWithContentFromDescription.description
+      ) {
+        console.log("Mapping description to content");
+        itemWithContentFromDescription.content =
+          itemWithContentFromDescription.description;
+      }
+
+      // If there's content but no description, map the content to description
+      if (
+        !itemWithContentFromDescription.description &&
+        itemWithContentFromDescription.content
+      ) {
+        console.log("Mapping content to description");
+        itemWithContentFromDescription.description =
+          itemWithContentFromDescription.content;
+      }
+
+      console.log("Setting form data with:", itemWithContentFromDescription);
+
+      setFormData(itemWithContentFromDescription);
+      setOriginalItem(itemWithContentFromDescription);
       fetchOptionsData();
     } else if (!isOpen) {
       setFormData({
@@ -99,13 +129,19 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
     setIsSubmitting(true);
     setError(null);
 
+    // Create the payload with necessary type conversions
     const payload = {
       ...formData,
       storyPoints:
         formData.storyPoints && typeof formData.storyPoints === "string"
           ? parseInt(formData.storyPoints)
           : formData.storyPoints,
+      // Ensure both content and description fields are synchronized
+      content: formData.content || formData.description,
+      description: formData.description || formData.content,
     };
+
+    console.log("Submitting update with payload:", payload);
 
     try {
       // Asegúrate de que esta ruta coincida con el formato de las otras
