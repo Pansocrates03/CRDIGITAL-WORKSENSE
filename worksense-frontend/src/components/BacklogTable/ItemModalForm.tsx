@@ -19,6 +19,8 @@ export interface BacklogItemFormData extends Partial<BacklogItemType> {
   content?: string;
   tags?: string[];
   epicId?: string;
+  parentId?: string;
+  isSubItem?: boolean;
 }
 
 interface ItemModalFormProps {
