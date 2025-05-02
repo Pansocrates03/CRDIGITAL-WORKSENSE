@@ -10,7 +10,7 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { AvatarDisplay } from '@/components/ui/AvatarDisplay';
 import styles from './MembersList.module.css';
 import MemberDetailed from '@/types/MemberDetailedType';
 
@@ -53,13 +53,6 @@ const formatLastLogin = (dateString: string) => {
   }
 };
 
-const getInitials = (name: string) => {
-  const parts = name.split(' ');
-  return parts.length > 1 
-    ? `${parts[0][0]}${parts[parts.length - 1][0]}`
-    : parts[0][0];
-};
-
 interface Props {
   projectId: string;
   members: MemberDetailed[];
@@ -86,15 +79,13 @@ const MembersList: React.FC<Props> = ({ members, onEdit, onDelete }) => {
             {members.map((member) => (
               <TableRow key={member.userId}>
                 <TableCell>
-                  <Avatar className={styles.avatar}>
-                    <AvatarImage
-                      src={member.profilePicture}
-                      alt={member.name}
-                    />
-                    <AvatarFallback>
-                      {getInitials(member.name)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <AvatarDisplay 
+                    user={{
+                      name: member.name,
+                      profilePicture: member.profilePicture
+                    }}
+                    size="sm"
+                  />
                 </TableCell>
                 <TableCell>{member.name}</TableCell>
                 <TableCell>{member.email}</TableCell>

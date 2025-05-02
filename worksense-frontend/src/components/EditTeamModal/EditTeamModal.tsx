@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './EditTeamModal.module.css';
 import apiClient from '../../api/apiClient';
 
-import { Avatar } from "../ui/avatar";
-import { AvatarImage } from "@radix-ui/react-avatar";
+import { AvatarDisplay } from "../ui/AvatarDisplay";
 import MemberDetailed from '@/types/MemberDetailedType';
 
 // Add helper function for generating avatars
@@ -157,9 +156,13 @@ const EditTeamModal: React.FC<EditTeamModalProps> = ({
             <div className={styles.teamList}>
               {currentTeam.map(member => (
                 <div key={member.userId} className={styles.teamMember}>
-                  <Avatar className='size-16'>
-                    <AvatarImage src={member.profilePicture} alt={member.name} className={styles.avatarImage} />
-                  </Avatar>
+                  <AvatarDisplay 
+                    user={{
+                      name: member.name,
+                      profilePicture: member.profilePicture
+                    }}
+                    size="sm"
+                  />
                   <div className={styles.memberInfo}>
                     <span className={styles.memberName}>{member.name}</span>
                     <span className={styles.memberRole}>{member.projectRoleId}</span>

@@ -3,7 +3,7 @@ import React from "react";
 import styles from "./BacklogRow.module.css";
 import StatusBadge from "./StatusBadge";
 import ActionMenu from "./ActionMenu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 
 interface BacklogItem {
   id: string;
@@ -70,19 +70,13 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
       <td>
         {memberInfo ? (
           <div className="flex items-center gap-2">
-            <Avatar className="h-8 w-8">
-              {memberInfo.profilePicture ? (
-                <AvatarImage
-                  src={memberInfo.profilePicture}
-                  alt={memberInfo.nickname || "User"}
-                />
-              ) : null}
-              <AvatarFallback>
-                {memberInfo.nickname
-                  ? memberInfo.nickname.charAt(0).toUpperCase()
-                  : assigneeId?.toString().charAt(0) || "U"}
-              </AvatarFallback>
-            </Avatar>
+            <AvatarDisplay
+              user={{
+                name: memberInfo.nickname || `User ${assigneeId}`,
+                profilePicture: memberInfo.profilePicture
+              }}
+              size="sm"
+            />
             <span className="text-sm">
               {memberInfo.nickname || `User ${assigneeId}`}
             </span>
