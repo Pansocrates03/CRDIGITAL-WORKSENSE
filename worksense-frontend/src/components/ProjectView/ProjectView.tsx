@@ -11,8 +11,7 @@ import MemberInfoPopup from "../MemberInfoPopup/MemberInfoPopup";
 import ProjectDetails from "@/types/ProjectType";
 import MemberDetailed from "@/types/MemberDetailedType";
 
-import { Avatar } from "../ui/avatar";
-import { AvatarImage } from "@radix-ui/react-avatar";
+import { AvatarDisplay } from "../ui/AvatarDisplay";
 
 import RecentBacklogItems from "./RecentBacklogItems"
 
@@ -122,10 +121,13 @@ export const ProjectView: React.FC<FullProjectData> = ({
                 className={styles.avatar}
                 onClick={(e) => handleAvatarClick(m, e)}
               >
-                <Avatar className="size-16">
-                  <AvatarImage src={m.profilePicture} />
-                  {/* <AvatarFallback delayMs={600}> */}
-                </Avatar>
+                <AvatarDisplay 
+                  user={{
+                    name: m.name,
+                    profilePicture: m.profilePicture
+                  }}
+                  size="lg"
+                />
                 <span className={styles.avatarName}>{m.name}</span>
               </div>
             ))}

@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { UserListItem } from "../interfaces";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 import { Pencil, Users, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { createPortal } from "react-dom";
@@ -218,16 +218,13 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                 <td>
                   <div className={styles.userCell}>
                     <div className={styles.avatarWrapper}>
-                      <Avatar className={styles.userAvatar}>
-                        <AvatarImage
-                          src={user.pfp}
-                          alt={`${user.firstName} ${user.lastName}`}
-                        />
-                        <AvatarFallback>
-                          {user.firstName?.[0]}
-                          {user.lastName?.[0]}
-                        </AvatarFallback>
-                      </Avatar>
+                      <AvatarDisplay 
+                        user={{
+                          name: `${user.firstName} ${user.lastName}`,
+                          profilePicture: user.pfp
+                        }}
+                        size="sm"
+                      />
                     </div>
                     <span className={styles.userName}>
                       {user.firstName} {user.lastName}

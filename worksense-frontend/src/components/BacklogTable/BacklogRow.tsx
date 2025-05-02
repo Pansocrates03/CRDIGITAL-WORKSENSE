@@ -5,6 +5,17 @@ import StatusBadge from "./StatusBadge";
 import ActionMenu from "./ActionMenu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BacklogItemType } from "@/types/BacklogItemType";
+import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
+
+interface BacklogItem {
+  id: string;
+  title: string;
+  status: string;
+  type: string;
+  assigneeId?: string | number | null;
+  severity?: string;
+  storyPoints?: number | null;
+}
 
 interface Member {
   userId: number;
@@ -89,19 +100,13 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
       <td>
         {memberInfo ? (
           <div className="flex items-center gap-2">
-            <Avatar className="h-8 w-8">
-              {memberInfo.profilePicture ? (
-                <AvatarImage
-                  src={memberInfo.profilePicture}
-                  alt={memberInfo.nickname || "User"}
-                />
-              ) : null}
-              <AvatarFallback>
-                {memberInfo.nickname
-                  ? memberInfo.nickname.charAt(0).toUpperCase()
-                  : assigneeId?.toString().charAt(0) || "U"}
-              </AvatarFallback>
-            </Avatar>
+            <AvatarDisplay
+              user={{
+                name: memberInfo.nickname || `User ${assigneeId}`,
+                profilePicture: memberInfo.profilePicture
+              }}
+              size="sm"
+            />
             <span className="text-sm">
               {memberInfo.nickname || `User ${assigneeId}`}
             </span>
