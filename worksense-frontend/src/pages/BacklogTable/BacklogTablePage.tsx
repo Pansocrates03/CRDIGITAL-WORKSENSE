@@ -19,7 +19,6 @@ import { useMembers } from "@/hooks/useMembers";
 
 import { BacklogItemType } from "@/types/BacklogItemType";
 import MemberDetailed from "@/types/MemberDetailedType";
-import QueryKeys from "@/utils/QueryKeys";
 
 interface ProjectMember {
   userId: number;
@@ -56,13 +55,10 @@ const BacklogTablePage: FC = () => {
 
   // Estado para el modal de detalles
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-
-  const [selectedItem, setSelectedItem] = useState<BacklogItemType | null>(
-    null
-  );
+  const [selectedItem, setSelectedItem] = useState<BacklogItem | null>(null);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: [QueryKeys.backlog, projectId],
+    queryKey: ["backlog", projectId],
     queryFn: async () => {
       if (!projectId) return [];
 
@@ -310,15 +306,15 @@ const BacklogTablePage: FC = () => {
             </tr>
           </thead>
           <tbody>
-            {hasMatchingItems(categorized.epics) && (
-              <BacklogTableSection title="Epics">
-                {categorized.epics.filter(hasMatchingEpicItems).map((epic) => (
+            <BacklogTableSection title="Epics">
+              {categorized.epics.map((epic) => {
+                const epicStories = getEpicStories(epic.id);
+                return (
                   <React.Fragment key={epic.id}>
                     <EpicRow
                       epic={{
                         ...epic,
-
-                        stories: getEpicStories(epic.id),
+                        stories: epicStories,
                       }}
                       isExpanded={expandedEpics.includes(epic.id)}
                       onToggle={() =>
@@ -335,31 +331,23 @@ const BacklogTablePage: FC = () => {
                       memberMap={memberMap}
                     />
                     {expandedEpics.includes(epic.id) &&
-                      renderRows(getEpicStories(epic.id), true)}
+                      renderRows(epicStories, true)}
                   </React.Fragment>
-                ))}
-              </BacklogTableSection>
-            )}
-            {hasMatchingItems(categorized.standaloneStories) && (
-              <BacklogTableSection title="User Stories">
-                {renderRows(categorized.standaloneStories)}
-              </BacklogTableSection>
-            )}
-            {hasMatchingItems(categorized.bugs) && (
-              <BacklogTableSection title="Bugs">
-                {renderRows(categorized.bugs)}
-              </BacklogTableSection>
-            )}
-            {hasMatchingItems(categorized.techTasks) && (
-              <BacklogTableSection title="Tech Tasks">
-                {renderRows(categorized.techTasks)}
-              </BacklogTableSection>
-            )}
-            {hasMatchingItems(categorized.knowledge) && (
-              <BacklogTableSection title="Knowledge Items">
-                {renderRows(categorized.knowledge)}
-              </BacklogTableSection>
-            )}
+                );
+              })}
+            </BacklogTableSection>
+            <BacklogTableSection title="User Stories">
+              {renderRows(categorized.standaloneStories)}
+            </BacklogTableSection>
+            <BacklogTableSection title="Bugs">
+              {renderRows(categorized.bugs)}
+            </BacklogTableSection>
+            <BacklogTableSection title="Tech Tasks">
+              {renderRows(categorized.techTasks)}
+            </BacklogTableSection>
+            <BacklogTableSection title="Knowledge Items">
+              {renderRows(categorized.knowledge)}
+            </BacklogTableSection>
           </tbody>
         </table>
       </div>
