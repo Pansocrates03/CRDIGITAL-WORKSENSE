@@ -1,16 +1,28 @@
 // src/components/BacklogTable/ActionMenu.tsx
 import React, { useState, useRef, useEffect, FC } from "react";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Sparkles } from "lucide-react";
 import styles from "./ActionMenu.module.css";
 
 interface ActionMenuProps {
   onEdit: () => void;
   onDelete: () => void;
+  onGenerateStories?: () => void;
+  isEpic?: boolean;
+  itemType?: string; // Añadimos el tipo de ítem para mostrar opciones según tipo
 }
 
-const ActionMenu: FC<ActionMenuProps> = ({ onEdit, onDelete }) => {
+const ActionMenu: FC<ActionMenuProps> = ({ 
+  onEdit, 
+  onDelete, 
+  onGenerateStories, 
+  isEpic = false,
+  itemType
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  
+  // Determinamos si debemos mostrar la opción de IA según el tipo de ítem
+  const canGenerateStories = isEpic || itemType === "epic";
 
   // Close the menu when clicking outside
   useEffect(() => {
@@ -49,6 +61,13 @@ const ActionMenu: FC<ActionMenuProps> = ({ onEdit, onDelete }) => {
     onDelete();
   };
 
+  // Handle generate stories action
+  const handleGenerateStories = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsOpen(false);
+    onGenerateStories?.();
+  };
+
   return (
     <div className={styles.actionMenuContainer} ref={menuRef}>
       <button
@@ -62,6 +81,12 @@ const ActionMenu: FC<ActionMenuProps> = ({ onEdit, onDelete }) => {
 
       {isOpen && (
         <div className={styles.menuDropdown}>
+          {canGenerateStories && onGenerateStories && (
+            <button onClick={handleGenerateStories} className={`${styles.menuItem} ${styles.aiItem}`}>
+              <Sparkles size={16} className={styles.menuIcon} />
+              <span>Generate Stories</span>
+            </button>
+          )}
           <button onClick={handleEdit} className={styles.menuItem}>
             <Pencil size={16} className={styles.menuIcon} />
             <span>Edit</span>

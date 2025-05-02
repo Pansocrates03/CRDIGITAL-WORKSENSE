@@ -4,28 +4,16 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import styles from "../../pages/BacklogTable/BacklogTablePage.module.css";
 import ActionMenu from "./ActionMenu";
-
-interface Story {
-  id: string;
-  title: string;
-}
-
-interface Epic {
-  id: string;
-  title: string;
-  type: string;
-  status: string;
-  stories: Story[];
-  assigneeId?: string | number | null;
-}
+import { BacklogItemType } from "@/types/BacklogItemType";
 
 interface EpicRowProps {
-  epic: Epic;
+  epic: BacklogItemType;
   isExpanded: boolean;
   onToggle: (epicId: string) => void;
   colSpan: number;
-  onEdit?: (epic: any) => void;
+  onEdit?: (epic: BacklogItemType) => void;
   onDelete?: (epicId: string) => void;
+  onGenerateStories?: (epicId: string, epicName: string) => void;
 }
 
 export const EpicRow: FC<EpicRowProps> = ({
@@ -35,6 +23,7 @@ export const EpicRow: FC<EpicRowProps> = ({
   colSpan,
   onEdit = () => console.log("Edit epic:", epic.id),
   onDelete = () => console.log("Delete epic:", epic.id),
+  onGenerateStories,
 }) => {
   // Handle toggle action
   const handleToggle = (e: React.MouseEvent) => {
@@ -46,16 +35,17 @@ export const EpicRow: FC<EpicRowProps> = ({
     <tr className={styles.epicRowContainer}>
       <td onClick={handleToggle}>
         <div className="flex items-center gap-2">
+          <span>{epic.name}</span>
+          <span className="text-muted-foreground ml-2">
+            ({epic.subItems?.length || 0}{" "}
+            {epic.subItems?.length === 1 ? "story" : "stories"})
+          </span>
           <span className="mr-2">
             {isExpanded ? (
               <ChevronDown size={16} className="text-gray-500" />
             ) : (
               <ChevronRight size={16} className="text-gray-500" />
             )}
-          </span>
-          <span>{epic.title}</span>
-          <span className="text-muted-foreground ml-2">
-            ({epic.stories.length} stories)
           </span>
         </div>
       </td>
@@ -68,6 +58,12 @@ export const EpicRow: FC<EpicRowProps> = ({
         <ActionMenu
           onEdit={() => onEdit(epic)}
           onDelete={() => onDelete(epic.id)}
+          onGenerateStories={
+            onGenerateStories
+              ? () => onGenerateStories(epic.id, epic.name)
+              : undefined
+          }
+          isEpic={true}
         />
       </td>
     </tr>

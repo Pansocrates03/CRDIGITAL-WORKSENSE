@@ -5,15 +5,8 @@ import StatusBadge from "./StatusBadge";
 import ActionMenu from "./ActionMenu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-interface BacklogItem {
-  id: string;
-  title: string;
-  status: string;
-  type: string;
-  assigneeId?: string | number | null;
-  severity?: string;
-  storyPoints?: number | null;
-}
+import { BacklogItemType } from "@/types/BacklogItemType";
+import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 
 interface Member {
   userId: number;
@@ -22,7 +15,7 @@ interface Member {
 }
 
 interface BacklogRowProps {
-  item: BacklogItem;
+  item: BacklogItemType;
   indent?: boolean;
   memberMap: Map<number, Member>;
   onEdit: () => void;
@@ -46,17 +39,50 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
     extraInfo = item.severity || "-";
   }
 
+  // Handle assigneeId conversion
   const assigneeId =
     item.assigneeId !== undefined && item.assigneeId !== null
-      ? Number(item.assigneeId)
+      ? typeof item.assigneeId === "string"
+        ? parseInt(item.assigneeId)
+        : Number(item.assigneeId)
       : null;
+
+  // Handle authorId conversion
+  const authorId =
+    item.authorId !== undefined && item.authorId !== null
+      ? typeof item.authorId === "string"
+        ? parseInt(item.authorId)
+        : Number(item.authorId)
+      : null;
+
+  // Get member info
   const memberInfo = assigneeId !== null ? memberMap.get(assigneeId) : null;
+  const authorInfo = authorId !== null ? memberMap.get(authorId) : null;
 
   return (
-    <tr key={item.id} className={indent ? styles.nestedRow : ""}>
-      <td style={{ paddingLeft: indent ? "2.5rem" : undefined }}>
+    <tr key={item.id}>
+      <td>
         <div className="flex items-center gap-2">
-          <span>{item.title}</span>
+          <span>{item.name}</span>
+          {authorInfo && (
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <span>by</span>
+              <Avatar className="h-4 w-4">
+                {authorInfo.profilePicture ? (
+                  <AvatarImage
+                    src={authorInfo.profilePicture}
+                    alt={authorInfo.nickname || "Author"}
+                  />
+                ) : null}
+                <AvatarFallback>
+                  {authorInfo.nickname
+                    ? authorInfo.nickname.charAt(0).toUpperCase()
+                    : authorId?.toString().charAt(0) || "A"}
+                </AvatarFallback>
+              </Avatar>
+              <span>{authorInfo.nickname || `User ${authorId}`}</span>
+            </div>
+          )}
         </div>
       </td>
       <td>
@@ -65,22 +91,30 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
       <td>
         {memberInfo ? (
           <div className="flex items-center gap-2">
-            <Avatar className="h-8 w-8">
-              <AvatarImage
-                src={memberInfo.profilePicture}
-                alt={memberInfo.nickname || "User"}
-              />
-              <AvatarFallback>
-                {(memberInfo.nickname || "User").charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-sm">{memberInfo.nickname}</span>
+            <AvatarDisplay
+              user={{
+                name: memberInfo.nickname || `User ${assigneeId}`,
+                profilePicture: memberInfo.profilePicture,
+              }}
+              size="sm"
+            />
+            <span className="text-sm">
+              {memberInfo.nickname || `User ${assigneeId}`}
+            </span>
           </div>
         ) : (
           assigneeId || "-"
         )}
       </td>
-      <td>{extraInfo}</td>
+      <td>
+        {item.type === "bug" && item.severity ? (
+          <StatusBadge type="severity" value={item.severity} />
+        ) : item.type === "story" && item.storyPoints ? (
+          item.storyPoints.toString()
+        ) : (
+          "-"
+        )}
+      </td>
       <td className={styles.actionButtons}>
         <ActionMenu onEdit={onEdit} onDelete={onDelete} />
       </td>

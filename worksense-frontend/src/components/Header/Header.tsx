@@ -5,7 +5,7 @@ import styles from "./Header.module.css";
 import { authService } from "@/services/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 
 interface HeaderProps {
   /** Current section/page name */
@@ -41,18 +41,6 @@ export const Header: React.FC<HeaderProps> = ({
   const { user } = useAuth();
   const { profile } = useUserProfile();
 
-  // Memoize user initials to prevent recalculation on rerenders
-  const userInitials = useMemo(() => {
-    if (user?.firstName && user?.lastName) {
-      return `${user.firstName.charAt(0)}${user.lastName.charAt(
-        0
-      )}`.toUpperCase();
-    }
-    if (user?.email) {
-      return user.email.charAt(0).toUpperCase();
-    }
-    return "U"; // Default fallback
-  }, [user?.firstName, user?.lastName, user?.email]);
 
   // Handler for user logout
   const handleLogout = () => {
@@ -175,19 +163,14 @@ export const Header: React.FC<HeaderProps> = ({
             aria-haspopup="true"
             data-testid="user-menu-button"
           >
-            {profile?.avatar ? (
-              <Avatar className="w-full h-full">
-                <AvatarImage
-                  src={profile.avatar}
-                  alt={user?.fullName || user?.email || "User"}
-                />
-                <AvatarFallback className={styles.avatarInitials}>
-                  {userInitials}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <div className={styles.avatarInitials}>{userInitials}</div>
-            )}
+            <AvatarDisplay 
+              user={{
+                firstName: user?.firstName,
+                lastName: user?.lastName,
+                profilePicture: profile?.avatar
+              }}
+              size="sm"
+            />
           </button>
 
           {isMenuOpen && (

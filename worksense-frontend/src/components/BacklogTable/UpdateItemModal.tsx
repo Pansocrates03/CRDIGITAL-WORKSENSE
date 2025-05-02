@@ -2,11 +2,7 @@
 import React, { FC, useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import ItemModalForm, { BacklogItemFormData } from "./ItemModalForm";
-import { Epic, User } from "./types";
-
-interface BacklogItem extends BacklogItemFormData {
-  id: string;
-}
+import { BacklogItemType } from "@/types/BacklogItemType";
 
 interface UpdateItemModalProps {
   projectId: string;
@@ -14,7 +10,7 @@ interface UpdateItemModalProps {
   onClose: () => void;
   onItemUpdated: () => void;
   onError?: (message: string) => void;
-  item: BacklogItem | null;
+  item: BacklogItemType | null;
 }
 
 const UpdateItemModal: FC<UpdateItemModalProps> = ({
@@ -26,9 +22,9 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
   onError,
 }) => {
   const [formData, setFormData] = useState<BacklogItemFormData>({
-    title: "",
+    name: "",
     type: "story",
-    status: "",
+    status: "new",
     priority: "medium",
     epicId: "",
     storyPoints: null,
@@ -39,9 +35,11 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [epics, setEpics] = useState<Epic[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [originalItem, setOriginalItem] = useState<BacklogItem | null>(null);
+  const [epics, setEpics] = useState<BacklogItemType[]>([]);
+  const [users, setUsers] = useState<{ userId: number; name?: string }[]>([]);
+  const [originalItem, setOriginalItem] = useState<BacklogItemType | null>(
+    null
+  );
 
   useEffect(() => {
     if (isOpen && item) {
@@ -50,9 +48,9 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
       fetchOptionsData();
     } else if (!isOpen) {
       setFormData({
-        title: "",
+        name: "",
         type: "story",
-        status: "",
+        status: "new",
         priority: "medium",
         epicId: "",
         storyPoints: null,
@@ -67,17 +65,26 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
 
   const fetchOptionsData = async () => {
     try {
-      const epicsRes = await apiClient.get(`/${projectId}/backlog/items`);
+      const epicsRes = await apiClient.get(
+        `/projects/${projectId}/backlog/items`
+      );
       setEpics(
         Array.isArray(epicsRes.data)
-          ? epicsRes.data.filter((i: any) => i.type === "epic")
+          ? epicsRes.data.filter((i: BacklogItemType) => i.type === "epic")
           : []
       );
 
-      const usersRes = await apiClient.get(`/${projectId}/members-detail`);
+      const usersRes = await apiClient.get(
+        `/projects/${projectId}/members/members-detail`
+      );
       setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
+
+      // Agrega logs para debugging
+      console.log("Epics for edit:", epicsRes.data);
+      console.log("Users for edit:", usersRes.data);
     } catch (err) {
       const msg = "Failed to load dropdown options";
+      console.error(msg, err);
       setError(msg);
       onError?.(msg);
     }
@@ -99,14 +106,16 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
     };
 
     try {
+      // Asegúrate de que esta ruta coincida con el formato de las otras
       await apiClient.put(
-        `/${projectId}/backlog/items/${item.id}?type=${formData.type}`,
+        `/projects/${projectId}/backlog/items/${item.id}?type=${formData.type}`,
         payload
       );
       onItemUpdated();
       onClose();
     } catch (err: any) {
       const msg = err.response?.data?.message || "Failed to update item";
+      console.error("Error updating item:", err);
       setError(msg);
       onError?.(msg);
     } finally {

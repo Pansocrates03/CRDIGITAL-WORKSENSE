@@ -1,18 +1,15 @@
 // Core Imports
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import apiClient from "../../api/apiClient";
 import styles from "./ProjectView.module.css";
 // Component Imports
-import LoadingSpinner from "../Loading/LoadingSpinner";
 import EditTeamModal from "../EditTeamModal/EditTeamModal";
 import MemberInfoPopup from "../MemberInfoPopup/MemberInfoPopup";
 // Type Imports
 import ProjectDetails from "@/types/ProjectType";
 import MemberDetailed from "@/types/MemberDetailedType";
 
-import { Avatar } from "../ui/avatar";
-import { AvatarImage } from "@radix-ui/react-avatar";
+import { AvatarDisplay } from "../ui/AvatarDisplay";
 
 import RecentBacklogItems from "./RecentBacklogItems"
 
@@ -68,6 +65,12 @@ export const ProjectView: React.FC<FullProjectData> = ({
     setSelectedMember(member);
   };
 
+  const getOwnerName = (project: ProjectDetails, members: MemberDetailed[]): string => {
+    const ownerName = members.find((members) => members.userId === project.ownerId);
+    return ownerName?.name || "Unknown Owner"
+  };
+  
+
   return (
     <div className={styles.projectView}>
       {/* Header Section */}
@@ -95,8 +98,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
                   fill="currentColor"
                 />
               </svg>
-              {/*project.team[0].name*/}
-              Esteban
+              {getOwnerName(project, members)}
             </span>
           </div>
         </div>
@@ -122,10 +124,13 @@ export const ProjectView: React.FC<FullProjectData> = ({
                 className={styles.avatar}
                 onClick={(e) => handleAvatarClick(m, e)}
               >
-                <Avatar className="size-16">
-                  <AvatarImage src={m.profilePicture} />
-                  {/* <AvatarFallback delayMs={600}> */}
-                </Avatar>
+                <AvatarDisplay 
+                  user={{
+                    name: m.name,
+                    profilePicture: m.profilePicture
+                  }}
+                  size="lg"
+                />
                 <span className={styles.avatarName}>{m.name}</span>
               </div>
             ))}

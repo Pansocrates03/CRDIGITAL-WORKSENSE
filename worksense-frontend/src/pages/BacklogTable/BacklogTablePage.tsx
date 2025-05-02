@@ -1,7 +1,7 @@
 // src/pages/BacklogTable/BacklogTablePage.tsx
 import React, { FC, useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/api/apiClient";
 import styles from "./BacklogTablePage.module.css";
 import BacklogHeader from "@/components/BacklogTable/BacklogHeader";
@@ -12,20 +12,9 @@ import BacklogRow from "@/components/BacklogTable/BacklogRow";
 import DeleteConfirmationModal from "@/components/ui/DeleteConfirmationModal";
 import CreateItemModal from "@/components/BacklogTable/CreateItemModal";
 import UpdateItemModal from "@/components/BacklogTable/UpdateItemModal";
+import GenerateStoriesModal from "@/components/BacklogTable/GenerateStoriesModal";
 import { EpicRow } from "@/components/BacklogTable/EpicRow";
-
-interface BacklogItem {
-  id: string;
-  projectId: string;
-  type: "epic" | "story" | "bug" | "techTask" | "knowledge";
-  title: string;
-  status: string;
-  assigneeId?: string | number | null;
-  priority: string;
-  storyPoints?: number | null;
-  severity?: string | null;
-  epicId?: string | null;
-}
+import { BacklogItemType } from "@/types/BacklogItemType";
 
 interface ProjectMember {
   userId: number;
@@ -38,7 +27,7 @@ const BacklogTablePage: FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [itemToEdit, setItemToEdit] = useState<BacklogItem | null>(null);
+  const [itemToEdit, setItemToEdit] = useState<BacklogItemType | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedEpics, setExpandedEpics] = useState<string[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -46,11 +35,24 @@ const BacklogTablePage: FC = () => {
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Estados para el modal de confirmación de eliminación
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<BacklogItemType | null>(
+    null
+  );
+  const [deleteModalName, setDeleteModalName] = useState("");
+  const [deleteModalMessage, setDeleteModalMessage] = useState("");
+
+  // Estados para el modal de generación de historias con IA
+  const [showGenerateStoriesModal, setShowGenerateStoriesModal] =
+    useState(false);
+  const [selectedEpicId, setSelectedEpicId] = useState("");
+  const [selectedEpicName, setSelectedEpicName] = useState("");
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["backlog", projectId],
     queryFn: async () => {
       if (!projectId) return [];
-      
 
       const res = await apiClient.get(`/projects/${projectId}/backlog/items`);
       return res.data;
@@ -74,21 +76,141 @@ const BacklogTablePage: FC = () => {
     return map;
   }, [members]);
 
+  const getMemberInfo = (userId: number | string | null) => {
+    if (!userId) return null;
+    const numericId = typeof userId === "string" ? parseInt(userId) : userId;
+    return memberMap.get(numericId);
+  };
+
   const categorized = useMemo(() => {
     const all = Array.isArray(data) ? data : [];
+
+    // Create categories of items
     return {
-      epics: all.filter(i => i.type === "epic"),
-      stories: all.filter(i => i.type === "story"),
-      standaloneStories: all.filter(i => i.type === "story" && !i.epicId),
-      bugs: all.filter(i => i.type === "bug"),
-      techTasks: all.filter(i => i.type === "techTask"),
-      knowledge: all.filter(i => i.type === "knowledge"),
+      epics: all.filter((i) => i.type === "epic" && i.name),
+      stories: all.filter((i) => i.type === "story" && i.name),
+      standaloneStories: all.filter(
+        (i) =>
+          i.type === "story" &&
+          i.name &&
+          (!i.subItems || i.subItems.length === 0)
+      ),
+      bugs: all.filter((i) => i.type === "bug" && i.name),
+      techTasks: all.filter((i) => i.type === "techTask" && i.name),
+      knowledge: all.filter((i) => i.type === "knowledge" && i.name),
     };
   }, [data]);
 
-  const handleEdit = (item: BacklogItem) => {
+  // Update getEpicStories to use subItems directly
+  const getEpicStories = (epicId: string): BacklogItemType[] => {
+    if (!data) return [];
+    const epic = data.find((item: BacklogItemType) => item.id === epicId);
+    return epic?.subItems || [];
+  };
+
+  // Función para manejar la edición de un ítem
+  const handleEdit = (item: BacklogItemType) => {
+    if (!item.name || !item.type) return;
     setItemToEdit(item);
     setIsEditModalOpen(true);
+  };
+
+  // Función para manejar la eliminación de un ítem
+  const handleDelete = (item: BacklogItemType) => {
+    if (!item.name || !item.type) return;
+
+    // Check if this is a subitem by looking at its parent epic
+    const isSubItem = categorized.epics.some((epic) =>
+      epic.subItems?.some((subItem: BacklogItemType) => subItem.id === item.id)
+    );
+
+    // If it's a subitem, find its parent epic
+    const parentEpic = isSubItem
+      ? categorized.epics.find((epic) =>
+          epic.subItems?.some(
+            (subItem: BacklogItemType) => subItem.id === item.id
+          )
+        )
+      : null;
+
+    setItemToDelete({
+      ...item,
+      isSubItem,
+      parentId: parentEpic?.id,
+    });
+
+    setDeleteModalName(
+      `Delete ${item.type === "epic" ? "Epic" : "Story"} "${item.name}"`
+    );
+    setDeleteModalMessage(`Are you sure you want to delete "${item.name}"?`);
+    setShowDeleteModal(true);
+  };
+
+  // Update handleDeleteEpic to handle subItems
+  const handleDeleteEpic = (epicId: string) => {
+    const epic = categorized.epics.find((e) => e.id === epicId);
+    if (!epic || !epic.name) return;
+
+    const epicStories = getEpicStories(epicId);
+    const message =
+      epicStories.length > 0
+        ? `Are you sure you want to delete the epic "${epic.name}" and all its stories (${epicStories.length})?`
+        : `Are you sure you want to delete the epic "${epic.name}"?`;
+
+    setItemToDelete(epic);
+    setDeleteModalName("Delete Epic");
+    setDeleteModalMessage(message);
+    setShowDeleteModal(true);
+  };
+
+  // Función para abrir el modal de generación de historias con IA
+  const handleGenerateStories = (epicId: string, epicName: string) => {
+    if (!projectId) return;
+
+    setSelectedEpicId(epicId);
+    setSelectedEpicName(epicName);
+    setShowGenerateStoriesModal(true);
+  };
+
+  // Update executeDelete to handle subItems
+  const executeDelete = async () => {
+    if (!itemToDelete || !projectId) return;
+
+    try {
+      // If it's an epic, first delete its subitems
+      if (itemToDelete.type === "epic") {
+        const epicStories = getEpicStories(itemToDelete.id);
+        if (epicStories.length > 0) {
+          // Delete all subitems associated
+          const deletePromises = epicStories.map((story) =>
+            apiClient.delete(
+              `/projects/${projectId}/backlog/items/${itemToDelete.id}/subitems/${story.id}`
+            )
+          );
+          await Promise.all(deletePromises);
+        }
+      }
+
+      // Delete the item - only use type parameter for regular items, not subitems
+      if (itemToDelete.isSubItem && itemToDelete.parentId) {
+        await apiClient.delete(
+          `/projects/${projectId}/backlog/items/${itemToDelete.parentId}/subitems/${itemToDelete.id}`
+        );
+      } else {
+        await apiClient.delete(
+          `/projects/${projectId}/backlog/items/${itemToDelete.id}?type=${itemToDelete.type}`
+        );
+      }
+
+      handleSuccess(`${itemToDelete.name} successfully deleted`);
+      refetch();
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      handleError("Failed to delete item");
+    } finally {
+      setShowDeleteModal(false);
+      setItemToDelete(null);
+    }
   };
 
   const handleSuccess = (msg: string) => {
@@ -103,20 +225,37 @@ const BacklogTablePage: FC = () => {
     setTimeout(() => setShowError(false), 5000);
   };
 
-  const matchesSearch = (item: BacklogItem) =>
-    !searchTerm || item.title.toLowerCase().includes(searchTerm.toLowerCase());
+  const matchesSearch = (item: BacklogItemType) =>
+    !searchTerm ||
+    (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  const renderRows = (items: BacklogItem[], indent = false) =>
-    items.filter(matchesSearch).map((item) => (
-      <BacklogRow
-        key={item.id}
-        item={item}
-        indent={indent}
-        memberMap={memberMap}
-        onEdit={() => handleEdit(item)}
-        onDelete={() => console.log("delete", item)}
-      />
-    ));
+  const renderRows = (items: BacklogItemType[], indent = false) =>
+    items
+      .filter(matchesSearch)
+      .map((item) => (
+        <BacklogRow
+          key={item.id}
+          item={item}
+          indent={indent}
+          memberMap={memberMap}
+          onEdit={() => handleEdit(item)}
+          onDelete={() => handleDelete(item)}
+        />
+      ));
+
+  // Function to handle when stories are added to an epic
+  const handleStoriesAdded = (epicId: string) => {
+    // Expand the epic if it's not already expanded
+    if (!expandedEpics.includes(epicId)) {
+      setExpandedEpics((prev) => [...prev, epicId]);
+    }
+
+    // Show success message
+    handleSuccess("Stories added successfully!");
+
+    // Reload the backlog data
+    refetch();
+  };
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Failed to load backlog.</div>;
@@ -140,7 +279,7 @@ const BacklogTablePage: FC = () => {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Title</th>
+              <th>Name</th>
               <th>Status</th>
               <th>Assignee</th>
               <th>Points/Severity</th>
@@ -149,29 +288,33 @@ const BacklogTablePage: FC = () => {
           </thead>
           <tbody>
             <BacklogTableSection title="Epics">
-              {categorized.epics.map((epic) => (
-                <React.Fragment key={epic.id}>
-                  <EpicRow
-                    epic={{ ...epic, stories: categorized.stories.filter(s => s.epicId === epic.id) }}
-                    isExpanded={expandedEpics.includes(epic.id)}
-                    onToggle={() =>
-                      setExpandedEpics((prev) =>
-                        prev.includes(epic.id)
-                          ? prev.filter((id) => id !== epic.id)
-                          : [...prev, epic.id]
-                      )
-                    }
-                    colSpan={5}
-                    onEdit={() => handleEdit(epic)}
-                    onDelete={() => console.log("delete epic", epic)}
-                  />
-                  {expandedEpics.includes(epic.id) &&
-                    renderRows(
-                      categorized.stories.filter(s => s.epicId === epic.id),
-                      true
-                    )}
-                </React.Fragment>
-              ))}
+              {categorized.epics.map((epic) => {
+                const epicStories = getEpicStories(epic.id);
+                return (
+                  <React.Fragment key={epic.id}>
+                    <EpicRow
+                      epic={{
+                        ...epic,
+                        stories: epicStories,
+                      }}
+                      isExpanded={expandedEpics.includes(epic.id)}
+                      onToggle={() =>
+                        setExpandedEpics((prev) =>
+                          prev.includes(epic.id)
+                            ? prev.filter((id) => id !== epic.id)
+                            : [...prev, epic.id]
+                        )
+                      }
+                      colSpan={5}
+                      onEdit={() => handleEdit(epic)}
+                      onDelete={() => handleDeleteEpic(epic.id)}
+                      onGenerateStories={handleGenerateStories}
+                    />
+                    {expandedEpics.includes(epic.id) &&
+                      renderRows(epicStories, true)}
+                  </React.Fragment>
+                );
+              })}
             </BacklogTableSection>
 
             <BacklogTableSection title="User Stories">
@@ -220,12 +363,24 @@ const BacklogTablePage: FC = () => {
         />
       )}
 
+      {projectId && (
+        <GenerateStoriesModal
+          projectId={projectId}
+          epicId={selectedEpicId}
+          epicName={selectedEpicName}
+          isOpen={showGenerateStoriesModal}
+          onClose={() => setShowGenerateStoriesModal(false)}
+          onStoriesAdded={() => handleStoriesAdded(selectedEpicId)}
+          onError={handleError}
+        />
+      )}
+
       <DeleteConfirmationModal
-        isOpen={false}
-        onClose={() => {}}
-        onConfirm={() => {}}
-        title=""
-        message=""
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={executeDelete}
+        title={deleteModalName}
+        message={deleteModalMessage}
       />
     </div>
   );
