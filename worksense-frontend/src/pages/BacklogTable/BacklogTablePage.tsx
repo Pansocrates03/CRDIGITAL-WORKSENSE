@@ -56,9 +56,13 @@ const BacklogTablePage: FC = () => {
 
   // Estado para el modal de detalles
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+<<<<<<< HEAD
   const [selectedItem, setSelectedItem] = useState<BacklogItemType | null>(
     null
   );
+=======
+  const [selectedItem, setSelectedItem] = useState<BacklogItem | null>(null);
+>>>>>>> f354e5dd29742dda4275267a3db7c5fa933e80cb
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: [QueryKeys.backlog, projectId],
@@ -179,6 +183,8 @@ const BacklogTablePage: FC = () => {
     setShowGenerateStoriesModal(true);
   };
 
+
+
   // Función para ver los detalles de un ítem
   const handleViewDetails = (item: BacklogItem) => {
     console.log("BacklogTablePage: handleViewDetails llamado con item:", item);
@@ -217,6 +223,8 @@ const BacklogTablePage: FC = () => {
           `/projects/${projectId}/backlog/items/${itemToDelete.id}?type=${itemToDelete.type}`
         );
       }
+
+
 
       // Si el ítem que se está eliminando es el que se está mostrando en el modal de detalles, cerramos el modal
       if (selectedItem && selectedItem.id === itemToDelete.id) {
@@ -309,6 +317,7 @@ const BacklogTablePage: FC = () => {
             </tr>
           </thead>
           <tbody>
+
             {hasMatchingItems(categorized.epics) && (
               <BacklogTableSection title="Epics">
                 {categorized.epics.filter(hasMatchingEpicItems).map((epic) => (
@@ -316,6 +325,7 @@ const BacklogTablePage: FC = () => {
                     <EpicRow
                       epic={{
                         ...epic,
+
                         stories: getEpicStories(epic.id),
                       }}
                       isExpanded={expandedEpics.includes(epic.id)}
@@ -333,6 +343,7 @@ const BacklogTablePage: FC = () => {
                       memberMap={memberMap}
                     />
                     {expandedEpics.includes(epic.id) &&
+<<<<<<< HEAD
                       renderRows(getEpicStories(epic.id), true)}
                   </React.Fragment>
                 ))}
