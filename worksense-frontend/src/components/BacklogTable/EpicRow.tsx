@@ -1,9 +1,10 @@
 // src/components/BacklogTable/EpicRow.tsx
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import styles from "../../pages/BacklogTable/BacklogTablePage.module.css";
 import ActionMenu from "./ActionMenu";
+import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 
 interface Story {
   id: string;
@@ -27,6 +28,7 @@ interface EpicRowProps {
   onEdit?: (epic: any) => void;
   onDelete?: (epicId: string) => void;
   onGenerateStories?: (epicId: string, epicTitle: string) => void;
+  onViewDetails?: (epic: Epic) => void;
 }
 
 export const EpicRow: FC<EpicRowProps> = ({
@@ -37,46 +39,121 @@ export const EpicRow: FC<EpicRowProps> = ({
   onEdit = () => console.log("Edit epic:", epic.id),
   onDelete = () => console.log("Delete epic:", epic.id),
   onGenerateStories,
+  onViewDetails,
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
   // Handle toggle action
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     onToggle(epic.id);
   };
 
+  // Handle view details
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log("EpicRow: handleViewDetails llamado para epic:", epic.id);
+    if (onViewDetails) {
+      console.log("EpicRow: llamando a onViewDetails");
+      onViewDetails(epic);
+    } else {
+      console.log("EpicRow: onViewDetails no está definido");
+    }
+  };
+
+  // Determinar el ID asignado
+  const assigneeId = epic.assigneeId 
+    ? typeof epic.assigneeId === "string" 
+      ? parseInt(epic.assigneeId) 
+      : Number(epic.assigneeId) 
+    : null;
+
+  // Inline styles for the title instead of using a separate CSS module
+  const titleStyle = {
+    cursor: 'pointer',
+    transition: 'color 0.2s ease',
+    fontWeight: 500,
+    position: 'relative',
+    display: 'inline-block',
+  } as React.CSSProperties;
+
+  const titleHoverStyle = {
+    ...titleStyle,
+    color: 'var(--primary-color, #ac1754)',
+  } as React.CSSProperties;
+
   return (
     <tr className={styles.epicRowContainer}>
-      <td onClick={handleToggle}>
+      <td>
         <div className="flex items-center gap-2">
-          <span>{epic.title}</span>
-          <span className="text-muted-foreground ml-2">
+          <span 
+            style={isHovered ? titleHoverStyle : titleStyle}
+            onClick={handleViewDetails}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            {epic.title}
+            {isHovered && (
+              <span 
+                style={{
+                  position: 'absolute',
+                  width: '100%',
+                  height: '1px',
+                  bottom: '0',
+                  left: '0',
+                  backgroundColor: 'var(--primary-color, #ac1754)',
+                }}
+              />
+            )}
+          </span>
+          <span className="text-gray-500 ml-2 text-sm">
             ({epic.stories.length}{" "}
             {epic.stories.length === 1 ? "story" : "stories"})
           </span>
-          <span className="mr-2">
+          <button 
+            onClick={handleToggle}
+            className="ml-1 p-1 hover:bg-gray-200 rounded flex items-center justify-center"
+            aria-label={isExpanded ? "Collapse" : "Expand"}
+          >
             {isExpanded ? (
-              <ChevronDown size={16} className="text-gray-500" />
+              <ChevronDown size={16} className="text-gray-700" />
             ) : (
-              <ChevronRight size={16} className="text-gray-500" />
+              <ChevronRight size={16} className="text-gray-700" />
             )}
-          </span>
+          </button>
         </div>
       </td>
       <td>
         {epic.status ? <StatusBadge type="status" value={epic.status} /> : "-"}
       </td>
-      <td>{epic.assigneeId ?? "-"}</td>
+      <td>
+        {assigneeId ? (
+          <span className="text-sm">{assigneeId}</span>
+        ) : "-"}
+      </td>
       <td>-</td> {/* Epic doesn't have story points/severity */}
       <td className={styles.actionButtons}>
         <ActionMenu
-          onEdit={() => onEdit(epic)}
-          onDelete={() => onDelete(epic.id)}
+          onEdit={(e) => {
+            e.stopPropagation();
+            onEdit(epic);
+          }}
+          onDelete={(e) => {
+            e.stopPropagation();
+            onDelete(epic.id);
+          }}
+          onViewDetails={
+            onViewDetails
+              ? () => onViewDetails(epic)
+              : undefined
+          }
           onGenerateStories={
             onGenerateStories 
               ? () => onGenerateStories(epic.id, epic.title) 
               : undefined
           }
           isEpic={true}
+          itemType="epic"
         />
       </td>
     </tr>

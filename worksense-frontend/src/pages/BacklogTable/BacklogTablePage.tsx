@@ -13,6 +13,7 @@ import DeleteConfirmationModal from "@/components/ui/DeleteConfirmationModal";
 import CreateItemModal from "@/components/BacklogTable/CreateItemModal";
 import UpdateItemModal from "@/components/BacklogTable/UpdateItemModal";
 import GenerateStoriesModal from "@/components/BacklogTable/GenerateStoriesModal";
+import ItemDetailsModal from "@/components/BacklogTable/ItemDetailsModal";
 import { EpicRow } from "@/components/BacklogTable/EpicRow";
 
 interface BacklogItem {
@@ -27,6 +28,8 @@ interface BacklogItem {
   severity?: string | null;
   epicId?: string | null;
   linkedItems?: string[] | null;
+  content?: string;
+  tags?: string[];
 }
 
 interface ProjectMember {
@@ -55,9 +58,14 @@ const BacklogTablePage: FC = () => {
   const [deleteModalMessage, setDeleteModalMessage] = useState("");
 
   // Estados para el modal de generación de historias con IA
-  const [showGenerateStoriesModal, setShowGenerateStoriesModal] = useState(false);
+  const [showGenerateStoriesModal, setShowGenerateStoriesModal] =
+    useState(false);
   const [selectedEpicId, setSelectedEpicId] = useState("");
   const [selectedEpicTitle, setSelectedEpicTitle] = useState("");
+
+  // Estado para el modal de detalles
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<BacklogItem | null>(null);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["backlog", projectId],
@@ -93,10 +101,10 @@ const BacklogTablePage: FC = () => {
 
   const categorized = useMemo(() => {
     const all = Array.isArray(data) ? data : [];
-    
+
     // Hacer log de los datos para depuración
     console.log("Datos del backlog:", all);
-    
+
     // Crear categorías de ítems
     return {
       epics: all.filter((i) => i.type === "epic"),
@@ -104,10 +112,11 @@ const BacklogTablePage: FC = () => {
       // Las historias pueden estar vinculadas a épicas de dos maneras:
       // 1. A través del campo epicId
       // 2. A través del campo linkedItems (array que contiene el id de la épica)
-      standaloneStories: all.filter((i) => 
-        i.type === "story" && 
-        !i.epicId && 
-        (!i.linkedItems || i.linkedItems.length === 0)
+      standaloneStories: all.filter(
+        (i) =>
+          i.type === "story" &&
+          !i.epicId &&
+          (!i.linkedItems || i.linkedItems.length === 0)
       ),
       bugs: all.filter((i) => i.type === "bug"),
       techTasks: all.filter((i) => i.type === "techTask"),
@@ -118,15 +127,15 @@ const BacklogTablePage: FC = () => {
   // Función para obtener las historias asociadas a una épica
   const getEpicStories = (epicId: string) => {
     if (!data) return [];
-    
+
     // Encontrar historias que están asociadas a la épica
-    return (Array.isArray(data) ? data : []).filter((item) => 
-      item.type === "story" && (
+    return (Array.isArray(data) ? data : []).filter(
+      (item) =>
+        item.type === "story" &&
         // A través del campo epicId
-        item.epicId === epicId || 
-        // O a través del campo linkedItems
-        (item.linkedItems && item.linkedItems.includes(epicId))
-      )
+        (item.epicId === epicId ||
+          // O a través del campo linkedItems
+          (item.linkedItems && item.linkedItems.includes(epicId)))
     );
   };
 
@@ -134,6 +143,10 @@ const BacklogTablePage: FC = () => {
   const handleEdit = (item: BacklogItem) => {
     setItemToEdit(item);
     setIsEditModalOpen(true);
+    // Si el modal de detalles está abierto, lo cerramos
+    if (showDetailsModal) {
+      setShowDetailsModal(false);
+    }
   };
 
   // Función para manejar la eliminación de un ítem
@@ -166,7 +179,7 @@ const BacklogTablePage: FC = () => {
   // Función para abrir el modal de generación de historias con IA
   const handleGenerateStories = (epicId: string, epicTitle: string) => {
     if (!projectId) return;
-    
+
     setSelectedEpicId(epicId);
     setSelectedEpicTitle(epicTitle);
     setShowGenerateStoriesModal(true);
@@ -176,14 +189,22 @@ const BacklogTablePage: FC = () => {
   const handleStoriesAdded = (epicId: string) => {
     // Expandir la épica si no está ya expandida
     if (!expandedEpics.includes(epicId)) {
-      setExpandedEpics(prev => [...prev, epicId]);
+      setExpandedEpics((prev) => [...prev, epicId]);
     }
-    
+
     // Mostrar mensaje de éxito
     handleSuccess("Stories added successfully!");
-    
+
     // Recargar los datos del backlog
     refetch();
+  };
+
+  // Función para ver los detalles de un ítem
+  const handleViewDetails = (item: BacklogItem) => {
+    console.log("BacklogTablePage: handleViewDetails llamado con item:", item);
+    setSelectedItem(item);
+    setShowDetailsModal(true);
+    console.log("BacklogTablePage: showDetailsModal establecido a true");
   };
 
   // Función para ejecutar la eliminación
@@ -211,6 +232,12 @@ const BacklogTablePage: FC = () => {
       );
 
       handleSuccess(`${itemToDelete.title} successfully deleted`);
+
+      // Si el ítem que se está eliminando es el que se está mostrando en el modal de detalles, cerramos el modal
+      if (selectedItem && selectedItem.id === itemToDelete.id) {
+        setShowDetailsModal(false);
+      }
+
       refetch();
     } catch (error) {
       console.error("Error deleting item:", error);
@@ -247,6 +274,7 @@ const BacklogTablePage: FC = () => {
           memberMap={memberMap}
           onEdit={() => handleEdit(item)}
           onDelete={() => handleDelete(item)}
+          onViewDetails={() => handleViewDetails(item)}
         />
       ));
 
@@ -302,10 +330,7 @@ const BacklogTablePage: FC = () => {
                     onGenerateStories={handleGenerateStories}
                   />
                   {expandedEpics.includes(epic.id) &&
-                    renderRows(
-                      getEpicStories(epic.id),
-                      true
-                    )}
+                    renderRows(getEpicStories(epic.id), true)}
                 </React.Fragment>
               ))}
             </BacklogTableSection>
@@ -365,6 +390,20 @@ const BacklogTablePage: FC = () => {
           onClose={() => setShowGenerateStoriesModal(false)}
           onStoriesAdded={() => handleStoriesAdded(selectedEpicId)}
           onError={handleError}
+        />
+      )}
+
+      {projectId && (
+        <ItemDetailsModal
+          projectId={projectId}
+          isOpen={showDetailsModal}
+          onClose={() => setShowDetailsModal(false)}
+          onEditClick={() => {
+            setItemToEdit(selectedItem);
+            setIsEditModalOpen(true);
+            setShowDetailsModal(false);
+          }}
+          item={selectedItem}
         />
       )}
 

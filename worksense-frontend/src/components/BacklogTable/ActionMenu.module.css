@@ -84,12 +84,12 @@
   }
 }
 
-/* New AI item styling */
+/* Updated AI item styling with site colors */
 .aiItem {
-  color: #4f46e5;
+  color: #ac1754;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .aiItem:hover {
-  background-color: #f5f3ff;
+  background-color: rgba(172, 23, 84, 0.05);
 }
