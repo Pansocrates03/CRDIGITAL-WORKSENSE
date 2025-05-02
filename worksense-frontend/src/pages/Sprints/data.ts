@@ -14,7 +14,6 @@ export interface Task {
   linksCount: number;
   subtasksTotal: number;
   subtasksCompleted: number;
-  coverImageUrl: string | null;
 }
 
 export const initialTasks: Task[] = [
@@ -35,8 +34,7 @@ export const initialTasks: Task[] = [
     commentsCount: 5,
     linksCount: 2,
     subtasksTotal: 8,
-    subtasksCompleted: 3,
-    coverImageUrl: "https://picsum.photos/800/400"
+    subtasksCompleted: 3
   },
   {
     id: "task-2",
@@ -60,8 +58,7 @@ export const initialTasks: Task[] = [
     commentsCount: 8,
     linksCount: 4,
     subtasksTotal: 6,
-    subtasksCompleted: 4,
-    coverImageUrl: null
+    subtasksCompleted: 4
   },
   {
     id: "task-3",
@@ -80,8 +77,7 @@ export const initialTasks: Task[] = [
     commentsCount: 3,
     linksCount: 2,
     subtasksTotal: 4,
-    subtasksCompleted: 4,
-    coverImageUrl: "https://picsum.photos/800/401"
+    subtasksCompleted: 4
   },
   {
     id: "task-4",
@@ -100,8 +96,7 @@ export const initialTasks: Task[] = [
     commentsCount: 6,
     linksCount: 1,
     subtasksTotal: 5,
-    subtasksCompleted: 5,
-    coverImageUrl: null
+    subtasksCompleted: 5
   },
   {
     id: "task-5",
@@ -120,8 +115,7 @@ export const initialTasks: Task[] = [
     commentsCount: 2,
     linksCount: 3,
     subtasksTotal: 6,
-    subtasksCompleted: 0,
-    coverImageUrl: "https://picsum.photos/800/402"
+    subtasksCompleted: 0
   },
   {
     id: "task-6",
@@ -145,8 +139,7 @@ export const initialTasks: Task[] = [
     commentsCount: 10,
     linksCount: 5,
     subtasksTotal: 8,
-    subtasksCompleted: 3,
-    coverImageUrl: null
+    subtasksCompleted: 3
   },
   {
     id: "task-7",
@@ -165,8 +158,7 @@ export const initialTasks: Task[] = [
     commentsCount: 4,
     linksCount: 2,
     subtasksTotal: 3,
-    subtasksCompleted: 3,
-    coverImageUrl: null
+    subtasksCompleted: 3
   },
   {
     id: "task-8",
@@ -190,7 +182,6 @@ export const initialTasks: Task[] = [
     commentsCount: 7,
     linksCount: 4,
     subtasksTotal: 10,
-    subtasksCompleted: 10,
-    coverImageUrl: "https://picsum.photos/800/403"
+    subtasksCompleted: 10
   }
 ]; 
