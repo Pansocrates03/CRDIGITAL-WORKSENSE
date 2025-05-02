@@ -8,6 +8,19 @@ import {
 } from "../utils/helpers/firestoreHelpers.js";
 import { BacklogItem, BacklogItemType } from "../../types/backlog.js";
 
+interface BacklogItemData {
+  acceptanceCriteria?: string[] | null;
+  assigneeId?: number | null;
+  authorId?: number | null;
+  coverImage?: string | null;
+  description?: string | null;
+  name?: string | null;
+  priority?: "high" | "medium" | "low" | null;
+  size?: "xs" | "s" | "m" | "l" | "xl" | null;
+  sprint?: string | null;
+  type?: "epic" | "story" | "bug" | "techTask" | "knowledge" | null;
+}
+
 const ALL_ITEM_TYPES = ["epic", "story", "bug", "techTask", "knowledge"];
 
 /**
