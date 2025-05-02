@@ -42,7 +42,7 @@ export const listUserProjects = async (
       // If the user is a member, add the project to the results
       if (!memberDoc.empty) {
         projects.push({
-          projectId: projectDoc.id,
+          id: projectDoc.id,
           ...projectDoc.data(),
         } as Project);
       }

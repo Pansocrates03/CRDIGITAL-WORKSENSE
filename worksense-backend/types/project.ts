@@ -12,7 +12,7 @@ export interface ProjectContext {
 
 // Represents a project document in Firestore /projectss/{projectId}
 export interface Project {
-  projectId: string; // Firestore Document ID
+  id: string; // Firestore Document ID
   name: string;
   description: string | null;
   ownerId: number;
