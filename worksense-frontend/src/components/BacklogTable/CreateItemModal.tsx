@@ -62,7 +62,7 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
               .filter((item: any) => item.type === "epic")
               .map((epic: any) => ({
                 id: epic.id,
-                title: epic.name,
+                name: epic.name,
               }))
           : []
       );
@@ -88,19 +88,38 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
     setError(null);
 
     try {
-      const payload = {
+      // Base payload without parentId and isSubItem
+      const basePayload = {
         ...formData,
         projectId,
       };
 
       // If it's a story and an epic is selected, create it as a subitem
       if (formData.type === "story" && formData.epicId) {
+        console.log("Creating subitem under epic:", formData.epicId);
+        const subitemPayload = {
+          ...basePayload,
+          parentId: formData.epicId,
+          isSubItem: true,
+          type: "story", // Ensure type is set correctly
+        };
+        console.log("Subitem payload:", subitemPayload);
         await apiClient.post(
           `/projects/${projectId}/backlog/items/${formData.epicId}/subitems`,
-          payload
+          subitemPayload
         );
       } else {
-        await apiClient.post(`/projects/${projectId}/backlog/items`, payload);
+        // For regular items, ensure parentId and isSubItem are not set
+        const regularPayload = {
+          ...basePayload,
+          parentId: null,
+          isSubItem: false,
+        };
+        console.log("Regular item payload:", regularPayload);
+        await apiClient.post(
+          `/projects/${projectId}/backlog/items`,
+          regularPayload
+        );
       }
 
       setFormData(initialState);

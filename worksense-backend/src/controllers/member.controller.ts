@@ -175,7 +175,9 @@ export const addMember = async (
     }
 
     // Check if role exists
-    const roleRef = db.collection("projectRoles").doc(projectRoleId);
+    const roleRef = db
+      .collection("projectRoles")
+      .doc(projectRoleId);
 
     const roleSnap = await roleRef.get();
     if (!roleSnap.exists) {
@@ -234,7 +236,9 @@ export const updateMemberRole = async (
     }
 
     // Check if role exists
-    const roleRef = db.collection("projectRoles").doc(projectRoleId);
+    const roleRef = db
+      .collection("projectRoles")
+      .doc(projectRoleId);
 
     const roleSnap = await roleRef.get();
     if (!roleSnap.exists) {
