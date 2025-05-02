@@ -46,11 +46,16 @@ const BacklogTablePage: FC = () => {
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Estados para el modal de confirmación de eliminación
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<BacklogItem | null>(null);
+  const [deleteModalTitle, setDeleteModalTitle] = useState("");
+  const [deleteModalMessage, setDeleteModalMessage] = useState("");
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["backlog", projectId],
     queryFn: async () => {
       if (!projectId) return [];
-      
 
       const res = await apiClient.get(`/projects/${projectId}/backlog/items`);
       return res.data;
@@ -68,6 +73,11 @@ const BacklogTablePage: FC = () => {
     enabled: !!projectId,
   });
 
+  // Añadir log para depurar los datos de miembros
+  useEffect(() => {
+    console.log("Members data:", members);
+  }, [members]);
+
   const memberMap = useMemo(() => {
     const map = new Map<number, ProjectMember>();
     members.forEach((m) => m.userId && map.set(m.userId, m));
@@ -77,18 +87,83 @@ const BacklogTablePage: FC = () => {
   const categorized = useMemo(() => {
     const all = Array.isArray(data) ? data : [];
     return {
-      epics: all.filter(i => i.type === "epic"),
-      stories: all.filter(i => i.type === "story"),
-      standaloneStories: all.filter(i => i.type === "story" && !i.epicId),
-      bugs: all.filter(i => i.type === "bug"),
-      techTasks: all.filter(i => i.type === "techTask"),
-      knowledge: all.filter(i => i.type === "knowledge"),
+      epics: all.filter((i) => i.type === "epic"),
+      stories: all.filter((i) => i.type === "story"),
+      standaloneStories: all.filter((i) => i.type === "story" && !i.epicId),
+      bugs: all.filter((i) => i.type === "bug"),
+      techTasks: all.filter((i) => i.type === "techTask"),
+      knowledge: all.filter((i) => i.type === "knowledge"),
     };
   }, [data]);
 
+  // Función para manejar la edición de un ítem
   const handleEdit = (item: BacklogItem) => {
     setItemToEdit(item);
     setIsEditModalOpen(true);
+  };
+
+  // Función para manejar la eliminación de un ítem
+  const handleDelete = (item: BacklogItem) => {
+    setItemToDelete(item);
+    setDeleteModalTitle(
+      `Delete ${item.type.charAt(0).toUpperCase() + item.type.slice(1)}`
+    );
+    setDeleteModalMessage(`Are you sure you want to delete "${item.title}"?`);
+    setShowDeleteModal(true);
+  };
+
+  // Función para manejar la eliminación de un epic
+  const handleDeleteEpic = (epicId: string) => {
+    const epic = categorized.epics.find((e) => e.id === epicId);
+    if (!epic) return;
+
+    const epicStories = categorized.stories.filter((s) => s.epicId === epicId);
+    const message =
+      epicStories.length > 0
+        ? `Are you sure you want to delete the epic "${epic.title}" and all its stories (${epicStories.length})?`
+        : `Are you sure you want to delete the epic "${epic.title}"?`;
+
+    setItemToDelete(epic);
+    setDeleteModalTitle("Delete Epic");
+    setDeleteModalMessage(message);
+    setShowDeleteModal(true);
+  };
+
+  // Función para ejecutar la eliminación
+  const executeDelete = async () => {
+    if (!itemToDelete || !projectId) return;
+
+    try {
+      // Si es un epic, primero eliminamos sus historias
+      if (itemToDelete.type === "epic") {
+        const epicStories = categorized.stories.filter(
+          (s) => s.epicId === itemToDelete.id
+        );
+        if (epicStories.length > 0) {
+          // Eliminar todas las historias asociadas
+          const deletePromises = epicStories.map((story) =>
+            apiClient.delete(
+              `/projects/${projectId}/backlog/items/${story.id}?type=story`
+            )
+          );
+          await Promise.all(deletePromises);
+        }
+      }
+
+      // Eliminar el ítem
+      await apiClient.delete(
+        `/projects/${projectId}/backlog/items/${itemToDelete.id}?type=${itemToDelete.type}`
+      );
+
+      handleSuccess(`${itemToDelete.title} successfully deleted`);
+      refetch();
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      handleError("Failed to delete item");
+    } finally {
+      setShowDeleteModal(false);
+      setItemToDelete(null);
+    }
   };
 
   const handleSuccess = (msg: string) => {
@@ -107,16 +182,18 @@ const BacklogTablePage: FC = () => {
     !searchTerm || item.title.toLowerCase().includes(searchTerm.toLowerCase());
 
   const renderRows = (items: BacklogItem[], indent = false) =>
-    items.filter(matchesSearch).map((item) => (
-      <BacklogRow
-        key={item.id}
-        item={item}
-        indent={indent}
-        memberMap={memberMap}
-        onEdit={() => handleEdit(item)}
-        onDelete={() => console.log("delete", item)}
-      />
-    ));
+    items
+      .filter(matchesSearch)
+      .map((item) => (
+        <BacklogRow
+          key={item.id}
+          item={item}
+          indent={indent}
+          memberMap={memberMap}
+          onEdit={() => handleEdit(item)}
+          onDelete={() => handleDelete(item)}
+        />
+      ));
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Failed to load backlog.</div>;
@@ -152,7 +229,12 @@ const BacklogTablePage: FC = () => {
               {categorized.epics.map((epic) => (
                 <React.Fragment key={epic.id}>
                   <EpicRow
-                    epic={{ ...epic, stories: categorized.stories.filter(s => s.epicId === epic.id) }}
+                    epic={{
+                      ...epic,
+                      stories: categorized.stories.filter(
+                        (s) => s.epicId === epic.id
+                      ),
+                    }}
                     isExpanded={expandedEpics.includes(epic.id)}
                     onToggle={() =>
                       setExpandedEpics((prev) =>
@@ -163,11 +245,11 @@ const BacklogTablePage: FC = () => {
                     }
                     colSpan={5}
                     onEdit={() => handleEdit(epic)}
-                    onDelete={() => console.log("delete epic", epic)}
+                    onDelete={() => handleDeleteEpic(epic.id)}
                   />
                   {expandedEpics.includes(epic.id) &&
                     renderRows(
-                      categorized.stories.filter(s => s.epicId === epic.id),
+                      categorized.stories.filter((s) => s.epicId === epic.id),
                       true
                     )}
                 </React.Fragment>
@@ -221,11 +303,11 @@ const BacklogTablePage: FC = () => {
       )}
 
       <DeleteConfirmationModal
-        isOpen={false}
-        onClose={() => {}}
-        onConfirm={() => {}}
-        title=""
-        message=""
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={executeDelete}
+        title={deleteModalTitle}
+        message={deleteModalMessage}
       />
     </div>
   );

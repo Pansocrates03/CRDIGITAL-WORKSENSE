@@ -3,6 +3,7 @@ import React from "react";
 import styles from "./BacklogRow.module.css";
 import StatusBadge from "./StatusBadge";
 import ActionMenu from "./ActionMenu";
+// Importa Avatar correctamente desde el componente de Radix UI
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface BacklogItem {
@@ -46,11 +47,19 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
     extraInfo = item.severity || "-";
   }
 
+  // Mejora cómo obtenemos el assigneeId y asegúrate de que sea un número
   const assigneeId =
     item.assigneeId !== undefined && item.assigneeId !== null
-      ? Number(item.assigneeId)
+      ? typeof item.assigneeId === "string"
+        ? parseInt(item.assigneeId)
+        : Number(item.assigneeId)
       : null;
+
+  // Obtén la información del miembro y verifica que exista
   const memberInfo = assigneeId !== null ? memberMap.get(assigneeId) : null;
+
+  // Agrega un console.log para debugging
+  // console.log(`Item ${item.id} assigneeId:`, assigneeId, "memberInfo:", memberInfo);
 
   return (
     <tr key={item.id} className={indent ? styles.nestedRow : ""}>
@@ -66,21 +75,35 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
         {memberInfo ? (
           <div className="flex items-center gap-2">
             <Avatar className="h-8 w-8">
-              <AvatarImage
-                src={memberInfo.profilePicture}
-                alt={memberInfo.nickname || "User"}
-              />
+              {memberInfo.profilePicture ? (
+                <AvatarImage
+                  src={memberInfo.profilePicture}
+                  alt={memberInfo.nickname || "User"}
+                />
+              ) : null}
               <AvatarFallback>
-                {(memberInfo.nickname || "User").charAt(0)}
+                {memberInfo.nickname
+                  ? memberInfo.nickname.charAt(0).toUpperCase()
+                  : assigneeId?.toString().charAt(0) || "U"}
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm">{memberInfo.nickname}</span>
+            <span className="text-sm">
+              {memberInfo.nickname || `User ${assigneeId}`}
+            </span>
           </div>
         ) : (
           assigneeId || "-"
         )}
       </td>
-      <td>{extraInfo}</td>
+      <td>
+        {item.type === "bug" && item.severity ? (
+          <StatusBadge type="severity" value={item.severity} />
+        ) : item.type === "story" && item.storyPoints ? (
+          item.storyPoints.toString()
+        ) : (
+          "-"
+        )}
+      </td>
       <td className={styles.actionButtons}>
         <ActionMenu onEdit={onEdit} onDelete={onDelete} />
       </td>
