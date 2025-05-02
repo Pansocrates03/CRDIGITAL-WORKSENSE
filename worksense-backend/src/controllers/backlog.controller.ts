@@ -6,9 +6,8 @@ import {
   getItemCollection,
   getItemRef,
 } from "../utils/helpers/firestoreHelpers.js";
-import { BacklogItem, BacklogItemType } from "../../types/backlog.js";
 
-interface BacklogItemData {
+interface BacklogItem {
   acceptanceCriteria?: string[] | null;
   assigneeId?: number | null;
   authorId?: number | null;
@@ -33,64 +32,29 @@ export const createBacklogItem = async (
 ): Promise<void> => {
   try {
     const { projectId } = req.params;
-    const { ...BacklogItemData } = req.body;
+    const item: BacklogItem = req.body;
     const reporterId = req.user?.userId;
+
+    console.log("item recived", item);
 
     if (!reporterId) {
       res.status(401).json({ message: "Authentication required" });
       return;
-    }
-
-    if (!type || !itemData.title) {
-      res.status(400).json({ message: "Type and title required" });
+    } else if(!item.type) {
+      res.status(400).json({ message: "Type required" });
+      return;
+    } else if(!item.name) {
+      res.status(400).json({ message: "Name required" });
       return;
     }
 
-    const collectionRef = getItemCollection(projectId, type);
+    const collectionRef = db.
+      collection("projects")
+      .doc(projectId)
+      .collection("backlog")
 
-    // Create base item data
-    const baseItemData = {
-      ...itemData,
-      projectId,
-      type,
-      reporterId,
-      assigneeId: itemData.assigneeId || null,
-      priority: itemData.priority || "medium",
-      status: itemData.status || (type === "bug" ? "new" : "todo"),
-      createdAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
-    };
-
-    // Add type-specific fields
-    let newItemData = baseItemData;
-
-    if (type === "story") {
-      newItemData = {
-        ...baseItemData,
-        epicId: itemData.epicId || null,
-        storyPoints: itemData.storyPoints || null,
-      };
-    } else if (type === "bug") {
-      newItemData = {
-        ...baseItemData,
-        severity: itemData.severity || "major",
-        linkedStoryId: itemData.linkedStoryId || null,
-      };
-    } else if (type === "techTask") {
-      newItemData = {
-        ...baseItemData,
-        linkedStoryId: itemData.linkedStoryId || null,
-      };
-    } else if (type === "knowledge") {
-      newItemData = {
-        ...baseItemData,
-        content: itemData.content || "",
-        tags: itemData.tags || null,
-      };
-    }
-
-    const newItemRef = await collectionRef.add(newItemData);
-    res.status(201).json({ id: newItemRef.id, ...newItemData });
+    const newItemRef = await collectionRef.add(item);
+    res.status(201).json({ id: newItemRef.id, ...item });
   } catch (error: any) {
     if (error.message?.includes("Invalid backlog item type")) {
       res.status(400).json({ message: error.message });
