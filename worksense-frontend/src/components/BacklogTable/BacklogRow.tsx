@@ -3,6 +3,7 @@ import React from "react";
 import styles from "./BacklogRow.module.css";
 import StatusBadge from "./StatusBadge";
 import ActionMenu from "./ActionMenu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { BacklogItemType } from "@/types/BacklogItemType";
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
@@ -93,7 +94,7 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
             <AvatarDisplay
               user={{
                 name: memberInfo.nickname || `User ${assigneeId}`,
-                profilePicture: memberInfo.profilePicture
+                profilePicture: memberInfo.profilePicture,
               }}
               size="sm"
             />
