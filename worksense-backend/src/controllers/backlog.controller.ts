@@ -2,7 +2,6 @@
 import { Request, Response, NextFunction } from "express";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "../models/firebase.js";
-import { getItemRef } from "../utils/helpers/firestoreHelpers.js";
 
 interface BacklogItem {
   acceptanceCriteria?: string[] | null;
