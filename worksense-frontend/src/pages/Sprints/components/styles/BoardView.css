@@ -1,0 +1,36 @@
+.board-view {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  height: 100%;
+}
+
+.board-column {
+  background-color: #F9FAFB;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.board-column__title {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.board-column__tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.board-column__dropzone {
+  min-height: 100px;
+  border: 2px dashed transparent;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.board-column__dropzone--active {
+  border-color: #3B82F6;
+  background-color: #EFF6FF;
+} 

@@ -1,0 +1,57 @@
+.sprint-page {
+  padding: 1.5rem;
+}
+
+.sprint-page__header {
+  margin-bottom: 2rem;
+}
+
+.sprint-page__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.sprint-page__description {
+  color: #4B5563;
+}
+
+.sprint-page__team {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.sprint-page__team-member {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  margin-right: 0.5rem;
+  border: 2px solid white;
+}
+
+.sprint-page__navigation {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.sprint-page__nav-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.sprint-page__nav-button--active {
+  background-color: #3B82F6;
+  color: white;
+}
+
+.sprint-page__nav-button--inactive {
+  background-color: #F3F4F6;
+  color: #374151;
+}
+
+.sprint-page__nav-button--inactive:hover {
+  background-color: #E5E7EB;
+} 
