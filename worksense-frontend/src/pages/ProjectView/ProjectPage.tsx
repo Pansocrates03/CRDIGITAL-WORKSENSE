@@ -65,16 +65,26 @@ export const ProjectPage: React.FC = () => {
   const navigate = useNavigate();
 
   // Use Query to fetch project and members
-  const { data: project, isLoading, isError, error } = useQuery<ProjectDetails>({
+  const { 
+    data: project, 
+    isLoading: projectLoading, 
+    isError: projectError, 
+    error: projectErrorMessage 
+  } = useQuery<ProjectDetails>({
     queryKey: ["project", id],
     queryFn: async () => {
       if (!id) throw new Error("Project ID is required");
       const res = await projectService.fetchProjectDetails(id);
       return res;
-    }, 
+    },
   });
 
-  const { data: members } = useQuery<MemberDetailed[]>({
+  const { 
+    data: members, 
+    isLoading: membersLoading, 
+    isError: membersError, 
+    error: membersErrorMessage 
+  } = useQuery<MemberDetailed[]>({
     queryKey: ["projectMembers", id],
     queryFn: async () => {
       if (!id) throw new Error("Project ID is required");
@@ -84,19 +94,36 @@ export const ProjectPage: React.FC = () => {
     enabled: !!project, // Only fetch members if project data is available
   });
 
-
-
   // Memoized navigation handlers
   const handleRetry = () => window.location.reload();
   const handleBackToProjects = () => navigate("/create");
 
-  // Render appropriate UI state
-  if (isLoading) return <LoadingState />;
-  if (isError) return <ErrorState message={error.message} onRetry={handleRetry} />;
-  if (!project) return <NotFoundState onBackToProjects={handleBackToProjects} />;
-  if (!members) return <NotFoundState onBackToProjects={handleBackToProjects} />;
+  // Improved render logic with clearer loading states
+  if (projectLoading || (membersLoading && !!project)) {
+    return <LoadingState />;
+  }
 
-  return <ProjectView project={project} members={members} />;
+  // Only show not found if we're done loading and the project doesn't exist
+  if (!projectLoading && !project) {
+    return <NotFoundState onBackToProjects={handleBackToProjects} />;
+  }
+
+  // Handle errors
+  if (projectError) {
+    return <ErrorState message={projectErrorMessage.message} onRetry={handleRetry} />;
+  }
+
+  if (membersError && project) {
+    return <ErrorState message={membersErrorMessage.message} onRetry={handleRetry} />;
+  }
+
+  // Only render the ProjectView when we have both project and members
+  if (project && members) {
+    return <ProjectView project={project} members={members} />;
+  }
+
+  // Fallback loading state (should rarely hit this)
+  return <LoadingState />;
 };
 
 export default ProjectPage;

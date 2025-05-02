@@ -12,6 +12,10 @@ import MemberDetailed from "@/types/MemberDetailedType";
 import { AvatarDisplay } from "../ui/AvatarDisplay";
 
 import RecentBacklogItems from "./RecentBacklogItems"
+import QueryKeys from "@/utils/QueryKeys";
+import { useQuery } from "@tanstack/react-query";
+import apiClient from "@/api/apiClient";
+
 
 type FullProjectData = {
   project: ProjectDetails;
@@ -23,35 +27,23 @@ export const ProjectView: React.FC<FullProjectData> = ({
   members,
 }) => {
   const { id } = useParams<{ id: string }>();
-
-  const backlogItems: any[] = [];
-  const [loading, setLoading] = useState(true);
+  const { id: projectId } = useParams<{ id: string }>();
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
   const [teamMembers, setTeamMembers] = useState<MemberDetailed[]>(members);
   const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(null);
-/*
-  useEffect(() => {
-    const fetchBacklogItems = async () => {
-      try {
-        const response = await apiClient.get(`/projects/${id}/items`);
-        const items = response.data;
-        setBacklogItems(items);
-      } catch (error) {
-        console.error("Error fetching backlog items:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    if (id) {
-      fetchBacklogItems();
-    }
-  }, [id]);
-  */
-  
-  useEffect(() => {
-    setTeamMembers(members);
-  }, [members]);
+  // Use Query to get Backlog Items
+  const { data: backlogItems, isLoading, error, refetch } = useQuery({
+    queryKey: [QueryKeys.backlog, projectId],
+    queryFn: async () => {
+      if (!projectId) return [];
+
+      const res = await apiClient.get(`/projects/${projectId}/backlog/items`);
+      console.log("Backlog Items:", res.data);
+      return res.data;
+    },
+    enabled: !!projectId,
+  });
 
   const handleTeamUpdate = (newTeam: MemberDetailed[]) => {
     setTeamMembers(newTeam);
@@ -142,20 +134,20 @@ export const ProjectView: React.FC<FullProjectData> = ({
             <div className={styles.statsGrid}>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  {backlogItems.length}
+                  {backlogItems?.length}
                   <span className={styles.statLabel}>Total Tasks</span>
                 </div>
               </div>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  {backlogItems.filter((item) => item.type === "epic").length}
+                  {backlogItems?.filter((item: any) => item.type === "epic").length}
                   <span className={styles.statLabel}>Epics</span>
                 </div>
               </div>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
                   {
-                    backlogItems.filter((item) => item.status === "in-progress")
+                    backlogItems?.filter((item: any) => item.status === "in-progress")
                       .length
                   }
                   <span className={styles.statLabel}>In Progress</span>
@@ -163,7 +155,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
               </div>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  {backlogItems.filter((item) => item.status === "done").length}
+                  {backlogItems?.filter((item: any) => item.status === "done").length}
                   <span className={styles.statLabel}>Completed</span>
                 </div>
               </div>
@@ -173,7 +165,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
 
         {/* Backlog Preview Section */}
         <RecentBacklogItems 
-          isloading={loading}
+          isloading={isLoading}
           items={backlogItems}
         />
       </div>

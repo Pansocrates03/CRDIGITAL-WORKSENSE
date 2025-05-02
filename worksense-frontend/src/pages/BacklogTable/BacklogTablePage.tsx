@@ -63,6 +63,7 @@ const BacklogTablePage: FC = () => {
       if (!projectId) return [];
 
       const res = await apiClient.get(`/projects/${projectId}/backlog/items`);
+      console.log("BacklogTablePage: data fetched", res.data);
       return res.data;
     },
     enabled: !!projectId,
