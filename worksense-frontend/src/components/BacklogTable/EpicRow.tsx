@@ -20,15 +20,20 @@ interface Epic {
   assigneeId?: string | number | null;
 }
 
+import { BacklogItemType } from "@/types/BacklogItemType";
+
+
 interface EpicRowProps {
-  epic: Epic;
+  epic: BacklogItemType;
   isExpanded: boolean;
   onToggle: (epicId: string) => void;
   colSpan: number;
-  onEdit?: (epic: any) => void;
+  onEdit?: (epic: BacklogItemType) => void;
   onDelete?: (epicId: string) => void;
-  onGenerateStories?: (epicId: string, epicTitle: string) => void;
-  onViewDetails?: (epic: Epic) => void;
+
+ onGenerateStories?: (epicId: string, epicName: string) => void;
+ onViewDetails?: (epic: Epic) => void;
+
 }
 
 export const EpicRow: FC<EpicRowProps> = ({
@@ -86,13 +91,14 @@ export const EpicRow: FC<EpicRowProps> = ({
     <tr className={styles.epicRowContainer}>
       <td>
         <div className="flex items-center gap-2">
+
           <span 
             style={isHovered ? titleHoverStyle : titleStyle}
             onClick={handleViewDetails}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            {epic.title}
+            {epic.name}
             {isHovered && (
               <span 
                 style={{
@@ -107,8 +113,8 @@ export const EpicRow: FC<EpicRowProps> = ({
             )}
           </span>
           <span className="text-gray-500 ml-2 text-sm">
-            ({epic.stories.length}{" "}
-            {epic.stories.length === 1 ? "story" : "stories"})
+            ({epic.subItems.length || 0}{" "}
+            {epic.subItems?.length === 1 ? "story" : "stories"})
           </span>
           <button 
             onClick={handleToggle}
@@ -148,8 +154,8 @@ export const EpicRow: FC<EpicRowProps> = ({
               : undefined
           }
           onGenerateStories={
-            onGenerateStories 
-              ? () => onGenerateStories(epic.id, epic.title) 
+            onGenerateStories
+              ? () => onGenerateStories(epic.id, epic.name)
               : undefined
           }
           isEpic={true}

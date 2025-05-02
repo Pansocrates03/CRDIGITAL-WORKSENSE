@@ -1,10 +1,10 @@
 // src/services/aiStoriesService.ts
 import apiClient from "@/api/apiClient";
-import { 
-  AiStorySuggestion, 
-  GenerateStoriesResponse, 
-  GenerateStoriesRequest, 
-  ConfirmStoriesRequest 
+import {
+  AiStorySuggestion,
+  GenerateStoriesResponse,
+  GenerateStoriesRequest,
+  ConfirmStoriesRequest,
 } from "@/types/ai";
 
 // Caché para las historias generadas
@@ -32,7 +32,7 @@ export const aiStoriesService = {
 
       // Si no hay caché, llamar a la API
       const response = await apiClient.post<GenerateStoriesResponse>(
-        `/${projectId}/ai/stories/generate-stories`,
+        `/projects/${projectId}/ai/stories/generate-stories`,
         { epicId } as GenerateStoriesRequest
       );
 
@@ -63,15 +63,18 @@ export const aiStoriesService = {
     try {
       // Enviar tanto description como content para garantizar compatibilidad
       await apiClient.post(
-        `/${projectId}/ai/stories/confirm-stories`,
+        `/projects/${projectId}/ai/stories/confirm-stories`,
         {
           epicId,
-          stories: stories.map(story => ({
+          stories: stories.map((story) => ({
             name: story.name,
             description: story.description,
-            content: story.description, // Enviar como content para compatibilidad con BacklogItem
-            priority: story.priority
-          }))
+            priority: story.priority,
+            acceptanceCriteria: story.acceptanceCriteria,
+            size: story.size,
+            type: "story",
+            status: "new",
+          })),
         } as ConfirmStoriesRequest
       );
 

@@ -3,6 +3,8 @@ import React from "react";
 import styles from "./BacklogRow.module.css";
 import StatusBadge from "./StatusBadge";
 import ActionMenu from "./ActionMenu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BacklogItemType } from "@/types/BacklogItemType";
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 
 interface BacklogItem {
@@ -22,7 +24,7 @@ interface Member {
 }
 
 interface BacklogRowProps {
-  item: BacklogItem;
+  item: BacklogItemType;
   indent?: boolean;
   memberMap: Map<number, Member>;
   onEdit: () => void;
@@ -56,8 +58,17 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
         : Number(item.assigneeId)
       : null;
 
+
+  // Handle authorId conversion
+  const authorId =
+    item.authorId !== undefined && item.authorId !== null
+      ? typeof item.authorId === "string"
+        ? parseInt(item.authorId)
+        : Number(item.authorId)
+      : null;
   // Get member info
   const memberInfo = assigneeId !== null ? memberMap.get(assigneeId) : null;
+  const authorInfo = authorId !== null ? memberMap.get(authorId) : null;
 
   // Inline styles for the title instead of using a separate CSS module
   const titleStyle = {

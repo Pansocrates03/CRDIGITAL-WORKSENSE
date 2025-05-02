@@ -1,19 +1,20 @@
-import { Priority } from "../../types/backlog.js";
+import { BacklogItemData } from "../../types/backlog.js";
 
 export interface ParsedEpicSuggestion {
   name: string;
   description: string | null;
-  priority: Priority;
+  priority: "high" | "medium" | "low";
 }
 
 export interface ParsedStorySuggestion {
   name: string;
   description: string | null;
-  priority: Priority;
+  priority: "high" | "medium" | "low";
 }
 
-const ALLOWED: Priority[] = ["lowest", "low", "medium", "high", "highest"];
-const norm = (p: any): Priority => (ALLOWED.includes(p) ? p : "medium");
+const ALLOWED: BacklogItemData["priority"][] = ["low", "medium", "high"];
+const norm = (p: any): BacklogItemData["priority"] =>
+  ALLOWED.includes(p) ? p : "medium";
 
 export function parseIAResponse(raw: string): ParsedEpicSuggestion[] {
   let str = raw.trim();

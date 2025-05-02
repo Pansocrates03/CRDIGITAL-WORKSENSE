@@ -3,10 +3,11 @@ import React from "react";
 import { X, Save, RefreshCw } from "lucide-react";
 import SelectField from "./SelectField";
 import styles from "./CreateItemModal.module.css";
+import { BacklogItemType } from "@/types/BacklogItemType";
 
 interface Epic {
   id: string;
-  title: string;
+  name: string;
 }
 
 interface User {
@@ -14,19 +15,10 @@ interface User {
   name?: string;
 }
 
-export interface BacklogItemFormData {
-  id?: string;
-  projectId?: string;
-  type: "epic" | "story" | "bug" | "techTask" | "knowledge";
-  title: string;
-  status: string;
-  assigneeId?: string;
-  priority: "lowest" | "low" | "medium" | "high" | "highest";
-  storyPoints?: number | null;
-  severity?: string;
-  epicId?: string;
+export interface BacklogItemFormData extends Partial<BacklogItemType> {
   content?: string;
   tags?: string[];
+  epicId?: string;
 }
 
 interface ItemModalFormProps {
@@ -79,10 +71,10 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
       { value: "knowledge", label: "Knowledge" },
     ],
     status: [
-      { value: "", label: "Unassigned" },
-      { value: "todo", label: "To do" },
-      { value: "in-progress", label: "In Progress" },
-      { value: "review", label: "Review" },
+      { value: "new", label: "New" },
+      { value: "toDo", label: "To Do" },
+      { value: "inProgress", label: "In Progress" },
+      { value: "inReview", label: "In Review" },
       { value: "done", label: "Done" },
     ],
     priority: [
@@ -90,17 +82,12 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
       { value: "medium", label: "Medium" },
       { value: "high", label: "High" },
     ],
-    severity: [
-      { value: "minor", label: "Minor" },
-      { value: "major", label: "Major" },
-      { value: "critical", label: "Critical" },
-      { value: "blocker", label: "Blocker" },
-    ],
-    epic: [
-      { value: "", label: "Select Epic (Optional)" },
-      ...epics
-        .filter((e) => e.id !== formData.id) // avoid self-reference
-        .map((e) => ({ value: e.id, label: e.title })),
+    size: [
+      { value: "xs", label: "XS" },
+      { value: "s", label: "S" },
+      { value: "m", label: "M" },
+      { value: "l", label: "L" },
+      { value: "xl", label: "XL" },
     ],
     assignee: [
       { value: "", label: "Select Assignee (Optional)" },
@@ -118,7 +105,9 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
     >
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h2>{mode === "create" ? "Create New Item" : `Update ${formData.type}`}</h2>
+          <h2>
+            {mode === "create" ? "Create New Item" : `Update ${formData.type}`}
+          </h2>
           <button
             className={styles.closeButton}
             onClick={onClose}
@@ -133,15 +122,15 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
 
         <form onSubmit={onSubmit}>
           <div className={styles.formGroup}>
-            <label htmlFor="title">Title*</label>
+            <label htmlFor="name">Name*</label>
             <input
-              id="title"
-              name="title"
+              id="name"
+              name="name"
               type="text"
-              value={formData.title}
+              value={formData.name || ""}
               onChange={handleChange}
               required
-              placeholder="Enter title"
+              placeholder="Enter name"
               disabled={loading}
             />
           </div>
@@ -149,7 +138,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
           <SelectField
             id="type"
             name="type"
-            value={formData.type}
+            value={formData.type || ""}
             onChange={handleChange}
             options={selectOptions.type}
             label="Type"
@@ -161,7 +150,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
           <SelectField
             id="status"
             name="status"
-            value={formData.status}
+            value={formData.status || "new"}
             onChange={handleChange}
             options={selectOptions.status}
             label="Status"
@@ -172,7 +161,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
           <SelectField
             id="priority"
             name="priority"
-            value={formData.priority}
+            value={formData.priority || "medium"}
             onChange={handleChange}
             options={selectOptions.priority}
             label="Priority"
@@ -180,57 +169,59 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             disabled={loading}
           />
 
-          {formData.type !== "epic" && (
-            <SelectField
-              id="assigneeId"
-              name="assigneeId"
-              value={formData.assigneeId || ""}
-              onChange={handleChange}
-              options={selectOptions.assignee}
-              label="Assignee"
-              styleClass="assignee"
-              disabled={loading}
-            />
-          )}
+          <SelectField
+            id="size"
+            name="size"
+            value={formData.size || ""}
+            onChange={handleChange}
+            options={selectOptions.size}
+            label="Size"
+            styleClass="size"
+            disabled={loading}
+          />
+
+          <SelectField
+            id="assigneeId"
+            name="assigneeId"
+            value={formData.assigneeId?.toString() || ""}
+            onChange={handleChange}
+            options={selectOptions.assignee}
+            label="Assignee"
+            styleClass="assignee"
+            disabled={loading}
+          />
 
           {formData.type === "story" && (
-            <>
-              <SelectField
-                id="epicId"
-                name="epicId"
-                value={formData.epicId || ""}
-                onChange={handleChange}
-                options={selectOptions.epic}
-                label="Epic"
-                styleClass="epic"
-                disabled={loading}
-              />
-
-              <SelectField
-                id="storyPoints"
-                name="storyPoints"
-                value={formData.storyPoints?.toString() || ""}
-                onChange={handleChange}
-                options={storyPointsOptions.map((p) => ({ value: p.value, label: p.label }))}
-                label="Story Points"
-                styleClass="storyPoints"
-                disabled={loading}
-              />
-            </>
-          )}
-
-          {formData.type === "bug" && (
             <SelectField
-              id="severity"
-              name="severity"
-              value={formData.severity || ""}
+              id="epicId"
+              name="epicId"
+              value={formData.epicId || ""}
               onChange={handleChange}
-              options={selectOptions.severity}
-              label="Severity"
-              styleClass="severity"
+              options={[
+                { value: "", label: "Select Epic (Optional)" },
+                ...epics.map((epic) => ({
+                  value: epic.id,
+                  label: epic.name,
+                })),
+              ]}
+              label="Epic"
+              styleClass="epic"
               disabled={loading}
             />
           )}
+
+          <div className={styles.formGroup}>
+            <label htmlFor="description">Description</label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description || ""}
+              onChange={handleChange}
+              rows={5}
+              disabled={loading}
+              placeholder="Enter description"
+            />
+          </div>
 
           <div className={styles.formGroup}>
             <label htmlFor="content">Description</label>
@@ -242,6 +233,22 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
               rows={5}
               placeholder="Add a detailed description..."
               disabled={loading}
+            <label htmlFor="acceptanceCriteria">
+              Acceptance Criteria (one per line)
+            </label>
+            <textarea
+              id="acceptanceCriteria"
+              name="acceptanceCriteria"
+              value={formData.acceptanceCriteria?.join("\n") || ""}
+              onChange={(e) => {
+                const lines = e.target.value
+                  .split("\n")
+                  .filter((line) => line.trim());
+                onChange({ ...formData, acceptanceCriteria: lines });
+              }}
+              rows={5}
+              disabled={loading}
+              placeholder="Enter acceptance criteria"
             />
           </div>
 
@@ -270,7 +277,9 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
               className={styles.submitButton}
               disabled={loading}
             >
-              {loading ? "Loading..." : (
+              {loading ? (
+                "Loading..."
+              ) : (
                 <>
                   <Save size={16} className="mr-1" />
                   {mode === "create" ? "Create Item" : "Update"}
