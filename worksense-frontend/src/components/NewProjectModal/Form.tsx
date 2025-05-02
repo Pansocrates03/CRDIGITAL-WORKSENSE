@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef, useMemo, useEffect } from "react";
 import InputWithClear from "./InputWithClear";
 import MemberSelection from "./MemberSelection";
 import Member from "@/types/MemberType";
@@ -6,7 +6,9 @@ import { projectService } from "@/services/projectService";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import styles from "./NewProjectModal.module.css";
 import { User } from "@/types/UserType";
-import apiClient from "../../api/apiClient";  
+import apiClient from "../../api/apiClient";
+import GenerateEpicsModal from "../BacklogTable/GenerateEpicsModal";
+import { Sparkles } from "lucide-react";
 
 type localFormError = {
   projectName?: string;
@@ -17,12 +19,14 @@ type localFormError = {
 const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentUserId, onClose }) => {
     const queryClient = useQueryClient();
 
-    // Estado para inputs del formulario
+    // Variables de estado
     const [projectName, setProjectName] = useState("");
     const [description, setDescription] = useState("");
     const [shouldPopulateBacklog, setShouldPopulateBacklog] = useState(false);
     const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
-    
+    const [showGenerateEpicsModal, setShowGenerateEpicsModal] = useState(false);
+    const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
+    const [isPopulatingBacklog, setIsPopulatingBacklog] = useState(false);
 
     // Referencias para el modal y el input
     const inputRef = useRef<HTMLInputElement>(null);
@@ -55,17 +59,18 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
     );
     }, [users, selectedMembers, currentUserId]);
 
-    let isPopulatingBacklog = false;
-
-
+    // Efecto para mostrar el modal de generación de épicas después de crear un proyecto
+    useEffect(() => {
+        if (createdProjectId && shouldPopulateBacklog) {
+            setShowGenerateEpicsModal(true);
+        }
+    }, [createdProjectId, shouldPopulateBacklog]);
 
     ///////////////
     // FUNCIONES //
     ///////////////
 
-
-
-      // Validación del formulario antes de enviar
+    // Validación del formulario antes de enviar
     const validateForm = (): boolean => {
         const newErrors: localFormError = {};
         if (!projectName.trim()) newErrors.projectName = "Name is required";
@@ -82,10 +87,10 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
           console.log("Selected members after adding", updatedMembers);
           return updatedMembers;
         });
-      };
+    };
 
     const handleRemoveMember = (userId: number) => {
-    setSelectedMembers(selectedMembers.filter((m) => m.userId !== userId));
+        setSelectedMembers(selectedMembers.filter((m) => m.userId !== userId));
     };
 
     // Envío del formulario
@@ -96,12 +101,17 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
         setErrors({});
 
         try {
-            await projectService.createProejct({
+            const response = await projectService.createProejct({
                 name: projectName,
                 description: description,
                 context: {},
                 members: selectedMembers,
             });
+
+            // Guardar el ID del proyecto creado para poder generar épicas
+            if (response && response.id) {
+                setCreatedProjectId(response.id);
+            }
 
             setAlert({
                 type: "success",
@@ -111,6 +121,17 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
 
             // Invalidamos el query de proyectos del usuario para refrescar la lista
             queryClient.invalidateQueries({ queryKey: ["userProjects"] });
+
+            // Si no se solicita generar backlog con IA, cerrar el modal
+            if (!shouldPopulateBacklog) {
+                onClose();
+            } else {
+                // Si se ha solicitado generar backlog con IA y tenemos el ID del proyecto
+                if (response && response.id) {
+                    setIsPopulatingBacklog(true);
+                    setShowGenerateEpicsModal(true);
+                }
+            }
         } catch (error) {
             console.error("Error al crear proyecto:", error);
             setAlert({
@@ -123,8 +144,35 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
         }
     };
 
+    // Manejar cuando se completa la generación de épicas
+    const handleEpicsAdded = () => {
+        setIsPopulatingBacklog(false);
+        setShowGenerateEpicsModal(false);
+        
+        // Actualizar el estado de alerta para informar al usuario
+        setAlert({
+            type: "success",
+            title: "Epics added to backlog",
+            message: `Epics have been successfully generated and added to the project backlog.`,
+        });
+
+        // Cerrar el modal principal
+        onClose();
+    };
+
+    // Manejar error en la generación de épicas
+    const handleEpicGenerationError = (message: string) => {
+        setIsPopulatingBacklog(false);
+        setAlert({
+            type: "error",
+            title: "Error generating epics",
+            message: message,
+        });
+    };
+    
     return (
-        <form onSubmit={handleSubmit}>
+        <>
+            <form onSubmit={handleSubmit}>
                 <InputWithClear
                   id="projectName"
                   value={projectName}
@@ -185,31 +233,34 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
                       type="checkbox"
                       id="populateBacklog"
                       checked={shouldPopulateBacklog}
-                      onChange={(e) => setShouldPopulateBacklog(e.target.checked) }
+                      onChange={(e) => setShouldPopulateBacklog(e.target.checked)}
                     />
                     <label
                       htmlFor="populateBacklog"
                       className={styles.checkboxLabel}
                     >
                       Automatically generate backlog with AI
-                      <span className={styles.aiLabel}>AI</span>
+                      <span className={styles.aiLabel}>
+                        <Sparkles size={12} className="mr-1" /> AI
+                      </span>
                     </label>
                   </div>
                   {shouldPopulateBacklog && (
                     <p className={styles.aiDescription}>
-                      We will analyze the description to generate epics and stories.
+                      We will analyze the description to generate epics and stories for your project backlog.
                     </p>
                   )}
                 </div>
 
-                {/* Botones del modal */}
                 <div className={styles.modalActions}>
                   <button
                     type="button"
                     className={styles.cancelButton}
                     onClick={onClose}
                     disabled={isCreatingProject || isPopulatingBacklog}
-                  >Cancel</button>
+                  >
+                    Cancel
+                  </button>
 
                   <button
                     type="submit"
@@ -221,10 +272,27 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
                       isPopulatingBacklog
                     }
                   >
-                    {isCreatingProject ? "Creating..." : "Create Project"}
+                    {isCreatingProject ? "Creating..." : shouldPopulateBacklog ? "Create & Generate Backlog" : "Create Project"}
                   </button>
                 </div>
-              </form>
+            </form>
+
+            {/* Modal para generar épicas con IA */}
+            {showGenerateEpicsModal && createdProjectId && (
+                <GenerateEpicsModal
+                    projectId={createdProjectId}
+                    projectName={projectName}
+                    isOpen={showGenerateEpicsModal}
+                    onClose={() => {
+                        setShowGenerateEpicsModal(false);
+                        setIsPopulatingBacklog(false);
+                        onClose(); // Cerrar el modal principal también
+                    }}
+                    onEpicsAdded={handleEpicsAdded}
+                    onError={handleEpicGenerationError}
+                />
+            )}
+        </>
     );
 }
 
