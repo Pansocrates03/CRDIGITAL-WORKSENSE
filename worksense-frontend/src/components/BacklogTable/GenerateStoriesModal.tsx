@@ -153,7 +153,11 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
           onClick={(e) => e.stopPropagation()}
         >
           <div className={styles.modalHeader}>
-            <h2>AI Suggested Stories for "{epicName}"</h2>
+            <h2>
+              <span className="flex items-center">
+                <Sparkles size={18} className="text-pink-600 mr-2" />
+                <h2>AI Suggested Stories for "{epicName}"</h2>              </span>
+            </h2>
             <button
               className={styles.closeButton}
               onClick={onClose}
@@ -166,42 +170,48 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
 
           {error && <div className={styles.errorMessage}>{error}</div>}
 
-          <div className="mb-4">
+          <div className={styles.formGroup}>
             <p className="text-sm text-gray-600 mb-4">
               Review, edit, or remove the suggested user stories below before
               adding them to this epic.
             </p>
-
-            <button
-              onClick={generateSuggestions}
-              disabled={isGenerating}
-              className="flex items-center justify-center gap-1 text-sm bg-indigo-50 text-indigo-600 px-3 py-1 rounded-md hover:bg-indigo-100 transition-colors"
-            >
-              <Sparkles size={16} />
-              {isGenerating ? "Generating..." : "Regenerate Suggestions"}
-            </button>
           </div>
 
           {isGenerating ? (
             <div className="flex justify-center py-8">
-              <div className="animate-spin h-8 w-8 border-4 border-indigo-500 rounded-full border-t-transparent"></div>
+              <div
+                className="animate-spin h-8 w-8 border-4 rounded-full border-t-transparent"
+                style={{
+                  borderColor: "rgba(172, 23, 84, 0.3)",
+                  borderTopColor: "transparent",
+                }}
+              ></div>
             </div>
           ) : (
             <div>
               {suggestedStories.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No story suggestions available. Try generating again.
+                <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-md">
+                  <Sparkles
+                    size={24}
+                    className="mx-auto mb-2"
+                    style={{ color: "rgba(172, 23, 84, 0.5)" }}
+                  />
+                  <p>No story suggestions available.</p>
                 </div>
               ) : (
-                <div className="space-y-6 max-h-[60vh] overflow-y-auto p-2">
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto p-2">
                   {suggestedStories.map((story, index) => (
                     <div
                       key={index}
-                      className="border rounded-md p-4 bg-gray-50 relative"
+                      className="border rounded-md p-4 relative transition-colors"
+                      style={{
+                        backgroundColor: "rgba(172, 23, 84, 0.05)",
+                        borderColor: "#e5e7eb",
+                      }}
                     >
                       <button
                         onClick={() => removeStory(index)}
-                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-white hover:bg-opacity-50 transition-colors"
                         title="Remove"
                       >
                         <Trash2 size={16} />
@@ -217,7 +227,12 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                             updateStory(index, "name", e.target.value)
                           }
                           required
-                          placeholder="Story name"
+                          placeholder="Story title"
+                          className="border-gray-300 focus:border-pink-500 focus:ring focus:ring-pink-200 focus:ring-opacity-50"
+                          style={{
+                            borderColor: "#d1d5db",
+                          }}
+
                         />
                       </div>
 
@@ -233,6 +248,10 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                           }
                           rows={3}
                           placeholder="Story description"
+                          className="border-gray-300 focus:border-pink-500 focus:ring focus:ring-pink-200 focus:ring-opacity-50"
+                          style={{
+                            borderColor: "#d1d5db",
+                          }}
                         />
                       </div>
 
@@ -266,6 +285,25 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                               e.target.value as "low" | "medium" | "high"
                             )
                           }
+                          className={`appearance-none bg-white bg-no-repeat bg-right-10 ${
+                            story.priority === "high"
+                              ? styles.priority +
+                                " " +
+                                styles["priority select[value='high']"]
+                              : story.priority === "medium"
+                              ? styles.priority +
+                                " " +
+                                styles["priority select[value='medium']"]
+                              : styles.priority +
+                                " " +
+                                styles["priority select[value='low']"]
+                          }`}
+                          style={{
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                            backgroundPosition: "right 10px center",
+                            backgroundSize: "16px",
+                            paddingRight: "32px",
+                          }}
                         >
                           <option value="low">Low</option>
                           <option value="medium">Medium</option>
@@ -316,7 +354,10 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
               }
             >
               {isLoading ? (
-                "Adding Stories..."
+                <>
+                  <RefreshCw size={16} className="animate-spin mr-1" />
+                  Adding Stories...
+                </>
               ) : (
                 <>
                   <Save size={16} className="mr-1" />

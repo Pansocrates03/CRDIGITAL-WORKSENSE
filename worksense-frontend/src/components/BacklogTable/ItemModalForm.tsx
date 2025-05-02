@@ -224,6 +224,16 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
           </div>
 
           <div className={styles.formGroup}>
+            <label htmlFor="content">Description</label>
+            <textarea
+              id="content"
+              name="content"
+              value={formData.content || ""}
+              onChange={handleChange}
+              rows={5}
+              placeholder="Add a detailed description..."
+              disabled={loading}
+            />
             <label htmlFor="acceptanceCriteria">
               Acceptance Criteria (one per line)
             </label>

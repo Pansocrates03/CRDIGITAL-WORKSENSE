@@ -47,11 +47,19 @@ export interface GenerateStoriesRequest {
 }
 
 /**
+ * Interfaz extendida para el envío de historias al backend
+ * Incluye tanto description como content para compatibilidad
+ */
+interface StoryWithContent extends AiStorySuggestion {
+  content?: string | null;
+}
+
+/**
  * Interfaz para la solicitud de confirmación de historias
  */
 export interface ConfirmStoriesRequest {
   epicId: string;
-  stories: AiStorySuggestion[];
+  stories: StoryWithContent[];
 }
 
 /**
