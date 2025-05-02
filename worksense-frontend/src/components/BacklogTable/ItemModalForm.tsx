@@ -177,7 +177,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             value={formData.size || ""}
             onChange={handleChange}
             options={selectOptions.size}
-            label="Size"
+            label="Epic"
             styleClass="size"
             disabled={loading}
           />
@@ -226,16 +226,6 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="content">Description</label>
-            <textarea
-              id="content"
-              name="content"
-              value={formData.content || ""}
-              onChange={handleChange}
-              rows={5}
-              placeholder="Add a detailed description..."
-              disabled={loading}
-            />
             <label htmlFor="acceptanceCriteria">
               Acceptance Criteria (one per line)
             </label>
