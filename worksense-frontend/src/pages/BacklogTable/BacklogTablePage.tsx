@@ -12,6 +12,7 @@ import BacklogRow from "@/components/BacklogTable/BacklogRow";
 import DeleteConfirmationModal from "@/components/ui/DeleteConfirmationModal";
 import CreateItemModal from "@/components/BacklogTable/CreateItemModal";
 import UpdateItemModal from "@/components/BacklogTable/UpdateItemModal";
+import GenerateStoriesModal from "@/components/BacklogTable/GenerateStoriesModal";
 import { EpicRow } from "@/components/BacklogTable/EpicRow";
 
 interface BacklogItem {
@@ -25,6 +26,7 @@ interface BacklogItem {
   storyPoints?: number | null;
   severity?: string | null;
   epicId?: string | null;
+  linkedItems?: string[] | null;
 }
 
 interface ProjectMember {
@@ -51,6 +53,11 @@ const BacklogTablePage: FC = () => {
   const [itemToDelete, setItemToDelete] = useState<BacklogItem | null>(null);
   const [deleteModalTitle, setDeleteModalTitle] = useState("");
   const [deleteModalMessage, setDeleteModalMessage] = useState("");
+
+  // Estados para el modal de generación de historias con IA
+  const [showGenerateStoriesModal, setShowGenerateStoriesModal] = useState(false);
+  const [selectedEpicId, setSelectedEpicId] = useState("");
+  const [selectedEpicTitle, setSelectedEpicTitle] = useState("");
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["backlog", projectId],
@@ -86,15 +93,42 @@ const BacklogTablePage: FC = () => {
 
   const categorized = useMemo(() => {
     const all = Array.isArray(data) ? data : [];
+    
+    // Hacer log de los datos para depuración
+    console.log("Datos del backlog:", all);
+    
+    // Crear categorías de ítems
     return {
       epics: all.filter((i) => i.type === "epic"),
       stories: all.filter((i) => i.type === "story"),
-      standaloneStories: all.filter((i) => i.type === "story" && !i.epicId),
+      // Las historias pueden estar vinculadas a épicas de dos maneras:
+      // 1. A través del campo epicId
+      // 2. A través del campo linkedItems (array que contiene el id de la épica)
+      standaloneStories: all.filter((i) => 
+        i.type === "story" && 
+        !i.epicId && 
+        (!i.linkedItems || i.linkedItems.length === 0)
+      ),
       bugs: all.filter((i) => i.type === "bug"),
       techTasks: all.filter((i) => i.type === "techTask"),
       knowledge: all.filter((i) => i.type === "knowledge"),
     };
   }, [data]);
+
+  // Función para obtener las historias asociadas a una épica
+  const getEpicStories = (epicId: string) => {
+    if (!data) return [];
+    
+    // Encontrar historias que están asociadas a la épica
+    return (Array.isArray(data) ? data : []).filter((item) => 
+      item.type === "story" && (
+        // A través del campo epicId
+        item.epicId === epicId || 
+        // O a través del campo linkedItems
+        (item.linkedItems && item.linkedItems.includes(epicId))
+      )
+    );
+  };
 
   // Función para manejar la edición de un ítem
   const handleEdit = (item: BacklogItem) => {
@@ -117,7 +151,7 @@ const BacklogTablePage: FC = () => {
     const epic = categorized.epics.find((e) => e.id === epicId);
     if (!epic) return;
 
-    const epicStories = categorized.stories.filter((s) => s.epicId === epicId);
+    const epicStories = getEpicStories(epicId);
     const message =
       epicStories.length > 0
         ? `Are you sure you want to delete the epic "${epic.title}" and all its stories (${epicStories.length})?`
@@ -129,6 +163,29 @@ const BacklogTablePage: FC = () => {
     setShowDeleteModal(true);
   };
 
+  // Función para abrir el modal de generación de historias con IA
+  const handleGenerateStories = (epicId: string, epicTitle: string) => {
+    if (!projectId) return;
+    
+    setSelectedEpicId(epicId);
+    setSelectedEpicTitle(epicTitle);
+    setShowGenerateStoriesModal(true);
+  };
+
+  // Función para manejar cuando se añaden historias a una épica
+  const handleStoriesAdded = (epicId: string) => {
+    // Expandir la épica si no está ya expandida
+    if (!expandedEpics.includes(epicId)) {
+      setExpandedEpics(prev => [...prev, epicId]);
+    }
+    
+    // Mostrar mensaje de éxito
+    handleSuccess("Stories added successfully!");
+    
+    // Recargar los datos del backlog
+    refetch();
+  };
+
   // Función para ejecutar la eliminación
   const executeDelete = async () => {
     if (!itemToDelete || !projectId) return;
@@ -136,9 +193,7 @@ const BacklogTablePage: FC = () => {
     try {
       // Si es un epic, primero eliminamos sus historias
       if (itemToDelete.type === "epic") {
-        const epicStories = categorized.stories.filter(
-          (s) => s.epicId === itemToDelete.id
-        );
+        const epicStories = getEpicStories(itemToDelete.id);
         if (epicStories.length > 0) {
           // Eliminar todas las historias asociadas
           const deletePromises = epicStories.map((story) =>
@@ -231,9 +286,7 @@ const BacklogTablePage: FC = () => {
                   <EpicRow
                     epic={{
                       ...epic,
-                      stories: categorized.stories.filter(
-                        (s) => s.epicId === epic.id
-                      ),
+                      stories: getEpicStories(epic.id),
                     }}
                     isExpanded={expandedEpics.includes(epic.id)}
                     onToggle={() =>
@@ -246,10 +299,11 @@ const BacklogTablePage: FC = () => {
                     colSpan={5}
                     onEdit={() => handleEdit(epic)}
                     onDelete={() => handleDeleteEpic(epic.id)}
+                    onGenerateStories={handleGenerateStories}
                   />
                   {expandedEpics.includes(epic.id) &&
                     renderRows(
-                      categorized.stories.filter((s) => s.epicId === epic.id),
+                      getEpicStories(epic.id),
                       true
                     )}
                 </React.Fragment>
@@ -299,6 +353,18 @@ const BacklogTablePage: FC = () => {
           }}
           onError={handleError}
           item={itemToEdit}
+        />
+      )}
+
+      {projectId && (
+        <GenerateStoriesModal
+          projectId={projectId}
+          epicId={selectedEpicId}
+          epicTitle={selectedEpicTitle}
+          isOpen={showGenerateStoriesModal}
+          onClose={() => setShowGenerateStoriesModal(false)}
+          onStoriesAdded={() => handleStoriesAdded(selectedEpicId)}
+          onError={handleError}
         />
       )}
 

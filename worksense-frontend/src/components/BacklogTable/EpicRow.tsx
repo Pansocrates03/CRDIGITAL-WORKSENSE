@@ -26,6 +26,7 @@ interface EpicRowProps {
   colSpan: number;
   onEdit?: (epic: any) => void;
   onDelete?: (epicId: string) => void;
+  onGenerateStories?: (epicId: string, epicTitle: string) => void;
 }
 
 export const EpicRow: FC<EpicRowProps> = ({
@@ -35,6 +36,7 @@ export const EpicRow: FC<EpicRowProps> = ({
   colSpan,
   onEdit = () => console.log("Edit epic:", epic.id),
   onDelete = () => console.log("Delete epic:", epic.id),
+  onGenerateStories,
 }) => {
   // Handle toggle action
   const handleToggle = (e: React.MouseEvent) => {
@@ -69,6 +71,12 @@ export const EpicRow: FC<EpicRowProps> = ({
         <ActionMenu
           onEdit={() => onEdit(epic)}
           onDelete={() => onDelete(epic.id)}
+          onGenerateStories={
+            onGenerateStories 
+              ? () => onGenerateStories(epic.id, epic.title) 
+              : undefined
+          }
+          isEpic={true}
         />
       </td>
     </tr>

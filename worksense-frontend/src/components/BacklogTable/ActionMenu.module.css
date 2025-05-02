@@ -65,7 +65,7 @@
 }
 
 .deleteItem {
-  color: #ac1754; 
+  color: #ac1754;
 }
 
 .deleteItem:hover {
@@ -82,4 +82,14 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* New AI item styling */
+.aiItem {
+  color: #4f46e5;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.aiItem:hover {
+  background-color: #f5f3ff;
 }
