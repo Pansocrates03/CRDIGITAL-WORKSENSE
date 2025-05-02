@@ -15,6 +15,7 @@ import UpdateItemModal from "@/components/BacklogTable/UpdateItemModal";
 import GenerateStoriesModal from "@/components/BacklogTable/GenerateStoriesModal";
 import ItemDetailsModal from "@/components/BacklogTable/ItemDetailsModal";
 import { EpicRow } from "@/components/BacklogTable/EpicRow";
+import { useMembers } from "@/hooks/useMembers";
 
 import { BacklogItemType } from "@/types/BacklogItemType";
 
@@ -66,15 +67,7 @@ const BacklogTablePage: FC = () => {
     enabled: !!projectId,
   });
 
-  const { data: members = [] } = useQuery<ProjectMember[]>({
-    queryKey: ["projectMembers", projectId],
-    queryFn: async () => {
-      if (!projectId) return [];
-      const res = await apiClient.get(`/projects/${projectId}/members-detail`);
-      return res.data;
-    },
-    enabled: !!projectId,
-  });
+  const { data: members = [] } = useMembers(projectId || "");
 
   const memberMap = useMemo(() => {
     const map = new Map<number, ProjectMember>();
