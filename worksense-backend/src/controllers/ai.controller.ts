@@ -1,11 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import { db } from "../models/firebase.js";
-import { generateEpicsWithFrida, generateStoriesWithFrida} from "../service/aiService.js";
-import { parseIAResponse, parseStoriesResponse, ParsedStorySuggestion } from "../utils/parseIAResponse.js";
-import { getItemCollection } from "../utils/helpers/firestoreHelpers.js";
+import {
+  generateEpicsWithFrida,
+  generateStoriesWithFrida,
+} from "../service/aiService.js";
+import {
+  parseIAResponse,
+  parseStoriesResponse,
+  ParsedStorySuggestion,
+} from "../utils/parseIAResponse.js";
 import { FieldValue } from "firebase-admin/firestore";
-import { Priority } from "../../types/backlog.js";
-
+import { BacklogItemData } from "../../types/backlog.js";
 // ----------------  Generate ----------------
 export async function generateEpicHandler(
   req: Request,
@@ -17,7 +22,7 @@ export async function generateEpicHandler(
     if (!projectId)
       return res.status(400).json({ message: "Project ID required" });
 
-    const projectSnap = await db.collection("projectss").doc(projectId).get();
+    const projectSnap = await db.collection("projects").doc(projectId).get();
     if (!projectSnap.exists)
       return res.status(404).json({ message: "Project not found" });
     const { name, description } = projectSnap.data() as any;
@@ -30,9 +35,13 @@ export async function generateEpicHandler(
 
     // Filtra duplicados por título.
     const existingTitles = new Set(
-      (await getItemCollection(projectId, "epic").get()).docs.map(
-        (d) => d.data().title
-      )
+      (
+        await db
+          .collection("projects")
+          .doc(projectId)
+          .collection("backlog")
+          .get()
+      ).docs.map((d) => d.data().title)
     );
     const unique = suggestions.filter((s) => !existingTitles.has(s.name));
 
@@ -51,34 +60,42 @@ export async function generateStoriesHandler(
     const { projectId } = req.params;
     const { epicId } = req.body;
     if (!projectId || !epicId) {
-      return res.status(400).json({ message: "Project ID and epic ID required" });
+      return res
+        .status(400)
+        .json({ message: "Project ID and epic ID required" });
     }
-    // Valida Proyecto
-    const projectSnap = await db.collection("projectss").doc(projectId).get();
+    // Validate Project
+    const projectSnap = await db.collection("projects").doc(projectId).get();
     if (!projectSnap.exists) {
-      return res.status(404).json({ message: "Proyecto no encontrado" });
+      return res.status(404).json({ message: "Project not found" });
     }
-    const { name: projectName, description: projectDescription } = projectSnap.data() as any;
+    const { name: projectName, description: projectDescription } =
+      projectSnap.data() as any;
 
-    // Valida Epic
-    const epicCol = getItemCollection(projectId, "epic");
-    const epicDoc = await epicCol.doc(epicId).get();
-    if (!epicDoc.exists) return res.status(404).json({ message: "Épica no encontrada"});
+    // Validate Epic
+    const epicCol = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(epicId);
+    const epicDoc = await epicCol.get();
+    if (!epicDoc.exists)
+      return res.status(404).json({ message: "Epic not found" });
     const epicData = epicDoc.data() as any;
 
-    // Llama a Frida IA
     const raw = await generateStoriesWithFrida({
       projectName,
       projectDescription,
-      epicName: epicData.title,
+      epicName: epicData.name,
       epicDescription: epicData.description || "",
     });
     const suggestions: ParsedStorySuggestion[] = parseStoriesResponse(raw);
 
-    // Filtra duplicados por título.
+    // Filter duplicates by title
     const existingTitles = new Set(
-      (await getItemCollection(projectId, "story").get()).docs.map(
-        (d) => d.data().title)
+      (await epicCol.collection("subitems").get()).docs.map(
+        (d) => d.data().name
+      )
     );
     const unique = suggestions.filter((s) => !existingTitles.has(s.name));
 
@@ -92,13 +109,21 @@ export async function generateStoriesHandler(
 interface ConfirmedEpicDto {
   name: string;
   description: string | null;
-  priority: Priority;
+  priority: "high" | "medium" | "low";
+  acceptanceCriteria?: string[] | null;
+  assigneeId?: number | null;
+  authorId?: number | null;
+  coverImage?: string | null;
+  status?: "new" | "toDo" | "inProgress" | "inReview" | "done" | null;
+  size?: "xs" | "s" | "m" | "l" | "xl" | null;
+  sprint?: string | null;
+  type?: "epic" | "story" | "bug" | "techTask" | "knowledge" | null;
 }
 
 interface ConfirmedStoryDto {
   name: string;
   description: string | null;
-  priority: Priority;
+  priority: "high" | "medium" | "low";
 }
 
 export async function confirmEpicsHandler(
@@ -114,9 +139,14 @@ export async function confirmEpicsHandler(
     if (!Array.isArray(epics) || !epics.length)
       return res.status(400).json({ message: "No epics provided" });
 
-    const col = getItemCollection(projectId, "epic");
+    const backlogRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog");
     const existingTitles = new Set(
-      (await col.get()).docs.map((d) => d.data().title)
+      (await backlogRef.where("type", "==", "epic").get()).docs.map(
+        (d) => d.data().name
+      )
     );
 
     const batch = db.batch();
@@ -124,16 +154,25 @@ export async function confirmEpicsHandler(
 
     epics.forEach((e) => {
       if (!e.name || existingTitles.has(e.name)) return; // skip dupes / empty
-      batch.set(col.doc(), {
-        projectId,
-        type: "epic",
-        title: e.name.trim(),
+
+      const epicData: BacklogItemData = {
+        name: e.name.trim(),
         description: e.description,
         priority: e.priority,
-        status: "new",
-        reporterId: req.user?.userId ?? null,
-        assigneeId: null,
-        linkedItems: null,
+        status: e.status || "new",
+        type: "epic",
+        acceptanceCriteria: e.acceptanceCriteria ?? null,
+        assigneeId: e.assigneeId ?? null,
+        authorId: e.authorId ?? null,
+        coverImage: e.coverImage ?? null,
+        size: e.size ?? null,
+        sprint: e.sprint ?? null,
+      };
+
+      batch.set(backlogRef.doc(), {
+        ...epicData,
+        projectId,
+        authorId: req.user?.userId ?? null,
         createdAt: now,
         updatedAt: now,
       });
@@ -147,49 +186,69 @@ export async function confirmEpicsHandler(
 }
 
 export async function confirmStoriesHandler(
-  req: Request<{ projectId: string }, any, { epicId: string; stories: ConfirmedStoryDto[] }>,
+  req: Request<
+    { projectId: string },
+    any,
+    { epicId: string; stories: ConfirmedStoryDto[] }
+  >,
   res: Response,
   next: NextFunction
 ) {
   try {
     const { projectId } = req.params;
     const { epicId, stories } = req.body;
-    if (!projectId || !epicId) return res.status(400).json({ message: "Project ID and epic ID required" });
-    if (!Array.isArray(stories) || !stories.length) return res.status(400).json({ message: "No stories provided" });
-    
-    // Valida Proyecto y épica
-    const projectSnap = await db.collection("projectss").doc(projectId).get();
-    if (!projectSnap.exists) return res.status(404).json({ message: "Proyecto no encontrado" });
-    const epicCol = getItemCollection(projectId, "epic");
-    if (!(await epicCol.doc(epicId).get()).exists) return res.status(404).json({ message: "Épica no encontrada" });
+    if (!projectId || !epicId)
+      return res
+        .status(400)
+        .json({ message: "Project ID and epic ID required" });
+    if (!Array.isArray(stories) || !stories.length)
+      return res.status(400).json({ message: "No stories provided" });
 
-    // Prepara batch
-    const col = getItemCollection(projectId, "story");
+    // Validate Project and Epic
+    const projectSnap = await db.collection("projects").doc(projectId).get();
+    if (!projectSnap.exists)
+      return res.status(404).json({ message: "Project not found" });
+
+    const epicRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(epicId);
+    const epicDoc = await epicRef.get();
+    if (!epicDoc.exists)
+      return res.status(404).json({ message: "Epic not found" });
+
+    // Prepare batch
+    const subItemsRef = epicRef.collection("subitems");
     const existingTitles = new Set(
-      (await col.get()).docs.map((d) => d.data().title)
+      (await subItemsRef.get()).docs.map((d) => d.data().name)
     );
     const batch = db.batch();
     const now = FieldValue.serverTimestamp();
 
-    stories.forEach(st => {
+    stories.forEach((st) => {
       if (!st.name || existingTitles.has(st.name)) return; // skip dupes / empty
-      batch.set(col.doc(), {
-        projectId,
-        type: "story",
-        title: st.name.trim(),
+
+      const storyData: BacklogItemData = {
+        name: st.name.trim(),
         description: st.description,
         priority: st.priority,
         status: "new",
-        reporterId: req.user?.userId ?? null,
+        type: "story",
         assigneeId: null,
-        linkedItems: [epicId],
+      };
+
+      batch.set(subItemsRef.doc(), {
+        ...storyData,
+        projectId,
+        authorId: req.user?.userId ?? null,
         createdAt: now,
         updatedAt: now,
       });
     });
 
     await batch.commit();
-    res.status(201).json({ message: "Historias guardadas" });
+    res.status(201).json({ message: "Stories saved" });
   } catch (err) {
     next(err);
   }

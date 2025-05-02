@@ -2,11 +2,19 @@
 import { Request, Response, NextFunction } from "express";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "../models/firebase.js";
-import {
-  getItemCollection,
-  getItemRef,
-} from "../utils/helpers/firestoreHelpers.js";
-import { BacklogItem, BacklogItemType } from "../../types/backlog.js";
+
+interface BacklogItem {
+  acceptanceCriteria?: string[] | null;
+  assigneeId?: number | null;
+  authorId?: number | null;
+  coverImage?: string | null;
+  description?: string | null;
+  name?: string | null;
+  priority?: "high" | "medium" | "low" | null;
+  size?: "xs" | "s" | "m" | "l" | "xl" | null;
+  sprint?: string | null;
+  type?: "epic" | "story" | "bug" | "techTask" | "knowledge" | null;
+}
 
 const ALL_ITEM_TYPES = ["epic", "story", "bug", "techTask", "knowledge"];
 
@@ -20,69 +28,69 @@ export const createBacklogItem = async (
 ): Promise<void> => {
   try {
     const { projectId } = req.params;
-    const { type, ...itemData } = req.body;
+    const item: BacklogItem = req.body;
     const reporterId = req.user?.userId;
+
+    console.log("item recived", item);
 
     if (!reporterId) {
       res.status(401).json({ message: "Authentication required" });
       return;
-    }
-
-    if (!type || !itemData.title) {
-      res.status(400).json({ message: "Type and title required" });
+    } else if (!item.type) {
+      res.status(400).json({ message: "Type required" });
+      return;
+    } else if (!item.name) {
+      res.status(400).json({ message: "Name required" });
       return;
     }
 
-    const collectionRef = getItemCollection(projectId, type);
+    const collectionRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog");
 
-    // Create base item data
-    const baseItemData = {
-      ...itemData,
-      projectId,
-      type,
-      reporterId,
-      assigneeId: itemData.assigneeId || null,
-      priority: itemData.priority || "medium",
-      status: itemData.status || (type === "bug" ? "new" : "todo"),
-      createdAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
-    };
-
-    // Add type-specific fields
-    let newItemData = baseItemData;
-
-    if (type === "story") {
-      newItemData = {
-        ...baseItemData,
-        epicId: itemData.epicId || null,
-        storyPoints: itemData.storyPoints || null,
-      };
-    } else if (type === "bug") {
-      newItemData = {
-        ...baseItemData,
-        severity: itemData.severity || "major",
-        linkedStoryId: itemData.linkedStoryId || null,
-      };
-    } else if (type === "techTask") {
-      newItemData = {
-        ...baseItemData,
-        linkedStoryId: itemData.linkedStoryId || null,
-      };
-    } else if (type === "knowledge") {
-      newItemData = {
-        ...baseItemData,
-        content: itemData.content || "",
-        tags: itemData.tags || null,
-      };
-    }
-
-    const newItemRef = await collectionRef.add(newItemData);
-    res.status(201).json({ id: newItemRef.id, ...newItemData });
+    const newItemRef = await collectionRef.add(item);
+    res.status(201).json({ id: newItemRef.id, ...item });
   } catch (error: any) {
     if (error.message?.includes("Invalid backlog item type")) {
       res.status(400).json({ message: error.message });
       return;
     }
+    next(error);
+  }
+};
+
+export const createSubItem = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { projectId, itemId } = req.params;
+    const item: BacklogItem = req.body;
+    const authorId = req.user?.userId;
+
+    if (!authorId) {
+      res.status(401).json({ message: "Authentication required" });
+      return;
+    }
+
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId);
+
+    const docSnap = await itemRef.get();
+
+    if (!docSnap.exists) {
+      res.status(404).json({ message: "Item not found" });
+      return;
+    }
+
+    const newItemRef = await itemRef.collection("subitems").add(item);
+    res.status(201).json({ id: newItemRef.id, ...item });
+  } catch (error) {
     next(error);
   }
 };
@@ -108,21 +116,50 @@ export const listBacklogItems = async (
       return;
     }
 
-    // Fetch items from all requested types
-    const promises = requestedTypes.map(async (type) => {
-      try {
-        const collectionRef = getItemCollection(projectId, type);
-        const snapshot = await collectionRef
-          .where("projectId", "==", projectId)
-          .get();
-        return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      } catch (error) {
-        return [];
-      }
-    });
+    // Query the collection once
+    const collectionRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog");
 
-    const results = await Promise.all(promises);
-    res.status(200).json(results.flat());
+    // Get all items for the project
+    const snapshot = await collectionRef
+      .where("projectId", "==", projectId)
+      .get();
+
+    // Process items and fetch subItems
+    const itemsWithSubItems = await Promise.all(
+      snapshot.docs.map(async (doc) => {
+        const itemData = { id: doc.id, ...doc.data() } as BacklogItem & {
+          id: string;
+        };
+
+        // Only include items of requested types
+        if (!requestedTypes.includes(itemData.type || "")) {
+          return null;
+        }
+
+        // Only fetch subItems for epics
+        if (itemData.type === "epic") {
+          const subItemsSnapshot = await doc.ref.collection("subitems").get();
+          const subItems = subItemsSnapshot.docs.map((subDoc) => {
+            const subItemData = {
+              id: subDoc.id,
+              ...subDoc.data(),
+            } as BacklogItem & {
+              id: string;
+            };
+            return subItemData;
+          });
+          return { ...itemData, subItems };
+        }
+
+        return itemData;
+      })
+    );
+
+    // Filter out null items and return the results
+    res.status(200).json(itemsWithSubItems.filter((item) => item !== null));
   } catch (error) {
     next(error);
   }
@@ -145,7 +182,11 @@ export const getBacklogItem = async (
       return;
     }
 
-    const itemRef = getItemRef(projectId, itemType, itemId);
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId);
     const docSnap = await itemRef.get();
 
     if (!docSnap.exists) {
@@ -186,7 +227,11 @@ export const updateBacklogItem = async (
       return;
     }
 
-    const itemRef = getItemRef(projectId, itemType, itemId);
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId);
     const docSnap = await itemRef.get();
 
     if (!docSnap.exists) {
@@ -236,7 +281,16 @@ export const deleteBacklogItem = async (
       return;
     }
 
-    const itemRef = getItemRef(projectId, itemType, itemId);
+    if (!ALL_ITEM_TYPES.includes(itemType)) {
+      res.status(400).json({ message: "Invalid backlog item type" });
+      return;
+    }
+
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId);
     const docSnap = await itemRef.get();
 
     if (!docSnap.exists) {
@@ -251,6 +305,119 @@ export const deleteBacklogItem = async (
       res.status(400).json({ message: error.message });
       return;
     }
+    next(error);
+  }
+};
+
+/**
+ * Get subitems for a backlog item
+ */
+export const getSubItems = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { projectId, itemId } = req.params;
+    const itemType = req.query.type as string;
+
+    if (!itemType) {
+      res.status(400).json({ message: "Type parameter required" });
+      return;
+    }
+
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId);
+    const docSnap = await itemRef.get();
+
+    if (!docSnap.exists) {
+      res.status(404).json({ message: "Item not found" });
+      return;
+    }
+
+    const subItems = await itemRef.collection("subitems").get();
+    res
+      .status(200)
+      .json(subItems.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Delete a subitem
+ */
+export const deleteSubItem = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { projectId, itemId, subItemId } = req.params;
+
+    if (!subItemId) {
+      res.status(400).json({ message: "Subitem ID parameter required" });
+      return;
+    }
+
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId)
+      .collection("subitems")
+      .doc(subItemId);
+    const docSnap = await itemRef.get();
+
+    if (!docSnap.exists) {
+      res.status(404).json({ message: "Subitem not found" });
+      return;
+    }
+
+    await itemRef.delete();
+    res.status(200).json({ message: "Subitem deleted", id: subItemId });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Update a subitem
+ */
+export const updateSubItem = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { projectId, itemId, subItemId } = req.params;
+    const updateData = req.body;
+
+    if (!subItemId) {
+      res.status(400).json({ message: "Subitem ID parameter required" });
+      return;
+    }
+
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId)
+      .collection("subitems")
+      .doc(subItemId);
+    const docSnap = await itemRef.get();
+
+    if (!docSnap.exists) {
+      res.status(404).json({ message: "Subitem not found" });
+      return;
+    }
+
+    await itemRef.update(updateData);
+    res.status(200).json({ message: "Subitem updated", id: subItemId });
+  } catch (error) {
     next(error);
   }
 };

@@ -1,8 +1,6 @@
-// interfaces/backlog.ts
-import { Timestamp, FieldValue } from "firebase-admin/firestore";
-
-// Define allowed backlog item types
-interface BacklogItemData {
+export interface BacklogItemType {
+  id: string;
+  projectId: string;
   acceptanceCriteria?: string[] | null;
   assigneeId?: number | null;
   authorId?: number | null;
@@ -14,6 +12,9 @@ interface BacklogItemData {
   size?: "xs" | "s" | "m" | "l" | "xl" | null;
   sprint?: string | null;
   type?: "epic" | "story" | "bug" | "techTask" | "knowledge" | null;
+  createdAt?: string;
+  updatedAt?: string;
+  subItems?: BacklogItemType[];
+  isSubItem?: boolean;
+  parentId?: string;
 }
-
-export type { BacklogItemData };

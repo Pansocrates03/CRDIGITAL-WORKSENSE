@@ -8,7 +8,6 @@ import {
   ApiResponseTask,
   Assignee,
 } from "../../types/sprint.js"; // Adjust path if needed
-import { getItemRef } from "../utils/helpers/firestoreHelpers.js"; // Adjust path if needed
 import { sql, sqlConnect } from "../models/sqlModel.js";
 
 // --- Task Management ---

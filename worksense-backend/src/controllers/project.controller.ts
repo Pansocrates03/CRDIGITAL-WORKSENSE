@@ -7,32 +7,6 @@ import * as memberController from "./member.controller.js";
 import * as backlogController from "./backlog.controller.js";
 
 /**
- * Helper function to get the default owner role ID for new projects
- * This is used when creating a new project to assign the creator as the owner
- */
-async function getDefaultOwnerRoleId(): Promise<string> {
-  try {
-    // Try to find the "Product Owner" role in the projectRoles collection
-    const roleQuery = await db
-      .collection("projectRoles")
-      .where("name", "==", "Product Owner")
-      .limit(1)
-      .get();
-
-    // If found, return the role ID
-    if (!roleQuery.empty) {
-      return roleQuery.docs[0].id;
-    }
-  } catch (error) {
-    // If there's an error, we'll use the fallback ID
-    console.error("Error getting default owner role:", error);
-  }
-
-  // Fallback ID if no role is found or there's an error
-  return "product-owner";
-}
-
-/**
  * List all projects that the current user is a member of
  *
  * This function:
@@ -49,24 +23,17 @@ export const listUserProjects = async (
   try {
     // Get the user ID from the request
     const userId = req.user?.userId;
-    if (!userId) {
-      res.status(401).json({ message: "Authentication required" });
-      return;
-    }
-
-    // Get all projects from the database
-    const projectsSnapshot = await db.collection("projectss").get();
+    const projectsnapshot = await db.collection("projects").get();
 
     // If no projects exist, return an empty array
-    if (projectsSnapshot.empty) {
+    if (projectsnapshot.empty) {
       res.status(200).json([]);
       return;
     }
 
     // Check each project to see if the user is a member
     const projects: Project[] = [];
-    const promises = projectsSnapshot.docs.map(async (projectDoc) => {
-      // Check if the user is a member of this project
+    const promises = projectsnapshot.docs.map(async (projectDoc) => {
       const memberDoc = await projectDoc.ref
         .collection("members")
         .where("userId", "==", userId)
@@ -80,8 +47,6 @@ export const listUserProjects = async (
         } as Project);
       }
     });
-
-    // Wait for all checks to complete
     await Promise.all(promises);
 
     // Return the list of projects
@@ -100,6 +65,7 @@ export const listUserProjects = async (
  * 3. Adds the creator as a member with the owner role
  * 4. Returns the created project
  */
+
 export const createProject = async (
   req: Request,
   res: Response,
@@ -107,14 +73,14 @@ export const createProject = async (
 ): Promise<void> => {
   try {
     // Get project data from the request
-    const { name, description, context } = req.body;
+    const {
+      name,
+      description,
+      context,
+      status = "active",
+      members = [],
+    } = req.body;
     const ownerId = req.user?.userId;
-
-    // Check if the user is authenticated
-    if (!ownerId) {
-      res.status(401).json({ message: "Authentication required" });
-      return;
-    }
 
     // Validate the project name
     if (!name || typeof name !== "string" || name.trim() === "") {
@@ -126,7 +92,9 @@ export const createProject = async (
     const projectData = {
       name: name.trim(),
       description: description || null,
+      members: members,
       ownerId,
+      status: status,
       context: context || null,
     };
 
@@ -134,7 +102,7 @@ export const createProject = async (
     const batch = db.batch();
 
     // Create a new project document
-    const projectRef = db.collection("projectss").doc();
+    const projectRef = db.collection("projects").doc();
     batch.set(projectRef, {
       ...projectData,
       createdAt: FieldValue.serverTimestamp(),
@@ -142,13 +110,24 @@ export const createProject = async (
 
     // Add the creator as a member with the owner role
     const memberRef = projectRef.collection("members").doc(String(ownerId));
-    const defaultOwnerRoleId = await getDefaultOwnerRoleId();
+    const defaultOwnerRoleId = "product-owner";
     batch.set(memberRef, {
       userId: ownerId,
       projectRoleId: defaultOwnerRoleId,
       joinedAt: FieldValue.serverTimestamp(),
     });
 
+    // Add the members to the project
+    for (const member of members) {
+      const memberRef = projectRef
+        .collection("members")
+        .doc(String(member.userId));
+      batch.set(memberRef, {
+        userId: member.userId,
+        projectRoleId: member.projectRoleId,
+        joinedAt: FieldValue.serverTimestamp(),
+      });
+    }
     // Commit the batch to perform all operations
     await batch.commit();
 
@@ -177,11 +156,10 @@ export const getProjectDetails = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Get the project ID from the request parameters
     const { projectId } = req.params;
 
     // Get the project document from Firestore
-    const projectRef = db.collection("projectss").doc(projectId);
+    const projectRef = db.collection("projects").doc(projectId);
     const doc = await projectRef.get();
 
     // Check if the project exists
@@ -189,7 +167,6 @@ export const getProjectDetails = async (
       res.status(404).json({ message: "Project not found" });
       return;
     }
-
     // Return the project details
     res.status(200).json({
       id: doc.id,
@@ -220,9 +197,8 @@ export const updateProject = async (
     const { name, description, context } = req.body;
 
     // Get the project document reference
-    const projectRef = db.collection("projectss").doc(projectId);
+    const projectRef = db.collection("projects").doc(projectId);
 
-    // Prepare the update data
     const updateData: { [key: string]: any } = {};
 
     // Validate and add name if provided
@@ -294,7 +270,7 @@ export const deleteProject = async (
     const { projectId } = req.params;
 
     // Get the project document reference
-    const projectRef = db.collection("projectss").doc(projectId);
+    const projectRef = db.collection("projects").doc(projectId);
 
     // Check if the project exists
     const doc = await projectRef.get();
@@ -310,111 +286,6 @@ export const deleteProject = async (
     res.status(200).json({
       message: "Project deleted successfully",
       id: projectId,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Get comprehensive project data including all related collections
- *
- * This function aggregates data from:
- * - Project details
- * - Project members
- * - Epics
- * - Stories
- * - Bugs
- * - Tech Tasks
- * - Knowledge items
- */
-export const getProjectAggregatedData = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { projectId } = req.params;
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      res.status(401).json({ message: "Authentication required" });
-      return;
-    }
-
-    // Create a modified request object for each controller call
-    const modifiedReq = {
-      ...req,
-      params: { projectId },
-    } as unknown as Request;
-
-    // Helper function to capture controller response
-    const captureResponse = async (controllerFn: Function) => {
-      let capturedData: any;
-      const mockRes = {
-        status: () => mockRes,
-        json: (data: any) => {
-          capturedData = data;
-          return data;
-        },
-      } as any;
-
-      await controllerFn(modifiedReq, mockRes, next);
-      return capturedData;
-    };
-
-    // Get project details using existing controller
-    const projectData = await captureResponse(getProjectDetails);
-
-    // Get members with email using existing controller
-    const membersData = await captureResponse(
-      memberController.listMembersWithEmail
-    );
-
-    // Get backlog items using existing controller
-    const backlogData = await captureResponse(
-      backlogController.listBacklogItems
-    );
-
-    // Get user's role and permissions
-    const memberRef = db
-      .collection("projectss")
-      .doc(projectId)
-      .collection("members")
-      .doc(String(userId));
-
-    const memberSnap = await memberRef.get();
-    let userPermissions: string[] = [];
-
-    if (memberSnap.exists) {
-      const memberData = memberSnap.data();
-      if (memberData?.projectRoleId) {
-        const roleRef = db
-          .collection("projectRoles")
-          .doc(memberData.projectRoleId);
-        const roleSnap = await roleRef.get();
-        if (roleSnap.exists) {
-          const roleData = roleSnap.data();
-          userPermissions = roleData?.permissions || [];
-        }
-      }
-    }
-
-    // Organize backlog items by type
-    const backlog = {
-      epics: backlogData.filter((item: any) => item.type === "epic"),
-      stories: backlogData.filter((item: any) => item.type === "story"),
-      bugs: backlogData.filter((item: any) => item.type === "bug"),
-      techTasks: backlogData.filter((item: any) => item.type === "techTask"),
-      knowledge: backlogData.filter((item: any) => item.type === "knowledge"),
-    };
-
-    // Return aggregated data with user permissions
-    res.status(200).json({
-      project: projectData,
-      members: membersData,
-      backlog,
-      userPermissions,
     });
   } catch (error) {
     next(error);

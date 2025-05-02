@@ -3,7 +3,7 @@ import apiClient from "../api/apiClient";
 import Member from "@/types/MemberType";
 import MemberDetailed from "@/types/MemberDetailedType";
 
-import { API_URL } from "../../config/env.config"
+import { API_URL } from "../../config/env.config";
 
 const FULL_API_URL = API_URL + "/api/v1";
 
@@ -20,7 +20,6 @@ export const projectService = {
     try {
       const response = await apiClient.get(`${FULL_API_URL}/projects/${id}`);
 
-
       return response.data;
     } catch (error) {
       console.error("Error fetching project details:", error);
@@ -31,8 +30,9 @@ export const projectService = {
   // Gets the list of members in a project
   async fetchProjectMembers(id: string): Promise<Member[]> {
     try {
-
-      const response = await apiClient.get(`${FULL_API_URL}/projects/${id}/members`);
+      const response = await apiClient.get(
+        `${FULL_API_URL}/projects/${id}/members`
+      );
 
       return response.data;
     } catch (error) {
@@ -78,7 +78,6 @@ export const projectService = {
           projectRoleId: roleId,
         }
       );
-
     } catch (error) {
       console.error("Error updating member role:", error);
       throw error;
@@ -92,7 +91,6 @@ export const projectService = {
     roleId: string
   ): Promise<void> {
     try {
-
       await apiClient.post(`${FULL_API_URL}/projects/${projectId}/members`, {
         userId: userId,
         projectRoleId: roleId,

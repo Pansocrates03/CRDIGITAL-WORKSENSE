@@ -1,6 +1,9 @@
 // interfaces/project.ts (CORRECTED VERSION)
 import { Timestamp } from "firebase-admin/firestore";
 
+// Define project status type
+export type ProjectStatus = "active" | "archived";
+
 // Optional context structure (can be expanded)
 export interface ProjectContext {
   techStack?: string[];
@@ -9,18 +12,17 @@ export interface ProjectContext {
 
 // Represents a project document in Firestore /projectss/{projectId}
 export interface Project {
-  id?: string; // Firestore Document ID
+  id: string; // Firestore Document ID
   name: string;
   description: string | null;
-  ownerId: number; // SQL User ID of the creator/owner
+  ownerId: number;
+  members: ProjectMemberData[];
+  status: ProjectStatus;
   createdAt: Timestamp;
   updatedAt?: Timestamp; // Added optional updatedAt
   context: ProjectContext | null;
 }
 
-// Represents the DATA stored within a member document
-// Firestore path: /projectss/{projectId}/members/{userIdString}
-// Document ID *is* the SQL User ID as a STRING
 export interface ProjectMemberData {
   userId: number; // <<<< ADDED: Store the numeric SQL User ID here
   projectRoleId: string; // <<<< CHANGED: Should be string (e.g., "developer", "product-owner")
