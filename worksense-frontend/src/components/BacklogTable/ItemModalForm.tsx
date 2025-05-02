@@ -232,19 +232,18 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             />
           )}
 
-          {formData.type === "knowledge" && (
-            <div className={styles.formGroup}>
-              <label htmlFor="content">Content</label>
-              <textarea
-                id="content"
-                name="content"
-                value={formData.content || ""}
-                onChange={handleChange}
-                rows={5}
-                disabled={loading}
-              />
-            </div>
-          )}
+          <div className={styles.formGroup}>
+            <label htmlFor="content">Description</label>
+            <textarea
+              id="content"
+              name="content"
+              value={formData.content || ""}
+              onChange={handleChange}
+              rows={5}
+              placeholder="Add a detailed description..."
+              disabled={loading}
+            />
+          </div>
 
           <div className={styles.formActions}>
             <button

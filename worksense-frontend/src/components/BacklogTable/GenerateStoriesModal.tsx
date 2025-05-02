@@ -156,10 +156,7 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
           <div className={styles.modalHeader}>
             <h2>
               <span className="flex items-center">
-                <Sparkles 
-                  size={18} 
-                  className="text-pink-600 mr-2" 
-                />
+                <Sparkles size={18} className="text-pink-600 mr-2" />
                 AI Suggested Stories for "{epicTitle}"
               </span>
             </h2>
@@ -180,47 +177,28 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
               Review, edit, or remove the suggested user stories below before
               adding them to this epic.
             </p>
-
-            <button
-              onClick={generateSuggestions}
-              disabled={isGenerating}
-              className="flex items-center justify-center gap-1 text-sm bg-pink-50 text-pink-600 px-3 py-2 rounded-md hover:bg-pink-100 transition-colors focus:outline-none focus:ring-2 focus:ring-pink-300"
-              style={{
-                backgroundColor: "rgba(172, 23, 84, 0.1)",
-                color: "var(--primary-color, #ac1754)"
-              }}
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw size={16} className="animate-spin mr-1" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles size={16} className="mr-1" />
-                  Regenerate Suggestions
-                </>
-              )}
-            </button>
           </div>
 
           {isGenerating ? (
             <div className="flex justify-center py-8">
-              <div 
+              <div
                 className="animate-spin h-8 w-8 border-4 rounded-full border-t-transparent"
-                style={{ borderColor: "rgba(172, 23, 84, 0.3)", borderTopColor: "transparent" }}
+                style={{
+                  borderColor: "rgba(172, 23, 84, 0.3)",
+                  borderTopColor: "transparent",
+                }}
               ></div>
             </div>
           ) : (
             <div>
               {suggestedStories.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-md">
-                  <Sparkles 
-                    size={24} 
-                    className="mx-auto mb-2" 
+                  <Sparkles
+                    size={24}
+                    className="mx-auto mb-2"
                     style={{ color: "rgba(172, 23, 84, 0.5)" }}
                   />
-                  <p>No story suggestions available. Try generating again.</p>
+                  <p>No story suggestions available.</p>
                 </div>
               ) : (
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto p-2">
@@ -228,7 +206,7 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                     <div
                       key={index}
                       className="border rounded-md p-4 relative transition-colors"
-                      style={{ 
+                      style={{
                         backgroundColor: "rgba(172, 23, 84, 0.05)",
                         borderColor: "#e5e7eb",
                       }}
@@ -291,17 +269,23 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                             )
                           }
                           className={`appearance-none bg-white bg-no-repeat bg-right-10 ${
-                            story.priority === "high" 
-                              ? styles.priority + " " + styles["priority select[value='high']"]
+                            story.priority === "high"
+                              ? styles.priority +
+                                " " +
+                                styles["priority select[value='high']"]
                               : story.priority === "medium"
-                              ? styles.priority + " " + styles["priority select[value='medium']"]
-                              : styles.priority + " " + styles["priority select[value='low']"]
+                              ? styles.priority +
+                                " " +
+                                styles["priority select[value='medium']"]
+                              : styles.priority +
+                                " " +
+                                styles["priority select[value='low']"]
                           }`}
                           style={{
                             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
                             backgroundPosition: "right 10px center",
                             backgroundSize: "16px",
-                            paddingRight: "32px"
+                            paddingRight: "32px",
                           }}
                         >
                           <option value="low">Low</option>

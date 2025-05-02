@@ -404,6 +404,7 @@ const BacklogTablePage: FC = () => {
             setShowDetailsModal(false);
           }}
           item={selectedItem}
+          memberMap={memberMap} // Add this line to pass the memberMap
         />
       )}
 

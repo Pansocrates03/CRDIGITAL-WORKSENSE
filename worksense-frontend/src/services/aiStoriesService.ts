@@ -61,7 +61,7 @@ export const aiStoriesService = {
     stories: AiStorySuggestion[]
   ): Promise<void> {
     try {
-      // Aseguramos que estamos enviando la solicitud en el formato esperado por el backend
+      // Enviar tanto description como content para garantizar compatibilidad
       await apiClient.post(
         `/${projectId}/ai/stories/confirm-stories`,
         {
@@ -69,6 +69,7 @@ export const aiStoriesService = {
           stories: stories.map(story => ({
             name: story.name,
             description: story.description,
+            content: story.description, // Enviar como content para compatibilidad con BacklogItem
             priority: story.priority
           }))
         } as ConfirmStoriesRequest
