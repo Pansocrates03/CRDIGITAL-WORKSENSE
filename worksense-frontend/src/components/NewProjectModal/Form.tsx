@@ -91,9 +91,9 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
     // Envío del formulario
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if(!validateForm()) return; // Validar antes de continuar (corregido: añadido paréntesis)
+        if(!validateForm()) return;
         setIsCreatingProject(true);
-        setErrors({}); // Limpiar errores previos
+        setErrors({});
 
         try {
             await projectService.createProejct({
@@ -114,9 +114,9 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
         } catch (error) {
             console.error("Error al crear proyecto:", error);
             setAlert({
-            type: "error",
-            title: "Error al crear proyecto",
-            message: "Ocurrió un error al crear el proyecto. Intenta de nuevo.",
+                type: "error",
+                title: "Error al crear proyecto",
+                message: "Ocurrió un error al crear el proyecto. Intenta de nuevo.",
             });
         } finally {
             setIsCreatingProject(false);
