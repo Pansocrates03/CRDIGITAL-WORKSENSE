@@ -34,24 +34,31 @@
   display: flex;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  border-bottom: 1px solid #E5E7EB;
+  padding-bottom: 0.5rem;
 }
 
 .sprint-page__nav-button {
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.25rem;
   border-radius: 0.5rem;
-  transition: all 0.2s;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  cursor: pointer;
 }
 
 .sprint-page__nav-button--active {
-  background-color: #3B82F6;
+  background-color: #ac1754;
   color: white;
+  box-shadow: 0 2px 4px rgba(172, 23, 84, 0.1);
 }
 
 .sprint-page__nav-button--inactive {
-  background-color: #F3F4F6;
-  color: #374151;
+  background-color: transparent;
+  color: #4B5563;
 }
 
 .sprint-page__nav-button--inactive:hover {
-  background-color: #E5E7EB;
+  background-color: rgba(172, 23, 84, 0.05);
+  color: #ac1754;
 } 

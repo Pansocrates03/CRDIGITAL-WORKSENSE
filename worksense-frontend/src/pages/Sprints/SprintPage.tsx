@@ -5,6 +5,7 @@ import OverviewView from "./components/OverviewView/OverviewView";
 import ListView from "./components/ListView/ListView";
 import TableView from "./components/TableView/TableView";
 import TimelineView from "./components/TimelineView/TimelineView";
+import Tabs from "./components/Tabs/Tabs";
 import "./components/styles/SprintPage.css";
 
 // Import necessary CSS files
@@ -23,11 +24,6 @@ interface TeamMember {
   avatarUrl: string;
 }
 
-interface NavigationTab {
-  id: string;
-  label: string;
-}
-
 const sampleTeamMembers: TeamMember[] = [
   { id: "u1", name: "Jon A.", avatarUrl: AVATAR_URL },
   { id: "u2", name: "Jane B.", avatarUrl: AVATAR_URL },
@@ -36,7 +32,7 @@ const sampleTeamMembers: TeamMember[] = [
   { id: "u5", name: "Mike E.", avatarUrl: AVATAR_URL },
 ];
 
-const navigationTabs: NavigationTab[] = [
+const navigationTabs = [
   { id: "overview", label: "Overview" },
   { id: "board", label: "Board" },
   { id: "list", label: "List" },
@@ -95,21 +91,11 @@ const SprintPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="sprint-page__navigation">
-        {navigationTabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => handleTabChange(tab.id)}
-            className={`sprint-page__nav-button ${
-              activeTab === tab.id
-                ? 'sprint-page__nav-button--active'
-                : 'sprint-page__nav-button--inactive'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        items={navigationTabs}
+        activeTabId={activeTab}
+        onTabClick={handleTabChange}
+      />
 
       {renderView()}
     </div>
