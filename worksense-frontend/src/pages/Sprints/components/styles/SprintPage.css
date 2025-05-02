@@ -4,6 +4,13 @@
 
 .sprint-page__header {
   margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sprint-page__header-content {
+  flex: 1;
 }
 
 .sprint-page__title {
@@ -17,9 +24,7 @@
 }
 
 .sprint-page__team {
-  display: flex;
-  align-items: center;
-  margin-top: 1rem;
+  margin-left: 2rem;
 }
 
 .sprint-page__team-member {

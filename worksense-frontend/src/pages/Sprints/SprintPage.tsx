@@ -6,6 +6,7 @@ import ListView from "./components/ListView/ListView";
 import TableView from "./components/TableView/TableView";
 import TimelineView from "./components/TimelineView/TimelineView";
 import Tabs from "./components/Tabs/Tabs";
+import TeamAvatars from "./components/TeamAvatars/TeamAvatars";
 import "./components/styles/SprintPage.css";
 
 // Import necessary CSS files
@@ -76,18 +77,12 @@ const SprintPage: React.FC = () => {
   return (
     <div className="sprint-page">
       <div className="sprint-page__header">
-        <h1 className="sprint-page__title">Tasks</h1>
-        <p className="sprint-page__description">Sprint board for tracking project tasks and progress</p>
+        <div className="sprint-page__header-content">
+          <h1 className="sprint-page__title">Tasks</h1>
+          <p className="sprint-page__description">Sprint board for tracking project tasks and progress</p>
+        </div>
         <div className="sprint-page__team">
-          {sampleTeamMembers.map(member => (
-            <img
-              key={member.id}
-              src={member.avatarUrl}
-              alt={member.name}
-              title={member.name}
-              className="sprint-page__team-member"
-            />
-          ))}
+          <TeamAvatars members={sampleTeamMembers} />
         </div>
       </div>
 
