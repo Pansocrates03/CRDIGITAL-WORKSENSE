@@ -91,7 +91,7 @@
 
 .role {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
+  padding: 0rem;
   background-color: var(--color-purple-light);
   color: var(--color-purple);
   border-radius: 12px;

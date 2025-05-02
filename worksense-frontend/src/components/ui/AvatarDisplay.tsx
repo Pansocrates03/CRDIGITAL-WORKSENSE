@@ -9,7 +9,7 @@ interface AvatarDisplayProps {
     profilePicture?: string;
     avatarUrl?: string;
   };
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
@@ -36,7 +36,8 @@ const getInitials = (user: AvatarDisplayProps['user']): string => {
 const sizeClasses = {
   sm: 'size-8',
   md: 'size-10',
-  lg: 'size-12'
+  lg: 'size-12',
+  xl: 'size-16'
 };
 
 export const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ 
@@ -67,7 +68,7 @@ export const AvatarDisplay: React.FC<AvatarDisplayProps> = ({
 interface AvatarGroupProps {
   users: AvatarDisplayProps['user'][];
   maxVisible?: number;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export const AvatarGroup: React.FC<AvatarGroupProps> = ({
