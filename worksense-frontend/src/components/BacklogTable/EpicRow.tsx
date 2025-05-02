@@ -46,16 +46,17 @@ export const EpicRow: FC<EpicRowProps> = ({
     <tr className={styles.epicRowContainer}>
       <td onClick={handleToggle}>
         <div className="flex items-center gap-2">
+          <span>{epic.title}</span>
+          <span className="text-muted-foreground ml-2">
+            ({epic.stories.length}{" "}
+            {epic.stories.length === 1 ? "story" : "stories"})
+          </span>
           <span className="mr-2">
             {isExpanded ? (
               <ChevronDown size={16} className="text-gray-500" />
             ) : (
               <ChevronRight size={16} className="text-gray-500" />
             )}
-          </span>
-          <span>{epic.title}</span>
-          <span className="text-muted-foreground ml-2">
-            ({epic.stories.length} stories)
           </span>
         </div>
       </td>

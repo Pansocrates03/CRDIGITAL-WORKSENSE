@@ -3,7 +3,6 @@ import React from "react";
 import styles from "./BacklogRow.module.css";
 import StatusBadge from "./StatusBadge";
 import ActionMenu from "./ActionMenu";
-// Importa Avatar correctamente desde el componente de Radix UI
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface BacklogItem {
@@ -46,24 +45,21 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
   } else if (item.type === "bug") {
     extraInfo = item.severity || "-";
   }
-
-  // Mejora cómo obtenemos el assigneeId y asegúrate de que sea un número
+  
+  // Handle assigneeId conversion
   const assigneeId =
     item.assigneeId !== undefined && item.assigneeId !== null
       ? typeof item.assigneeId === "string"
         ? parseInt(item.assigneeId)
         : Number(item.assigneeId)
       : null;
-
-  // Obtén la información del miembro y verifica que exista
+  
+  // Get member info
   const memberInfo = assigneeId !== null ? memberMap.get(assigneeId) : null;
 
-  // Agrega un console.log para debugging
-  // console.log(`Item ${item.id} assigneeId:`, assigneeId, "memberInfo:", memberInfo);
-
   return (
-    <tr key={item.id} className={indent ? styles.nestedRow : ""}>
-      <td style={{ paddingLeft: indent ? "2.5rem" : undefined }}>
+    <tr key={item.id}>
+      <td>
         <div className="flex items-center gap-2">
           <span>{item.title}</span>
         </div>
