@@ -10,6 +10,7 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import styles from './MembersList.module.css';
 import MemberDetailed from '@/types/MemberDetailedType';
 
@@ -85,25 +86,15 @@ const MembersList: React.FC<Props> = ({ members, onEdit, onDelete }) => {
             {members.map((member) => (
               <TableRow key={member.userId}>
                 <TableCell>
-                  <div className={styles.pfpContainer}>
-                    {member.profilePicture ? (
-                      <img
-                        src={member.profilePicture}
-                        alt={member.name}
-                        className={styles.pfp}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const initials = target.nextElementSibling as HTMLElement;
-                          if (initials) initials.style.display = 'flex';
-                        }}
-                      />
-                    ) : (
-                      <div className={styles.avatarInitials}>
-                        {getInitials(member.name)}
-                      </div>
-                    )}
-                  </div>
+                  <Avatar className={styles.avatar}>
+                    <AvatarImage
+                      src={member.profilePicture}
+                      alt={member.name}
+                    />
+                    <AvatarFallback>
+                      {getInitials(member.name)}
+                    </AvatarFallback>
+                  </Avatar>
                 </TableCell>
                 <TableCell>{member.name}</TableCell>
                 <TableCell>{member.email}</TableCell>

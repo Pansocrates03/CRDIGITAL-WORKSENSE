@@ -67,17 +67,26 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
 
   const fetchOptionsData = async () => {
     try {
-      const epicsRes = await apiClient.get(`/${projectId}/backlog/items`);
+      const epicsRes = await apiClient.get(
+        `/projects/${projectId}/backlog/items`
+      );
       setEpics(
         Array.isArray(epicsRes.data)
           ? epicsRes.data.filter((i: any) => i.type === "epic")
           : []
       );
 
-      const usersRes = await apiClient.get(`/${projectId}/members-detail`);
+      const usersRes = await apiClient.get(
+        `/projects/${projectId}/members/members-detail`
+      );
       setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
+
+      // Agrega logs para debugging
+      console.log("Epics for edit:", epicsRes.data);
+      console.log("Users for edit:", usersRes.data);
     } catch (err) {
       const msg = "Failed to load dropdown options";
+      console.error(msg, err);
       setError(msg);
       onError?.(msg);
     }
@@ -99,14 +108,16 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
     };
 
     try {
+      // Asegúrate de que esta ruta coincida con el formato de las otras
       await apiClient.put(
-        `/${projectId}/backlog/items/${item.id}?type=${formData.type}`,
+        `/projects/${projectId}/backlog/items/${item.id}?type=${formData.type}`,
         payload
       );
       onItemUpdated();
       onClose();
     } catch (err: any) {
       const msg = err.response?.data?.message || "Failed to update item";
+      console.error("Error updating item:", err);
       setError(msg);
       onError?.(msg);
     } finally {

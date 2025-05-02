@@ -1,0 +1,29 @@
+/* src/components/BacklogTable/StoryRow.module.css */
+.storyRow td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eaeaea;
+  font-size: 0.875rem;
+}
+
+.storyRow:hover {
+  background-color: #f7f7f7;
+}
+
+.titleWithEpic {
+  padding-left: 1.5rem;
+}
+
+.titleColumn, .statusColumn, .assigneeColumn, .sizeColumn, 
+.priorityColumn, .dueDateColumn, .pointsColumn, .labelsColumn {
+  vertical-align: middle;
+  transition: background-color 0.2s;
+}
+
+/* Ajustes específicos por columna si es necesario */
+.titleColumn {
+  font-weight: 500;
+}
+
+.statusColumn, .priorityColumn, .sizeColumn {
+  text-align: center;
+}

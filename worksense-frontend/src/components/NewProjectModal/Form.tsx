@@ -68,9 +68,9 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
       // Validación del formulario antes de enviar
     const validateForm = (): boolean => {
         const newErrors: localFormError = {};
-        if (!projectName.trim()) newErrors.projectName = "El nombre es obligatorio";
+        if (!projectName.trim()) newErrors.projectName = "Name is required";
         if (!description.trim())
-        newErrors.description = "La descripción es obligatoria";
+        newErrors.description = "Description is required";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -91,9 +91,9 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
     // Envío del formulario
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if(!validateForm()) return; // Validar antes de continuar (corregido: añadido paréntesis)
+        if(!validateForm()) return;
         setIsCreatingProject(true);
-        setErrors({}); // Limpiar errores previos
+        setErrors({});
 
         try {
             await projectService.createProejct({
@@ -105,8 +105,8 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
 
             setAlert({
                 type: "success",
-                title: "Proyecto creado con éxito",
-                message: `El proyecto "${projectName}" ha sido creado.`,
+                title: "Project created successfully",
+                message: `The project "${projectName}" has been created.`,
             });
 
             // Invalidamos el query de proyectos del usuario para refrescar la lista
@@ -114,9 +114,9 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
         } catch (error) {
             console.error("Error al crear proyecto:", error);
             setAlert({
-            type: "error",
-            title: "Error al crear proyecto",
-            message: "Ocurrió un error al crear el proyecto. Intenta de nuevo.",
+                type: "error",
+                title: "Error creating project",
+                message: "An error occurred while creating the project. Please try again.",
             });
         } finally {
             setIsCreatingProject(false);
@@ -130,8 +130,8 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                   onClear={() => setProjectName("")}
-                  placeholder="Nombre del proyecto"
-                  label="Nombre"
+                  placeholder="Project name"
+                  label="Name"
                   error={errors.projectName}
                   inputRef={inputRef}
                   required={true}
@@ -139,13 +139,13 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
 
                 {/* Textarea de descripción con opción de limpiar */}
                 <div className={styles.formGroup}>
-                  <label htmlFor="description">Descripción</label>
+                  <label htmlFor="description">Description</label>
                   <div className={styles.textareaWrapper}>
                     <textarea
                       id="description"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Describe tu proyecto"
+                      placeholder="Describe your project"
                       rows={3}
                       className={styles.textarea}
                       aria-required="true"
@@ -156,7 +156,7 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
                         type="button"
                         className={styles.clearButton}
                         onClick={() => setDescription("")}
-                        aria-label="Limpiar descripción"
+                        aria-label="Clear description"
                       >
                         <span aria-hidden="true">✕</span>
                       </button>
@@ -191,14 +191,13 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
                       htmlFor="populateBacklog"
                       className={styles.checkboxLabel}
                     >
-                      Generar backlog automáticamente con IA
+                      Automatically generate backlog with AI
                       <span className={styles.aiLabel}>AI</span>
                     </label>
                   </div>
                   {shouldPopulateBacklog && (
                     <p className={styles.aiDescription}>
-                      Analizaremos la descripción para generar épicas e
-                      historias.
+                      We will analyze the description to generate epics and stories.
                     </p>
                   )}
                 </div>
@@ -210,7 +209,7 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
                     className={styles.cancelButton}
                     onClick={onClose}
                     disabled={isCreatingProject || isPopulatingBacklog}
-                  >Cancelar</button>
+                  >Cancel</button>
 
                   <button
                     type="submit"
@@ -222,7 +221,7 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
                       isPopulatingBacklog
                     }
                   >
-                    {isCreatingProject ? "Creando..." : "Crear Proyecto"}
+                    {isCreatingProject ? "Creating..." : "Create Project"}
                   </button>
                 </div>
               </form>

@@ -52,17 +52,27 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
 
   const fetchOptionsData = async () => {
     try {
-      const epicsRes = await apiClient.get(`/${projectId}/backlog/items`);
+      // Asegúrate de que estas rutas coincidan con las de BacklogTablePage
+      const epicsRes = await apiClient.get(
+        `/projects/${projectId}/backlog/items`
+      );
       setEpics(
         Array.isArray(epicsRes.data)
           ? epicsRes.data.filter((item: any) => item.type === "epic")
           : []
       );
 
-      const usersRes = await apiClient.get(`/${projectId}/members-detail`);
+      const usersRes = await apiClient.get(
+        `/projects/${projectId}/members/members-detail`
+      );
       setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
+
+      // Agrega logs para debugging
+      console.log("Epics fetched:", epicsRes.data);
+      console.log("Users fetched:", usersRes.data);
     } catch (err) {
       const msg = "Failed to load dropdown options";
+      console.error(msg, err);
       setError(msg);
       onError?.(msg);
     }
@@ -81,12 +91,14 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
     };
 
     try {
+      // Asegúrate de que esta ruta coincida con el formato de las otras
       await apiClient.post(`/projects/${projectId}/backlog/items`, payload);
       setFormData(initialState);
       onItemCreated();
       onClose();
     } catch (err: any) {
       const msg = err.response?.data?.message || "Failed to create item";
+      console.error("Error creating item:", err);
       setError(msg);
       onError?.(msg);
     } finally {

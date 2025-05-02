@@ -140,6 +140,8 @@ const CreateProject: React.FC = () => {
           setIsModalOpen={setIsModalOpen}
         />
 
+        <div className={styles.divider} />
+
         <div
           className={`${styles.projectCards} ${
             viewMode === "list" ? styles.listView : ""
