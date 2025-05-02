@@ -91,7 +91,7 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
   const updateStory = (
     index: number,
     field: keyof AiStorySuggestion,
-    value: string | null
+    value: string | string[] | null
   ) => {
     const updatedStories = [...suggestedStories];
     updatedStories[index] = {

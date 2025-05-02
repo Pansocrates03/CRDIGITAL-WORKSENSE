@@ -1,0 +1,140 @@
+.task-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  cursor: move;
+  transition: box-shadow 0.2s, opacity 0.2s;
+}
+
+.task-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.task-card--dragging {
+  opacity: 0.5;
+}
+
+.task-card__cover {
+  margin-bottom: 0.75rem;
+}
+
+.task-card__cover-image {
+  width: 100%;
+  height: 8rem;
+  object-fit: cover;
+  border-radius: 0.375rem;
+}
+
+.task-card__title {
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.task-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.task-card__status {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+}
+
+.task-card__status--backlog {
+  background-color: #FEF3C7;
+  color: #92400E;
+}
+
+.task-card__status--progress {
+  background-color: #DBEAFE;
+  color: #1E40AF;
+}
+
+.task-card__status--review {
+  background-color: #F3E8FF;
+  color: #6B21A8;
+}
+
+.task-card__status--done {
+  background-color: #D1FAE5;
+  color: #065F46;
+}
+
+.task-card__priority {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+}
+
+.task-card__priority--p1 {
+  background-color: #FEE2E2;
+  color: #991B1B;
+}
+
+.task-card__priority--p2 {
+  background-color: #FEF3C7;
+  color: #92400E;
+}
+
+.task-card__priority--p3 {
+  background-color: #D1FAE5;
+  color: #065F46;
+}
+
+.task-card__progress {
+  margin-bottom: 0.75rem;
+}
+
+.task-card__progress-bar {
+  width: 100%;
+  height: 0.5rem;
+  background-color: #E5E7EB;
+  border-radius: 9999px;
+}
+
+.task-card__progress-fill {
+  height: 100%;
+  background-color: #3B82F6;
+  border-radius: 9999px;
+}
+
+.task-card__progress-text {
+  font-size: 0.75rem;
+  color: #6B7280;
+  margin-top: 0.25rem;
+}
+
+.task-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.task-card__assignees {
+  display: flex;
+  margin-right: -0.5rem;
+}
+
+.task-card__assignee {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  border: 2px solid white;
+  margin-left: -0.5rem;
+}
+
+.task-card__stats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6B7280;
+  font-size: 0.875rem;
+} 

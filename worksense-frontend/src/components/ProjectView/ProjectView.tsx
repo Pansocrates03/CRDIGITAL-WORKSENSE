@@ -1,10 +1,8 @@
 // Core Imports
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import apiClient from "../../api/apiClient";
 import styles from "./ProjectView.module.css";
 // Component Imports
-import LoadingSpinner from "../Loading/LoadingSpinner";
 import EditTeamModal from "../EditTeamModal/EditTeamModal";
 import MemberInfoPopup from "../MemberInfoPopup/MemberInfoPopup";
 // Type Imports
@@ -66,6 +64,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
   ) => {
     setSelectedMember(member);
   };
+
 
   const getOwnerName = (projectDetails: ProjectDetails, members: MemberDetailed[]) => {
     const owner =members.find((members) => members.userId === projectDetails.ownerId);

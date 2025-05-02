@@ -1,4 +1,3 @@
-
 // src/controllers/sprintController.ts
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import { db } from "../models/firebase.js"; // Adjust path if needed
@@ -43,7 +42,10 @@ export const createSprint: RequestHandler = async (req, res, next) => {
     }
     // --- End Validation ---
 
-    const sprintsCollection = db.collection("sprints"); // Top-level collection
+    const sprintsCollection = db
+      .collection("projectss")
+      .doc(projectId)
+      .collection("sprints"); // Top-level collection
 
     // --- Determine Sprint Status ---
     // Check if there's already an active sprint *for this specific project*
@@ -139,7 +141,11 @@ export const getSprintById: RequestHandler = async (req, res, next) => {
     }
 
     // --- Fetch from Firestore (Top-Level) ---
-    const sprintRef = db.collection("sprints").doc(sprintId);
+    const sprintRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("sprints")
+      .doc(sprintId);
     const sprintSnap = await sprintRef.get();
 
     // --- Existence Check ---
