@@ -1,19 +1,21 @@
 // src/components/BacklogTable/ActionMenu.tsx
 import React, { useState, useRef, useEffect, FC } from "react";
-import { MoreHorizontal, Pencil, Trash2, Sparkles } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Sparkles, Eye } from "lucide-react";
 import styles from "./ActionMenu.module.css";
 
 interface ActionMenuProps {
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit: (e: React.MouseEvent) => void;
+  onDelete: (e: React.MouseEvent) => void;
+  onViewDetails?: () => void; // Nueva función para ver detalles
   onGenerateStories?: () => void;
   isEpic?: boolean;
-  itemType?: string; // Añadimos el tipo de ítem para mostrar opciones según tipo
+  itemType?: string;
 }
 
 const ActionMenu: FC<ActionMenuProps> = ({ 
   onEdit, 
   onDelete, 
+  onViewDetails,
   onGenerateStories, 
   isEpic = false,
   itemType
@@ -51,14 +53,21 @@ const ActionMenu: FC<ActionMenuProps> = ({
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsOpen(false);
-    onEdit();
+    onEdit(e);
   };
 
   // Handle delete action
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsOpen(false);
-    onDelete();
+    onDelete(e);
+  };
+
+  // Handle view details action
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsOpen(false);
+    onViewDetails?.();
   };
 
   // Handle generate stories action
@@ -81,9 +90,15 @@ const ActionMenu: FC<ActionMenuProps> = ({
 
       {isOpen && (
         <div className={styles.menuDropdown}>
+          {onViewDetails && (
+            <button onClick={handleViewDetails} className={styles.menuItem}>
+              <Eye size={16} className={styles.menuIcon} />
+              <span>View Details</span>
+            </button>
+          )}
           {canGenerateStories && onGenerateStories && (
             <button onClick={handleGenerateStories} className={`${styles.menuItem} ${styles.aiItem}`}>
-              <Sparkles size={16} className={styles.menuIcon} />
+              <Sparkles size={16} className={styles.menuIcon} style={{color: "#ac1754"}} />
               <span>Generate Stories</span>
             </button>
           )}

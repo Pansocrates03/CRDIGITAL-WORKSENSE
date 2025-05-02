@@ -13,7 +13,9 @@ import DeleteConfirmationModal from "@/components/ui/DeleteConfirmationModal";
 import CreateItemModal from "@/components/BacklogTable/CreateItemModal";
 import UpdateItemModal from "@/components/BacklogTable/UpdateItemModal";
 import GenerateStoriesModal from "@/components/BacklogTable/GenerateStoriesModal";
+import ItemDetailsModal from "@/components/BacklogTable/ItemDetailsModal";
 import { EpicRow } from "@/components/BacklogTable/EpicRow";
+
 import { BacklogItemType } from "@/types/BacklogItemType";
 
 interface ProjectMember {
@@ -48,6 +50,10 @@ const BacklogTablePage: FC = () => {
     useState(false);
   const [selectedEpicId, setSelectedEpicId] = useState("");
   const [selectedEpicName, setSelectedEpicName] = useState("");
+
+  // Estado para el modal de detalles
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<BacklogItem | null>(null);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["backlog", projectId],
@@ -113,6 +119,10 @@ const BacklogTablePage: FC = () => {
     if (!item.name || !item.type) return;
     setItemToEdit(item);
     setIsEditModalOpen(true);
+    // Si el modal de detalles está abierto, lo cerramos
+    if (showDetailsModal) {
+      setShowDetailsModal(false);
+    }
   };
 
   // Función para manejar la eliminación de un ítem
@@ -172,6 +182,17 @@ const BacklogTablePage: FC = () => {
     setShowGenerateStoriesModal(true);
   };
 
+
+
+  // Función para ver los detalles de un ítem
+  const handleViewDetails = (item: BacklogItem) => {
+    console.log("BacklogTablePage: handleViewDetails llamado con item:", item);
+    setSelectedItem(item);
+    setShowDetailsModal(true);
+    console.log("BacklogTablePage: showDetailsModal establecido a true");
+  };
+
+  // Función para ejecutar la eliminación
   // Update executeDelete to handle subItems
   const executeDelete = async () => {
     if (!itemToDelete || !projectId) return;
@@ -200,6 +221,13 @@ const BacklogTablePage: FC = () => {
         await apiClient.delete(
           `/projects/${projectId}/backlog/items/${itemToDelete.id}?type=${itemToDelete.type}`
         );
+      }
+
+
+
+      // Si el ítem que se está eliminando es el que se está mostrando en el modal de detalles, cerramos el modal
+      if (selectedItem && selectedItem.id === itemToDelete.id) {
+        setShowDetailsModal(false);
       }
 
       handleSuccess(`${itemToDelete.name} successfully deleted`);
@@ -240,6 +268,7 @@ const BacklogTablePage: FC = () => {
           memberMap={memberMap}
           onEdit={() => handleEdit(item)}
           onDelete={() => handleDelete(item)}
+          onViewDetails={() => handleViewDetails(item)}
         />
       ));
 
@@ -316,19 +345,15 @@ const BacklogTablePage: FC = () => {
                 );
               })}
             </BacklogTableSection>
-
             <BacklogTableSection title="User Stories">
               {renderRows(categorized.standaloneStories)}
             </BacklogTableSection>
-
             <BacklogTableSection title="Bugs">
               {renderRows(categorized.bugs)}
             </BacklogTableSection>
-
             <BacklogTableSection title="Tech Tasks">
               {renderRows(categorized.techTasks)}
             </BacklogTableSection>
-
             <BacklogTableSection title="Knowledge Items">
               {renderRows(categorized.knowledge)}
             </BacklogTableSection>
@@ -372,6 +397,21 @@ const BacklogTablePage: FC = () => {
           onClose={() => setShowGenerateStoriesModal(false)}
           onStoriesAdded={() => handleStoriesAdded(selectedEpicId)}
           onError={handleError}
+        />
+      )}
+
+      {projectId && (
+        <ItemDetailsModal
+          projectId={projectId}
+          isOpen={showDetailsModal}
+          onClose={() => setShowDetailsModal(false)}
+          onEditClick={() => {
+            setItemToEdit(selectedItem);
+            setIsEditModalOpen(true);
+            setShowDetailsModal(false);
+          }}
+          item={selectedItem}
+          memberMap={memberMap}
         />
       )}
 

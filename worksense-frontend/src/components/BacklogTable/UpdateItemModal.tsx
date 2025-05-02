@@ -43,6 +43,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
     null
   );
 
+  // Initialize form data when modal opens with an item
   useEffect(() => {
     if (isOpen && item) {
       // Create a copy of the item data for the form
@@ -111,6 +112,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
     setIsSubmitting(true);
     setError(null);
 
+    // Create the payload with necessary type conversions
     const payload = {
       ...formData,
       epicId: formData.epicId || null,
@@ -118,6 +120,8 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
       isSubItem: formData.isSubItem,
       parentId: formData.parentId || null,
     };
+
+    console.log("Submitting update with payload:", payload);
 
     try {
       // Debug information to see what values we're working with
