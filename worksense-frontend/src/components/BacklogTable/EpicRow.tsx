@@ -8,12 +8,12 @@ import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 
 interface Story {
   id: string;
-  title: string;
+  name: string;
 }
 
 interface Epic {
   id: string;
-  title: string;
+  name: string;
   type: string;
   status: string;
   stories: Story[];
@@ -21,7 +21,6 @@ interface Epic {
 }
 
 import { BacklogItemType } from "@/types/BacklogItemType";
-
 
 interface EpicRowProps {
   epic: BacklogItemType;
@@ -31,9 +30,8 @@ interface EpicRowProps {
   onEdit?: (epic: BacklogItemType) => void;
   onDelete?: (epicId: string) => void;
 
- onGenerateStories?: (epicId: string, epicName: string) => void;
- onViewDetails?: (epic: Epic) => void;
-
+  onGenerateStories?: (epicId: string, epicName: string) => void;
+  onViewDetails?: (epic: Epic) => void;
 }
 
 export const EpicRow: FC<EpicRowProps> = ({
@@ -47,7 +45,7 @@ export const EpicRow: FC<EpicRowProps> = ({
   onViewDetails,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  
+
   // Handle toggle action
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -67,32 +65,31 @@ export const EpicRow: FC<EpicRowProps> = ({
   };
 
   // Determinar el ID asignado
-  const assigneeId = epic.assigneeId 
-    ? typeof epic.assigneeId === "string" 
-      ? parseInt(epic.assigneeId) 
-      : Number(epic.assigneeId) 
+  const assigneeId = epic.assigneeId
+    ? typeof epic.assigneeId === "string"
+      ? parseInt(epic.assigneeId)
+      : Number(epic.assigneeId)
     : null;
 
   // Inline styles for the title instead of using a separate CSS module
   const titleStyle = {
-    cursor: 'pointer',
-    transition: 'color 0.2s ease',
+    cursor: "pointer",
+    transition: "color 0.2s ease",
     fontWeight: 500,
-    position: 'relative',
-    display: 'inline-block',
+    position: "relative",
+    display: "inline-block",
   } as React.CSSProperties;
 
   const titleHoverStyle = {
     ...titleStyle,
-    color: 'var(--primary-color, #ac1754)',
+    color: "var(--primary-color, #ac1754)",
   } as React.CSSProperties;
 
   return (
     <tr className={styles.epicRowContainer}>
       <td>
         <div className="flex items-center gap-2">
-
-          <span 
+          <span
             style={isHovered ? titleHoverStyle : titleStyle}
             onClick={handleViewDetails}
             onMouseEnter={() => setIsHovered(true)}
@@ -100,14 +97,14 @@ export const EpicRow: FC<EpicRowProps> = ({
           >
             {epic.name}
             {isHovered && (
-              <span 
+              <span
                 style={{
-                  position: 'absolute',
-                  width: '100%',
-                  height: '1px',
-                  bottom: '0',
-                  left: '0',
-                  backgroundColor: 'var(--primary-color, #ac1754)',
+                  position: "absolute",
+                  width: "100%",
+                  height: "1px",
+                  bottom: "0",
+                  left: "0",
+                  backgroundColor: "var(--primary-color, #ac1754)",
                 }}
               />
             )}
@@ -116,7 +113,7 @@ export const EpicRow: FC<EpicRowProps> = ({
             ({epic.subItems.length || 0}{" "}
             {epic.subItems?.length === 1 ? "story" : "stories"})
           </span>
-          <button 
+          <button
             onClick={handleToggle}
             className="ml-1 p-1 hover:bg-gray-200 rounded flex items-center justify-center"
             aria-label={isExpanded ? "Collapse" : "Expand"}
@@ -133,9 +130,7 @@ export const EpicRow: FC<EpicRowProps> = ({
         {epic.status ? <StatusBadge type="status" value={epic.status} /> : "-"}
       </td>
       <td>
-        {assigneeId ? (
-          <span className="text-sm">{assigneeId}</span>
-        ) : "-"}
+        {assigneeId ? <span className="text-sm">{assigneeId}</span> : "-"}
       </td>
       <td>-</td> {/* Epic doesn't have story points/severity */}
       <td className={styles.actionButtons}>
@@ -148,11 +143,7 @@ export const EpicRow: FC<EpicRowProps> = ({
             e.stopPropagation();
             onDelete(epic.id);
           }}
-          onViewDetails={
-            onViewDetails
-              ? () => onViewDetails(epic)
-              : undefined
-          }
+          onViewDetails={onViewDetails ? () => onViewDetails(epic) : undefined}
           onGenerateStories={
             onGenerateStories
               ? () => onGenerateStories(epic.id, epic.name)

@@ -9,7 +9,7 @@ import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 
 interface BacklogItem {
   id: string;
-  title: string;
+  name: string;
   status: string;
   type: string;
   assigneeId?: string | number | null;
@@ -58,7 +58,6 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
         : Number(item.assigneeId)
       : null;
 
-
   // Handle authorId conversion
   const authorId =
     item.authorId !== undefined && item.authorId !== null
@@ -96,7 +95,7 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            {item.title}
+            {item.name || "-"}
             {isHovered && (
               <span
                 style={{

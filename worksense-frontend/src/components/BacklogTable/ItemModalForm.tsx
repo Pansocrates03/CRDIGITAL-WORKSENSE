@@ -233,6 +233,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
               rows={5}
               placeholder="Add a detailed description..."
               disabled={loading}
+            />
             <label htmlFor="acceptanceCriteria">
               Acceptance Criteria (one per line)
             </label>

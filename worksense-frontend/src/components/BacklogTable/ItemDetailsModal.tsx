@@ -8,7 +8,7 @@ import StatusBadge from "./StatusBadge";
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 
 interface BacklogItemFormData {
-  title: string;
+  name: string;
   type: string;
   status: string;
   priority: string;
@@ -285,7 +285,7 @@ const ItemDetailsModal: FC<ItemDetailsModalProps> = ({
 
         <div className="mb-6">
           <div className="flex justify-between items-start mb-3">
-            <h1 className="text-xl font-semibold">{displayItem.title}</h1>
+            <h1 className="text-xl font-semibold">{displayItem.name}</h1>
             <button
               onClick={onEditClick}
               className="flex items-center gap-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md transition-colors"
@@ -384,11 +384,8 @@ const ItemDetailsModal: FC<ItemDetailsModalProps> = ({
 
           {linkedEpic && (
             <div className="flex items-center gap-2 mb-3 p-3 bg-gray-50 rounded-md">
-              <Link2 size={16} className="text-gray-500" />
-              <div>
-                <span className="text-xs text-gray-500 block">EPIC</span>
-                <span className="text-sm font-medium">{linkedEpic.title}</span>
-              </div>
+              <Link2 className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium">{linkedEpic.name}</span>
             </div>
           )}
 
