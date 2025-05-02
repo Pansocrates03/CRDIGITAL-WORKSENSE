@@ -19,6 +19,7 @@ import { useMembers } from "@/hooks/useMembers";
 
 import { BacklogItemType } from "@/types/BacklogItemType";
 import MemberDetailed from "@/types/MemberDetailedType";
+import QueryKeys from "@/utils/QueryKeys";
 
 interface ProjectMember {
   userId: number;
@@ -55,15 +56,14 @@ const BacklogTablePage: FC = () => {
 
   // Estado para el modal de detalles
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<BacklogItemType | null>(null);
+  const [selectedItem, setSelectedItem] = useState<BacklogItem | null>(null);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["backlog", projectId],
+    queryKey: [QueryKeys.backlog, projectId],
     queryFn: async () => {
       if (!projectId) return [];
 
       const res = await apiClient.get(`/projects/${projectId}/backlog/items`);
-      console.log("BacklogTablePage: data fetched", res.data);
       return res.data;
     },
     enabled: !!projectId,
@@ -177,8 +177,10 @@ const BacklogTablePage: FC = () => {
     setShowGenerateStoriesModal(true);
   };
 
+
+
   // Función para ver los detalles de un ítem
-  const handleViewDetails = (item: BacklogItemType) => {
+  const handleViewDetails = (item: BacklogItem) => {
     console.log("BacklogTablePage: handleViewDetails llamado con item:", item);
     setSelectedItem(item);
     setShowDetailsModal(true);
@@ -215,6 +217,8 @@ const BacklogTablePage: FC = () => {
           `/projects/${projectId}/backlog/items/${itemToDelete.id}?type=${itemToDelete.type}`
         );
       }
+
+
 
       // Si el ítem que se está eliminando es el que se está mostrando en el modal de detalles, cerramos el modal
       if (selectedItem && selectedItem.id === itemToDelete.id) {
@@ -263,19 +267,6 @@ const BacklogTablePage: FC = () => {
         />
       ));
 
-  // Function to check if a section has any matching items
-  const hasMatchingItems = (items: BacklogItemType[]) => {
-    return !searchTerm || items.some(matchesSearch);
-  };
-
-  // Function to check if an epic or its stories have matching items
-  const hasMatchingEpicItems = (epic: BacklogItemType) => {
-    if (!searchTerm) return true;
-    if (matchesSearch(epic)) return true;
-    const epicStories = getEpicStories(epic.id);
-    return epicStories.some(matchesSearch);
-  };
-
   // Function to handle when stories are added to an epic
   const handleStoriesAdded = (epicId: string) => {
     // Expand the epic if it's not already expanded
@@ -320,57 +311,48 @@ const BacklogTablePage: FC = () => {
             </tr>
           </thead>
           <tbody>
-            {hasMatchingItems(categorized.epics) && (
-              <BacklogTableSection title="Epics">
-                {categorized.epics
-                  .filter(hasMatchingEpicItems)
-                  .map((epic) => (
-                    <React.Fragment key={epic.id}>
-                      <EpicRow
-                        epic={{
-                          ...epic,
-                          stories: getEpicStories(epic.id),
-                        }}
-                        isExpanded={expandedEpics.includes(epic.id)}
-                        onToggle={() =>
-                          setExpandedEpics((prev) =>
-                            prev.includes(epic.id)
-                              ? prev.filter((id) => id !== epic.id)
-                              : [...prev, epic.id]
-                          )
-                        }
-                        colSpan={5}
-                        onEdit={() => handleEdit(epic)}
-                        onDelete={() => handleDeleteEpic(epic.id)}
-                        onGenerateStories={handleGenerateStories}
-                        memberMap={memberMap}
-                      />
-                      {expandedEpics.includes(epic.id) &&
-                        renderRows(getEpicStories(epic.id), true)}
-                    </React.Fragment>
-                  ))}
-              </BacklogTableSection>
-            )}
-            {hasMatchingItems(categorized.standaloneStories) && (
-              <BacklogTableSection title="User Stories">
-                {renderRows(categorized.standaloneStories)}
-              </BacklogTableSection>
-            )}
-            {hasMatchingItems(categorized.bugs) && (
-              <BacklogTableSection title="Bugs">
-                {renderRows(categorized.bugs)}
-              </BacklogTableSection>
-            )}
-            {hasMatchingItems(categorized.techTasks) && (
-              <BacklogTableSection title="Tech Tasks">
-                {renderRows(categorized.techTasks)}
-              </BacklogTableSection>
-            )}
-            {hasMatchingItems(categorized.knowledge) && (
-              <BacklogTableSection title="Knowledge Items">
-                {renderRows(categorized.knowledge)}
-              </BacklogTableSection>
-            )}
+            <BacklogTableSection title="Epics">
+              {categorized.epics.map((epic) => {
+                const epicStories = getEpicStories(epic.id);
+                return (
+                  <React.Fragment key={epic.id}>
+                    <EpicRow
+                      epic={{
+                        ...epic,
+                        stories: epicStories,
+                      }}
+                      isExpanded={expandedEpics.includes(epic.id)}
+                      onToggle={() =>
+                        setExpandedEpics((prev) =>
+                          prev.includes(epic.id)
+                            ? prev.filter((id) => id !== epic.id)
+                            : [...prev, epic.id]
+                        )
+                      }
+                      colSpan={5}
+                      onEdit={() => handleEdit(epic)}
+                      onDelete={() => handleDeleteEpic(epic.id)}
+                      onGenerateStories={handleGenerateStories}
+                      memberMap={memberMap}
+                    />
+                    {expandedEpics.includes(epic.id) &&
+                      renderRows(epicStories, true)}
+                  </React.Fragment>
+                );
+              })}
+            </BacklogTableSection>
+            <BacklogTableSection title="User Stories">
+              {renderRows(categorized.standaloneStories)}
+            </BacklogTableSection>
+            <BacklogTableSection title="Bugs">
+              {renderRows(categorized.bugs)}
+            </BacklogTableSection>
+            <BacklogTableSection title="Tech Tasks">
+              {renderRows(categorized.techTasks)}
+            </BacklogTableSection>
+            <BacklogTableSection title="Knowledge Items">
+              {renderRows(categorized.knowledge)}
+            </BacklogTableSection>
           </tbody>
         </table>
       </div>
