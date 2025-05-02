@@ -1,10 +1,8 @@
 // Core Imports
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import apiClient from "../../api/apiClient";
 import styles from "./ProjectView.module.css";
 // Component Imports
-import LoadingSpinner from "../Loading/LoadingSpinner";
 import EditTeamModal from "../EditTeamModal/EditTeamModal";
 import MemberInfoPopup from "../MemberInfoPopup/MemberInfoPopup";
 // Type Imports
@@ -67,6 +65,12 @@ export const ProjectView: React.FC<FullProjectData> = ({
     setSelectedMember(member);
   };
 
+  const getOwnerName = (project: ProjectDetails, members: MemberDetailed[]): string => {
+    const ownerName = members.find((members) => members.userId === project.ownerId);
+    return ownerName?.name || "Unknown Owner"
+  };
+  
+
   return (
     <div className={styles.projectView}>
       {/* Header Section */}
@@ -94,8 +98,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
                   fill="currentColor"
                 />
               </svg>
-              {/*project.team[0].name*/}
-              Esteban
+              {getOwnerName(project, members)}
             </span>
           </div>
         </div>
