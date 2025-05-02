@@ -73,13 +73,8 @@ const MembersPage: React.FC = () => {
     }
   };
 
-  const handleAddMember = (member: { userId: number; roleId: string }) => {
-    const newMember: Member = {
-      userId: member.userId,
-      projectRoleId: member.roleId,
-      joinedAt: {}
-    };
-    setSelectedMembers((prevMembers) => [...prevMembers, newMember]);
+  const handleAddMember = (member: Member) => {
+    setSelectedMembers((prevMembers) => [...prevMembers, member]);
   };
 
   const handleRemoveMember = (userId: number) => {
@@ -89,7 +84,11 @@ const MembersPage: React.FC = () => {
   const handleAddMembersSubmit = async () => {
     try {
       for (const member of selectedMembers) {
-        await projectService.addMemberToProject(projectId!, member.userId, member.projectRoleId);
+        await projectService.addMemberToProject(
+          projectId!, 
+          member.userId, 
+          member.projectRoleId
+        );
       }
       setSelectedMembers([]);
       setIsAddingMembers(false);
