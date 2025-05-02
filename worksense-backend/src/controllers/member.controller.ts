@@ -1,4 +1,7 @@
 // controllers/memberController.ts
+// Última actualización: 1 de mayo de 2025
+// Esteban Sierra Baccio
+
 import { Request, Response, NextFunction } from "express";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { db } from "../models/firebase.js";
@@ -9,14 +12,12 @@ import { ProjectMember, ProjectMemberData } from "../../types/project.js";
  * List members of a project
  */
 export const listMembers = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
+  req: Request, res: Response, next: NextFunction
 ): Promise<void> => {
   try {
     const { projectId } = req.params;
     const membersRef = db
-      .collection("projectss")
+      .collection("projects")
       .doc(projectId)
       .collection("members");
 
@@ -48,7 +49,7 @@ export const listMembersDetail = async (
   try {
     const { projectId } = req.params;
     const membersRef = db
-      .collection("projectss")
+      .collection("projects")
       .doc(projectId)
       .collection("members");
 
@@ -172,7 +173,9 @@ export const addMember = async (
     }
 
     // Check if role exists
-    const roleRef = db.collection("projectRoles").doc(projectRoleId);
+    const roleRef = db
+      .collection("projectRoles")
+      .doc(projectRoleId);
     const roleSnap = await roleRef.get();
     if (!roleSnap.exists) {
       res.status(400).json({ message: "Project Role not found" });
@@ -181,7 +184,7 @@ export const addMember = async (
 
     // Check if user is already a member
     const memberRef = db
-      .collection("projectss")
+      .collection("projects")
       .doc(projectId)
       .collection("members")
       .doc(String(userId));
@@ -230,7 +233,9 @@ export const updateMemberRole = async (
     }
 
     // Check if role exists
-    const roleRef = db.collection("projectRoles").doc(projectRoleId);
+    const roleRef = db
+      .collection("projectRoles")
+      .doc(projectRoleId);
     const roleSnap = await roleRef.get();
     if (!roleSnap.exists) {
       res.status(400).json({ message: "Project Role not found" });
@@ -239,7 +244,7 @@ export const updateMemberRole = async (
 
     // Check if member exists
     const memberRef = db
-      .collection("projectss")
+      .collection("projects")
       .doc(projectId)
       .collection("members")
       .doc(String(memberUserId));
@@ -282,7 +287,7 @@ export const removeMember = async (
     }
 
     // Check if project exists and member is not owner
-    const projectSnap = await db.collection("projectss").doc(projectId).get();
+    const projectSnap = await db.collection("projects").doc(projectId).get();
     if (!projectSnap.exists) {
       res.status(404).json({ message: "Project not found" });
       return;
@@ -294,8 +299,9 @@ export const removeMember = async (
     }
 
     // Check if member exists
+    console.log("Checking if member exists...", memberUserId);
     const memberRef = db
-      .collection("projectss")
+      .collection("projects")
       .doc(projectId)
       .collection("members")
       .doc(String(memberUserId));

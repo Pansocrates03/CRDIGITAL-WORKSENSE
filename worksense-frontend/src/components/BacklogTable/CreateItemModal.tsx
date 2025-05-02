@@ -20,16 +20,17 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
   onError,
 }) => {
   const initialState: BacklogItemFormData = {
-    title: "",
+    name: "",
     type: "story",
-    status: "",
+    status: "new",
     priority: "medium",
+    assigneeId: null,
+    description: null,
+    acceptanceCriteria: null,
+    coverImage: null,
+    size: null,
+    sprint: null,
     epicId: "",
-    storyPoints: null,
-    severity: "major",
-    assigneeId: "",
-    content: "",
-    tags: [],
   };
 
   const [formData, setFormData] = useState(initialState);
@@ -52,13 +53,17 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
 
   const fetchOptionsData = async () => {
     try {
-      // Asegúrate de que estas rutas coincidan con las de BacklogTablePage
       const epicsRes = await apiClient.get(
         `/projects/${projectId}/backlog/items`
       );
       setEpics(
         Array.isArray(epicsRes.data)
-          ? epicsRes.data.filter((item: any) => item.type === "epic")
+          ? epicsRes.data
+              .filter((item: any) => item.type === "epic")
+              .map((epic: any) => ({
+                id: epic.id,
+                title: epic.name,
+              }))
           : []
       );
 
@@ -67,7 +72,6 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
       );
       setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
 
-      // Agrega logs para debugging
       console.log("Epics fetched:", epicsRes.data);
       console.log("Users fetched:", usersRes.data);
     } catch (err) {
@@ -83,16 +87,22 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
     setIsSubmitting(true);
     setError(null);
 
-    const payload = {
-      ...formData,
-      storyPoints: formData.storyPoints
-        ? parseInt(formData.storyPoints as unknown as string)
-        : null,
-    };
-
     try {
-      // Asegúrate de que esta ruta coincida con el formato de las otras
-      await apiClient.post(`/projects/${projectId}/backlog/items`, payload);
+      const payload = {
+        ...formData,
+        projectId,
+      };
+
+      // If it's a story and an epic is selected, create it as a subitem
+      if (formData.type === "story" && formData.epicId) {
+        await apiClient.post(
+          `/projects/${projectId}/backlog/items/${formData.epicId}/subitems`,
+          payload
+        );
+      } else {
+        await apiClient.post(`/projects/${projectId}/backlog/items`, payload);
+      }
+
       setFormData(initialState);
       onItemCreated();
       onClose();

@@ -4,12 +4,13 @@ import { X, Save, Trash2, RefreshCw, Sparkles } from "lucide-react";
 import styles from "./CreateItemModal.module.css"; // Reutilizamos los estilos existentes
 import aiStoriesService from "@/services/aiStoriesService";
 import { AiStorySuggestion } from "@/types/ai";
+import { BacklogItemType } from "@/types/BacklogItemType";
 import DeleteConfirmationModal from "@/components/ui/DeleteConfirmationModal";
 
 interface GenerateStoriesModalProps {
   projectId: string;
   epicId: string;
-  epicTitle: string;
+  epicName: string;
   isOpen: boolean;
   onClose: () => void;
   onStoriesAdded: () => void;
@@ -19,7 +20,7 @@ interface GenerateStoriesModalProps {
 const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
   projectId,
   epicId,
-  epicTitle,
+  epicName,
   isOpen,
   onClose,
   onStoriesAdded,
@@ -145,22 +146,20 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
     <>
       <div
         className={styles.modalOverlay}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) handleCloseWithConfirmation();
-        }}
+        onClick={(e) => e.target === e.currentTarget && onClose()}
       >
         <div
           className={styles.modalContent}
           onClick={(e) => e.stopPropagation()}
         >
           <div className={styles.modalHeader}>
-            <h2>AI Suggested Stories for "{epicTitle}"</h2>
+            <h2>AI Suggested Stories for "{epicName}"</h2>
             <button
               className={styles.closeButton}
-              onClick={handleCloseWithConfirmation}
+              onClick={onClose}
               aria-label="Close"
               disabled={isLoading}
-            >
+              >
               <X size={18} />
             </button>
           </div>
@@ -209,16 +208,16 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                       </button>
 
                       <div className={styles.formGroup}>
-                        <label htmlFor={`title-${index}`}>Title*</label>
+                        <label htmlFor={`name-${index}`}>Name*</label>
                         <input
-                          id={`title-${index}`}
+                          id={`name-${index}`}
                           type="text"
                           value={story.name}
                           onChange={(e) =>
                             updateStory(index, "name", e.target.value)
                           }
                           required
-                          placeholder="Story title"
+                          placeholder="Story name"
                         />
                       </div>
 
@@ -238,6 +237,24 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                       </div>
 
                       <div className={styles.formGroup}>
+                        <label htmlFor={`acceptanceCriteria-${index}`}>
+                          Acceptance Criteria (one per line)
+                        </label>
+                        <textarea
+                          id={`acceptanceCriteria-${index}`}
+                          value={story.acceptanceCriteria?.join("\n") || ""}
+                          onChange={(e) => {
+                            const lines = e.target.value
+                              .split("\n")
+                              .filter((line) => line.trim());
+                            updateStory(index, "acceptanceCriteria", lines);
+                          }}
+                          rows={3}
+                          placeholder="Enter acceptance criteria"
+                        />
+                      </div>
+
+                      <div className={styles.formGroup}>
                         <label htmlFor={`priority-${index}`}>Priority</label>
                         <select
                           id={`priority-${index}`}
@@ -253,6 +270,24 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                           <option value="low">Low</option>
                           <option value="medium">Medium</option>
                           <option value="high">High</option>
+                        </select>
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label htmlFor={`size-${index}`}>Size</label>
+                        <select
+                          id={`size-${index}`}
+                          value={story.size || ""}
+                          onChange={(e) =>
+                            updateStory(index, "size", e.target.value)
+                          }
+                        >
+                          <option value="">Select Size</option>
+                          <option value="xs">XS</option>
+                          <option value="s">S</option>
+                          <option value="m">M</option>
+                          <option value="l">L</option>
+                          <option value="xl">XL</option>
                         </select>
                       </div>
                     </div>

@@ -3,6 +3,8 @@ import React from "react";
 import styles from "./BacklogRow.module.css";
 import StatusBadge from "./StatusBadge";
 import ActionMenu from "./ActionMenu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BacklogItemType } from "@/types/BacklogItemType";
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 
 interface BacklogItem {
@@ -22,7 +24,7 @@ interface Member {
 }
 
 interface BacklogRowProps {
-  item: BacklogItem;
+  item: BacklogItemType;
   indent?: boolean;
   memberMap: Map<number, Member>;
   onEdit: () => void;
@@ -45,7 +47,7 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
   } else if (item.type === "bug") {
     extraInfo = item.severity || "-";
   }
-  
+
   // Handle assigneeId conversion
   const assigneeId =
     item.assigneeId !== undefined && item.assigneeId !== null
@@ -53,15 +55,43 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
         ? parseInt(item.assigneeId)
         : Number(item.assigneeId)
       : null;
-  
+
+  // Handle authorId conversion
+  const authorId =
+    item.authorId !== undefined && item.authorId !== null
+      ? typeof item.authorId === "string"
+        ? parseInt(item.authorId)
+        : Number(item.authorId)
+      : null;
+
   // Get member info
   const memberInfo = assigneeId !== null ? memberMap.get(assigneeId) : null;
+  const authorInfo = authorId !== null ? memberMap.get(authorId) : null;
 
   return (
     <tr key={item.id}>
       <td>
         <div className="flex items-center gap-2">
-          <span>{item.title}</span>
+          <span>{item.name}</span>
+          {authorInfo && (
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <span>by</span>
+              <Avatar className="h-4 w-4">
+                {authorInfo.profilePicture ? (
+                  <AvatarImage
+                    src={authorInfo.profilePicture}
+                    alt={authorInfo.nickname || "Author"}
+                  />
+                ) : null}
+                <AvatarFallback>
+                  {authorInfo.nickname
+                    ? authorInfo.nickname.charAt(0).toUpperCase()
+                    : authorId?.toString().charAt(0) || "A"}
+                </AvatarFallback>
+              </Avatar>
+              <span>{authorInfo.nickname || `User ${authorId}`}</span>
+            </div>
+          )}
         </div>
       </td>
       <td>
