@@ -33,7 +33,7 @@ export const createBacklogItem = async (
 ): Promise<void> => {
   try {
     const { projectId } = req.params;
-    const { type, ...itemData } = req.body;
+    const { ...BacklogItemData } = req.body;
     const reporterId = req.user?.userId;
 
     if (!reporterId) {
