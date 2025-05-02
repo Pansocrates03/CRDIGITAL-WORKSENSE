@@ -60,6 +60,41 @@ export const createBacklogItem = async (
   }
 };
 
+export const createSubItem = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { projectId, itemId } = req.params;
+    const item: BacklogItem = req.body;
+    const authorId = req.user?.userId;
+
+    if (!authorId) {
+      res.status(401).json({ message: "Authentication required" });
+      return;
+    }
+
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId);
+
+    const docSnap = await itemRef.get();
+
+    if (!docSnap.exists) {
+      res.status(404).json({ message: "Item not found" });
+      return;
+    }
+
+    const newItemRef = await itemRef.collection("subItems").add(item);
+    res.status(201).json({ id: newItemRef.id, ...item });
+  } catch (error) {
+    next(error);
+  }
+};
+
 /**
  * List backlog items for a project
  */
@@ -239,6 +274,119 @@ export const deleteBacklogItem = async (
       res.status(400).json({ message: error.message });
       return;
     }
+    next(error);
+  }
+};
+
+/**
+ * Get subitems for a backlog item
+ */
+export const getSubItems = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { projectId, itemId } = req.params;
+    const itemType = req.query.type as string;
+
+    if (!itemType) {
+      res.status(400).json({ message: "Type parameter required" });
+      return;
+    }
+
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId);
+    const docSnap = await itemRef.get();
+
+    if (!docSnap.exists) {
+      res.status(404).json({ message: "Item not found" });
+      return;
+    }
+
+    const subItems = await itemRef.collection("subItems").get();
+    res
+      .status(200)
+      .json(subItems.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Delete a subitem
+ */
+export const deleteSubItem = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { projectId, itemId, subItemId } = req.params;
+
+    if (!subItemId) {
+      res.status(400).json({ message: "Subitem ID parameter required" });
+      return;
+    }
+
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId)
+      .collection("subItems")
+      .doc(subItemId);
+    const docSnap = await itemRef.get();
+
+    if (!docSnap.exists) {
+      res.status(404).json({ message: "Subitem not found" });
+      return;
+    }
+
+    await itemRef.delete();
+    res.status(200).json({ message: "Subitem deleted", id: subItemId });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Update a subitem
+ */
+export const updateSubItem = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { projectId, itemId, subItemId } = req.params;
+    const updateData = req.body;
+
+    if (!subItemId) {
+      res.status(400).json({ message: "Subitem ID parameter required" });
+      return;
+    }
+
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId)
+      .collection("subItems")
+      .doc(subItemId);
+    const docSnap = await itemRef.get();
+
+    if (!docSnap.exists) {
+      res.status(404).json({ message: "Subitem not found" });
+      return;
+    }
+
+    await itemRef.update(updateData);
+    res.status(200).json({ message: "Subitem updated", id: subItemId });
+  } catch (error) {
     next(error);
   }
 };

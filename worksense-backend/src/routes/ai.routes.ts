@@ -203,7 +203,7 @@ router.post(
  *         description: Error al comunicarse con el servicio de IA
  */
 router.post(
-  "/:projectId/ai/stories/generate-stories",
+  "/stories/generate-stories",
   memberAuth,
   checkProjectPermission("edit:backlog"),
   generateStoriesHandler
@@ -281,7 +281,7 @@ router.post(
  *         description: Conflicto – Al menos una historia ya existe en el backlog
  */
 router.post(
-  "/:projectId/ai/stories/confirm-stories",
+  "/stories/confirm-stories",
   memberAuth,
   checkProjectPermission("edit:backlog"),
   confirmStoriesHandler
