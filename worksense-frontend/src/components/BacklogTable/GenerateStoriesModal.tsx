@@ -5,6 +5,8 @@ import styles from "./CreateItemModal.module.css"; // Reutilizamos los estilos e
 import aiStoriesService from "@/services/aiStoriesService";
 import { AiStorySuggestion } from "@/types/ai";
 import { BacklogItemType } from "@/types/BacklogItemType";
+import DeleteConfirmationModal from "@/components/ui/DeleteConfirmationModal";
+
 
 interface GenerateStoriesModalProps {
   projectId: string;
@@ -31,17 +33,40 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   // Cuando se abre el modal, generamos sugerencias automáticamente
   useEffect(() => {
     if (isOpen && epicId) {
       generateSuggestions();
-    } else {
+    } else if (!isOpen) {
       // Limpiar estado al cerrar
       setSuggestedStories([]);
       setError(null);
+      setHasChanges(false);
     }
   }, [isOpen, epicId]);
+
+  // Función para manejar el cierre con confirmación
+  const handleCloseWithConfirmation = () => {
+    // Si hay historias generadas y no se ha guardado, mostrar advertencia
+    if (suggestedStories.length > 0 && hasChanges) {
+      setShowWarningModal(true);
+    } else {
+      // Si no hay cambios, cerrar directamente
+      handleConfirmedClose();
+    }
+  };
+
+  // Función para cerrar después de confirmar
+  const handleConfirmedClose = () => {
+    // Limpiar la caché para esta épica
+    aiStoriesService.clearCache(epicId);
+
+    // Cerrar el modal
+    onClose();
+  };
 
   // Función para generar sugerencias de historias
   const generateSuggestions = async () => {
@@ -51,6 +76,7 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
     try {
       const stories = await aiStoriesService.generateStories(projectId, epicId);
       setSuggestedStories(stories);
+      setHasChanges(true); // Marcar que hay cambios
     } catch (err: any) {
       const msg =
         err.response?.data?.message || "Failed to generate story suggestions";
@@ -74,11 +100,13 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
       [field]: value,
     };
     setSuggestedStories(updatedStories);
+    setHasChanges(true); // Marcar que hay cambios
   };
 
   // Función para eliminar una historia sugerida
   const removeStory = (index: number) => {
     setSuggestedStories((prev) => prev.filter((_, i) => i !== index));
+    setHasChanges(true); // Marcar que hay cambios
   };
 
   // Función para guardar las historias seleccionadas
@@ -100,6 +128,7 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
       );
 
       onStoriesAdded();
+      setHasChanges(false); // Resetear el estado de cambios
       onClose();
     } catch (err: any) {
       const msg =
@@ -150,9 +179,14 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
           </button>
         </div>
 
-        {isGenerating ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin h-8 w-8 border-4 border-indigo-500 rounded-full border-t-transparent"></div>
+            <button
+              onClick={generateSuggestions}
+              disabled={isGenerating}
+              className="flex items-center justify-center gap-1 text-sm bg-indigo-50 text-indigo-600 px-3 py-1 rounded-md hover:bg-indigo-100 transition-colors"
+            >
+              <Sparkles size={16} />
+              {isGenerating ? "Generating..." : "Regenerate Suggestions"}
+            </button>
           </div>
         ) : (
           <div>
@@ -262,39 +296,20 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                 ))}
               </div>
             )}
+
           </div>
-        )}
-
-        <div className={styles.formActions}>
-          <button
-            type="button"
-            className={styles.cancelButton}
-            onClick={onClose}
-            disabled={isLoading || isGenerating}
-          >
-            <X size={16} className="mr-1" /> Cancel
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSave}
-            className={styles.submitButton}
-            disabled={
-              isLoading || isGenerating || suggestedStories.length === 0
-            }
-          >
-            {isLoading ? (
-              "Adding Stories..."
-            ) : (
-              <>
-                <Save size={16} className="mr-1" />
-                Add to Epic
-              </>
-            )}
-          </button>
         </div>
       </div>
-    </div>
+
+      {/* Modal de confirmación para cerrar sin guardar */}
+      <DeleteConfirmationModal
+        isOpen={showWarningModal}
+        onClose={() => setShowWarningModal(false)}
+        onConfirm={handleConfirmedClose}
+        title="Discard Generated Stories"
+        message="You have unsaved story suggestions. If you close now, these suggestions will be lost and the cache will be cleared. Are you sure you want to continue?"
+      />
+    </>
   );
 };
 

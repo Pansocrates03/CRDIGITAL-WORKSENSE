@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './MemberInfoPopup.module.css';
 import MemberDetailed from '@/types/MemberDetailedType';
+import { AvatarDisplay } from '@/components/ui/AvatarDisplay';
 
 interface MemberInfoPopupProps {
   member: MemberDetailed
@@ -10,7 +11,6 @@ interface MemberInfoPopupProps {
 const MemberInfoPopup: React.FC<MemberInfoPopupProps> = ({ member, onClose }) => {
   // Extract first and last name for generating a consistent avatar
   const [firstName = '', lastName = ''] = member.name.split(' ');
-  const avatarUrl = member.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName + ' ' + lastName)}&background=random&color=fff&size=128`;
 
   // Format date if available
   const formatDate = (dateString?: string) => {
@@ -27,15 +27,18 @@ const MemberInfoPopup: React.FC<MemberInfoPopupProps> = ({ member, onClose }) =>
     }
   };
 
-  // Safely get role from roleId
-  const getRoleDisplay = (roleId: string | undefined) => {
-    if (!roleId) return 'Member';
-    try {
-      return roleId.split('/').pop() || 'Member';
-    } catch (error) {
-      console.error('Error processing roleId:', error);
-      return 'Member';
-    }
+  // Format role display
+  const formatRoleDisplay = (roleId: string | undefined) => {
+    if (!roleId) return 'Team Member';
+    
+    // Remove any path or prefix from roleId
+    const role = roleId.split('/').pop() || 'Team Member';
+    
+    // Split by hyphen and capitalize each word
+    return role
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   };
 
   return (
@@ -54,18 +57,18 @@ const MemberInfoPopup: React.FC<MemberInfoPopupProps> = ({ member, onClose }) =>
         <button className={styles.closeButton} onClick={onClose}>×</button>
         
         <div className={styles.memberHeader}>
-          <img 
-            src={avatarUrl}
-            alt={member.name} 
-            className={styles.memberAvatar}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=random`;
+          <AvatarDisplay
+            user = {{
+              firstName,
+              lastName,
+              name: member.name,
+              profilePicture: member.profilePicture
             }}
+            size="xl"
           />
           <div className={styles.memberInfo}>
             <h3>{member.name}</h3>
-            <span className={styles.role}>{member.projectRoleId || 'Team Member'}</span>
+            <span className={styles.role}>{formatRoleDisplay(member.projectRoleId)}</span>
           </div>
         </div>
 
@@ -80,7 +83,7 @@ const MemberInfoPopup: React.FC<MemberInfoPopupProps> = ({ member, onClose }) =>
           </div>
           <div className={styles.detailRow}>
             <span className={styles.label}>Role</span>
-            <span className={styles.value}>{getRoleDisplay(member.projectRoleId)}</span>
+            <span className={styles.value}>{formatRoleDisplay(member.projectRoleId)}</span>
           </div>
           <div className={styles.detailRow}>
             <span className={styles.label}>Status</span>

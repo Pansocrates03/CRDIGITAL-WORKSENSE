@@ -6,7 +6,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
 import { AvatarPicker } from "@/components/Account/AvatarPicker";
@@ -65,10 +65,14 @@ export const AccountPage: React.FC = () => {
 
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center">
-              <Avatar className="size-24 mb-4">
-                <AvatarImage src={profile.avatar} />
-                <AvatarFallback>{profile.email[0]}</AvatarFallback>
-              </Avatar>
+              <AvatarDisplay 
+                user={{
+                  name: profile.fullName || profile.email,
+                  profilePicture: profile.avatar
+                }}
+                size="lg"
+                className="mb-4"
+              />
               <h2 className="text-lg font-semibold text-center">
                 {profile.fullName || profile.email}
               </h2>
