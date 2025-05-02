@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import styles from "./NewProjectModal.module.css";
-import { User, ProjectMember } from "../../types";
+import { User } from "../../types/UserType";
+import Member from "../../types/MemberType";
+
 
 // Define available roles
 const ROLES = [
@@ -14,8 +16,8 @@ const ROLES = [
 // Component for selecting and adding members
 const MemberSelection: React.FC<{
   users: User[];
-  selectedMembers: ProjectMember[];
-  onAddMember: (member: ProjectMember) => void;
+  selectedMembers: Member[];
+  onAddMember: (member: Member) => void;
   onRemoveMember: (userId: number) => void;
   isLoading: boolean;
   error?: string;
@@ -34,9 +36,10 @@ const MemberSelection: React.FC<{
 
   const handleAddMember = () => {
     if (selectedUserId && selectedRoleId) {
-      const newMember: ProjectMember = {
-        userId: parseInt(selectedUserId),
-        roleId: selectedRoleId,
+      const newMember: Member = {
+        userId: Number(selectedUserId),
+        projectRoleId: selectedRoleId,
+        joinedAt: {}
       };
 
       onAddMember(newMember);
@@ -44,6 +47,12 @@ const MemberSelection: React.FC<{
       setSelectedRoleId("");
     }
   };
+
+  console.log({
+    users,
+    selectedMembers,
+    availableUsers
+  });
 
   return (
     <div className={styles.formGroup}>
@@ -88,14 +97,17 @@ const MemberSelection: React.FC<{
           <div className={styles.noMembers}>No members added yet</div>
         ) : (
           selectedMembers.map((member) => {
+            console.log('Looking for user:', member.userId);
+            console.log('Available users:', users.map(u => ({ id: u.id, name: `${u.firstName} ${u.lastName}` })));
             const user = users.find((u) => u.id === member.userId);
+            console.log('Found user:', user);
             return (
               <div key={member.userId} className={styles.memberRow}>
                 <span className={styles.username}>
                   {user ? `${user.firstName} ${user.lastName}` : "Unknown User"}
                 </span>
                 <span className={styles.memberRole}>
-                  {ROLES.find(role => role.id === member.roleId)?.name || "Unknown Role"}
+                  {ROLES.find(role => role.id === member.projectRoleId)?.name || "Unknown Role"}
                 </span>
                 <button
                   type="button"

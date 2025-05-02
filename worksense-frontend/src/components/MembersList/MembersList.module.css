@@ -1,3 +1,15 @@
+/* CSS Variables - consider moving these to your global CSS if not already there */
+:root {
+  --header-height: 60px;
+  --transition-speed: 0.2s;
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-circle: 50%;
+  --avatar-size: 32px;
+  --z-index-header: 10;
+  --z-index-dropdown: 1000;
+}
+
 .membersListContainer {
   display: flex;
   flex-direction: column;
@@ -46,6 +58,26 @@
   color: var(--foreground, #222);
 }
 
+/* Avatar styles */
+.avatar {
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  border-radius: var(--border-radius-circle);
+  background-color: var(--color-purple, #ac1754);
+  transition: transform var(--transition-speed) ease,
+    box-shadow var(--transition-speed) ease;
+}
+
+.avatar:hover {
+  transform: scale(1.05);
+}
+
+.avatar:focus-visible {
+  outline: 2px solid var(--color-purple, #ac1754);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(172, 23, 84, 0.2);
+}
+
 /* Badge for role */
 .badge {
   display: inline-flex;
@@ -68,8 +100,8 @@
 
 /* Action buttons container */
 .actionButtons {
-  text-align: center; /* Center-align the buttons */
-  padding-top: 5px; /* Optional: add some spacing on top */
+  text-align: center;
+  padding-top: 5px;
 }
 
 /* Styling individual buttons */
@@ -79,7 +111,7 @@
   cursor: pointer;
   font-size: 18px;
   color: #555;
-  margin: 0 8px; /* Space out the buttons horizontally */
+  margin: 0 8px;
 }
 
 .button:hover {
@@ -88,56 +120,11 @@
 
 /* Styling for trash button */
 .trashButton {
-  color: #d9534f; /* Bootstrap-style red */
+  color: #d9534f;
 }
 
 .trashButton:hover {
-  color: #c9302c; /* Darker red on hover */
-}
-
-/* Profile picture styling */
-.pfpContainer {
-  width: var(--avatar-size, 40px);
-  height: var(--avatar-size, 40px);
-  border-radius: var(--border-radius-circle, 50%);
-  background-color: var(--color-purple, #ac1754);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  transition: transform var(--transition-speed, 0.2s) ease,
-    box-shadow var(--transition-speed, 0.2s) ease;
-}
-
-.pfpContainer:hover {
-  transform: scale(1.05);
-}
-
-.pfpContainer:focus-visible {
-  outline: 2px solid var(--color-purple, #ac1754);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(172, 23, 84, 0.2);
-}
-
-.pfp {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Avatar initials fallback */
-.avatarInitials {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 1rem;
-  color: white;
-  background-color: var(--color-purple, #ac1754);
-  border-radius: var(--border-radius-circle, 50%);
-  user-select: none;
+  color: #c9302c;
 }
 
 /* Hover effect for table rows */

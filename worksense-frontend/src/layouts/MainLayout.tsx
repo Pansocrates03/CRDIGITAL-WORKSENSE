@@ -39,7 +39,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       if (projectId) {
         setProjectLoading(true);
         try {
-          const projectData = await projectService.getProject(projectId);
+          const projectData = await projectService.fetchProjectDetails(projectId);
           // Use the actual project name for the header title within project context
           setProjectName(projectData.name || "Untitled Project");
         } catch (error) {

@@ -135,7 +135,7 @@ export const projectService = {
         await apiClient.post(
           `${FULL_API_URL}/projects/${response.data.id}/members`,
           {
-            projectRoleId: "product-owner",
+            projectRoleId: member.projectRoleId,
             userId: member.userId, // Asegúrate de que `member` contenga el ID del miembro
           }
         );
