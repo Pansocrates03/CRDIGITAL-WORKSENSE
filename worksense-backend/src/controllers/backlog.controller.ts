@@ -84,7 +84,10 @@ export const listBacklogItems = async (
     // Fetch items from all requested types
     const promises = requestedTypes.map(async (type) => {
       try {
-        const collectionRef = getItemCollection(projectId, type);
+        const collectionRef = db
+          .collection("projects")
+          .doc(projectId)
+          .collection("backlog");
         const snapshot = await collectionRef
           .where("projectId", "==", projectId)
           .get();
@@ -118,7 +121,11 @@ export const getBacklogItem = async (
       return;
     }
 
-    const itemRef = getItemRef(projectId, itemType, itemId);
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId);
     const docSnap = await itemRef.get();
 
     if (!docSnap.exists) {
@@ -159,7 +166,11 @@ export const updateBacklogItem = async (
       return;
     }
 
-    const itemRef = getItemRef(projectId, itemType, itemId);
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId);
     const docSnap = await itemRef.get();
 
     if (!docSnap.exists) {
@@ -209,7 +220,11 @@ export const deleteBacklogItem = async (
       return;
     }
 
-    const itemRef = getItemRef(projectId, itemType, itemId);
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId);
     const docSnap = await itemRef.get();
 
     if (!docSnap.exists) {
