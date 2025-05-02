@@ -105,7 +105,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
               <div className={styles.modalHeader}>
                 <h2>{title}</h2>
                 <p className={styles.modalDescription}>
-                  Tu proyecto tendrá su propio espacio independiente.
+                  Your project will have its own independent space.
                 </p>
               </div>
 
