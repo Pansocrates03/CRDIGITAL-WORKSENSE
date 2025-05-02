@@ -71,11 +71,6 @@
   background-color: #f3f4f6;
 }
 
-/* Para historias dentro de épicas */
-.nestedRow td:first-child {
-  padding-left: 2.5rem;
-}
-
 /* Error message */
 .error {
   display: flex;

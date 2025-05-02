@@ -1,12 +1,10 @@
 /* src/components/BacklogTable/BacklogRow.module.css */
 
-.nestedRow td:first-child {
-    padding-left: 2.5rem;
-  }
-  
-  .actionButtons {
-    white-space: nowrap;
-    text-align: center;
-  }
-  
-  
+.indentedCell div {
+  padding-left: 2.5rem;
+}
+
+.actionButtons {
+  white-space: nowrap;
+  text-align: center;
+}
