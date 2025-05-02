@@ -7,7 +7,7 @@ import { BacklogItemType } from "@/types/BacklogItemType";
 
 interface Epic {
   id: string;
-  title: string;
+  name: string;
 }
 
 interface User {
@@ -201,7 +201,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                 { value: "", label: "Select Epic (Optional)" },
                 ...epics.map((epic) => ({
                   value: epic.id,
-                  label: epic.title,
+                  label: epic.name,
                 })),
               ]}
               label="Epic"

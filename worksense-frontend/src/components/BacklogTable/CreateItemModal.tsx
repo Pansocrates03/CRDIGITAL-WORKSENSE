@@ -62,7 +62,7 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
               .filter((item: any) => item.type === "epic")
               .map((epic: any) => ({
                 id: epic.id,
-                title: epic.name,
+                name: epic.name,
               }))
           : []
       );
@@ -97,7 +97,11 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
       if (formData.type === "story" && formData.epicId) {
         await apiClient.post(
           `/projects/${projectId}/backlog/items/${formData.epicId}/subitems`,
-          payload
+          {
+            ...payload,
+            parentId: formData.epicId,
+            isSubItem: true,
+          }
         );
       } else {
         await apiClient.post(`/projects/${projectId}/backlog/items`, payload);
