@@ -19,6 +19,7 @@ interface BacklogItemFormData {
   content?: string;
   description?: string; // Add support for description field from AI stories
   tags?: string[];
+  acceptanceCriteria?: string[]; // Add support for acceptance criteria
 }
 
 interface BacklogItem extends BacklogItemFormData {
@@ -402,6 +403,27 @@ const ItemDetailsModal: FC<ItemDetailsModalProps> = ({
               )}
             </div>
           </div>
+
+          {/* Acceptance Criteria Section - Only displayed for stories */}
+          {displayItem.type === "story" && (
+            <div className="mt-6">
+              <h3 className="text-sm font-medium mb-2">Acceptance Criteria</h3>
+              <div className="bg-gray-50 p-3 rounded-md min-h-28 text-sm">
+                {displayItem.acceptanceCriteria &&
+                displayItem.acceptanceCriteria.length > 0 ? (
+                  <ul className="list-disc pl-5 space-y-1">
+                    {displayItem.acceptanceCriteria.map((criterion, index) => (
+                      <li key={index}>{criterion}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span className="text-gray-400">
+                    No acceptance criteria defined
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {displayItem.tags && displayItem.tags.length > 0 && (
             <div className="mt-4">

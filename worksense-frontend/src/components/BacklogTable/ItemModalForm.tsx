@@ -1,5 +1,5 @@
 // src/components/BacklogTable/ItemModalForm.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import { X, Save, RefreshCw } from "lucide-react";
 import SelectField from "./SelectField";
 import styles from "./CreateItemModal.module.css";
@@ -58,6 +58,13 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
     const { name, value } = e.target;
     onChange({ ...formData, [name]: value });
   };
+
+  // Clear acceptance criteria when type changes to non-story
+  useEffect(() => {
+    if (formData.type !== "story" && formData.acceptanceCriteria?.length) {
+      onChange({ ...formData, acceptanceCriteria: [] });
+    }
+  }, [formData.type]);
 
   const storyPointsOptions = ["1", "2", "3", "5", "8", "13", "21"].map((v) => ({
     value: v,
@@ -177,7 +184,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             value={formData.size || ""}
             onChange={handleChange}
             options={selectOptions.size}
-            label="Epic"
+            label="Size"
             styleClass="size"
             disabled={loading}
           />
@@ -225,25 +232,28 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             />
           </div>
 
-          <div className={styles.formGroup}>
-            <label htmlFor="acceptanceCriteria">
-              Acceptance Criteria (one per line)
-            </label>
-            <textarea
-              id="acceptanceCriteria"
-              name="acceptanceCriteria"
-              value={formData.acceptanceCriteria?.join("\n") || ""}
-              onChange={(e) => {
-                const lines = e.target.value
-                  .split("\n")
-                  .filter((line) => line.trim());
-                onChange({ ...formData, acceptanceCriteria: lines });
-              }}
-              rows={5}
-              disabled={loading}
-              placeholder="Enter acceptance criteria"
-            />
-          </div>
+          {/* Only show acceptance criteria for stories */}
+          {formData.type === "story" && (
+            <div className={styles.formGroup}>
+              <label htmlFor="acceptanceCriteria">
+                Acceptance Criteria (one per line)
+              </label>
+              <textarea
+                id="acceptanceCriteria"
+                name="acceptanceCriteria"
+                value={formData.acceptanceCriteria?.join("\n") || ""}
+                onChange={(e) => {
+                  const lines = e.target.value
+                    .split("\n")
+                    .filter((line) => line.trim());
+                  onChange({ ...formData, acceptanceCriteria: lines });
+                }}
+                rows={5}
+                disabled={loading}
+                placeholder="Enter acceptance criteria"
+              />
+            </div>
+          )}
 
           <div className={styles.formActions}>
             <button

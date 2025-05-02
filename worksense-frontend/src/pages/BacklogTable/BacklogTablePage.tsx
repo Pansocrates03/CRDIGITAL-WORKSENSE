@@ -19,6 +19,7 @@ import { useMembers } from "@/hooks/useMembers";
 
 import { BacklogItemType } from "@/types/BacklogItemType";
 import MemberDetailed from "@/types/MemberDetailedType";
+import QueryKeys from "@/utils/QueryKeys";
 
 interface ProjectMember {
   userId: number;
@@ -60,7 +61,7 @@ const BacklogTablePage: FC = () => {
   );
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["backlog", projectId],
+    queryKey: [QueryKeys.backlog, projectId],
     queryFn: async () => {
       if (!projectId) return [];
 
@@ -179,7 +180,7 @@ const BacklogTablePage: FC = () => {
   };
 
   // Función para ver los detalles de un ítem
-  const handleViewDetails = (item: BacklogItemType) => {
+  const handleViewDetails = (item: BacklogItem) => {
     console.log("BacklogTablePage: handleViewDetails llamado con item:", item);
     setSelectedItem(item);
     setShowDetailsModal(true);
@@ -263,19 +264,6 @@ const BacklogTablePage: FC = () => {
           onViewDetails={() => handleViewDetails(item)}
         />
       ));
-
-  // Function to check if a section has any matching items
-  const hasMatchingItems = (items: BacklogItemType[]) => {
-    return !searchTerm || items.some(matchesSearch);
-  };
-
-  // Function to check if an epic or its stories have matching items
-  const hasMatchingEpicItems = (epic: BacklogItemType) => {
-    if (!searchTerm) return true;
-    if (matchesSearch(epic)) return true;
-    const epicStories = getEpicStories(epic.id);
-    return epicStories.some(matchesSearch);
-  };
 
   // Function to handle when stories are added to an epic
   const handleStoriesAdded = (epicId: string) => {

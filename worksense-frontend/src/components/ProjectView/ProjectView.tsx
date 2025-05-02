@@ -12,7 +12,7 @@ import MemberDetailed from "@/types/MemberDetailedType";
 
 import { AvatarDisplay } from "../ui/AvatarDisplay";
 
-import RecentBacklogItems from "./RecentBacklogItems";
+import RecentBacklogItems from "./RecentBacklogItems"
 
 type FullProjectData = {
   project: ProjectDetails;
@@ -25,18 +25,16 @@ export const ProjectView: React.FC<FullProjectData> = ({
 }) => {
   const { id } = useParams<{ id: string }>();
 
-  const [backlogItems, setBacklogItems] = useState<any[]>([]);
+  const backlogItems: any[] = [];
   const [loading, setLoading] = useState(true);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
   const [teamMembers, setTeamMembers] = useState<MemberDetailed[]>(members);
-  const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(
-    null
-  );
-
+  const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(null);
+/*
   useEffect(() => {
     const fetchBacklogItems = async () => {
       try {
-        const response = await apiClient.get(`/projects/${id}/backlog/items`);
+        const response = await apiClient.get(`/projects/${id}/items`);
         const items = response.data;
         setBacklogItems(items);
       } catch (error) {
@@ -50,7 +48,8 @@ export const ProjectView: React.FC<FullProjectData> = ({
       fetchBacklogItems();
     }
   }, [id]);
-
+  */
+  
   useEffect(() => {
     setTeamMembers(members);
   }, [members]);
@@ -145,20 +144,20 @@ export const ProjectView: React.FC<FullProjectData> = ({
             <div className={styles.statsGrid}>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  {backlogItems.length}
+                  {backlogItems?.length}
                   <span className={styles.statLabel}>Total Tasks</span>
                 </div>
               </div>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  {backlogItems.filter((item) => item.type === "epic").length}
+                  {backlogItems?.filter((item: any) => item.type === "epic").length}
                   <span className={styles.statLabel}>Epics</span>
                 </div>
               </div>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
                   {
-                    backlogItems.filter((item) => item.status === "in-progress")
+                    backlogItems?.filter((item: any) => item.status === "in-progress")
                       .length
                   }
                   <span className={styles.statLabel}>In Progress</span>
@@ -166,7 +165,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
               </div>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  {backlogItems.filter((item) => item.status === "done").length}
+                  {backlogItems?.filter((item: any) => item.status === "done").length}
                   <span className={styles.statLabel}>Completed</span>
                 </div>
               </div>
@@ -175,7 +174,10 @@ export const ProjectView: React.FC<FullProjectData> = ({
         </section>
 
         {/* Backlog Preview Section */}
-        <RecentBacklogItems isloading={loading} items={backlogItems} />
+        <RecentBacklogItems 
+          isloading={loading}
+          items={backlogItems}
+        />
       </div>
 
       <EditTeamModal
