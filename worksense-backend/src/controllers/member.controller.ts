@@ -174,11 +174,8 @@ export const addMember = async (
 
     // Check if role exists
     const roleRef = db
-      .collection("projects")
-      .doc(projectId)
-      .collection("roles")
+      .collection("projectRoles")
       .doc(projectRoleId);
-
     const roleSnap = await roleRef.get();
     if (!roleSnap.exists) {
       res.status(400).json({ message: "Project Role not found" });
@@ -237,11 +234,8 @@ export const updateMemberRole = async (
 
     // Check if role exists
     const roleRef = db
-      .collection("projects")
-      .doc(projectId)
-      .collection("roles")
+      .collection("projectRoles")
       .doc(projectRoleId);
-
     const roleSnap = await roleRef.get();
     if (!roleSnap.exists) {
       res.status(400).json({ message: "Project Role not found" });
