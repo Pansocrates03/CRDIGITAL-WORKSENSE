@@ -67,6 +67,11 @@ export const ProjectView: React.FC<FullProjectData> = ({
     setSelectedMember(member);
   };
 
+  const getOwnerName = (projectDetails: ProjectDetails, members: MemberDetailed[]) => {
+    const owner =members.find((members) => members.userId === projectDetails.ownerId);
+    return owner?.name;
+  };
+  
   return (
     <div className={styles.projectView}>
       {/* Header Section */}
@@ -94,8 +99,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
                   fill="currentColor"
                 />
               </svg>
-              {/*project.team[0].name*/}
-              Esteban
+              {getOwnerName(project, members)}
             </span>
           </div>
         </div>
