@@ -12,7 +12,9 @@ import { ProjectMember, ProjectMemberData } from "../../types/project.js";
  * List members of a project
  */
 export const listMembers = async (
-  req: Request, res: Response, next: NextFunction
+  req: Request,
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   try {
     const { projectId } = req.params;
@@ -173,11 +175,7 @@ export const addMember = async (
     }
 
     // Check if role exists
-    const roleRef = db
-      .collection("projects")
-      .doc(projectId)
-      .collection("roles")
-      .doc(projectRoleId);
+    const roleRef = db.collection("projectRoles").doc(projectRoleId);
 
     const roleSnap = await roleRef.get();
     if (!roleSnap.exists) {
@@ -236,11 +234,7 @@ export const updateMemberRole = async (
     }
 
     // Check if role exists
-    const roleRef = db
-      .collection("projects")
-      .doc(projectId)
-      .collection("roles")
-      .doc(projectRoleId);
+    const roleRef = db.collection("projectRoles").doc(projectRoleId);
 
     const roleSnap = await roleRef.get();
     if (!roleSnap.exists) {
