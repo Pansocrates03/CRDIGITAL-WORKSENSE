@@ -45,16 +45,21 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
   } else if (item.type === "bug") {
     extraInfo = item.severity || "-";
   }
-
+  
+  // Handle assigneeId conversion
   const assigneeId =
     item.assigneeId !== undefined && item.assigneeId !== null
-      ? Number(item.assigneeId)
+      ? typeof item.assigneeId === "string"
+        ? parseInt(item.assigneeId)
+        : Number(item.assigneeId)
       : null;
+  
+  // Get member info
   const memberInfo = assigneeId !== null ? memberMap.get(assigneeId) : null;
 
   return (
-    <tr key={item.id} className={indent ? styles.nestedRow : ""}>
-      <td style={{ paddingLeft: indent ? "2.5rem" : undefined }}>
+    <tr key={item.id}>
+      <td>
         <div className="flex items-center gap-2">
           <span>{item.title}</span>
         </div>
@@ -66,21 +71,35 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
         {memberInfo ? (
           <div className="flex items-center gap-2">
             <Avatar className="h-8 w-8">
-              <AvatarImage
-                src={memberInfo.profilePicture}
-                alt={memberInfo.nickname || "User"}
-              />
+              {memberInfo.profilePicture ? (
+                <AvatarImage
+                  src={memberInfo.profilePicture}
+                  alt={memberInfo.nickname || "User"}
+                />
+              ) : null}
               <AvatarFallback>
-                {(memberInfo.nickname || "User").charAt(0)}
+                {memberInfo.nickname
+                  ? memberInfo.nickname.charAt(0).toUpperCase()
+                  : assigneeId?.toString().charAt(0) || "U"}
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm">{memberInfo.nickname}</span>
+            <span className="text-sm">
+              {memberInfo.nickname || `User ${assigneeId}`}
+            </span>
           </div>
         ) : (
           assigneeId || "-"
         )}
       </td>
-      <td>{extraInfo}</td>
+      <td>
+        {item.type === "bug" && item.severity ? (
+          <StatusBadge type="severity" value={item.severity} />
+        ) : item.type === "story" && item.storyPoints ? (
+          item.storyPoints.toString()
+        ) : (
+          "-"
+        )}
+      </td>
       <td className={styles.actionButtons}>
         <ActionMenu onEdit={onEdit} onDelete={onDelete} />
       </td>
