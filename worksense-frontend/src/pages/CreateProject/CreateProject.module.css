@@ -83,7 +83,7 @@
 .viewToggle {
   display: flex;
   align-items: center;
-  background-color: var(--color-gray);
+  background-color: var(--color-purple);
   border-radius: var(--border-radius-full);
   padding: 2px;
   margin-right: 8px;
@@ -103,7 +103,7 @@
 }
 
 .viewToggleButton svg {
-  stroke: var(--color-charcoal-dark);
+  stroke: var(--color-white);
   stroke-width: 1.5;
   fill: none;
 }
