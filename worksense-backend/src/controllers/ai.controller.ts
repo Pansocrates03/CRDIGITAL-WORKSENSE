@@ -124,6 +124,8 @@ interface ConfirmedStoryDto {
   name: string;
   description: string | null;
   priority: "high" | "medium" | "low";
+  size?: "XS" | "S" | "M" | "L" | "XL" | null;
+  parentId?: string | null;
 }
 
 export async function confirmEpicsHandler(
@@ -236,6 +238,8 @@ export async function confirmStoriesHandler(
         status: "new",
         type: "story",
         assigneeId: null,
+        size: st.size ?? null,
+        parentId: epicId,
       };
 
       batch.set(subItemsRef.doc(), {

@@ -14,6 +14,7 @@ interface BacklogItemData {
   size?: "XS" | "S" | "M" | "L" | "XL" | null;
   sprint?: string | null;
   type?: "epic" | "story" | "bug" | "techTask" | "knowledge" | null;
+  parentId?: string | null;
 }
 
 export type { BacklogItemData };
