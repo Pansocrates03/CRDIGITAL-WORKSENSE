@@ -13,7 +13,7 @@ export interface AiStorySuggestion {
   description: string | null;
   priority: "low" | "medium" | "high";
   acceptanceCriteria: string[] | null;
-  size: "xs" | "s" | "m" | "l" | "xl" | null;
+  size: "XS" | "S" | "M" | "L" | "XL" | null;
 }
 
 /**

@@ -77,7 +77,7 @@ name (a concise title)
 description (the user story in the specified format)
 priority ("low", "medium", or "high")
 acceptanceCriteria (an array of 3-5 specific acceptance criteria)
-size ("xs", "s", "m", "l", or "xl" based on the story's complexity)
+size ("XS", "S", "M", "L", or "XL" based on the story's complexity)
 
 Return your output as a JSON object under the key "stories" only. Do not include explanations or commentary.`;
 

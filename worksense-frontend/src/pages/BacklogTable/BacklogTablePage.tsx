@@ -55,7 +55,9 @@ const BacklogTablePage: FC = () => {
 
   // Estado para el modal de detalles
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<BacklogItemType | null>(null);
+  const [selectedItem, setSelectedItem] = useState<BacklogItemType | null>(
+    null
+  );
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["backlog", projectId],
@@ -314,40 +316,38 @@ const BacklogTablePage: FC = () => {
               <th>Name</th>
               <th>Status</th>
               <th>Assignee</th>
-              <th>Points/Severity</th>
+              <th>Size</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {hasMatchingItems(categorized.epics) && (
               <BacklogTableSection title="Epics">
-                {categorized.epics
-                  .filter(hasMatchingEpicItems)
-                  .map((epic) => (
-                    <React.Fragment key={epic.id}>
-                      <EpicRow
-                        epic={{
-                          ...epic,
-                          stories: getEpicStories(epic.id),
-                        }}
-                        isExpanded={expandedEpics.includes(epic.id)}
-                        onToggle={() =>
-                          setExpandedEpics((prev) =>
-                            prev.includes(epic.id)
-                              ? prev.filter((id) => id !== epic.id)
-                              : [...prev, epic.id]
-                          )
-                        }
-                        colSpan={5}
-                        onEdit={() => handleEdit(epic)}
-                        onDelete={() => handleDeleteEpic(epic.id)}
-                        onGenerateStories={handleGenerateStories}
-                        memberMap={memberMap}
-                      />
-                      {expandedEpics.includes(epic.id) &&
-                        renderRows(getEpicStories(epic.id), true)}
-                    </React.Fragment>
-                  ))}
+                {categorized.epics.filter(hasMatchingEpicItems).map((epic) => (
+                  <React.Fragment key={epic.id}>
+                    <EpicRow
+                      epic={{
+                        ...epic,
+                        stories: getEpicStories(epic.id),
+                      }}
+                      isExpanded={expandedEpics.includes(epic.id)}
+                      onToggle={() =>
+                        setExpandedEpics((prev) =>
+                          prev.includes(epic.id)
+                            ? prev.filter((id) => id !== epic.id)
+                            : [...prev, epic.id]
+                        )
+                      }
+                      colSpan={5}
+                      onEdit={() => handleEdit(epic)}
+                      onDelete={() => handleDeleteEpic(epic.id)}
+                      onGenerateStories={handleGenerateStories}
+                      memberMap={memberMap}
+                    />
+                    {expandedEpics.includes(epic.id) &&
+                      renderRows(getEpicStories(epic.id), true)}
+                  </React.Fragment>
+                ))}
               </BacklogTableSection>
             )}
             {hasMatchingItems(categorized.standaloneStories) && (

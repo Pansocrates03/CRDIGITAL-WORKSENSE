@@ -13,7 +13,7 @@ interface BacklogItemFormData {
   status: string;
   priority: string;
   epicId?: string | null;
-  storyPoints?: number | null;
+  size?: string | null;
   severity?: string | null;
   assigneeId?: string | number | null;
   content?: string;
@@ -366,9 +366,8 @@ const ItemDetailsModal: FC<ItemDetailsModalProps> = ({
               <div className="flex items-center gap-1">
                 <span className="text-xs text-gray-500">POINTS</span>
                 <span className="text-sm font-medium">
-                  {displayItem.storyPoints !== null &&
-                  displayItem.storyPoints !== undefined
-                    ? displayItem.storyPoints
+                  {displayItem.size !== null && displayItem.size !== undefined
+                    ? displayItem.size
                     : "Not set"}
                 </span>
               </div>

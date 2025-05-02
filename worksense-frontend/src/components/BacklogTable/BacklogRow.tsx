@@ -8,17 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BacklogItemType } from "@/types/BacklogItemType";
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 
-interface BacklogItem {
-  id: string;
-  name: string;
-  status: string;
-  type: string;
-  assigneeId?: string | number | null;
-  severity?: string;
-  storyPoints?: number | null;
-}
-
-
 interface Member {
   userId: number;
   profilePicture?: string;
@@ -46,11 +35,11 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
   let extraInfo = "-";
   if (item.type === "story") {
     extraInfo =
-      item.storyPoints !== undefined && item.storyPoints !== null
-        ? item.storyPoints.toString()
+      item.size !== undefined && item.size !== null
+        ? item.size.toString()
         : "-";
   } else if (item.type === "bug") {
-    extraInfo = item.severity || "-";
+    extraInfo = item.size || "-";
   }
 
   // Handle assigneeId conversion
@@ -122,13 +111,19 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
           <div className="flex items-center gap-2">
             <AvatarDisplay
               user={{
-                name: memberInfo.nickname || memberInfo.name || `User ${assigneeId}`,
+                name:
+                  memberInfo.nickname ||
+                  memberInfo.name ||
+                  `User ${assigneeId}`,
                 profilePicture: memberInfo.profilePicture,
               }}
               size="sm"
             />
             <span className="text-sm">
-              {memberInfo.nickname || (memberInfo.name ? memberInfo.name.split(' ')[0] : `User ${assigneeId}`)}
+              {memberInfo.nickname ||
+                (memberInfo.name
+                  ? memberInfo.name.split(" ")[0]
+                  : `User ${assigneeId}`)}
             </span>
           </div>
         ) : (
@@ -136,13 +131,11 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
         )}
       </td>
       <td>
-        {item.type === "bug" && item.severity ? (
-          <StatusBadge type="severity" value={item.severity} />
-        ) : item.type === "story" && item.storyPoints ? (
-          item.storyPoints.toString()
-        ) : (
-          "-"
-        )}
+        {item.type === "bug" && item.size
+          ? item.size.toString()
+          : item.type === "story" && item.size
+          ? item.size.toString()
+          : "-"}
       </td>
       <td className={styles.actionButtons}>
         <ActionMenu

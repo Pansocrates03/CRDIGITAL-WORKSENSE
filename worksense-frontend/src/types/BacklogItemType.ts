@@ -9,7 +9,7 @@ export interface BacklogItemType {
   name?: string | null;
   status?: "new" | "toDo" | "inProgress" | "inReview" | "done" | null;
   priority?: "high" | "medium" | "low" | null;
-  size?: "xs" | "s" | "m" | "l" | "xl" | null;
+  size?: "XS" | "S" | "M" | "L" | "XL" | null;
   sprint?: string | null;
   type?: "epic" | "story" | "bug" | "techTask" | "knowledge" | null;
   createdAt?: string;

@@ -115,7 +115,7 @@ interface ConfirmedEpicDto {
   authorId?: number | null;
   coverImage?: string | null;
   status?: "new" | "toDo" | "inProgress" | "inReview" | "done" | null;
-  size?: "xs" | "s" | "m" | "l" | "xl" | null;
+  size?: "XS" | "S" | "M" | "L" | "XL" | null;
   sprint?: string | null;
   type?: "epic" | "story" | "bug" | "techTask" | "knowledge" | null;
 }

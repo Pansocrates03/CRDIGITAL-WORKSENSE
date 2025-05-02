@@ -85,11 +85,11 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
       { value: "high", label: "High" },
     ],
     size: [
-      { value: "xs", label: "XS" },
-      { value: "s", label: "S" },
-      { value: "m", label: "M" },
-      { value: "l", label: "L" },
-      { value: "xl", label: "XL" },
+      { value: "XS", label: "XS" },
+      { value: "S", label: "S" },
+      { value: "M", label: "M" },
+      { value: "L", label: "L" },
+      { value: "XL", label: "XL" },
     ],
     assignee: [
       { value: "", label: "Select Assignee (Optional)" },
