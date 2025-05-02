@@ -5,6 +5,8 @@ import StatusBadge from "./StatusBadge";
 import styles from "../../pages/BacklogTable/BacklogTablePage.module.css";
 import ActionMenu from "./ActionMenu";
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
+import { BacklogItemType } from "@/types/BacklogItemType";
+import MemberDetailed from "@/types/MemberDetailedType";
 
 interface Story {
   id: string;
@@ -20,8 +22,6 @@ interface Epic {
   assigneeId?: string | number | null;
 }
 
-import { BacklogItemType } from "@/types/BacklogItemType";
-
 interface EpicRowProps {
   epic: BacklogItemType;
   isExpanded: boolean;
@@ -31,7 +31,8 @@ interface EpicRowProps {
   onDelete?: (epicId: string) => void;
 
   onGenerateStories?: (epicId: string, epicName: string) => void;
-  onViewDetails?: (epic: Epic) => void;
+  onViewDetails?: (epic: BacklogItemType) => void;
+  memberMap: Map<number, MemberDetailed>;
 }
 
 export const EpicRow: FC<EpicRowProps> = ({
@@ -43,6 +44,7 @@ export const EpicRow: FC<EpicRowProps> = ({
   onDelete = () => console.log("Delete epic:", epic.id),
   onGenerateStories,
   onViewDetails,
+  memberMap,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -85,6 +87,8 @@ export const EpicRow: FC<EpicRowProps> = ({
     color: "var(--primary-color, #ac1754)",
   } as React.CSSProperties;
 
+  const memberInfo = assigneeId ? memberMap.get(assigneeId) : null;
+
   return (
     <tr className={styles.epicRowContainer}>
       <td>
@@ -110,7 +114,7 @@ export const EpicRow: FC<EpicRowProps> = ({
             )}
           </span>
           <span className="text-gray-500 ml-2 text-sm">
-            ({epic.subItems.length || 0}{" "}
+            ({epic.subItems?.length || 0}{" "}
             {epic.subItems?.length === 1 ? "story" : "stories"})
           </span>
           <button
@@ -130,7 +134,22 @@ export const EpicRow: FC<EpicRowProps> = ({
         {epic.status ? <StatusBadge type="status" value={epic.status} /> : "-"}
       </td>
       <td>
-        {assigneeId ? <span className="text-sm">{assigneeId}</span> : "-"}
+        {assigneeId ? (
+          <div className="flex items-center gap-2">
+            <AvatarDisplay
+              user={{
+                name: memberInfo?.nickname || memberInfo?.name || `User ${assigneeId}`,
+                profilePicture: memberInfo?.profilePicture,
+              }}
+              size="sm"
+            />
+            <span className="text-sm">
+              {memberInfo?.nickname || (memberInfo?.name ? memberInfo.name.split(' ')[0] : `User ${assigneeId}`)}
+            </span>
+          </div>
+        ) : (
+          "-"
+        )}
       </td>
       <td>-</td> {/* Epic doesn't have story points/severity */}
       <td className={styles.actionButtons}>
@@ -145,8 +164,8 @@ export const EpicRow: FC<EpicRowProps> = ({
           }}
           onViewDetails={onViewDetails ? () => onViewDetails(epic) : undefined}
           onGenerateStories={
-            onGenerateStories
-              ? () => onGenerateStories(epic.id, epic.name)
+            onGenerateStories && epic.id && epic.name
+              ? () => onGenerateStories(epic.id!, epic.name!)
               : undefined
           }
           isEpic={true}

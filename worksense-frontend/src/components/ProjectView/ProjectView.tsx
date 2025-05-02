@@ -65,12 +65,12 @@ export const ProjectView: React.FC<FullProjectData> = ({
     setSelectedMember(member);
   };
 
-  const getOwnerName = (project: ProjectDetails, members: MemberDetailed[]): string => {
-    const ownerName = members.find((members) => members.userId === project.ownerId);
-    return ownerName?.name || "Unknown Owner"
+
+  const getOwnerName = (projectDetails: ProjectDetails, members: MemberDetailed[]) => {
+    const owner =members.find((members) => members.userId === projectDetails.ownerId);
+    return owner?.name;
   };
   
-
   return (
     <div className={styles.projectView}>
       {/* Header Section */}

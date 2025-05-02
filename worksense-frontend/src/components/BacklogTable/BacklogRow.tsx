@@ -23,6 +23,7 @@ interface Member {
   userId: number;
   profilePicture?: string;
   nickname?: string;
+  name?: string;
 }
 
 interface BacklogRowProps {
@@ -121,17 +122,17 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
           <div className="flex items-center gap-2">
             <AvatarDisplay
               user={{
-                name: memberInfo.nickname || `User ${assigneeId}`,
+                name: memberInfo.nickname || memberInfo.name || `User ${assigneeId}`,
                 profilePicture: memberInfo.profilePicture,
               }}
               size="sm"
             />
             <span className="text-sm">
-              {memberInfo.nickname || `User ${assigneeId}`}
+              {memberInfo.nickname || (memberInfo.name ? memberInfo.name.split(' ')[0] : `User ${assigneeId}`)}
             </span>
           </div>
         ) : (
-          assigneeId || "-"
+          "-"
         )}
       </td>
       <td>

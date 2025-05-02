@@ -6,7 +6,6 @@ import LoadingSpinner from "../../components/Loading/LoadingSpinner";
 
 import React from 'react';
 import ProjectDetails from '@/types/ProjectType';
-import Member from "@/types/MemberType";
 import { projectService } from "@/services/projectService";
 
 import { useQuery } from "@tanstack/react-query";

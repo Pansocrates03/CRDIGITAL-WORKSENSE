@@ -15,8 +15,10 @@ import UpdateItemModal from "@/components/BacklogTable/UpdateItemModal";
 import GenerateStoriesModal from "@/components/BacklogTable/GenerateStoriesModal";
 import ItemDetailsModal from "@/components/BacklogTable/ItemDetailsModal";
 import { EpicRow } from "@/components/BacklogTable/EpicRow";
+import { useMembers } from "@/hooks/useMembers";
 
 import { BacklogItemType } from "@/types/BacklogItemType";
+import MemberDetailed from "@/types/MemberDetailedType";
 
 interface ProjectMember {
   userId: number;
@@ -66,18 +68,10 @@ const BacklogTablePage: FC = () => {
     enabled: !!projectId,
   });
 
-  const { data: members = [] } = useQuery<ProjectMember[]>({
-    queryKey: ["projectMembers", projectId],
-    queryFn: async () => {
-      if (!projectId) return [];
-      const res = await apiClient.get(`/projects/${projectId}/members-detail`);
-      return res.data;
-    },
-    enabled: !!projectId,
-  });
+  const { data: members = [] } = useMembers(projectId || "");
 
   const memberMap = useMemo(() => {
-    const map = new Map<number, ProjectMember>();
+    const map = new Map<number, MemberDetailed>();
     members.forEach((m) => m.userId && map.set(m.userId, m));
     return map;
   }, [members]);
@@ -338,6 +332,7 @@ const BacklogTablePage: FC = () => {
                       onEdit={() => handleEdit(epic)}
                       onDelete={() => handleDeleteEpic(epic.id)}
                       onGenerateStories={handleGenerateStories}
+                      memberMap={memberMap}
                     />
                     {expandedEpics.includes(epic.id) &&
                       renderRows(epicStories, true)}
