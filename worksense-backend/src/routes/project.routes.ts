@@ -296,6 +296,7 @@ router.post("/", auth, projectController.createProject);
  *         description: Project not found
  */
 router.get("/:projectId", memberAuth, projectController.getProjectDetails);
+
 router.put(
   "/:projectId",
   withPermission("edit:project"),
@@ -305,106 +306,6 @@ router.delete(
   "/:projectId",
   withPermission("delete:project"),
   projectController.deleteProject
-);
-
-/**
- * @swagger
- * /{projectId}/data:
- *   get:
- *     summary: Get aggregated project data
- *     tags: [Projects]
- *     security:
- *       - authToken: []
- *     parameters:
- *       - in: path
- *         name: projectId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID of the project
- *         example: "proj_abc123"
- *     responses:
- *       200:
- *         description: Aggregated project data
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 project:
- *                   $ref: '#/components/schemas/Project'
- *                 members:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       userId:
- *                         type: integer
- *                         description: ID of the user
- *                         example: 16
- *                       projectRoleId:
- *                         type: string
- *                         description: Role of the user in the project
- *                         example: "product-owner"
- *                       joinedAt:
- *                         type: object
- *                         properties:
- *                           _seconds:
- *                             type: integer
- *                             description: Unix timestamp in seconds
- *                             example: 1745715722
- *                           _nanoseconds:
- *                             type: integer
- *                             description: Nanoseconds part of the timestamp
- *                             example: 754000000
- *                       name:
- *                         type: string
- *                         description: Full name of the user
- *                         example: "prueba16 prueba16"
- *                       email:
- *                         type: string
- *                         description: Email address of the user
- *                         example: "prueba16@email.com"
- *                 backlog:
- *                   type: object
- *                   properties:
- *                     epics:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Epic'
- *                     stories:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Story'
- *                     bugs:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Bug'
- *                     techTasks:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/TechTask'
- *                     knowledge:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Knowledge'
- *                 userPermissions:
- *                   type: array
- *                   description: List of permissions granted to the current user based on their role
- *                   items:
- *                     type: string
- *                   example: ["view:project", "edit:backlog", "manage:sprints"]
- *       401:
- *         description: Unauthorized - User is not authenticated
- *       403:
- *         description: Forbidden - User is not a member of the project
- *       404:
- *         description: Project not found
- */
-router.get(
-  "/:projectId/data",
-  memberAuth,
-  projectController.getProjectAggregatedData
 );
 
 // Mount the sub-routers

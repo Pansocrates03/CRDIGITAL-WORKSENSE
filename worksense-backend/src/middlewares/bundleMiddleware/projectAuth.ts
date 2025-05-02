@@ -39,7 +39,7 @@ export const checkProjectMembership = async (
 
     // Check if user is a member
     const memberRef = db
-      .collection("projectss")
+      .collection("projects")
       .doc(projectId)
       .collection("members")
       .doc(String(userId));
