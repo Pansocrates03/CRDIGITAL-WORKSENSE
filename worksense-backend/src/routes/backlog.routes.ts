@@ -536,4 +536,22 @@ router.delete(
   backlogController.deleteBacklogItem
 );
 
+router.delete(
+  "/items/:itemId/subitems/:subItemId",
+  withPermission("edit:backlog"),
+  backlogController.deleteSubItem
+);
+
+router.put(
+  "/items/:itemId/subitems/:subItemId",
+  withPermission("edit:backlog"),
+  backlogController.updateSubItem
+);
+
+router.post(
+  "/items/:itemId/subitems",
+  withPermission("edit:backlog"),
+  backlogController.createSubItem
+);
+
 export default router;

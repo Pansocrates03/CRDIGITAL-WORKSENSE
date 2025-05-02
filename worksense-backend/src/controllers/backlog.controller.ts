@@ -88,7 +88,7 @@ export const createSubItem = async (
       return;
     }
 
-    const newItemRef = await itemRef.collection("subItems").add(item);
+    const newItemRef = await itemRef.collection("subitems").add(item);
     res.status(201).json({ id: newItemRef.id, ...item });
   } catch (error) {
     next(error);
@@ -116,24 +116,50 @@ export const listBacklogItems = async (
       return;
     }
 
-    // Fetch items from all requested types
-    const promises = requestedTypes.map(async (type) => {
-      try {
-        const collectionRef = db
-          .collection("projects")
-          .doc(projectId)
-          .collection("backlog");
-        const snapshot = await collectionRef
-          .where("projectId", "==", projectId)
-          .get();
-        return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      } catch (error) {
-        return [];
-      }
-    });
+    // Query the collection once
+    const collectionRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog");
 
-    const results = await Promise.all(promises);
-    res.status(200).json(results.flat());
+    // Get all items for the project
+    const snapshot = await collectionRef
+      .where("projectId", "==", projectId)
+      .get();
+
+    // Process items and fetch subItems
+    const itemsWithSubItems = await Promise.all(
+      snapshot.docs.map(async (doc) => {
+        const itemData = { id: doc.id, ...doc.data() } as BacklogItem & {
+          id: string;
+        };
+
+        // Only include items of requested types
+        if (!requestedTypes.includes(itemData.type || "")) {
+          return null;
+        }
+
+        // Only fetch subItems for epics
+        if (itemData.type === "epic") {
+          const subItemsSnapshot = await doc.ref.collection("subitems").get();
+          const subItems = subItemsSnapshot.docs.map((subDoc) => {
+            const subItemData = {
+              id: subDoc.id,
+              ...subDoc.data(),
+            } as BacklogItem & {
+              id: string;
+            };
+            return subItemData;
+          });
+          return { ...itemData, subItems };
+        }
+
+        return itemData;
+      })
+    );
+
+    // Filter out null items and return the results
+    res.status(200).json(itemsWithSubItems.filter((item) => item !== null));
   } catch (error) {
     next(error);
   }
@@ -255,6 +281,11 @@ export const deleteBacklogItem = async (
       return;
     }
 
+    if (!ALL_ITEM_TYPES.includes(itemType)) {
+      res.status(400).json({ message: "Invalid backlog item type" });
+      return;
+    }
+
     const itemRef = db
       .collection("projects")
       .doc(projectId)
@@ -307,7 +338,7 @@ export const getSubItems = async (
       return;
     }
 
-    const subItems = await itemRef.collection("subItems").get();
+    const subItems = await itemRef.collection("subitems").get();
     res
       .status(200)
       .json(subItems.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
@@ -337,7 +368,7 @@ export const deleteSubItem = async (
       .doc(projectId)
       .collection("backlog")
       .doc(itemId)
-      .collection("subItems")
+      .collection("subitems")
       .doc(subItemId);
     const docSnap = await itemRef.get();
 
@@ -375,7 +406,7 @@ export const updateSubItem = async (
       .doc(projectId)
       .collection("backlog")
       .doc(itemId)
-      .collection("subItems")
+      .collection("subitems")
       .doc(subItemId);
     const docSnap = await itemRef.get();
 

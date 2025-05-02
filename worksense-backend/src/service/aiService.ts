@@ -69,17 +69,15 @@ export async function generateStoriesWithFrida({
 
 Each user story should:
 
-Follow the format “As a [user], I want [feature] so that [benefit].”
+Follow the format "As a [user], I want [feature] so that [benefit]."
 
 Include the following fields:
 
 name (a concise title)
-
 description (the user story in the specified format)
-
 priority ("low", "medium", or "high")
-
-assignees (an array of usernames or roles; can be placeholder values if not specified)
+acceptanceCriteria (an array of 3-5 specific acceptance criteria)
+size ("xs", "s", "m", "l", or "xl" based on the story's complexity)
 
 Return your output as a JSON object under the key "stories" only. Do not include explanations or commentary.`;
 

@@ -4,29 +4,16 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import styles from "../../pages/BacklogTable/BacklogTablePage.module.css";
 import ActionMenu from "./ActionMenu";
-
-interface Story {
-  id: string;
-  title: string;
-}
-
-interface Epic {
-  id: string;
-  title: string;
-  type: string;
-  status: string;
-  stories: Story[];
-  assigneeId?: string | number | null;
-}
+import { BacklogItemType } from "@/types/BacklogItemType";
 
 interface EpicRowProps {
-  epic: Epic;
+  epic: BacklogItemType;
   isExpanded: boolean;
   onToggle: (epicId: string) => void;
   colSpan: number;
-  onEdit?: (epic: any) => void;
+  onEdit?: (epic: BacklogItemType) => void;
   onDelete?: (epicId: string) => void;
-  onGenerateStories?: (epicId: string, epicTitle: string) => void;
+  onGenerateStories?: (epicId: string, epicName: string) => void;
 }
 
 export const EpicRow: FC<EpicRowProps> = ({
@@ -48,10 +35,10 @@ export const EpicRow: FC<EpicRowProps> = ({
     <tr className={styles.epicRowContainer}>
       <td onClick={handleToggle}>
         <div className="flex items-center gap-2">
-          <span>{epic.title}</span>
+          <span>{epic.name}</span>
           <span className="text-muted-foreground ml-2">
-            ({epic.stories.length}{" "}
-            {epic.stories.length === 1 ? "story" : "stories"})
+            ({epic.subItems?.length || 0}{" "}
+            {epic.subItems?.length === 1 ? "story" : "stories"})
           </span>
           <span className="mr-2">
             {isExpanded ? (
@@ -72,8 +59,8 @@ export const EpicRow: FC<EpicRowProps> = ({
           onEdit={() => onEdit(epic)}
           onDelete={() => onDelete(epic.id)}
           onGenerateStories={
-            onGenerateStories 
-              ? () => onGenerateStories(epic.id, epic.title) 
+            onGenerateStories
+              ? () => onGenerateStories(epic.id, epic.name)
               : undefined
           }
           isEpic={true}

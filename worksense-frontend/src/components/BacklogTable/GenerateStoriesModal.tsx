@@ -4,11 +4,12 @@ import { X, Save, Trash2, RefreshCw, Sparkles } from "lucide-react";
 import styles from "./CreateItemModal.module.css"; // Reutilizamos los estilos existentes
 import aiStoriesService from "@/services/aiStoriesService";
 import { AiStorySuggestion } from "@/types/ai";
+import { BacklogItemType } from "@/types/BacklogItemType";
 
 interface GenerateStoriesModalProps {
   projectId: string;
   epicId: string;
-  epicTitle: string;
+  epicName: string;
   isOpen: boolean;
   onClose: () => void;
   onStoriesAdded: () => void;
@@ -18,13 +19,15 @@ interface GenerateStoriesModalProps {
 const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
   projectId,
   epicId,
-  epicTitle,
+  epicName,
   isOpen,
   onClose,
   onStoriesAdded,
   onError,
 }) => {
-  const [suggestedStories, setSuggestedStories] = useState<AiStorySuggestion[]>([]);
+  const [suggestedStories, setSuggestedStories] = useState<AiStorySuggestion[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +52,8 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
       const stories = await aiStoriesService.generateStories(projectId, epicId);
       setSuggestedStories(stories);
     } catch (err: any) {
-      const msg = err.response?.data?.message || "Failed to generate story suggestions";
+      const msg =
+        err.response?.data?.message || "Failed to generate story suggestions";
       console.error("Error generating stories:", err);
       setError(msg);
       onError?.(msg);
@@ -59,7 +63,11 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
   };
 
   // Función para actualizar una historia sugerida
-  const updateStory = (index: number, field: keyof AiStorySuggestion, value: string | null) => {
+  const updateStory = (
+    index: number,
+    field: keyof AiStorySuggestion,
+    value: string | null
+  ) => {
     const updatedStories = [...suggestedStories];
     updatedStories[index] = {
       ...updatedStories[index],
@@ -85,12 +93,17 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
 
     try {
       // Aseguramos que las historias están asociadas a la épica correcta
-      await aiStoriesService.confirmStories(projectId, epicId, suggestedStories);
-      
+      await aiStoriesService.confirmStories(
+        projectId,
+        epicId,
+        suggestedStories
+      );
+
       onStoriesAdded();
       onClose();
     } catch (err: any) {
-      const msg = err.response?.data?.message || "Failed to add stories to backlog";
+      const msg =
+        err.response?.data?.message || "Failed to add stories to backlog";
       console.error("Error adding stories:", err);
       setError(msg);
       onError?.(msg);
@@ -108,7 +121,7 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
     >
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h2>AI Suggested Stories for "{epicTitle}"</h2>
+          <h2>AI Suggested Stories for "{epicName}"</h2>
           <button
             className={styles.closeButton}
             onClick={onClose}
@@ -123,7 +136,8 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
 
         <div className="mb-4">
           <p className="text-sm text-gray-600 mb-4">
-            Review, edit, or remove the suggested user stories below before adding them to this epic.
+            Review, edit, or remove the suggested user stories below before
+            adding them to this epic.
           </p>
 
           <button
@@ -149,7 +163,10 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
             ) : (
               <div className="space-y-6 max-h-[60vh] overflow-y-auto p-2">
                 {suggestedStories.map((story, index) => (
-                  <div key={index} className="border rounded-md p-4 bg-gray-50 relative">
+                  <div
+                    key={index}
+                    className="border rounded-md p-4 bg-gray-50 relative"
+                  >
                     <button
                       onClick={() => removeStory(index)}
                       className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
@@ -159,25 +176,49 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                     </button>
 
                     <div className={styles.formGroup}>
-                      <label htmlFor={`title-${index}`}>Title*</label>
+                      <label htmlFor={`name-${index}`}>Name*</label>
                       <input
-                        id={`title-${index}`}
+                        id={`name-${index}`}
                         type="text"
                         value={story.name}
-                        onChange={(e) => updateStory(index, "name", e.target.value)}
+                        onChange={(e) =>
+                          updateStory(index, "name", e.target.value)
+                        }
                         required
-                        placeholder="Story title"
+                        placeholder="Story name"
                       />
                     </div>
 
                     <div className={styles.formGroup}>
-                      <label htmlFor={`description-${index}`}>Description</label>
+                      <label htmlFor={`description-${index}`}>
+                        Description
+                      </label>
                       <textarea
                         id={`description-${index}`}
                         value={story.description || ""}
-                        onChange={(e) => updateStory(index, "description", e.target.value)}
+                        onChange={(e) =>
+                          updateStory(index, "description", e.target.value)
+                        }
                         rows={3}
                         placeholder="Story description"
+                      />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label htmlFor={`acceptanceCriteria-${index}`}>
+                        Acceptance Criteria (one per line)
+                      </label>
+                      <textarea
+                        id={`acceptanceCriteria-${index}`}
+                        value={story.acceptanceCriteria?.join("\n") || ""}
+                        onChange={(e) => {
+                          const lines = e.target.value
+                            .split("\n")
+                            .filter((line) => line.trim());
+                          updateStory(index, "acceptanceCriteria", lines);
+                        }}
+                        rows={3}
+                        placeholder="Enter acceptance criteria"
                       />
                     </div>
 
@@ -197,6 +238,24 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
                         <option value="high">High</option>
+                      </select>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label htmlFor={`size-${index}`}>Size</label>
+                      <select
+                        id={`size-${index}`}
+                        value={story.size || ""}
+                        onChange={(e) =>
+                          updateStory(index, "size", e.target.value)
+                        }
+                      >
+                        <option value="">Select Size</option>
+                        <option value="xs">XS</option>
+                        <option value="s">S</option>
+                        <option value="m">M</option>
+                        <option value="l">L</option>
+                        <option value="xl">XL</option>
                       </select>
                     </div>
                   </div>

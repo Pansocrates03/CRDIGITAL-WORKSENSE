@@ -110,6 +110,14 @@ interface ConfirmedEpicDto {
   name: string;
   description: string | null;
   priority: "high" | "medium" | "low";
+  acceptanceCriteria?: string[] | null;
+  assigneeId?: number | null;
+  authorId?: number | null;
+  coverImage?: string | null;
+  status?: "new" | "toDo" | "inProgress" | "inReview" | "done" | null;
+  size?: "xs" | "s" | "m" | "l" | "xl" | null;
+  sprint?: string | null;
+  type?: "epic" | "story" | "bug" | "techTask" | "knowledge" | null;
 }
 
 interface ConfirmedStoryDto {
@@ -151,15 +159,20 @@ export async function confirmEpicsHandler(
         name: e.name.trim(),
         description: e.description,
         priority: e.priority,
-        status: "new",
+        status: e.status || "new",
         type: "epic",
+        acceptanceCriteria: e.acceptanceCriteria ?? null,
+        assigneeId: e.assigneeId ?? null,
+        authorId: e.authorId ?? null,
+        coverImage: e.coverImage ?? null,
+        size: e.size ?? null,
+        sprint: e.sprint ?? null,
       };
 
       batch.set(backlogRef.doc(), {
         ...epicData,
         projectId,
-        reporterId: req.user?.userId ?? null,
-        assigneeId: null,
+        authorId: req.user?.userId ?? null,
         createdAt: now,
         updatedAt: now,
       });
@@ -228,7 +241,7 @@ export async function confirmStoriesHandler(
       batch.set(subItemsRef.doc(), {
         ...storyData,
         projectId,
-        reporterId: req.user?.userId ?? null,
+        authorId: req.user?.userId ?? null,
         createdAt: now,
         updatedAt: now,
       });
