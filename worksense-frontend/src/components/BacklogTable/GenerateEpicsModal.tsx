@@ -136,7 +136,11 @@ const GenerateEpicsModal: FC<GenerateEpicsModalProps> = ({
     <>
       <div
         className={styles.modalOverlay}
-        onClick={(e) => e.target === e.currentTarget && onClose()}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            handleCloseWithConfirmation();
+          }
+        }}
       >
         <div
           className={styles.modalContent}
@@ -146,7 +150,7 @@ const GenerateEpicsModal: FC<GenerateEpicsModalProps> = ({
             <h2>AI Suggested Epics for "{projectName}"</h2>
             <button
               className={styles.closeButton}
-              onClick={onClose}
+              onClick={handleCloseWithConfirmation}
               aria-label="Close"
               disabled={isLoading}
             >
