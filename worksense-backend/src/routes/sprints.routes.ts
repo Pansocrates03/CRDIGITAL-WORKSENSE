@@ -222,6 +222,8 @@ const router = express.Router({ mergeParams: true });
  *         description: Forbidden - User is not a member of the project
  */
 
+router.post("/", memberAuth, createSprint);
+
 /**
  * @swagger
  * /projects/{projectId}/sprints/{sprintId}:
