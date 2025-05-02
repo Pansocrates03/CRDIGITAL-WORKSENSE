@@ -116,9 +116,9 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
     const payload = {
       ...formData,
       epicId: formData.epicId || null,
-      // Preserve these properties in the payload
-      isSubItem: formData.isSubItem,
-      parentId: formData.parentId || null,
+      // Ensure parentId and isSubItem are properly set
+      parentId: item.parentId || formData.parentId || null,
+      isSubItem: item.isSubItem || formData.isSubItem || false,
     };
 
     console.log("Submitting update with payload:", payload);
@@ -134,15 +134,16 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
       });
 
       // Check for parentId which is the most reliable indicator of a sub-item
-      if (item.parentId) {
+      if (item.parentId || formData.parentId) {
+        const parentId = item.parentId || formData.parentId;
         console.log(
           "Updating as sub-item:",
           item.id,
           "under parent:",
-          item.parentId
+          parentId
         );
         await apiClient.put(
-          `/projects/${projectId}/backlog/items/${item.parentId}/subitems/${item.id}`,
+          `/projects/${projectId}/backlog/items/${parentId}/subitems/${item.id}`,
           payload
         );
       } else {
