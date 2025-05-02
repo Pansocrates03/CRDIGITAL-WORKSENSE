@@ -9,7 +9,7 @@ import {
 import { memberAuth } from "../middlewares/projectMiddlewareBundle.js";
 import { checkProjectPermission } from "../middlewares/bundleMiddleware/projectAuth.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 /**
  * @swagger
@@ -58,7 +58,7 @@ const router = Router();
  *         description: Error al comunicarse con el servicio de IA
  */
 router.post(
-  "/:projectId/ai/generate-epic",
+  "/generate-epics",
   memberAuth,
   checkProjectPermission("edit:backlog"),
   generateEpicHandler
@@ -129,7 +129,7 @@ router.post(
  *         description: Conflicto - Las épicas ya existen en el proyecto
  */
 router.post(
-  "/:projectId/ai/confirm-epics",
+  "/confirm-epics",
   memberAuth,
   checkProjectPermission("edit:backlog"),
   confirmEpicsHandler

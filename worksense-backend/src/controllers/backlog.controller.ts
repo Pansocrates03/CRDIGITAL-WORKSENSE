@@ -2,10 +2,7 @@
 import { Request, Response, NextFunction } from "express";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "../models/firebase.js";
-import {
-  getItemCollection,
-  getItemRef,
-} from "../utils/helpers/firestoreHelpers.js";
+import { getItemRef } from "../utils/helpers/firestoreHelpers.js";
 
 interface BacklogItem {
   acceptanceCriteria?: string[] | null;
@@ -40,18 +37,18 @@ export const createBacklogItem = async (
     if (!reporterId) {
       res.status(401).json({ message: "Authentication required" });
       return;
-    } else if(!item.type) {
+    } else if (!item.type) {
       res.status(400).json({ message: "Type required" });
       return;
-    } else if(!item.name) {
+    } else if (!item.name) {
       res.status(400).json({ message: "Name required" });
       return;
     }
 
-    const collectionRef = db.
-      collection("projects")
+    const collectionRef = db
+      .collection("projects")
       .doc(projectId)
-      .collection("backlog")
+      .collection("backlog");
 
     const newItemRef = await collectionRef.add(item);
     res.status(201).json({ id: newItemRef.id, ...item });
