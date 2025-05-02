@@ -14,10 +14,16 @@
   background-color: #e5e7eb; /* Placeholder bg */
   object-fit: cover;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
+  position: relative;
+  cursor: pointer;
 }
 
 .team-avatars__avatar:first-child {
   margin-left: 0;
+}
+
+.team-avatars__avatar:hover {
+  z-index: 10;
 }
 
 .team-avatars__more {
@@ -34,4 +40,9 @@
   margin-left: -12px;
   border: 2px solid #ffffff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.team-avatars__more:hover {
+  z-index: 10;
 }

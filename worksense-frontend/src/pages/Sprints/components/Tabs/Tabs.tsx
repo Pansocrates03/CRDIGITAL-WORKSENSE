@@ -3,16 +3,27 @@ import React from "react";
 import { FiLayout, FiList, FiGrid, FiClock } from "react-icons/fi"; // Example icons
 import "./Tabs.css"; // Create this CSS file
 
-// Map tab IDs to icons (customize as needed)
-const iconMap = {
-  overview: null, // No icon for overview in example
+interface TabItem {
+  id: string;
+  label: string;
+}
+
+interface TabsProps {
+  items: TabItem[];
+  activeTabId: string;
+  onTabClick: (id: string) => void;
+}
+
+// Map tab IDs to icons
+const iconMap: Record<string, React.ComponentType<{ className?: string; size?: number }> | null> = {
+  overview: null, // No icon for overview
   board: FiLayout,
   list: FiList,
   table: FiGrid,
   timeline: FiClock,
 };
 
-function Tabs({ items = [], activeTabId, onTabClick }) {
+const Tabs: React.FC<TabsProps> = ({ items, activeTabId, onTabClick }) => {
   return (
     <nav className="tabs-navigation">
       {items.map((item) => {
@@ -36,6 +47,6 @@ function Tabs({ items = [], activeTabId, onTabClick }) {
       })}
     </nav>
   );
-}
+};
 
 export default Tabs;

@@ -2,9 +2,19 @@
 import React from "react";
 import "./TeamAvatars.css"; // Create this CSS file
 
+interface TeamMember {
+  id: string;
+  name: string;
+  avatarUrl: string;
+}
+
+interface TeamAvatarsProps {
+  members: TeamMember[];
+}
+
 const MAX_VISIBLE = 4; // Max avatars before showing +N
 
-function TeamAvatars({ members = [] }) {
+const TeamAvatars: React.FC<TeamAvatarsProps> = ({ members = [] }) => {
   if (!members || members.length === 0) {
     return null;
   }
@@ -28,6 +38,6 @@ function TeamAvatars({ members = [] }) {
       )}
     </div>
   );
-}
+};
 
 export default TeamAvatars;

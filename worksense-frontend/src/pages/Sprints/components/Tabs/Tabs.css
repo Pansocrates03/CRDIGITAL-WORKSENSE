@@ -2,6 +2,8 @@
 .tabs-navigation {
   display: flex;
   border-bottom: 1px solid #e5e7eb; /* Bottom border for the whole nav */
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .tabs-navigation__item {

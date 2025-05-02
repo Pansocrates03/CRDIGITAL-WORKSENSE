@@ -4,6 +4,7 @@ import styles from "./BacklogRow.module.css";
 import StatusBadge from "./StatusBadge";
 import ActionMenu from "./ActionMenu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { BacklogItemType } from "@/types/BacklogItemType";
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 
@@ -16,6 +17,7 @@ interface BacklogItem {
   severity?: string;
   storyPoints?: number | null;
 }
+
 
 interface Member {
   userId: number;
