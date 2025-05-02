@@ -9,6 +9,7 @@ import { createPortal } from "react-dom";
 import apiClient from "@/api/apiClient";
 import styles from "../Settings.module.css";
 import { CreateUserModal } from "../CreateUserModal";
+import BacklogAlerts from "@/components/BacklogTable/BacklogAlerts";
 
 interface MenuPosition {
   top: number;
@@ -35,6 +36,10 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [formData, setFormData] = useState<Partial<UserListItem>>({});
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const menuButtonRefs = useRef<{ [key: number]: HTMLButtonElement | null }>(
     {}
   );
@@ -117,7 +122,9 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
       !formData.firstName ||
       !formData.lastName
     ) {
-      toast.error("Email, first name, and last name are required");
+      setErrorMessage("Email, first name, and last name are required");
+      setShowError(true);
+      setTimeout(() => setShowError(false), 5000);
       return;
     }
 
@@ -138,19 +145,25 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
       );
 
       if (response.status >= 200 && response.status < 300) {
-        toast.success(
+        setSuccessMessage(
           `User ${formData.firstName} ${formData.lastName} updated successfully`
         );
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
         setIsEditModalOpen(false);
         setEditingUser(null);
         refetchUsers();
       } else {
-        toast.error("Update succeeded but received an unexpected status.");
+        setErrorMessage("Update succeeded but received an unexpected status.");
+        setShowError(true);
+        setTimeout(() => setShowError(false), 5000);
       }
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Failed to update user";
-      toast.error(errorMessage);
+      setErrorMessage(errorMessage);
+      setShowError(true);
+      setTimeout(() => setShowError(false), 5000);
       console.error("Error updating user:", error);
     } finally {
       setIsUpdating(false);
@@ -162,18 +175,26 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
       const response = await apiClient.post("/users", userData);
 
       if (response.status >= 200 && response.status < 300) {
-        toast.success(
+        setSuccessMessage(
           `User ${userData.firstName} ${userData.lastName} created successfully`
         );
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
         refetchUsers();
         setIsCreateModalOpen(false);
       } else {
-        toast.error("Creation succeeded but received an unexpected status.");
+        setErrorMessage(
+          "Creation succeeded but received an unexpected status."
+        );
+        setShowError(true);
+        setTimeout(() => setShowError(false), 5000);
       }
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Failed to create user";
-      toast.error(errorMessage);
+      setErrorMessage(errorMessage);
+      setShowError(true);
+      setTimeout(() => setShowError(false), 5000);
       console.error("Error creating user:", error);
       throw error; // Re-throw to let the modal handle the error state
     }
@@ -189,6 +210,10 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
 
   return (
     <div className={styles.userManagementContainer}>
+      <BacklogAlerts
+        successMessage={showSuccess ? successMessage : undefined}
+        errorMessage={showError ? errorMessage : undefined}
+      />
       <div className={styles.userManagementHeader}>
         <div className={styles.headerLeft}>
           <h2 className={styles.title}>User Management</h2>
@@ -218,10 +243,10 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                 <td>
                   <div className={styles.userCell}>
                     <div className={styles.avatarWrapper}>
-                      <AvatarDisplay 
+                      <AvatarDisplay
                         user={{
                           name: `${user.firstName} ${user.lastName}`,
-                          profilePicture: user.pfp
+                          profilePicture: user.pfp,
                         }}
                         size="sm"
                       />
