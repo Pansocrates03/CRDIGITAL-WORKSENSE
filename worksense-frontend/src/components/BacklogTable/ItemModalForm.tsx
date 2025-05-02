@@ -177,7 +177,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             value={formData.size || ""}
             onChange={handleChange}
             options={selectOptions.size}
-            label="Epic"
+            label="Size"
             styleClass="size"
             disabled={loading}
           />

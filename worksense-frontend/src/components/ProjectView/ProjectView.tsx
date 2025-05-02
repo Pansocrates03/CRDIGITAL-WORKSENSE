@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import styles from "./ProjectView.module.css";
+import apiClient from "@/api/apiClient";
 // Component Imports
 import EditTeamModal from "../EditTeamModal/EditTeamModal";
 import MemberInfoPopup from "../MemberInfoPopup/MemberInfoPopup";
@@ -12,10 +13,6 @@ import MemberDetailed from "@/types/MemberDetailedType";
 import { AvatarDisplay } from "../ui/AvatarDisplay";
 
 import RecentBacklogItems from "./RecentBacklogItems"
-import QueryKeys from "@/utils/QueryKeys";
-import { useQuery } from "@tanstack/react-query";
-import apiClient from "@/api/apiClient";
-
 
 type FullProjectData = {
   project: ProjectDetails;
@@ -27,28 +24,39 @@ export const ProjectView: React.FC<FullProjectData> = ({
   members,
 }) => {
   const { id } = useParams<{ id: string }>();
-  const { id: projectId } = useParams<{ id: string }>();
+
+  const backlogItems: any[] = [];
+  const [loading, setLoading] = useState(true);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
   const [teamMembers, setTeamMembers] = useState<MemberDetailed[]>(members);
   const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(null);
+/*
+  useEffect(() => {
+    const fetchBacklogItems = async () => {
+      try {
+        const response = await apiClient.get(`/projects/${id}/items`);
+        const items = response.data;
+        setBacklogItems(items);
+      } catch (error) {
+        console.error("Error fetching backlog items:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Use Query to get Backlog Items
-  const { data: backlogItems, isLoading, error, refetch } = useQuery({
-    queryKey: [QueryKeys.backlog, projectId],
-    queryFn: async () => {
-      if (!projectId) return [];
-
-      const res = await apiClient.get(`/projects/${projectId}/backlog/items`);
-      console.log("Backlog Items:", res.data);
-      return res.data;
-    },
-    enabled: !!projectId,
-  });
+    if (id) {
+      fetchBacklogItems();
+    }
+  }, [id]);
+  */
+  
+  useEffect(() => {
+    setTeamMembers(members);
+  }, [members]);
 
   const handleTeamUpdate = (newTeam: MemberDetailed[]) => {
     setTeamMembers(newTeam);
   };
-
 
   const handleAvatarClick = (
     member: MemberDetailed,
@@ -57,12 +65,16 @@ export const ProjectView: React.FC<FullProjectData> = ({
     setSelectedMember(member);
   };
 
-
-  const getOwnerName = (projectDetails: ProjectDetails, members: MemberDetailed[]) => {
-    const owner =members.find((members) => members.userId === projectDetails.ownerId);
+  const getOwnerName = (
+    projectDetails: ProjectDetails,
+    members: MemberDetailed[]
+  ) => {
+    const owner = members.find(
+      (members) => members.userId === projectDetails.ownerId
+    );
     return owner?.name;
   };
-  
+
   return (
     <div className={styles.projectView}>
       {/* Header Section */}
@@ -103,7 +115,6 @@ export const ProjectView: React.FC<FullProjectData> = ({
       </section>
 
       <div className={styles.mainContent}>
-
         {/* Team Section */}
         <section className={styles.teamSection}>
           <div className={styles.sectionHeader}>
@@ -116,10 +127,10 @@ export const ProjectView: React.FC<FullProjectData> = ({
                 className={styles.avatar}
                 onClick={(e) => handleAvatarClick(m, e)}
               >
-                <AvatarDisplay 
+                <AvatarDisplay
                   user={{
                     name: m.name,
-                    profilePicture: m.profilePicture
+                    profilePicture: m.profilePicture,
                   }}
                   size="lg"
                 />
@@ -127,7 +138,6 @@ export const ProjectView: React.FC<FullProjectData> = ({
               </div>
             ))}
           </div>
-
 
           <div className={styles.teamStats}>
             <h3>Project Statistics</h3>
@@ -165,7 +175,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
 
         {/* Backlog Preview Section */}
         <RecentBacklogItems 
-          isloading={isLoading}
+          isloading={loading}
           items={backlogItems}
         />
       </div>
@@ -173,7 +183,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
       <EditTeamModal
         isOpen={isEditTeamModalOpen}
         onClose={() => setIsEditTeamModalOpen(false)}
-        projectId={id || ''}
+        projectId={id || ""}
         currentTeam={teamMembers}
         onTeamUpdate={handleTeamUpdate}
       />
