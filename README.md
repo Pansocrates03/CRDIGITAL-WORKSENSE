@@ -31,6 +31,11 @@ npm i
 npm run dev
 ```
 
+### Run the cypress tests
+```
+npx cypress open
+```
+
 
 ## About us
 Partnered with *Tec de Monterrey*, CR DiGITAL works with *Softtek* to create the *Worksense* project.
