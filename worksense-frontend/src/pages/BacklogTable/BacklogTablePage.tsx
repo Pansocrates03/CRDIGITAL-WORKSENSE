@@ -20,13 +20,6 @@ import { useMembers } from "@/hooks/useMembers";
 import { BacklogItemType } from "@/types/BacklogItemType";
 import MemberDetailed from "@/types/MemberDetailedType";
 
-interface ProjectMember {
-  userId: number;
-  name?: string;
-  nickname?: string;
-  profilePicture?: string;
-}
-
 const BacklogTablePage: FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
   const [isModalOpen, setIsModalOpen] = useState(false);

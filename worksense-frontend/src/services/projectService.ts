@@ -2,10 +2,10 @@ import ProjectDetails from "@/types/ProjectType";
 import apiClient from "../api/apiClient";
 import Member from "@/types/MemberType";
 import MemberDetailed from "@/types/MemberDetailedType";
+import BacklogItemType from "@/types/BacklogItemType";
 
-import { API_URL } from "../../config/env.config";
-
-const FULL_API_URL = API_URL + "/api/v1";
+import { API_URL } from "@/lib/constants/endpoints";
+import { endpoints } from "@/lib/constants/endpoints";
 
 interface CreateProject {
   name: string;
@@ -18,8 +18,7 @@ export const projectService = {
   // Gets the project details
   async fetchProjectDetails(id: string): Promise<ProjectDetails> {
     try {
-      const response = await apiClient.get(`${FULL_API_URL}/projects/${id}`);
-
+      const response = await apiClient.get(endpoints.getProjectDetails(id));
       return response.data;
     } catch (error) {
       console.error("Error fetching project details:", error);
@@ -31,7 +30,7 @@ export const projectService = {
   async fetchProjectMembers(id: string): Promise<Member[]> {
     try {
       const response = await apiClient.get(
-        `${FULL_API_URL}/projects/${id}/members`
+        `${API_URL}/projects/${id}/members`
       );
 
       return response.data;
@@ -45,7 +44,7 @@ export const projectService = {
   async fetchProjectMembersDetailed(id: string): Promise<MemberDetailed[]> {
     try {
       const response = await apiClient.get(
-        `${FULL_API_URL}/projects/${id}/members/members-detail`
+        `${API_URL}/projects/${id}/members/members-detail`
       );
       return response.data;
     } catch (error) {
@@ -57,10 +56,33 @@ export const projectService = {
   // Gets the list of the projects a member has access to
   async fetchUserProjects(): Promise<ProjectDetails[]> {
     try {
-      const response = await apiClient.get(`${FULL_API_URL}/projects/`);
+      const response = await apiClient.get(`${API_URL}/projects/`);
       return response.data;
     } catch (error) {
       console.error("Error fetching user projects:", error);
+      throw error;
+    }
+  },
+
+  // Gets backlog Items
+  async fetchProjectItems(projectId:string): Promise<BacklogItemType[]>{
+    try {
+      const response = await apiClient.get(`/projects/${projectId}/backlog/items`);
+      console.log("returning", response.data)
+      return response.data;
+    } catch ( error ) {
+      console.error("Error fetching backlog items", error);
+      throw error;
+    }
+  },
+
+  async updateBacklogItem(projectId:string,itemId:string) {
+    try {
+      await apiClient.put(`/projects/${projectId}/backlog/items/${itemId}`,{
+        status: "in_progress"
+      })
+    } catch (error) {
+      console.error("Error bla");
       throw error;
     }
   },
@@ -73,7 +95,7 @@ export const projectService = {
   ): Promise<void> {
     try {
       await apiClient.put(
-        `${FULL_API_URL}/projects/${projectId}/members/${userId}`,
+        `${API_URL}/projects/${projectId}/members/${userId}`,
         {
           projectRoleId: roleId,
         }
@@ -91,7 +113,7 @@ export const projectService = {
     roleId: string
   ): Promise<void> {
     try {
-      await apiClient.post(`${FULL_API_URL}/projects/${projectId}/members`, {
+      await apiClient.post(`${API_URL}/projects/${projectId}/members`, {
         userId: userId,
         projectRoleId: roleId,
       });
@@ -108,7 +130,7 @@ export const projectService = {
   ): Promise<void> {
     try {
       await apiClient.delete(
-        `${FULL_API_URL}/projects/${projectId}/members/${userId}`
+        `${API_URL}/projects/${projectId}/members/${userId}`
       );
     } catch (error) {
       console.error("Error removing member from project:", error);
@@ -120,7 +142,7 @@ export const projectService = {
     try {
       // Primero se debe crear el proyecto
 
-      const response = await apiClient.post(`${FULL_API_URL}/projects/`, {
+      const response = await apiClient.post(`${API_URL}/projects/`, {
         name: receivedData.name,
         description: receivedData.description,
         context: null,
@@ -131,7 +153,7 @@ export const projectService = {
         const member = receivedData.members[i];
 
         await apiClient.post(
-          `${FULL_API_URL}/projects/${response.data.id}/members`,
+          `${API_URL}/projects/${response.data.id}/members`,
           {
             projectRoleId: member.projectRoleId,
             userId: member.userId, // Asegúrate de que `member` contenga el ID del miembro

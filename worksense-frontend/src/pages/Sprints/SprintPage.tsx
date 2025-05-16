@@ -8,6 +8,9 @@ import TimelineView from "./components/TimelineView/TimelineView";
 import Tabs from "./components/Tabs/Tabs";
 import TeamAvatars from "./components/TeamAvatars/TeamAvatars";
 import "./components/styles/SprintPage.css";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useParams } from "react-router-dom";
+import { projectService } from "@/services/projectService.ts";
 
 // Import necessary CSS files
 import "./components/TaskColumn/TaskColumn.css";
@@ -15,7 +18,7 @@ import "./components/TaskCard/TaskCard.css";
 import "./components/StatusTag/StatusTag.css";
 import "./components/PriorityTag/PriorityTag.css";
 import "./components/avatarGroup/AvatarGroup.css";
-import PageHeader from "./components/PageHeader/PageHeader";
+import BacklogItemType from "@/types/BacklogItemType.ts";
 
 const AVATAR_URL = "https://avatar.iran.liara.run/public";
 
@@ -42,16 +45,53 @@ const navigationTabs = [
 ];
 
 const SprintPage: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const queryClient = useQueryClient();
+
+  const { id: projectId } = useParams<{ id: string }>();
+  
+  if(!projectId) throw new Error("There is no project ID");
+
+  const { isLoading, data, error } = useQuery<BacklogItemType[], Error>({
+    queryKey: ["backlog", projectId],
+    queryFn: () => projectService.fetchProjectItems(projectId)
+  });
+
+  if (error) {
+    throw new Error("An error has ocurred on SprintPage.tsx");
+  }
+
+  if(isLoading){
+    return <div>Loading...</div>
+  }
+
+  if(!data){
+    throw new Error("Nothing received")
+  }
+
+
+
+
+  const [tasks, setTasks] = useState<BacklogItemType[]>(data);
   const [activeTab, setActiveTab] = useState('board');
 
-  const handleTaskUpdate = (taskId: string, newStatus: string) => {
+  
+  const handleTaskUpdate = (
+    taskId: string,
+    newStatus: BacklogItemType["status"]
+  ) => {
+    // Se realiza el update de forma manual
     setTasks(prevTasks =>
       prevTasks.map(task =>
         task.id === taskId ? { ...task, status: newStatus } : task
       )
     );
+    // Se actualiza la bdd
+    projectService.updateBacklogItem(projectId,taskId)
+
+    // Se invalida el Query Client
+    queryClient.invalidateQueries({ queryKey: ["backlog", projectId] })
   };
+  
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);

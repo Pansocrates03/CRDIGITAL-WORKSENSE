@@ -1,7 +1,5 @@
 import apiClient from "@/api/apiClient";
-import { API_URL } from "../../config/env.config";
-
-const FULL_API_URL = API_URL + "/api/v1"; // Ajusta esto según tu configuración
+import { API_URL } from "@/lib/constants/endpoints";
 
 export interface User {
   email: string;
@@ -30,7 +28,7 @@ export const authService = {
     try {
       console.log("Intentando login con:", { email, password: "***" });
       const response = await apiClient.post(
-        `${FULL_API_URL}/login`,
+        `${API_URL}/login`,
         {
           email,
           password,
