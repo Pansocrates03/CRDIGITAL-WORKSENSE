@@ -5,6 +5,7 @@ import {
   getSprints,
   getSprintById,
   updateSprintStatus,
+  deleteSprint,
 } from "../controllers/sprint.controller.js";
 import {
   memberAuth,
@@ -308,6 +309,47 @@ router.post("/", memberAuth, createSprint);
  */
 router.get("/:sprintId", memberAuth, getSprintById);
 
+
+/**
+ * @swagger
+ * /projects/{projectId}/sprints/{sprintId}:
+ *   delete:
+ *     summary: Delete a sprint from the project
+ *     tags: [Sprints]
+ *     security:
+ *       - auth-token: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the project
+ *       - in: path
+ *         name: sprintId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the sprint
+ *     responses:
+ *       200:
+ *         description: Sprint deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Sprint sprint123 successfully deleted
+ *       401:
+ *         description: Unauthorized - User is not authenticated
+ *       403:
+ *         description: Forbidden - Sprint does not belong to the specified project
+ *       404:
+ *         description: Sprint not found
+ */
+router.delete("/:sprintId", memberAuth, deleteSprint);
 
 /**
  * @swagger

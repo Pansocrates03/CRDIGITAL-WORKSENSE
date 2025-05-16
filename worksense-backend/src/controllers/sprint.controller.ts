@@ -259,6 +259,54 @@ export const updateSprintStatus: RequestHandler = async (req, res, next) => {
   }
 };
 
+
+/**
+ * @description Delete a sprint from the project.
+ *              Sprints are stored in a top-level 'sprints' collection.
+ *              Deletes the complete sprint from the project by using the projectId and sprintId
+ *              Determines initial status ('Active' or 'Planned') based on other sprints for the SAME project.
+ * @route Delete /api/v1/projects/:projectId/sprints/_sprintId
+ * @access Private (requires auth, project membership, permissions)
+ */
+
+export const deleteSprint:RequestHandler = async (req, res, next) => {
+  try{
+    const { projectId, sprintId } = req.params;
+
+    const sprintRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("sprints")
+      .doc(sprintId);
+
+      const sprintSnap = await sprintRef.get();
+
+      // --- Existence & Ownership Checks ---
+    if (!sprintSnap.exists) {
+      return res.status(404).json({ message: "Sprint not found" });
+    }
+
+    const sprintData = sprintSnap.data();
+    if (!sprintData || sprintData.projectId !== projectId) {
+      return res.status(403).json({
+        message: "Sprint not found within the specified project",
+      });
+    }
+
+    await sprintRef.delete();
+
+res.status(200).json({ message: `Sprint ${sprintId} successfully deleted` });
+
+  } catch (error) {
+    console.error(
+      `Error deleting sprint ${req.params.sprintId}:`,
+      error
+    );
+    next(error);
+  }
+};
+
+
 /*
 
 // POST /projects/:projectId/sprints/:sprintId/complete
