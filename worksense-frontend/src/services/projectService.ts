@@ -76,11 +76,10 @@ export const projectService = {
     }
   },
 
-  async updateBacklogItem(projectId:string,itemId:string) {
+  async updateBacklogItem(projectId:string,item:BacklogItemType) {
     try {
-      await apiClient.put(`/projects/${projectId}/backlog/items/${itemId}`,{
-        status: "in_progress"
-      })
+      console.log("Item to be sent", item)
+      await apiClient.put(`/projects/${projectId}/backlog/items/${item.id}/?type=${item.type}`,item)
     } catch (error) {
       console.error("Error bla");
       throw error;

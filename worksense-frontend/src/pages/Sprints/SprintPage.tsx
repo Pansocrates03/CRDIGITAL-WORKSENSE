@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import { Task, initialTasks } from "./data.ts";
 import BoardView from "./components/BoardView/BoardView";
 import OverviewView from "./components/OverviewView/OverviewView";
-import ListView from "./components/ListView/ListView";
 import TableView from "./components/TableView/TableView";
 import TimelineView from "./components/TimelineView/TimelineView";
 import Tabs from "./components/Tabs/Tabs";
@@ -11,6 +9,7 @@ import "./components/styles/SprintPage.css";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from "react-router-dom";
 import { projectService } from "@/services/projectService.ts";
+import QueryKeys from "@/utils/QueryKeys.ts";
 
 // Import necessary CSS files
 import "./components/TaskColumn/TaskColumn.css";
@@ -39,20 +38,17 @@ const sampleTeamMembers: TeamMember[] = [
 const navigationTabs = [
   { id: "overview", label: "Overview" },
   { id: "board", label: "Board" },
-  { id: "list", label: "List" },
   { id: "table", label: "Table" },
-  { id: "timeline", label: "Timeline" },
 ];
 
 const SprintPage: React.FC = () => {
   const queryClient = useQueryClient();
 
   const { id: projectId } = useParams<{ id: string }>();
-  
   if(!projectId) throw new Error("There is no project ID");
 
   const { isLoading, data, error } = useQuery<BacklogItemType[], Error>({
-    queryKey: ["backlog", projectId],
+    queryKey: [QueryKeys.backlog, projectId],
     queryFn: () => projectService.fetchProjectItems(projectId)
   });
 
@@ -71,11 +67,17 @@ const SprintPage: React.FC = () => {
 
 
 
-  const [tasks, setTasks] = useState<BacklogItemType[]>(data);
+  const [tasks, setTasks] = useState<BacklogItemType[]>([]);
   const [activeTab, setActiveTab] = useState('board');
 
+  // Update tasks when data changes
+  React.useEffect(() => {
+    if (data) setTasks(data);
+  }, [data]);
+
+
   
-  const handleTaskUpdate = (
+  const  handleTaskUpdate = async (
     taskId: string,
     newStatus: BacklogItemType["status"]
   ) => {
@@ -86,10 +88,13 @@ const SprintPage: React.FC = () => {
       )
     );
     // Se actualiza la bdd
-    projectService.updateBacklogItem(projectId,taskId)
+    let task = tasks.find(t => t.id === taskId); // find task
+    if(!task) throw new Error("Task not found"); // Error handling
+    task.status = newStatus
+    await projectService.updateBacklogItem(projectId,task) // Esperamos a que se actualice antes de invalidar
 
     // Se invalida el Query Client
-    queryClient.invalidateQueries({ queryKey: ["backlog", projectId] })
+    queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] })
   };
   
 
@@ -103,12 +108,10 @@ const SprintPage: React.FC = () => {
         return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} />;
       case 'overview':
         return <OverviewView tasks={tasks} />;
-      case 'list':
-        return <ListView tasks={tasks} />;
       case 'table':
         return <TableView tasks={tasks} />;
-      case 'timeline':
-        return <TimelineView tasks={tasks} />;
+      //case 'timeline':
+      //  return <TimelineView tasks={tasks} />;
       default:
         return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} />;
     }
