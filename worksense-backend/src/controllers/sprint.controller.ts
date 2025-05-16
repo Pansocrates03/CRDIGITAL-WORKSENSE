@@ -43,7 +43,7 @@ export const createSprint: RequestHandler = async (req, res, next) => {
     // --- End Validation ---
 
     const sprintsCollection = db
-      .collection("projectss")
+      .collection("projects")
       .doc(projectId)
       .collection("sprints"); // Top-level collection
 
