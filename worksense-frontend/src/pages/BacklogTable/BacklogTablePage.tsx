@@ -57,6 +57,7 @@ const BacklogTablePage: FC = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<BacklogItem | null>(null);
 
+  // Almacenamiento en cache de los items del backlog
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["backlog", projectId],
     queryFn: async () => {
@@ -68,6 +69,7 @@ const BacklogTablePage: FC = () => {
     enabled: !!projectId,
   });
 
+  // Obtener los miembros del proyecto
   const { data: members = [] } = useMembers(projectId || "");
 
   const memberMap = useMemo(() => {
@@ -82,10 +84,11 @@ const BacklogTablePage: FC = () => {
     return memberMap.get(numericId);
   };
 
+  // Categoriza el backlog por tipo de ítem
   const categorized = useMemo(() => {
     const all = Array.isArray(data) ? data : [];
 
-    // Create categories of items
+    // Crea categoria de items
     return {
       epics: all.filter((i) => i.type === "epic" && i.name),
       stories: all.filter((i) => i.type === "story" && i.name),
@@ -101,7 +104,7 @@ const BacklogTablePage: FC = () => {
     };
   }, [data]);
 
-  // Update getEpicStories to use subItems directly
+  // Obtiene los ítems de una historia épica
   const getEpicStories = (epicId: string): BacklogItemType[] => {
     if (!data) return [];
     const epic = data.find((item: BacklogItemType) => item.id === epicId);
@@ -112,7 +115,7 @@ const BacklogTablePage: FC = () => {
   const handleEdit = (item: BacklogItemType) => {
     if (!item.name || !item.type) return;
     setItemToEdit(item);
-    setIsEditModalOpen(true);
+    setIsEditModalOpen(true); // Abrimos el modal de edición
     // Si el modal de detalles está abierto, lo cerramos
     if (showDetailsModal) {
       setShowDetailsModal(false);
@@ -123,12 +126,12 @@ const BacklogTablePage: FC = () => {
   const handleDelete = (item: BacklogItemType) => {
     if (!item.name || !item.type) return;
 
-    // Check if this is a subitem by looking at its parent epic
+    // Checa si es un subitem
     const isSubItem = categorized.epics.some((epic) =>
       epic.subItems?.some((subItem: BacklogItemType) => subItem.id === item.id)
     );
 
-    // If it's a subitem, find its parent epic
+    // Si es un subitem, busca la epica padre
     const parentEpic = isSubItem
       ? categorized.epics.find((epic) =>
           epic.subItems?.some(
@@ -150,7 +153,7 @@ const BacklogTablePage: FC = () => {
     setShowDeleteModal(true);
   };
 
-  // Update handleDeleteEpic to handle subItems
+  // 
   const handleDeleteEpic = (epicId: string) => {
     const epic = categorized.epics.find((e) => e.id === epicId);
     if (!epic || !epic.name) return;
@@ -185,16 +188,15 @@ const BacklogTablePage: FC = () => {
   };
 
   // Función para ejecutar la eliminación
-  // Update executeDelete to handle subItems
   const executeDelete = async () => {
     if (!itemToDelete || !projectId) return;
 
     try {
-      // If it's an epic, first delete its subitems
+      // Si es una épica, primero eliminamos todas las historias asociadas
       if (itemToDelete.type === "epic") {
         const epicStories = getEpicStories(itemToDelete.id);
         if (epicStories.length > 0) {
-          // Delete all subitems associated
+          // Borrar todas las historias asociadas a la épica
           const deletePromises = epicStories.map((story) =>
             apiClient.delete(
               `/projects/${projectId}/backlog/items/${itemToDelete.id}/subitems/${story.id}`
@@ -204,7 +206,7 @@ const BacklogTablePage: FC = () => {
         }
       }
 
-      // Delete the item - only use type parameter for regular items, not subitems
+      // Usamos type solo para los items regulares, no para los subitems
       if (itemToDelete.isSubItem && itemToDelete.parentId) {
         await apiClient.delete(
           `/projects/${projectId}/backlog/items/${itemToDelete.parentId}/subitems/${itemToDelete.id}`
@@ -243,6 +245,8 @@ const BacklogTablePage: FC = () => {
     setTimeout(() => setShowError(false), 5000);
   };
 
+  // Función para filtrar los ítems según el término de búsqueda
+  // Palacios
   const matchesSearch = (item: BacklogItemType) =>
     !searchTerm ||
     (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -262,20 +266,16 @@ const BacklogTablePage: FC = () => {
         />
       ));
 
-  // Function to handle when stories are added to an epic
+  // Función para manejar la adición de historias a una epica
   const handleStoriesAdded = (epicId: string) => {
-    // Expand the epic if it's not already expanded
     if (!expandedEpics.includes(epicId)) {
       setExpandedEpics((prev) => [...prev, epicId]);
     }
-
-    // Show success message
     handleSuccess("Stories added successfully!");
-
-    // Reload the backlog data
     refetch();
   };
 
+  // EN caso de errores, se muestra un mensaje de error
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Failed to load backlog.</div>;
 

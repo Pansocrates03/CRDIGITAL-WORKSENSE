@@ -14,6 +14,9 @@ import project_Routes from "./routes/project.routes.js";
 // Documenattion Imports
 import { swaggerOptions } from "../swagger/swaggerSetup.js"; // Swagger options
 
+// Gemini / Avatar Imports
+import geminiRoutes from "./routes/gemini.routes.js"; // Gemini routes
+
 // Obtain URL
 const PORT = process.env.PORT || 5050;
 const HOST = process.env.HOST || "localhost";
@@ -31,6 +34,8 @@ app.use(express.json());
 app.use(API_PREFIX, sqlRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
 app.use(`${API_PREFIX}/projects`, project_Routes);
+// Gemini / Avatar
+app.use(`${API_PREFIX}/gemini`, geminiRoutes);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get("/", (req: any, res: any) => {

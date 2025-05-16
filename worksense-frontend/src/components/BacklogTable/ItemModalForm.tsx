@@ -59,7 +59,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
     onChange({ ...formData, [name]: value });
   };
 
-  // Clear acceptance criteria when type changes to non-story
+  // Quitar el acceptanceCriteria si no es un story
   useEffect(() => {
     if (formData.type !== "story" && formData.acceptanceCriteria?.length) {
       onChange({ ...formData, acceptanceCriteria: [] });
@@ -232,7 +232,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             />
           </div>
 
-          {/* Only show acceptance criteria for stories */}
+          {/* Solo muestra criterios de aceptacion para las historias*/}
           {formData.type === "story" && (
             <div className={styles.formGroup}>
               <label htmlFor="acceptanceCriteria">
