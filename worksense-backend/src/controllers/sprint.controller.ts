@@ -199,7 +199,12 @@ export const updateSprintStatus: RequestHandler = async (req, res, next) => {
       });
     }
 
-    const sprintRef = db.collection("sprints").doc(sprintId);
+    const sprintRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("sprints")
+      .doc(sprintId);
+
     const sprintSnap = await sprintRef.get();
 
     // --- Existence & Ownership Checks ---

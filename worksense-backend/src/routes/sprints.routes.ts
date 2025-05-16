@@ -404,6 +404,7 @@ router.get("/:sprintId", memberAuth, getSprintById);
  *       404:
  *         description: Sprint not found or sprint does not belong to the specified project
  */
+router.post("/:sprintId/status", memberAuth, updateSprintStatus)
 
 /**
  * @swagger
