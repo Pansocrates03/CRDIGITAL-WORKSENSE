@@ -17,6 +17,7 @@ import MembersPage from "./pages/Members/MembersPage";
 
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import SprintPage from "./pages/Sprints/SprintPage";
+import { Toaster } from 'sonner';
 const queryClient = new QueryClient();
 
 console.log("Running");
@@ -50,6 +51,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <Toaster />
       <AuthProvider>
         <Router>
           <Routes>

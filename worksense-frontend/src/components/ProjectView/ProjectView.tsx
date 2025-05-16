@@ -6,6 +6,8 @@ import apiClient from "@/api/apiClient";
 // Component Imports
 import EditTeamModal from "../EditTeamModal/EditTeamModal";
 import MemberInfoPopup from "../MemberInfoPopup/MemberInfoPopup";
+import NewProjectModal from "../NewProjectModal/NewProjectModal";
+import { toast } from 'sonner';
 // Type Imports
 import ProjectDetails from "@/types/ProjectType";
 import MemberDetailed from "@/types/MemberDetailedType";
@@ -17,11 +19,15 @@ import RecentBacklogItems from "./RecentBacklogItems";
 type FullProjectData = {
   project: ProjectDetails;
   members: MemberDetailed[];
+  refetchProject?: () => void;
+  refetchMembers?: () => void;
 };
 
 export const ProjectView: React.FC<FullProjectData> = ({
   project,
   members,
+  refetchProject,
+  refetchMembers,
 }) => {
   const { id } = useParams<{ id: string }>();
 
@@ -32,6 +38,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
   const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(
     null
   );
+  const [isEditProjectModalOpen, setIsEditProjectModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchBacklogItems = async () => {
@@ -107,6 +114,14 @@ export const ProjectView: React.FC<FullProjectData> = ({
             </span>
           </div>
         </div>
+        <div style={{ flex: 1 }} />
+        <button
+          className={styles.editButton}
+          onClick={() => setIsEditProjectModalOpen(true)}
+        >
+          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z"/></svg>
+          <span className={styles.editButtonText}>Edit</span>
+        </button>
       </div>
 
       {/* About Section */}
@@ -199,6 +214,22 @@ export const ProjectView: React.FC<FullProjectData> = ({
           onClose={() => setSelectedMember(null)}
         />
       )}
+
+      <NewProjectModal
+        isOpen={isEditProjectModalOpen}
+        onClose={() => setIsEditProjectModalOpen(false)}
+        initialProjectName={project.name}
+        initialDescription={project.description}
+        currentUserId={project.ownerId}
+        mode="edit"
+        projectId={project.id}
+        onSuccess={() => {
+          toast('Project updated successfully!');
+          setIsEditProjectModalOpen(false);
+          if (refetchProject) refetchProject();
+          if (refetchMembers) refetchMembers();
+        }}
+      />
     </div>
   );
 };

@@ -439,28 +439,44 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: var(--color-background);
-  border: 1px solid var(--color-gray-light);
-  border-radius: 8px;
-  color: var(--color-charcoal-dark);
-  font-size: 0.875rem;
+  background: #f5f6fa;
+  border: 1.5px solid var(--color-gray-light);
+  border-radius: 10px;
+  color: var(--color-gray-dark);
+  font-size: 0.97rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  box-shadow: none;
+  padding: 0.38rem 1.1rem;
 }
 
 .editButton:hover {
-  background-color: var(--color-purple-light);
-  border-color: var(--color-purple);
-  color: var(--color-purple);
-  transform: translateY(-1px);
+  background: var(--color-purple-light);
+  color: var(--color-purple-dark);
+  border-color: var(--color-purple-light);
+}
+
+.editButton:hover .editButtonText,
+.editButton:hover svg {
+  color: var(--color-purple-dark);
+}
+
+.editButtonText {
+  font-size: 0.97rem;
+  font-weight: 500;
+  color: var(--color-gray-dark);
+  margin-left: 0.1rem;
+  letter-spacing: 0.01em;
+  transition: color 0.18s;
+  white-space: nowrap;
 }
 
 .editButton svg {
-  width: 16px;
-  height: 16px;
-  color: currentColor;
+  width: 18px;
+  height: 18px;
+  color: var(--color-gray-dark);
+  transition: color 0.18s;
 }
 
 .errorContainer {

@@ -69,7 +69,8 @@ export const ProjectPage: React.FC = () => {
     data: project, 
     isLoading: projectLoading, 
     isError: projectError, 
-    error: projectErrorMessage 
+    error: projectErrorMessage,
+    refetch: refetchProject
   } = useQuery<ProjectDetails>({
     queryKey: ["project", id],
     queryFn: async () => {
@@ -83,7 +84,8 @@ export const ProjectPage: React.FC = () => {
     data: members, 
     isLoading: membersLoading, 
     isError: membersError, 
-    error: membersErrorMessage 
+    error: membersErrorMessage,
+    refetch: refetchMembers
   } = useQuery<MemberDetailed[]>({
     queryKey: ["projectMembers", id],
     queryFn: async () => {
@@ -119,7 +121,7 @@ export const ProjectPage: React.FC = () => {
 
   // Only render the ProjectView when we have both project and members
   if (project && members) {
-    return <ProjectView project={project} members={members} />;
+    return <ProjectView project={project} members={members} refetchProject={refetchProject} refetchMembers={refetchMembers} />;
   }
 
   // Fallback loading state (should rarely hit this)

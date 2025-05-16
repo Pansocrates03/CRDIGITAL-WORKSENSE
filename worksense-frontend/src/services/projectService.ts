@@ -147,4 +147,20 @@ export const projectService = {
       throw error;
     }
   },
+
+  async updateProject(
+    projectId: string,
+    data: { name?: string; description?: string; context?: object }
+  ): Promise<ProjectDetails> {
+    try {
+      const response = await apiClient.put(
+        `${FULL_API_URL}/projects/${projectId}`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error updating project:", error);
+      throw error;
+    }
+  },
 };

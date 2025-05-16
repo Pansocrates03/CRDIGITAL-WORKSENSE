@@ -15,14 +15,23 @@ type NewProjectModalProps = {
   title?: string;
   submitButtonText?: string;
   currentUserId: number;
+  mode?: 'create' | 'edit';
+  projectId?: string;
+  onSuccess?: () => void;
 }
 
-// Componente principal del modal para crear proyecto
+// Componente principal del modal para crear o editar proyecto
 const NewProjectModal: React.FC<NewProjectModalProps> = ({
   isOpen,
   onClose,
   title = "New Project",
   currentUserId,
+  initialProjectName = '',
+  initialDescription = '',
+  submitButtonText,
+  mode = 'create',
+  projectId,
+  onSuccess,
 }) => {
   
   // Alertas para errores o éxito
@@ -103,16 +112,25 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
             <>
               {/* Encabezado y descripción del modal */}
               <div className={styles.modalHeader}>
-                <h2>{title}</h2>
+                <h2>{mode === 'edit' ? 'Edit Project' : title}</h2>
                 <p className={styles.modalDescription}>
-                  Your project will have its own independent space.
+                  {mode === 'edit'
+                    ? 'Update your project details.'
+                    : 'Your project will have its own independent space.'}
                 </p>
               </div>
 
               {/* Formulario principal */}
               <Form
                 currentUserId={currentUserId}
-                onClose={onClose} />
+                onClose={onClose}
+                initialProjectName={initialProjectName}
+                initialDescription={initialDescription}
+                mode={mode}
+                projectId={projectId}
+                onSuccess={onSuccess}
+                submitButtonText={submitButtonText}
+              />
             </>
           )}
         </div>

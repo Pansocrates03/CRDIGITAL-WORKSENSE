@@ -9,6 +9,7 @@ import { User } from "@/types/UserType";
 import apiClient from "../../api/apiClient";
 import GenerateEpicsModal from "../BacklogTable/GenerateEpicsModal";
 import { Sparkles } from "lucide-react";
+import { toast } from 'sonner';
 
 type localFormError = {
   projectName?: string;
@@ -16,12 +17,30 @@ type localFormError = {
   members?: string;
 }
 
-const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentUserId, onClose }) => {
+const Form: React.FC<{
+  currentUserId: number;
+  onClose: () => void;
+  initialProjectName?: string;
+  initialDescription?: string;
+  mode?: 'create' | 'edit';
+  projectId?: string;
+  onSuccess?: () => void;
+  submitButtonText?: string;
+}> = ({
+  currentUserId,
+  onClose,
+  initialProjectName = '',
+  initialDescription = '',
+  mode = 'create',
+  projectId,
+  onSuccess,
+  submitButtonText,
+}) => {
     const queryClient = useQueryClient();
 
     // Variables de estado
-    const [projectName, setProjectName] = useState("");
-    const [description, setDescription] = useState("");
+    const [projectName, setProjectName] = useState(initialProjectName);
+    const [description, setDescription] = useState(initialDescription);
     const [shouldPopulateBacklog, setShouldPopulateBacklog] = useState(false);
     const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
     const [showGenerateEpicsModal, setShowGenerateEpicsModal] = useState(false);
@@ -101,12 +120,24 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
         setErrors({});
 
         try {
-            const response = await projectService.createProejct({
-                name: projectName,
-                description: description,
-                context: {},
-                members: selectedMembers,
-            });
+            let response;
+            if (mode === 'edit' && projectId) {
+                response = await projectService.updateProject(projectId, {
+                    name: projectName,
+                    description: description,
+                });
+                toast('Project updated successfully!');
+                if (onSuccess) onSuccess();
+                onClose();
+                return;
+            } else {
+                response = await projectService.createProejct({
+                    name: projectName,
+                    description: description,
+                    context: {},
+                    members: selectedMembers,
+                });
+            }
 
             // Guardar el ID del proyecto creado para poder generar épicas
             if (response && response.id) {
@@ -194,10 +225,11 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Describe your project"
-                      rows={3}
+                      rows={mode === 'edit' ? 5 : 3}
                       className={styles.textarea}
                       aria-required="true"
                       aria-invalid={!!errors.description}
+                      style={{ minHeight: '100px', resize: 'vertical', overflowY: 'auto' }}
                     />
                     {description && (
                       <button
@@ -216,41 +248,45 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
                 </div>
 
                 {/* Componente para seleccionar miembros */}
-                <MemberSelection
-                  users={users}
-                  selectedMembers={selectedMembers}
-                  onAddMember={handleAddMember}
-                  onRemoveMember={handleRemoveMember}
-                  isLoading={isUsersLoading}
-                  error={errors.members}
-                  availableUsers={availableUsers}
-                />
+                {mode !== 'edit' && (
+                  <MemberSelection
+                    users={users}
+                    selectedMembers={selectedMembers}
+                    onAddMember={handleAddMember}
+                    onRemoveMember={handleRemoveMember}
+                    isLoading={isUsersLoading}
+                    error={errors.members}
+                    availableUsers={availableUsers}
+                  />
+                )}
 
                 {/* Checkbox para usar IA */}
-                <div className={styles.formGroup}>
-                  <div className={styles.checkboxWrapper}>
-                    <input
-                      type="checkbox"
-                      id="populateBacklog"
-                      checked={shouldPopulateBacklog}
-                      onChange={(e) => setShouldPopulateBacklog(e.target.checked)}
-                    />
-                    <label
-                      htmlFor="populateBacklog"
-                      className={styles.checkboxLabel}
-                    >
-                      Automatically generate backlog with AI
-                      <span className={styles.aiLabel}>
-                        <Sparkles size={12} className="mr-1" /> AI
-                      </span>
-                    </label>
+                {mode !== 'edit' && (
+                  <div className={styles.formGroup}>
+                    <div className={styles.checkboxWrapper}>
+                      <input
+                        type="checkbox"
+                        id="populateBacklog"
+                        checked={shouldPopulateBacklog}
+                        onChange={(e) => setShouldPopulateBacklog(e.target.checked)}
+                      />
+                      <label
+                        htmlFor="populateBacklog"
+                        className={styles.checkboxLabel}
+                      >
+                        Automatically generate backlog with AI
+                        <span className={styles.aiLabel}>
+                          <Sparkles size={12} className="mr-1" /> AI
+                        </span>
+                      </label>
+                    </div>
+                    {shouldPopulateBacklog && (
+                      <p className={styles.aiDescription}>
+                        We will analyze the description to generate epics and stories for your project backlog.
+                      </p>
+                    )}
                   </div>
-                  {shouldPopulateBacklog && (
-                    <p className={styles.aiDescription}>
-                      We will analyze the description to generate epics and stories for your project backlog.
-                    </p>
-                  )}
-                </div>
+                )}
 
                 <div className={styles.modalActions}>
                   <button
@@ -272,7 +308,7 @@ const Form: React.FC<{currentUserId: number, onClose: () => void}> = ({ currentU
                       isPopulatingBacklog
                     }
                   >
-                    {isCreatingProject ? "Creating..." : shouldPopulateBacklog ? "Create & Generate Backlog" : "Create Project"}
+                    {mode === 'edit' ? 'Confirm Edit' : isCreatingProject ? "Creating..." : shouldPopulateBacklog ? "Create & Generate Backlog" : "Create Project"}
                   </button>
                 </div>
             </form>
