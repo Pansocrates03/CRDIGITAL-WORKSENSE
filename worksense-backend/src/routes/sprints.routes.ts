@@ -4,6 +4,7 @@ import {
   createSprint,
   getSprints,
   getSprintById,
+  updateSprint,
   updateSprintStatus,
   deleteSprint,
 } from "../controllers/sprint.controller.js";
@@ -308,6 +309,115 @@ router.post("/", memberAuth, createSprint);
  *         description: Sprint not found or sprint does not belong to the specified project
  */
 router.get("/:sprintId", memberAuth, getSprintById);
+
+/**
+ * @swagger
+ * /projects/{projectId}/sprints/{sprintId}:
+ *   patch:
+ *     summary: Update an existing sprint
+ *     tags: [Sprints]
+ *     security:
+ *       - auth-token: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the project the sprint belongs to
+ *       - in: path
+ *         name: sprintId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the sprint to update
+ *     requestBody:
+ *       description: Fields to update in the sprint (partial updates allowed)
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the sprint
+ *               goal:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Goal of the sprint
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Start date of the sprint (ISO format)
+ *               endDate:
+ *                 type: string
+ *                 format: date-time
+ *                 description: End date of the sprint (ISO format)
+ *               status:
+ *                 type: string
+ *                 enum: [Active, Planned, Completed]
+ *                 description: Status of the sprint
+ *     responses:
+ *       200:
+ *         description: Sprint updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: Sprint ID
+ *                 projectId:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 goal:
+ *                   type: string
+ *                   nullable: true
+ *                 startDate:
+ *                   type: object
+ *                   properties:
+ *                     _seconds:
+ *                       type: integer
+ *                     _nanoseconds:
+ *                       type: integer
+ *                 endDate:
+ *                   type: object
+ *                   properties:
+ *                     _seconds:
+ *                       type: integer
+ *                     _nanoseconds:
+ *                       type: integer
+ *                 status:
+ *                   type: string
+ *                   enum: [Active, Planned, Completed]
+ *                 createdAt:
+ *                   type: object
+ *                   properties:
+ *                     _seconds:
+ *                       type: integer
+ *                     _nanoseconds:
+ *                       type: integer
+ *                 updatedAt:
+ *                   type: object
+ *                   properties:
+ *                     _seconds:
+ *                       type: integer
+ *                     _nanoseconds:
+ *                       type: integer
+ *       400:
+ *         description: Bad request – invalid date format or invalid status
+ *       401:
+ *         description: Unauthorized – authentication required
+ *       403:
+ *         description: Forbidden – sprint does not belong to specified project
+ *       404:
+ *         description: Sprint not found
+ */
+
+router.post("/:sprintId", memberAuth, updateSprint);
 
 
 /**

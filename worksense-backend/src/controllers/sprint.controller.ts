@@ -177,6 +177,81 @@ export const getSprintById: RequestHandler = async (req, res, next) => {
 };
 
 /**
+ * @description Update the information in a spritn by its ID
+ *              Fetches from the top-level 'sprints' collection and verifies projectId.
+ * @route POST /api/v1/projects/:projectId/sprints/:sprintId
+ * @access Private (requires auth, project membership)
+ */
+export const updateSprint: RequestHandler = async (req, res, next) => {
+  try {
+    const { projectId, sprintId } = req.params;
+    const { name, goal, startDate, endDate, status } = req.body;
+
+    const sprintRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("sprints")
+      .doc(sprintId);
+
+    const sprintSnap = await sprintRef.get();
+
+    if (!sprintSnap.exists) {
+      return res.status(404).json({ message: "Sprint not found" });
+    }
+
+    const sprintData = sprintSnap.data();
+
+    if (!sprintData || sprintData.projectId !== projectId) {
+      return res.status(403).json({
+        message: "Sprint not found within the specified project",
+      });
+    }
+
+    // --- Prepare updates ---
+    const updates: any = {
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+
+    if (name !== undefined) updates.name = name;
+    if (goal !== undefined) updates.goal = goal;
+
+    if (startDate !== undefined || endDate !== undefined) {
+      const currentStart = startDate ? new Date(startDate) : sprintData.startDate.toDate();
+      const currentEnd = endDate ? new Date(endDate) : sprintData.endDate.toDate();
+
+      if (isNaN(currentStart.getTime()) || isNaN(currentEnd.getTime())) {
+        return res.status(400).json({ message: "Invalid date format provided" });
+      }
+
+      if (currentStart >= currentEnd) {
+        return res.status(400).json({ message: "startDate must be before endDate" });
+      }
+
+      if (startDate !== undefined) updates.startDate = Timestamp.fromDate(currentStart);
+      if (endDate !== undefined) updates.endDate = Timestamp.fromDate(currentEnd);
+    }
+
+    if (status !== undefined) {
+      const validStatuses = ["Active", "Planned", "Completed"];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: "Invalid status value" });
+      }
+      updates.status = status;
+    }
+
+    // --- Apply updates ---
+    await sprintRef.update(updates);
+
+    const updatedSnap = await sprintRef.get();
+    res.status(200).json({ id: sprintId, ...updatedSnap.data() });
+  } catch (error) {
+    console.error(`Error updating sprint ${req.params.sprintId}:`, error);
+    next(error);
+  }
+};
+
+
+/**
  * @description Update the status of a sprint.
  * @route PATCH /api/v1/projects/:projectId/sprints/:sprintId/status
  * @access Private (requires auth, project membership, permissions)
