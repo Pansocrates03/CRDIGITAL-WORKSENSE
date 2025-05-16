@@ -1,8 +1,12 @@
 import express from "express";
-import { callGemini } from "../controllers/gemini.controller.js";
+import { handleGeminiPrompt } from "../controllers/gemini.controller.js";
+import { verifyToken } from "../middlewares/bundleMiddleware/tokenAuth.js";
+import { checkPlatformAdmin } from "../middlewares/bundleMiddleware/adminAuth.js";
 
 const router = express.Router();
 
-router.post("/", callGemini);
+const authMiddleware = [verifyToken, checkPlatformAdmin];
+
+router.post("/", authMiddleware, handleGeminiPrompt);
 
 export default router;
