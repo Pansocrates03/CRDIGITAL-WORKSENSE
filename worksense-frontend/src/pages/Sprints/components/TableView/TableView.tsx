@@ -1,8 +1,39 @@
 import React from 'react';
 import { Task } from '../../data';
+import BacklogItemType from '@/types/BacklogItemType';
+import { AvatarDisplay } from '@/components/ui/AvatarDisplay';
+import { projectService } from '@/services/projectService';
+import MemberDetailed from '@/types/MemberDetailedType';
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
+import { QueryKeys } from '@/lib/constants/queryKeys';
 
 interface TableViewProps {
-  tasks: Task[];
+  tasks: BacklogItemType[];
+}
+
+const renderAsignee = (memmberId:number|null|undefined) => {
+  const { id: projectId } = useParams<{ id: string }>();
+  if(!projectId) throw new Error("There is no project ID");
+  // Find member
+  const { isLoading, data, error } = useQuery<MemberDetailed[]>({
+    queryKey: [QueryKeys.members, projectId],
+    queryFn: () => projectService.fetchProjectMembersDetailed(projectId)
+  })
+
+  if(isLoading){ return <div>Loading...</div> }
+  if(error){ return <div>An error ocurred</div> }
+
+  console.log("Members Data", data)
+  let assignee = data?.find(member => member.userId == memmberId)
+  if(!assignee) throw new Error("Asignee not found")
+
+  return (
+    <AvatarDisplay
+      user={assignee}
+      className="h-6 w-6 rounded-full ring-2 ring-white"
+    />
+  )
 }
 
 const TableView: React.FC<TableViewProps> = ({ tasks }) => {
@@ -44,7 +75,7 @@ const TableView: React.FC<TableViewProps> = ({ tasks }) => {
           {tasks.map(task => (
             <tr key={task.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">{task.title}</div>
+                <div className="text-sm font-medium text-gray-900">{task.name}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
@@ -53,14 +84,14 @@ const TableView: React.FC<TableViewProps> = ({ tasks }) => {
                   task.status === 'in_review' ? 'bg-purple-100 text-purple-800' :
                   'bg-green-100 text-green-800'
                 }`}>
-                  {task.status.replace('_', ' ')}
+                  {task.status?.replace('_', ' ')}
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 {task.priority && (
                   <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                    task.priority === 'P1' ? 'bg-red-100 text-red-800' :
-                    task.priority === 'P2' ? 'bg-yellow-100 text-yellow-800' :
+                    task.priority === 'high' ? 'bg-red-100 text-red-800' :
+                    task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
                     'bg-green-100 text-green-800'
                   }`}>
                     {task.priority}
@@ -69,32 +100,25 @@ const TableView: React.FC<TableViewProps> = ({ tasks }) => {
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex -space-x-2">
-                  {task.assignees.map(assignee => (
-                    <img
-                      key={assignee.id}
-                      className="h-6 w-6 rounded-full ring-2 ring-white"
-                      src={assignee.avatarUrl}
-                      alt={assignee.name}
-                      title={assignee.name}
-                    />
-                  ))}
+                  {task.assigneeId && renderAsignee(task.assigneeId)}
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {task.subtasksTotal > 0 && (
+                {30 > 0 && ( // {task.subtasksTotal > 0 && (
                   <div className="w-32">
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-blue-600 h-2 rounded-full"
-                        style={{ width: `${(task.subtasksCompleted / task.subtasksTotal) * 100}%` }}
+                        style={{ width: `${(10 / 30) * 100}%` }} // style={{ width: `${(task.subtasksCompleted / task.subtasksTotal) * 100}%` }}
                       />
                     </div>
                     <span className="text-xs text-gray-500 mt-1">
-                      {task.subtasksCompleted}/{task.subtasksTotal}
+                      {10}/{30} {/*  {task.subtasksCompleted}/{task.subtasksTotal} */}
                     </span>
                   </div>
                 )}
               </td>
+              {/* 
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {task.startDate ? new Date(task.startDate).toLocaleDateString() : '-'}
               </td>
@@ -107,6 +131,7 @@ const TableView: React.FC<TableViewProps> = ({ tasks }) => {
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {task.linksCount}
               </td>
+              */}
             </tr>
           ))}
         </tbody>

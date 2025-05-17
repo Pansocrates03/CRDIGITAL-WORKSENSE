@@ -20,13 +20,6 @@ import { useMembers } from "@/hooks/useMembers";
 import { BacklogItemType } from "@/types/BacklogItemType";
 import MemberDetailed from "@/types/MemberDetailedType";
 
-interface ProjectMember {
-  userId: number;
-  name?: string;
-  nickname?: string;
-  profilePicture?: string;
-}
-
 const BacklogTablePage: FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -123,7 +116,6 @@ const BacklogTablePage: FC = () => {
   const handleDelete = (item: BacklogItemType) => {
     if (!item.name || !item.type) return;
 
-    // Check if this is a subitem by looking at its parent epic
     const isSubItem = categorized.epics.some((epic) =>
       epic.subItems?.some((subItem: BacklogItemType) => subItem.id === item.id)
     );
@@ -146,7 +138,7 @@ const BacklogTablePage: FC = () => {
     setDeleteModalName(
       `Delete ${item.type === "epic" ? "Epic" : "Story"} "${item.name}"`
     );
-    setDeleteModalMessage(`Are you sure you want to delete "${item.name}"?`);
+    setDeleteModalMessage(`Deleting ${item.name} is a permanent action and cannot be undone.`);
     setShowDeleteModal(true);
   };
 
@@ -158,7 +150,7 @@ const BacklogTablePage: FC = () => {
     const epicStories = getEpicStories(epicId);
     const message =
       epicStories.length > 0
-        ? `Are you sure you want to delete the epic "${epic.name}" and all its stories (${epicStories.length})?`
+        ? `Are you sure you want to delete the epic "${epic.name}" and all its ${epicStories.length} stories ?`
         : `Are you sure you want to delete the epic "${epic.name}"?`;
 
     setItemToDelete(epic);
