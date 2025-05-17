@@ -395,7 +395,6 @@ res.status(200).json({ message: `Sprint ${sprintId} successfully deleted` });
 
 
 /*
-
 // POST /projects/:projectId/sprints/:sprintId/complete
 export const completeSprint = async (req: Request, res: Response) => {
   try {

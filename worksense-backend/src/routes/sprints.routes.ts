@@ -6,7 +6,7 @@ import {
   getSprintById,
   updateSprint,
   updateSprintStatus,
-  deleteSprint,
+  deleteSprint
 } from "../controllers/sprint.controller.js";
 import {
   memberAuth,
@@ -190,7 +190,7 @@ const router = express.Router({ mergeParams: true });
  *         description: Forbidden - User does not have permission to create sprints
  */
 
-router.post("/", memberAuth, createSprint);
+router.post("/", withPermission("manage:sprints"), memberAuth, createSprint);
 
 
 /**
@@ -464,7 +464,7 @@ router.get("/:sprintId", memberAuth, getSprintById);
  *         description: Sprint not found
  */
 
-router.post("/:sprintId", memberAuth, updateSprint);
+router.post("/:sprintId", withPermission("manage:sprints"), memberAuth, updateSprint);
 
 
 /**
@@ -506,7 +506,7 @@ router.post("/:sprintId", memberAuth, updateSprint);
  *       404:
  *         description: Sprint not found
  */
-router.delete("/:sprintId", memberAuth, deleteSprint);
+router.delete("/:sprintId", withPermission("manage:sprints"), memberAuth, deleteSprint);
 
 /**
  * @swagger
@@ -603,11 +603,11 @@ router.delete("/:sprintId", memberAuth, deleteSprint);
  *       404:
  *         description: Sprint not found or sprint does not belong to the specified project
  */
-router.post("/:sprintId/status", memberAuth, updateSprintStatus)
+router.post("/:sprintId/status", withPermission("manage:sprints"), memberAuth, updateSprintStatus)
 
 /**
  * @swagger
- * /projects/{projectId}/sprints/{sprintId}/tasks:
+ * /projects/{projectId}/sprints/{sprintId}/tasks/{taskId}:
  *   post:
  *     summary: Add a task to a sprint
  *     tags: [Sprints, Tasks]
@@ -697,7 +697,7 @@ router.post("/:sprintId/status", memberAuth, updateSprintStatus)
  *         description: Sprint not found
  */
 
-router.get("/:sprintId/tasks/:taskId", memberAuth, getTaskById);
+// router.post("/:sprintId/tasks/:taskId", memberAuth, updateTaskSprint);
 
 export default router;
 /*
