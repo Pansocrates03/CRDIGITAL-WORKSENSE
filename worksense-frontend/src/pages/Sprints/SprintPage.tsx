@@ -1,13 +1,16 @@
+// Core imports
 import React, { useState } from "react";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useParams } from "react-router-dom";
+import { projectService } from "@/services/projectService.ts";
+import QueryKeys from "@/utils/QueryKeys.ts";
+
+// Component Imports
 import BoardView from "./components/BoardView/BoardView";
 import OverviewView from "./components/OverviewView/OverviewView";
 import TableView from "./components/TableView/TableView";
 import Tabs from "./components/Tabs/Tabs";
 import "./components/styles/SprintPage.css";
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useParams } from "react-router-dom";
-import { projectService } from "@/services/projectService.ts";
-import QueryKeys from "@/utils/QueryKeys.ts";
 
 // Import necessary CSS files
 import "./components/TaskColumn/TaskColumn.css";
@@ -41,6 +44,10 @@ const SprintPage: React.FC = () => {
     queryFn: () => projectService.fetchProjectItems(projectId ? projectId : "")
   });
 
+  const [tasks, setTasks] = useState<BacklogItemType[]>([]);
+  const [activeTab, setActiveTab] = useState('board');
+  const [columns, setColumns] = useState(DEFAULT_COLUMNS);
+
   const handleCreateColumn = (columnName: string) => {
     // Crea un id único, por ejemplo usando Date.now()
     const newColumn = {
@@ -50,9 +57,15 @@ const SprintPage: React.FC = () => {
     setColumns(prev => [...prev, newColumn]);
   };
 
-  const [tasks, setTasks] = useState<BacklogItemType[]>([]);
-  const [activeTab, setActiveTab] = useState('board');
-  const [columns, setColumns] = useState(DEFAULT_COLUMNS);
+  const getItemChildren = (item: BacklogItemType): BacklogItemType[] => {
+  if (!item.subItems || item.subItems.length === 0) {
+    return [item];
+  }
+  return [
+    item,
+    ...item.subItems.flatMap(getItemChildren)
+  ];
+};
 
   // Solo un useEffect para actualizar tasks
   React.useEffect(() => {
@@ -65,7 +78,17 @@ const SprintPage: React.FC = () => {
 
   // Update tasks when data changes
   React.useEffect(() => {
-    if (data) setTasks(data);
+    if (data) {
+      console.log("DATA", data);
+      // Normalizar todos los subitems
+      let flattenedData = data.flatMap(getItemChildren);
+
+      // Filtrar a los datos que no sean EPIC
+      let filteredData = flattenedData.filter(item => item.type != "epic")
+
+      // Se añade al state
+      setTasks(filteredData)
+    };
   }, [data]);
 
 
