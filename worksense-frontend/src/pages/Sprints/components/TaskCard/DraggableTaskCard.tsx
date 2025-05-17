@@ -1,9 +1,10 @@
 import React from 'react';
 import { Task } from '../../data';
 import '../styles/TaskCard.css';
+import BacklogItemType from '@/types/BacklogItemType';
 
 interface DraggableTaskCardProps {
-  task: Task;
+  task: BacklogItemType;
   index: number;
 }
 
@@ -54,21 +55,21 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) =>
       onDragEnd={handleDragEnd}
       className="task-card"
     >
-      {task.coverImageUrl && (
+      {task.coverImage && (
         <div className="task-card__cover">
           <img
-            src={task.coverImageUrl}
-            alt={task.title}
+            src={task.coverImage}
+            alt={task.name ? task.name : "NaN"}
             className="task-card__cover-image"
           />
         </div>
       )}
       
-      <h3 className="task-card__title">{task.title}</h3>
+      <h3 className="task-card__title">{task.name}</h3>
       
       <div className="task-card__meta">
-        <span className={`task-card__status ${getStatusClass(task.status)}`}>
-          {task.status.replace('_', ' ')}
+        <span className={`task-card__status ${getStatusClass(task.status ? task.status : "")}`}>
+          {task.status}
         </span>
         
         {task.priority && (
@@ -78,23 +79,24 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) =>
         )}
       </div>
 
-      {task.subtasksTotal > 0 && (
+      {task.subItems && task.subItems.length < 0 && (
         <div className="task-card__progress">
           <div className="task-card__progress-bar">
             <div
               className="task-card__progress-fill"
-              style={{ width: `${(task.subtasksCompleted / task.subtasksTotal) * 100}%` }}
+              style={{ width: `${(10 / 30 ) * 100}%` }} // subtasks completed / total subtasks
             />
           </div>
           <span className="task-card__progress-text">
-            {task.subtasksCompleted}/{task.subtasksTotal}
+            {10}/{30} // 
           </span>
         </div>
       )}
 
       <div className="task-card__footer">
         <div className="task-card__assignees">
-          {task.assignees.map(assignee => (
+          
+          {/*task.assignees.map(assignee => (
             <img
               key={assignee.id}
               className="task-card__assignee"
@@ -102,9 +104,10 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) =>
               alt={assignee.name}
               title={assignee.name}
             />
-          ))}
+          ))*/}
         </div>
         
+        {/* 
         <div className="task-card__stats">
           {task.commentsCount > 0 && (
             <span>💬 {task.commentsCount}</span>
@@ -113,6 +116,7 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) =>
             <span>🔗 {task.linksCount}</span>
           )}
         </div>
+        */}
       </div>
     </div>
   );

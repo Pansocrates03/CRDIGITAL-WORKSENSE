@@ -30,8 +30,8 @@ export const createSprint: RequestHandler = async (req, res, next) => {
         .status(400)
         .json({ message: "startDate and endDate are required" });
     }
-    const newStart = new Date(startDate);
-    const newEnd = new Date(endDate);
+    const newStart = new Date(`${startDate}T12:00:00`);
+    const newEnd = new Date(`${endDate}T12:00:00`);
     if (isNaN(newStart.getTime()) || isNaN(newEnd.getTime())) {
       return res.status(400).json({ message: "Invalid date format provided" });
     }
@@ -43,7 +43,7 @@ export const createSprint: RequestHandler = async (req, res, next) => {
     // --- End Validation ---
 
     const sprintsCollection = db
-      .collection("projectss")
+      .collection("projects")
       .doc(projectId)
       .collection("sprints"); // Top-level collection
 
@@ -93,7 +93,11 @@ export const getSprints: RequestHandler = async (req, res, next) => {
     const { projectId } = req.params; // Assumed present
 
     // Start query on the top-level collection
-    let query = db.collection("sprints").where("projectId", "==", projectId); // Essential filter
+    let query = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("sprints")
+      .where("projectId", "==", projectId); // Essential filter
 
     // --- Filtering by Status  ---
     const { status } = req.query;
@@ -177,6 +181,89 @@ export const getSprintById: RequestHandler = async (req, res, next) => {
 };
 
 /**
+ * @description Update the information in a spritn by its ID
+ *              Fetches from the top-level 'sprints' collection and verifies projectId.
+ * @route POST /api/v1/projects/:projectId/sprints/:sprintId
+ * @access Private (requires auth, project membership)
+ */
+export const updateSprint: RequestHandler = async (req, res, next) => {
+  try {
+    const { projectId, sprintId } = req.params;
+    const { name, goal, startDate, endDate, status } = req.body;
+
+    const sprintRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("sprints")
+      .doc(sprintId);
+
+    const sprintSnap = await sprintRef.get();
+
+    if (!sprintSnap.exists) {
+      return res.status(404).json({ message: "Sprint not found" });
+    }
+
+    const sprintData = sprintSnap.data();
+
+    if (!sprintData || sprintData.projectId !== projectId) {
+      return res.status(403).json({
+        message: "Sprint not found within the specified project",
+      });
+    }
+
+    // --- Prepare updates ---
+    const updates: any = {
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+
+    if (name !== undefined) updates.name = name;
+    if (goal !== undefined) updates.goal = goal;
+
+    if (startDate !== undefined || endDate !== undefined) {
+      const currentStart = startDate
+        ? new Date(`${startDate}T12:00:00`)
+        : sprintData.startDate.toDate();
+
+      const currentEnd = endDate
+        ? new Date(`${endDate}T12:00:00`)
+        : sprintData.endDate.toDate();
+
+      if (isNaN(currentStart.getTime()) || isNaN(currentEnd.getTime())) {
+        return res.status(400).json({ message: "Invalid date format provided" });
+      }
+
+      if (currentStart >= currentEnd) {
+        return res
+          .status(400)
+          .json({ message: "startDate must be before endDate" });
+      }
+
+      if (startDate !== undefined) updates.startDate = Timestamp.fromDate(currentStart);
+      if (endDate !== undefined) updates.endDate = Timestamp.fromDate(currentEnd);
+    }
+
+
+    if (status !== undefined) {
+      const validStatuses = ["Active", "Planned", "Completed"];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: "Invalid status value" });
+      }
+      updates.status = status;
+    }
+
+    // --- Apply updates ---
+    await sprintRef.update(updates);
+
+    const updatedSnap = await sprintRef.get();
+    res.status(200).json({ id: sprintId, ...updatedSnap.data() });
+  } catch (error) {
+    console.error(`Error updating sprint ${req.params.sprintId}:`, error);
+    next(error);
+  }
+};
+
+
+/**
  * @description Update the status of a sprint.
  * @route PATCH /api/v1/projects/:projectId/sprints/:sprintId/status
  * @access Private (requires auth, project membership, permissions)
@@ -199,7 +286,12 @@ export const updateSprintStatus: RequestHandler = async (req, res, next) => {
       });
     }
 
-    const sprintRef = db.collection("sprints").doc(sprintId);
+    const sprintRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("sprints")
+      .doc(sprintId);
+
     const sprintSnap = await sprintRef.get();
 
     // --- Existence & Ownership Checks ---
@@ -253,6 +345,54 @@ export const updateSprintStatus: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+
+/**
+ * @description Delete a sprint from the project.
+ *              Sprints are stored in a top-level 'sprints' collection.
+ *              Deletes the complete sprint from the project by using the projectId and sprintId
+ *              Determines initial status ('Active' or 'Planned') based on other sprints for the SAME project.
+ * @route Delete /api/v1/projects/:projectId/sprints/_sprintId
+ * @access Private (requires auth, project membership, permissions)
+ */
+
+export const deleteSprint:RequestHandler = async (req, res, next) => {
+  try{
+    const { projectId, sprintId } = req.params;
+
+    const sprintRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("sprints")
+      .doc(sprintId);
+
+      const sprintSnap = await sprintRef.get();
+
+      // --- Existence & Ownership Checks ---
+    if (!sprintSnap.exists) {
+      return res.status(404).json({ message: "Sprint not found" });
+    }
+
+    const sprintData = sprintSnap.data();
+    if (!sprintData || sprintData.projectId !== projectId) {
+      return res.status(403).json({
+        message: "Sprint not found within the specified project",
+      });
+    }
+
+    await sprintRef.delete();
+
+res.status(200).json({ message: `Sprint ${sprintId} successfully deleted` });
+
+  } catch (error) {
+    console.error(
+      `Error deleting sprint ${req.params.sprintId}:`,
+      error
+    );
+    next(error);
+  }
+};
+
 
 /*
 
