@@ -4,7 +4,9 @@ import {
   createSprint,
   getSprints,
   getSprintById,
+  updateSprint,
   updateSprintStatus,
+  deleteSprint,
 } from "../controllers/sprint.controller.js";
 import {
   memberAuth,
@@ -186,9 +188,16 @@ const router = express.Router({ mergeParams: true });
  *         description: Unauthorized - User is not authenticated
  *       403:
  *         description: Forbidden - User does not have permission to create sprints
- *
+ */
+
+router.post("/", memberAuth, createSprint);
+
+
+/**
+ * @swagger
+ * /projects/{projectId}/sprints:
  *   get:
- *     summary: Get all sprints for a project
+ *     summary: Get all sprints of a project
  *     tags: [Sprints]
  *     security:
  *       - auth-token: []
@@ -199,14 +208,6 @@ const router = express.Router({ mergeParams: true });
  *         schema:
  *           type: string
  *         description: ID of the project
- *       - in: query
- *         name: status
- *         schema:
- *           type: array
- *           items:
- *             type: string
- *             enum: ["Active", "Planned", "Completed"]
- *         description: Filter sprints by status
  *     responses:
  *       200:
  *         description: List of sprints
@@ -215,14 +216,62 @@ const router = express.Router({ mergeParams: true });
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Sprint'
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: ID of the sprint
+ *                   projectId:
+ *                     type: string
+ *                     description: ID of the project
+ *                   name:
+ *                     type: string
+ *                     description: Name of the sprint
+ *                   goal:
+ *                     type: string
+ *                     nullable: true
+ *                     description: Goal of the sprint
+ *                   startDate:
+ *                     type: object
+ *                     properties:
+ *                       _seconds:
+ *                         type: integer
+ *                       _nanoseconds:
+ *                         type: integer
+ *                   endDate:
+ *                     type: object
+ *                     properties:
+ *                       _seconds:
+ *                         type: integer
+ *                       _nanoseconds:
+ *                         type: integer
+ *                   status:
+ *                     type: string
+ *                     enum: ["Active", "Planned", "Completed"]
+ *                   createdAt:
+ *                     type: object
+ *                     properties:
+ *                       _seconds:
+ *                         type: integer
+ *                       _nanoseconds:
+ *                         type: integer
+ *                   updatedAt:
+ *                     type: object
+ *                     properties:
+ *                       _seconds:
+ *                         type: integer
+ *                       _nanoseconds:
+ *                         type: integer
  *       401:
  *         description: Unauthorized - User is not authenticated
  *       403:
  *         description: Forbidden - User is not a member of the project
+ *       404:
+ *         description: No sprints found for the specified project
  */
 
-router.post("/", memberAuth, createSprint);
+router.get("/", memberAuth, getSprints);
+
 
 /**
  * @swagger
@@ -306,6 +355,158 @@ router.post("/", memberAuth, createSprint);
  *       404:
  *         description: Sprint not found or sprint does not belong to the specified project
  */
+router.get("/:sprintId", memberAuth, getSprintById);
+
+/**
+ * @swagger
+ * /projects/{projectId}/sprints/{sprintId}:
+ *   patch:
+ *     summary: Update an existing sprint
+ *     tags: [Sprints]
+ *     security:
+ *       - auth-token: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the project the sprint belongs to
+ *       - in: path
+ *         name: sprintId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the sprint to update
+ *     requestBody:
+ *       description: Fields to update in the sprint (partial updates allowed)
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the sprint
+ *               goal:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Goal of the sprint
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Start date of the sprint (ISO format)
+ *               endDate:
+ *                 type: string
+ *                 format: date-time
+ *                 description: End date of the sprint (ISO format)
+ *               status:
+ *                 type: string
+ *                 enum: [Active, Planned, Completed]
+ *                 description: Status of the sprint
+ *     responses:
+ *       200:
+ *         description: Sprint updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: Sprint ID
+ *                 projectId:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 goal:
+ *                   type: string
+ *                   nullable: true
+ *                 startDate:
+ *                   type: object
+ *                   properties:
+ *                     _seconds:
+ *                       type: integer
+ *                     _nanoseconds:
+ *                       type: integer
+ *                 endDate:
+ *                   type: object
+ *                   properties:
+ *                     _seconds:
+ *                       type: integer
+ *                     _nanoseconds:
+ *                       type: integer
+ *                 status:
+ *                   type: string
+ *                   enum: [Active, Planned, Completed]
+ *                 createdAt:
+ *                   type: object
+ *                   properties:
+ *                     _seconds:
+ *                       type: integer
+ *                     _nanoseconds:
+ *                       type: integer
+ *                 updatedAt:
+ *                   type: object
+ *                   properties:
+ *                     _seconds:
+ *                       type: integer
+ *                     _nanoseconds:
+ *                       type: integer
+ *       400:
+ *         description: Bad request – invalid date format or invalid status
+ *       401:
+ *         description: Unauthorized – authentication required
+ *       403:
+ *         description: Forbidden – sprint does not belong to specified project
+ *       404:
+ *         description: Sprint not found
+ */
+
+router.post("/:sprintId", memberAuth, updateSprint);
+
+
+/**
+ * @swagger
+ * /projects/{projectId}/sprints/{sprintId}:
+ *   delete:
+ *     summary: Delete a sprint from the project
+ *     tags: [Sprints]
+ *     security:
+ *       - auth-token: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the project
+ *       - in: path
+ *         name: sprintId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the sprint
+ *     responses:
+ *       200:
+ *         description: Sprint deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Sprint sprint123 successfully deleted
+ *       401:
+ *         description: Unauthorized - User is not authenticated
+ *       403:
+ *         description: Forbidden - Sprint does not belong to the specified project
+ *       404:
+ *         description: Sprint not found
+ */
+router.delete("/:sprintId", memberAuth, deleteSprint);
 
 /**
  * @swagger
@@ -402,6 +603,7 @@ router.post("/", memberAuth, createSprint);
  *       404:
  *         description: Sprint not found or sprint does not belong to the specified project
  */
+router.post("/:sprintId/status", memberAuth, updateSprintStatus)
 
 /**
  * @swagger
