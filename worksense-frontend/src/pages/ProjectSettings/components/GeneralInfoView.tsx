@@ -83,165 +83,168 @@ const GeneralInfoView: React.FC = () => {
 
   return (
     <div className="general-info-view">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h3 className="text-2xl font-bold text-foreground">General Info</h3>
-          <p className="text-muted-foreground mt-1">
-            Basic information about your project.
-          </p>
-        </div>
-        {isProductOwner && !editMode && (
-          <button
-            className="bg-[#ac1754] text-white px-4 py-2 rounded hover:bg-[#8e0e3d] transition"
-            onClick={() => setEditMode(true)}
-          >
-            Edit
-          </button>
-        )}
-        {isProductOwner && editMode && (
-          <div className="flex gap-2">
+      <div className="bg-white rounded-lg shadow p-8">
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h3 className="text-2xl font-bold text-foreground">General Info</h3>
+            <p className="text-muted-foreground mt-1">
+              Basic information about your project.
+            </p>
+          </div>
+          {isProductOwner && !editMode && (
             <button
               className="bg-[#ac1754] text-white px-4 py-2 rounded hover:bg-[#8e0e3d] transition"
-              onClick={handleSave}
+              onClick={() => setEditMode(true)}
             >
-              Save
+              Edit
             </button>
-            <button
-              className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition"
-              onClick={() => {
-                setEditMode(false);
-                setForm({
-                  name: project?.name || "",
-                  description: project?.description || "",
-                  status: project?.status || "active",
-                  startDate: project?.startDate || "",
-                  endDate: project?.endDate || "",
-                  visibility: project?.visibility || "",
-                });
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </div>
+          )}
+          {isProductOwner && editMode && (
+            <div className="flex gap-2">
+              <button
+                className="bg-[#ac1754] text-white px-4 py-2 rounded hover:bg-[#8e0e3d] transition"
+                onClick={handleSave}
+              >
+                Save
+              </button>
+              <button
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition"
+                onClick={() => {
+                  setEditMode(false);
+                  setForm({
+                    name: project?.name || "",
+                    description: project?.description || "",
+                    status: project?.status || "active",
+                    startDate: project?.startDate || "",
+                    endDate: project?.endDate || "",
+                    visibility: project?.visibility || "",
+                  });
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
 
-      <div className="space-y-4">
-        {/* Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Name</label>
-          {editMode ? (
-            <input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
-            />
-          ) : (
-            <div className="text-lg">{form.name}</div>
-          )}
-        </div>
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
-          {editMode ? (
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
-            />
-          ) : (
-            <div className="text-base">{form.description}</div>
-          )}
-        </div>
-        {/* Inline Fields Container */}
-        <div className="bg-white rounded-lg shadow p-4 flex flex-wrap gap-4">
-          {/* Start Date */}
-          <div className="flex-1 min-w-[180px]">
-            <label className="block text-sm font-medium text-gray-700">Start Date</label>
+        <div className="space-y-4">
+          {/* Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Name</label>
             {editMode ? (
               <input
-                type="date"
-                name="startDate"
-                value={form.startDate?.slice(0, 10)}
+                name="name"
+                value={form.name}
                 onChange={handleChange}
                 className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
               />
             ) : (
-              <div>{form.startDate ? form.startDate.slice(0, 10) : "Not set"}</div>
+              <div className="text-lg">{form.name}</div>
             )}
           </div>
-          {/* End Date */}
-          <div className="flex-1 min-w-[180px]">
-            <label className="block text-sm font-medium text-gray-700">End Date</label>
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Description</label>
             {editMode ? (
-              <input
-                type="date"
-                name="endDate"
-                value={form.endDate?.slice(0, 10)}
+              <textarea
+                name="description"
+                value={form.description}
                 onChange={handleChange}
                 className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
               />
             ) : (
-              <div>{form.endDate ? form.endDate.slice(0, 10) : "Not set"}</div>
+              <div className="text-base">{form.description}</div>
             )}
           </div>
-          {/* Status */}
-          <div className="flex-1 min-w-[150px]">
-            <label className="block text-sm font-medium text-gray-700">Status</label>
-            {editMode ? (
-              <select
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-                className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
-              >
-                {statusOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            ) : (
-              <div>{form.status}</div>
-            )}
+          {/* Inline Fields Container */}
+          <div className="bg-white rounded-lg shadow p-4 flex flex-wrap gap-4">
+            {/* Start Date */}
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-sm font-medium text-gray-700">Start Date</label>
+              {editMode ? (
+                <input
+                  type="date"
+                  name="startDate"
+                  value={form.startDate?.slice(0, 10)}
+                  onChange={handleChange}
+                  className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
+                />
+              ) : (
+                <div>{form.startDate ? form.startDate.slice(0, 10) : "Not set"}</div>
+              )}
+            </div>
+            {/* End Date */}
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-sm font-medium text-gray-700">End Date</label>
+              {editMode ? (
+                <input
+                  type="date"
+                  name="endDate"
+                  value={form.endDate?.slice(0, 10)}
+                  onChange={handleChange}
+                  className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
+                />
+              ) : (
+                <div>{form.endDate ? form.endDate.slice(0, 10) : "Not set"}</div>
+              )}
+            </div>
+            {/* Status */}
+            <div className="flex-1 min-w-[150px]">
+              <label className="block text-sm font-medium text-gray-700">Status</label>
+              {editMode ? (
+                <select
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                  className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
+                >
+                  {statusOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <div>{form.status}</div>
+              )}
+            </div>
+            {/* Visibility */}
+            <div className="flex-1 min-w-[150px]">
+              <label className="block text-sm font-medium text-gray-700">Visibility</label>
+              {editMode ? (
+                <select
+                  name="visibility"
+                  value={form.visibility}
+                  onChange={handleChange}
+                  className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
+                >
+                  <option value="">Not set</option>
+                  {visibilityOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <div>{form.visibility || "Not set"}</div>
+              )}
+            </div>
           </div>
-          {/* Visibility */}
-          <div className="flex-1 min-w-[150px]">
-            <label className="block text-sm font-medium text-gray-700">Visibility</label>
-            {editMode ? (
-              <select
-                name="visibility"
-                value={form.visibility}
-                onChange={handleChange}
-                className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
-              >
-                <option value="">Not set</option>
-                {visibilityOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            ) : (
-              <div>{form.visibility || "Not set"}</div>
-            )}
-          </div>
+        </div>
+
+        {/* Danger Zone */}
+        <div className="mt-10 border-t pt-6">
+          <h4 className="text-lg font-bold mb-2">Danger Zone</h4>
+          <p className="text-sm text-muted-foreground mb-4">
+            Deleting this project is irreversible. All data will be lost.
+          </p>
+          <button
+            className="bg-[#ac1754] text-white px-4 py-2 rounded hover:bg-[#8e0e3d] transition"
+            onClick={() => setShowDeleteModal(true)}
+            disabled={!isProductOwner}
+          >
+            Delete Project
+          </button>
         </div>
       </div>
 
-      {/* Danger Zone */}
-      <div className="mt-10 border-t pt-6">
-        <h4 className="text-lg font-bold mb-2">Danger Zone</h4>
-        <p className="text-sm text-muted-foreground mb-4">
-          Deleting this project is irreversible. All data will be lost.
-        </p>
-        <button
-          className="bg-[#ac1754] text-white px-4 py-2 rounded hover:bg-[#8e0e3d] transition"
-          onClick={() => setShowDeleteModal(true)}
-          disabled={!isProductOwner}
-        >
-          Delete Project
-        </button>
-      </div>
-
+      {/* Delete Modal */}
       {showDeleteModal && (
         <div className="fixed top-1/2 left-1/2 z-50 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-md shadow-lg border">
           <h2 className="text-xl font-bold mb-2">Delete Project</h2>
