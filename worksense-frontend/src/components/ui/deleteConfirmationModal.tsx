@@ -1,7 +1,7 @@
 // src/components/ui/DeleteConfirmationModal.tsx
 import React from "react";
-import { AlertTriangle, X } from "lucide-react";
 import styles from "@/components/BacklogTable/CreateItemModal.module.css"; // Reuse the same styles
+import {Button} from "@/components/ui/button";
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -18,7 +18,6 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   title,
   message,
 }) => {
-  // If the modal is not open, don't render anything
   if (!isOpen) return null;
 
   return (
@@ -31,46 +30,35 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
       <div
         className={styles.modalContent}
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: "500px" }} // Smaller than the create modal
+        style={{ maxWidth: "500px" }}
       >
         <div className={styles.modalHeader}>
           <div className="flex items-center">
-            <AlertTriangle className="h-5 w-5 text-[#ac1754] mr-2" />
             <h2 className="font-semibold">{title}</h2>
           </div>
-          <button
-            className={styles.closeButton}
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <X size={18} />
-          </button>
         </div>
 
-        <div className="my-6 text-gray-600 dark:text-gray-300">
+        <div className=" p-5 my-6 text-sm text-gray-600 dark:text-gray-300">
           <p>{message}</p>
         </div>
 
         <div className={styles.formActions}>
-          <button
+          <Button variant = {"secondary"}
             type="button"
-            className={styles.cancelButton}
             onClick={onClose}
           >
-            <X size={16} className="mr-1" />
             Cancel
-          </button>
+          </Button>
 
-          <button
-            type="button"
+          <Button
+            variant ={"destructive"}
             onClick={() => {
               onConfirm();
               onClose();
             }}
-            className="bg-[#ac1754] hover:bg-[#8e0e3d] text-white font-medium py-2 px-4 rounded-md flex items-center justify-center transition-colors"
           >
             Delete
-          </button>
+          </Button>
         </div>
       </div>
     </div>

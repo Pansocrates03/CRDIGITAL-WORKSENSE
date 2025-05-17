@@ -263,9 +263,8 @@ export const login = async (req: Request, res: Response) => {
           platformRole: loginData.platformRole,
         },
         process.env.TOKEN_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "24h" }
       );
-
       // User data to return
       const user = {
         email,
