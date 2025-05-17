@@ -193,11 +193,11 @@ const router = express.Router({ mergeParams: true });
 router.post("/", memberAuth, createSprint);
 
 
-/** 
+/**
  * @swagger
  * /projects/{projectId}/sprints:
  *   get:
- *     summary: Get all sprint of a project
+ *     summary: Get all sprints of a project
  *     tags: [Sprints]
  *     security:
  *       - auth-token: []
@@ -210,63 +210,66 @@ router.post("/", memberAuth, createSprint);
  *         description: ID of the project
  *     responses:
  *       200:
- *         description: Sprint details
+ *         description: List of sprints
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   description: ID of the sprint
- *                 projectId:
- *                   type: string
- *                   description: ID of the project
- *                 name:
- *                   type: string
- *                   description: Name of the sprint
- *                 goal:
- *                   type: string
- *                   nullable: true
- *                   description: Goal of the sprint
- *                 startDate:
- *                   type: object
- *                   properties:
- *                     _seconds:
- *                       type: integer
- *                     _nanoseconds:
- *                       type: integer
- *                 endDate:
- *                   type: object
- *                   properties:
- *                     _seconds:
- *                       type: integer
- *                     _nanoseconds:
- *                       type: integer
- *                 status:
- *                   type: string
- *                   enum: ["Active", "Planned", "Completed"]
- *                 createdAt:
- *                   type: object
- *                   properties:
- *                     _seconds:
- *                       type: integer
- *                     _nanoseconds:
- *                       type: integer
- *                 updatedAt:
- *                   type: object
- *                   properties:
- *                     _seconds:
- *                       type: integer
- *                     _nanoseconds:
- *                       type: integer
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: ID of the sprint
+ *                   projectId:
+ *                     type: string
+ *                     description: ID of the project
+ *                   name:
+ *                     type: string
+ *                     description: Name of the sprint
+ *                   goal:
+ *                     type: string
+ *                     nullable: true
+ *                     description: Goal of the sprint
+ *                   startDate:
+ *                     type: object
+ *                     properties:
+ *                       _seconds:
+ *                         type: integer
+ *                       _nanoseconds:
+ *                         type: integer
+ *                   endDate:
+ *                     type: object
+ *                     properties:
+ *                       _seconds:
+ *                         type: integer
+ *                       _nanoseconds:
+ *                         type: integer
+ *                   status:
+ *                     type: string
+ *                     enum: ["Active", "Planned", "Completed"]
+ *                   createdAt:
+ *                     type: object
+ *                     properties:
+ *                       _seconds:
+ *                         type: integer
+ *                       _nanoseconds:
+ *                         type: integer
+ *                   updatedAt:
+ *                     type: object
+ *                     properties:
+ *                       _seconds:
+ *                         type: integer
+ *                       _nanoseconds:
+ *                         type: integer
  *       401:
  *         description: Unauthorized - User is not authenticated
  *       403:
  *         description: Forbidden - User is not a member of the project
  *       404:
- *         description: Sprint not found or sprint does not belong to the specified project
+ *         description: No sprints found for the specified project
  */
+
 router.get("/", memberAuth, getSprints);
 
 

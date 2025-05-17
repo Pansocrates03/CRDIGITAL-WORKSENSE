@@ -30,8 +30,8 @@ export const createSprint: RequestHandler = async (req, res, next) => {
         .status(400)
         .json({ message: "startDate and endDate are required" });
     }
-    const newStart = new Date(startDate);
-    const newEnd = new Date(endDate);
+    const newStart = new Date(`${startDate}T12:00:00`);
+    const newEnd = new Date(`${endDate}T12:00:00`);
     if (isNaN(newStart.getTime()) || isNaN(newEnd.getTime())) {
       return res.status(400).json({ message: "Invalid date format provided" });
     }
@@ -220,20 +220,28 @@ export const updateSprint: RequestHandler = async (req, res, next) => {
     if (goal !== undefined) updates.goal = goal;
 
     if (startDate !== undefined || endDate !== undefined) {
-      const currentStart = startDate ? new Date(startDate) : sprintData.startDate.toDate();
-      const currentEnd = endDate ? new Date(endDate) : sprintData.endDate.toDate();
+      const currentStart = startDate
+        ? new Date(`${startDate}T12:00:00`)
+        : sprintData.startDate.toDate();
+
+      const currentEnd = endDate
+        ? new Date(`${endDate}T12:00:00`)
+        : sprintData.endDate.toDate();
 
       if (isNaN(currentStart.getTime()) || isNaN(currentEnd.getTime())) {
         return res.status(400).json({ message: "Invalid date format provided" });
       }
 
       if (currentStart >= currentEnd) {
-        return res.status(400).json({ message: "startDate must be before endDate" });
+        return res
+          .status(400)
+          .json({ message: "startDate must be before endDate" });
       }
 
       if (startDate !== undefined) updates.startDate = Timestamp.fromDate(currentStart);
       if (endDate !== undefined) updates.endDate = Timestamp.fromDate(currentEnd);
     }
+
 
     if (status !== undefined) {
       const validStatuses = ["Active", "Planned", "Completed"];
