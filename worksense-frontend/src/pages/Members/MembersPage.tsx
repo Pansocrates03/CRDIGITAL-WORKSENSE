@@ -190,8 +190,9 @@ const MembersPage: React.FC = () => {
             onSubmit={handleRoleUpdate}
           />
 
-          {showDeleteAlert && memberToDelete && (
+          {memberToDelete && (
             <DeleteMemberAlert
+                showDeleteAlert={showDeleteAlert}
               memberName={memberToDelete.name}
               onClose={() => {
                 setShowDeleteAlert(false);
