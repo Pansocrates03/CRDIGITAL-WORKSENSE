@@ -1,13 +1,11 @@
 import apiClient from "@/api/apiClient";
 import { User } from "@/types/UserType";
-import { API_URL } from "../../config/env.config"
-
-const FULL_API_URL = API_URL + "/api/v1";
+import { API_URL } from "@/lib/constants/endpoints";
 
 export const userProfileService = {
   async fetchProfile(): Promise<User> {
     try {
-      const response = await apiClient.get(`${FULL_API_URL}/me`);
+      const response = await apiClient.get(`${API_URL}/me`);
       return response.data;
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -20,7 +18,7 @@ export const userProfileService = {
     pfp?: string;
   }): Promise<User> {
     try {
-      const response = await apiClient.put(`${FULL_API_URL}/me`, data);
+      const response = await apiClient.put(`${API_URL}/me`, data);
       return response.data;
     } catch (error) {
       console.error("Error updating profile:", error);

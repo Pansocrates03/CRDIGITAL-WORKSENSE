@@ -1,8 +1,9 @@
 import React from 'react';
 import { Task } from '../../data';
+import BacklogItemType from '@/types/BacklogItemType';
 
 interface OverviewViewProps {
-  tasks: Task[];
+  tasks: BacklogItemType[];
 }
 
 const OverviewView: React.FC<OverviewViewProps> = ({ tasks }) => {

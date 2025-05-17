@@ -1,3 +1,50 @@
+# Documentación de la base de datos
+> Este proyecto hizo uso de dos bases de datos. Una relacional, específicamente MS SQL Server. Y una no relacional: Firestore.
+
+## Modelo lógico de datos
+```
+Firestore (Database)
+├── availablePermissions (Collection)
+│   ├── permissionID (Doc)
+│      ├── category
+│      ├── description
+│      ├── key
+├── projectRoles (Collection)
+│   ├── roleId (Doc)
+│      ├── name
+│      ├── permissions
+├── projects (Collection)
+│   ├── projectId (Doc)
+│      ├── conext
+│      ├── createdAt
+│      ├── description
+│      ├── name
+│      ├── ownerID
+│      ├── status
+│      ├── members (Collection)
+|      │    ├── memberId (Doc)
+|      │        ├── joinedAt
+|      │        ├── projectRoleID
+|      │        ├── userId
+│      ├── backlog (Collection)
+|      │    ├── backlogItemId (Doc)
+|      │    |   ├── Acceptance Criteria
+|      │    |   ├── assignee Id
+|      │    |   ├── authorId
+|      │    |   ├── coverImage
+|      │    |   ├── createdAt
+|      │    |   ├── description
+
+
+```
+
+## Diagrama ER de la BD Relacional
+![alt text](image.png)
+
+## Script SQL de la BD Relacional
+```sql
+-- Date: 2025-03-28
+
 -- Creación de la tabla `countries`
 
 CREATE TABLE Countries (
@@ -256,3 +303,343 @@ INSERT INTO Countries (code, alpha2, alpha3, langCS, langDE, langEN, langES, lan
 (887, 'YE', 'YEM', 'Jemen', 'Jemen', 'Yemen', 'Yemen', 'Yémen', 'Yemen', 'Jemen'),
 (891, 'CS', 'SCG', 'Serbia and Montenegro', 'Serbien und Montenegro', 'Serbia and Montenegro', 'Serbia y Montenegro', 'Serbie-et-Monténégro', 'Serbia e Montenegro', 'Servië en Montenegro'),
 (894, 'ZM', 'ZMB', 'Zambie', 'Sambia', 'Zambia', 'Zambia', 'Zambie', 'Zambia', 'Zambia');
+
+-- Languages tables based in iso_639_1
+
+CREATE TABLE Languages (
+  id INT NOT NULL PRIMARY KEY, 
+  name CHAR(49) DEFAULT NULL, 
+  code CHAR(2) DEFAULT NULL
+);
+
+
+-- Languages --
+INSERT INTO Languages VALUES(1, 'English', 'en');
+INSERT INTO Languages VALUES(2, 'Afar', 'aa');
+INSERT INTO Languages VALUES(3, 'Abkhazian', 'ab');
+INSERT INTO Languages VALUES(4, 'Afrikaans', 'af');
+INSERT INTO Languages VALUES(5, 'Amharic', 'am');
+INSERT INTO Languages VALUES(6, 'Arabic', 'ar');
+INSERT INTO Languages VALUES(7, 'Assamese', 'as');
+INSERT INTO Languages VALUES(8, 'Aymara', 'ay');
+INSERT INTO Languages VALUES(9, 'Azerbaijani', 'az');
+INSERT INTO Languages VALUES(10, 'Bashkir', 'ba');
+INSERT INTO Languages VALUES(11, 'Belarusian', 'be');
+INSERT INTO Languages VALUES(12, 'Bulgarian', 'bg');
+INSERT INTO Languages VALUES(13, 'Bihari', 'bh');
+INSERT INTO Languages VALUES(14, 'Bislama', 'bi');
+INSERT INTO Languages VALUES(15, 'Bengali/Bangla', 'bn');
+INSERT INTO Languages VALUES(16, 'Tibetan', 'bo');
+INSERT INTO Languages VALUES(17, 'Breton', 'br');
+INSERT INTO Languages VALUES(18, 'Catalan', 'ca');
+INSERT INTO Languages VALUES(19, 'Corsican', 'co');
+INSERT INTO Languages VALUES(20, 'Czech', 'cs');
+INSERT INTO Languages VALUES(21, 'Welsh', 'cy');
+INSERT INTO Languages VALUES(22, 'Danish', 'da');
+INSERT INTO Languages VALUES(23, 'German', 'de');
+INSERT INTO Languages VALUES(24, 'Bhutani', 'dz');
+INSERT INTO Languages VALUES(25, 'Greek', 'el');
+INSERT INTO Languages VALUES(26, 'Esperanto', 'eo');
+INSERT INTO Languages VALUES(27, 'Spanish', 'es');
+INSERT INTO Languages VALUES(28, 'Estonian', 'et');
+INSERT INTO Languages VALUES(29, 'Basque', 'eu');
+INSERT INTO Languages VALUES(30, 'Persian', 'fa');
+INSERT INTO Languages VALUES(31, 'Finnish', 'fi');
+INSERT INTO Languages VALUES(32, 'Fiji', 'fj');
+INSERT INTO Languages VALUES(33, 'Faeroese', 'fo');
+INSERT INTO Languages VALUES(34, 'French', 'fr');
+INSERT INTO Languages VALUES(35, 'Frisian', 'fy');
+INSERT INTO Languages VALUES(36, 'Irish', 'ga');
+INSERT INTO Languages VALUES(37, 'Scots/Gaelic', 'gd');
+INSERT INTO Languages VALUES(38, 'Galician', 'gl');
+INSERT INTO Languages VALUES(39, 'Guarani', 'gn');
+INSERT INTO Languages VALUES(40, 'Gujarati', 'gu');
+INSERT INTO Languages VALUES(41, 'Hausa', 'ha');
+INSERT INTO Languages VALUES(42, 'Hindi', 'hi');
+INSERT INTO Languages VALUES(43, 'Croatian', 'hr');
+INSERT INTO Languages VALUES(44, 'Hungarian', 'hu');
+INSERT INTO Languages VALUES(45, 'Armenian', 'hy');
+INSERT INTO Languages VALUES(46, 'Interlingua', 'ia');
+INSERT INTO Languages VALUES(47, 'Interlingue', 'ie');
+INSERT INTO Languages VALUES(48, 'Inupiak', 'ik');
+INSERT INTO Languages VALUES(49, 'Indonesian', 'in');
+INSERT INTO Languages VALUES(50, 'Icelandic', 'is');
+INSERT INTO Languages VALUES(51, 'Italian', 'it');
+INSERT INTO Languages VALUES(52, 'Hebrew', 'iw');
+INSERT INTO Languages VALUES(53, 'Japanese', 'ja');
+INSERT INTO Languages VALUES(54, 'Yiddish', 'ji');
+INSERT INTO Languages VALUES(55, 'Javanese', 'jw');
+INSERT INTO Languages VALUES(56, 'Georgian', 'ka');
+INSERT INTO Languages VALUES(57, 'Kazakh', 'kk');
+INSERT INTO Languages VALUES(58, 'Greenlandic', 'kl');
+INSERT INTO Languages VALUES(59, 'Cambodian', 'km');
+INSERT INTO Languages VALUES(60, 'Kannada', 'kn');
+INSERT INTO Languages VALUES(61, 'Korean', 'ko');
+INSERT INTO Languages VALUES(62, 'Kashmiri', 'ks');
+INSERT INTO Languages VALUES(63, 'Kurdish', 'ku');
+INSERT INTO Languages VALUES(64, 'Kirghiz', 'ky');
+INSERT INTO Languages VALUES(65, 'Latin', 'la');
+INSERT INTO Languages VALUES(66, 'Lingala', 'ln');
+INSERT INTO Languages VALUES(67, 'Laothian', 'lo');
+INSERT INTO Languages VALUES(68, 'Lithuanian', 'lt');
+INSERT INTO Languages VALUES(69, 'Latvian/Lettish', 'lv');
+INSERT INTO Languages VALUES(70, 'Malagasy', 'mg');
+INSERT INTO Languages VALUES(71, 'Maori', 'mi');
+INSERT INTO Languages VALUES(72, 'Macedonian', 'mk');
+INSERT INTO Languages VALUES(73, 'Malayalam', 'ml');
+INSERT INTO Languages VALUES(74, 'Mongolian', 'mn');
+INSERT INTO Languages VALUES(75, 'Moldavian', 'mo');
+INSERT INTO Languages VALUES(76, 'Marathi', 'mr');
+INSERT INTO Languages VALUES(77, 'Malay', 'ms');
+INSERT INTO Languages VALUES(78, 'Maltese', 'mt');
+INSERT INTO Languages VALUES(79, 'Burmese', 'my');
+INSERT INTO Languages VALUES(80, 'Nauru', 'na');
+INSERT INTO Languages VALUES(81, 'Nepali', 'ne');
+INSERT INTO Languages VALUES(82, 'Dutch', 'nl');
+INSERT INTO Languages VALUES(83, 'Norwegian', 'no');
+INSERT INTO Languages VALUES(84, 'Occitan', 'oc');
+INSERT INTO Languages VALUES(85, '(Afan)/Oromoor/Oriya', 'om');
+INSERT INTO Languages VALUES(86, 'Punjabi', 'pa');
+INSERT INTO Languages VALUES(87, 'Polish', 'pl');
+INSERT INTO Languages VALUES(88, 'Pashto/Pushto', 'ps');
+INSERT INTO Languages VALUES(89, 'Portuguese', 'pt');
+INSERT INTO Languages VALUES(90, 'Quechua', 'qu');
+INSERT INTO Languages VALUES(91, 'Rhaeto-Romance', 'rm');
+INSERT INTO Languages VALUES(92, 'Kirundi', 'rn');
+INSERT INTO Languages VALUES(93, 'Romanian', 'ro');
+INSERT INTO Languages VALUES(94, 'Russian', 'ru');
+INSERT INTO Languages VALUES(95, 'Kinyarwanda', 'rw');
+INSERT INTO Languages VALUES(96, 'Sanskrit', 'sa');
+INSERT INTO Languages VALUES(97, 'Sindhi', 'sd');
+INSERT INTO Languages VALUES(98, 'Sangro', 'sg');
+INSERT INTO Languages VALUES(99, 'Serbo-Croatian', 'sh');
+INSERT INTO Languages VALUES(100, 'Singhalese', 'si');
+INSERT INTO Languages VALUES(101, 'Slovak', 'sk');
+INSERT INTO Languages VALUES(102, 'Slovenian', 'sl');
+INSERT INTO Languages VALUES(103, 'Samoan', 'sm');
+INSERT INTO Languages VALUES(104, 'Shona', 'sn');
+INSERT INTO Languages VALUES(105, 'Somali', 'so');
+INSERT INTO Languages VALUES(106, 'Albanian', 'sq');
+INSERT INTO Languages VALUES(107, 'Serbian', 'sr');
+INSERT INTO Languages VALUES(108, 'Siswati', 'ss');
+INSERT INTO Languages VALUES(109, 'Sesotho', 'st');
+INSERT INTO Languages VALUES(110, 'Sundanese', 'su');
+INSERT INTO Languages VALUES(111, 'Swedish', 'sv');
+INSERT INTO Languages VALUES(112, 'Swahili', 'sw');
+INSERT INTO Languages VALUES(113, 'Tamil', 'ta');
+INSERT INTO Languages VALUES(114, 'Telugu', 'te');
+INSERT INTO Languages VALUES(115, 'Tajik', 'tg');
+INSERT INTO Languages VALUES(116, 'Thai', 'th');
+INSERT INTO Languages VALUES(117, 'Tigrinya', 'ti');
+INSERT INTO Languages VALUES(118, 'Turkmen', 'tk');
+INSERT INTO Languages VALUES(119, 'Tagalog', 'tl');
+INSERT INTO Languages VALUES(120, 'Setswana', 'tn');
+INSERT INTO Languages VALUES(121, 'Tonga', 'to');
+INSERT INTO Languages VALUES(122, 'Turkish', 'tr');
+INSERT INTO Languages VALUES(123, 'Tsonga', 'ts');
+INSERT INTO Languages VALUES(124, 'Tatar', 'tt');
+INSERT INTO Languages VALUES(125, 'Twi', 'tw');
+INSERT INTO Languages VALUES(126, 'Ukrainian', 'uk');
+INSERT INTO Languages VALUES(127, 'Urdu', 'ur');
+INSERT INTO Languages VALUES(128, 'Uzbek', 'uz');
+INSERT INTO Languages VALUES(129, 'Vietnamese', 'vi');
+INSERT INTO Languages VALUES(130, 'Volapuk', 'vo');
+INSERT INTO Languages VALUES(131, 'Wolof', 'wo');
+INSERT INTO Languages VALUES(132, 'Xhosa', 'xh');
+INSERT INTO Languages VALUES(133, 'Yoruba', 'yo');
+INSERT INTO Languages VALUES(134, 'Chinese', 'zh');
+INSERT INTO Languages VALUES(135, 'Zulu', 'zu');
+
+CREATE TABLE Genders (
+    id INT PRIMARY KEY, -- Identificador único del género
+    name NVARCHAR(50) NOT NULL UNIQUE -- Nombre único del género
+)
+
+INSERT INTO Genders (id,name) VALUES (1, 'Masculino'), (2, 'Femenino'), (3, 'Otro');
+
+CREATE TABLE Users (
+    id INT NOT NULL PRIMARY KEY IDENTITY,            -- Identificador único del usuario
+    email VARCHAR(100) NOT NULL UNIQUE,      -- Correo electrónico único
+    passwordHash VARCHAR(100) NOT NULL,      -- Contraseña del usuario
+    firstName VARCHAR(100) NOT NULL,         -- Nombre del usuario
+    lastName VARCHAR(100) NOT NULL,          -- Apellido del usuario
+    nickName VARCHAR(100),                   -- Apodo del usuario
+    gender INT NOT NULL DEFAULT 3,          -- Género del usuario
+    country VARCHAR(2) NOT NULL DEFAULT 'MX',       -- País del usuario
+    lang INT NOT NULL DEFAULT 1,            -- Idioma del usuario
+    timezone INT NOT NULL DEFAULT -6,       -- Zona horaria del usuario en base a UTC
+    pfp VARCHAR(50),                        -- URL de la foto de perfil
+    isadmin BIT NOT NULL DEFAULT 0,         -- Indica si el usuario es administrador
+    createdAt DATETIME DEFAULT GETDATE(),   -- Fecha de creación
+    lastSignIn DATETIME DEFAULT GETDATE(),  -- Fecha del último inicio de sesión
+    -- Foreign Keys
+    FOREIGN KEY (country) REFERENCES Countries(alpha2),
+    FOREIGN KEY (lang) REFERENCES Languages(id),
+);
+
+
+-----------------------
+-- STORED PROCEDURES --
+-----------------------
+
+
+
+GO
+
+-- Un procedimiento para obtener la información del usuario por ID.
+CREATE PROCEDURE spGetUserById
+    @userId INT
+AS
+BEGIN
+    SELECT id, email, firstName, lastName, nickName, gender, country, lang, timezone, pfp, isadmin, createdAt,lastSignIn
+    FROM Users 
+    WHERE ID = @userId;
+END;
+GO
+
+-- Un procedimiento para registrar nuevos usuarios en la base de datos.
+CREATE PROCEDURE spUserRegistration 
+    @email NVARCHAR(50),
+    @firstName NVARCHAR(50),
+    @lastName NVARCHAR(50),
+    @gender INT,
+    @passwordHash NVARCHAR(256)
+AS
+BEGIN
+    -- Validación de parámetros
+    IF EXISTS (SELECT 1 FROM Users WHERE Email = @email)
+    BEGIN
+        RAISERROR('El correo electrónico ya está registrado.', 16, 1);
+        RETURN;
+    END
+
+    -- Inserción de nuevo usuario
+    INSERT INTO Users (email, firstName, lastName, gender, passwordHash) 
+    VALUES (@email, @firstName, @lastName, @gender, @passwordHash);
+END;
+
+GO
+
+-- Un procedimiento para validar credenciales al iniciar sesión.
+CREATE PROCEDURE spValidateUser
+    @username NVARCHAR(50),
+    @passwordHash NVARCHAR(256)
+AS
+BEGIN
+    SELECT UserID FROM Users 
+    WHERE Username = @username AND PasswordHash = @passwordHash;
+END;
+
+GO
+
+-- Un procedimiento para registrar o revocar tokens en caso de logout o expiración.
+CREATE PROCEDURE spTokenRevocation
+    @token NVARCHAR(MAX),
+    @userID INT
+AS
+BEGIN
+    INSERT INTO RevokedTokens (Token, UserID, RevocationDate) 
+    VALUES (@token, @userID, GETDATE());
+END;
+
+GO
+
+-- Si tu sistema requiere roles de usuario, implementa un procedimiento para asignar roles.
+CREATE PROCEDURE spUserRolesManagement
+    @userID INT,
+    @roleID INT
+AS
+BEGIN
+    INSERT INTO UserRoles (UserID, RoleID) 
+    VALUES (@userID, @roleID);
+END;
+
+GO
+
+-- Checar si un usuario ya existe en la base de datos por ID o username
+ALTER PROCEDURE spCheckUserExists
+    @userId INT = NULL,
+    @username NVARCHAR(50) = NULL
+AS
+BEGIN
+    -- Validación de parámetros
+    IF @userId IS NULL AND @username IS NULL
+    BEGIN
+        RAISERROR('Debe proporcionar un ID de usuario o un nombre de usuario', 16, 1);
+        RETURN;
+    END
+    
+    -- Verifica si el usuario ya existe basado en ID o username
+    IF @userId IS NOT NULL
+    BEGIN
+        -- Búsqueda por ID
+        IF EXISTS (SELECT 1 FROM Users WHERE UserId = @userId)
+        BEGIN
+            SELECT 1 AS UserExists;
+            RETURN;
+        END
+    END
+    ELSE IF @username IS NOT NULL
+    BEGIN
+        -- Búsqueda por username
+        IF EXISTS (SELECT 1 FROM Users WHERE Username = @username)
+        BEGIN
+            SELECT 1 AS UserExists;
+            RETURN;
+        END
+    END
+    
+    -- Si no se encontró el usuario con ningún parámetro
+    SELECT 0 AS UserExists;
+END;
+
+GO
+
+CREATE PROCEDURE spValidateCredentials
+    @Email NVARCHAR(50),
+    @Password NVARCHAR(256)
+AS
+BEGIN
+    DECLARE @StoredHash NVARCHAR(256);
+    DECLARE @UserID INT;
+
+    -- Obtener el hash de la contraseña y el ID del usuario
+    SELECT 
+        @StoredHash = PasswordHash,
+        @UserID = ID
+    FROM Users
+    WHERE Email = @Email;
+
+    -- Si no existe el usuario
+    IF @StoredHash IS NULL
+    BEGIN
+        SELECT 
+            0 AS IsValid, 
+            NULL AS UserID,
+            NULL AS Email,
+            NULL AS FirstName,
+            NULL AS LastName,
+            NULL AS Gender;
+        RETURN;
+    END;
+
+    -- Devolver la información completa del usuario
+    SELECT 
+        1 AS IsValid, 
+        ID AS UserID,
+        Email,
+        FirstName,
+        LastName,
+        Gender
+    FROM Users
+    WHERE ID = @UserID;
+END;
+GO
+
+CREATE PROCEDURE spGetUsers
+AS
+BEGIN
+    SELECT * FROM Users;
+END;
+GO
+```

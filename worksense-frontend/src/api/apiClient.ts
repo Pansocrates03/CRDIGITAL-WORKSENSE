@@ -1,12 +1,11 @@
 // src/apiClient.ts (or a similar location)
 import axios from "axios";
 import { authService } from "../services/auth.ts";
-import { API_URL } from "../../config/env.config.ts"
+import { API_URL } from "@/lib/constants/endpoints.ts";
 
-const FULL_API_URL = API_URL + "/api/v1";
 
 const apiClient = axios.create({
-  baseURL: FULL_API_URL,
+  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },

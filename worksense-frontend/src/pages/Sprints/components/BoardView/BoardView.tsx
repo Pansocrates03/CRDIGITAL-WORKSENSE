@@ -1,22 +1,17 @@
 import React, { useState } from 'react';
 import DraggableTaskCard from '../TaskCard/DraggableTaskCard';
-import { Task } from '../../data';
 import '../styles/BoardView.css';
+import BacklogItemType from '@/types/BacklogItemType';
 
 interface BoardViewProps {
-  tasks: Task[];
+  tasks: BacklogItemType[];
   onTaskUpdate: (taskId: string, newStatus: string) => void;
+  columns: {id: string, title: string}[]
 }
 
-const BoardView: React.FC<BoardViewProps> = ({ tasks, onTaskUpdate }) => {
+const BoardView: React.FC<BoardViewProps> = ({ tasks, onTaskUpdate, columns }) => {
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
-
-  const columns = [
-    { id: 'sprint_backlog', title: 'Sprint Backlog' },
-    { id: 'in_progress', title: 'In Progress' },
-    { id: 'in_review', title: 'In Review' },
-    { id: 'done', title: 'Done' }
-  ];
+   
 
   const handleDragOver = (e: React.DragEvent, columnId: string) => {
     e.preventDefault();
