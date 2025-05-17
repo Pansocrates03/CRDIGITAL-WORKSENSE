@@ -21,3 +21,21 @@
   max-height: calc(100vh - 64px);
   overflow-y: auto;
 }
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.modalContentSm {
+  max-width: 350px;
+}
+
+.modalContentM {
+  max-width: 600px;
+}
+
+.modalContentL {
+  max-width: 900px;
+}
