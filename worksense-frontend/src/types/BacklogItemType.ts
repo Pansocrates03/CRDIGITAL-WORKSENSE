@@ -1,4 +1,4 @@
-export interface BacklogItemType {
+export default interface BacklogItemType {
   id: string;
   projectId: string;
   acceptanceCriteria?: string[] | null;
@@ -7,7 +7,7 @@ export interface BacklogItemType {
   coverImage?: string | null;
   description?: string | null;
   name?: string | null;
-  status?: "new" | "toDo" | "inProgress" | "inReview" | "done" | null;
+  status?: string | null; // default: ""new" | "toDo" | "inProgress" | "inReview" | "done""
   priority?: "high" | "medium" | "low" | null;
   size?: "XS" | "S" | "M" | "L" | "XL" | null;
   sprint?: string | null;

@@ -39,3 +39,33 @@
 .tabs-navigation__label {
   line-height: 1; /* Prevent extra spacing */
 }
+
+.tabs-navigation {
+  display: flex;
+  justify-content: space-between; /* Add this */
+  align-items: center;            /* Add this */
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.tabs-navigation__items {
+  display: flex;
+  gap: 0; /* Remove gap if you want them flush, or set as needed */
+}
+
+.tabs-navigation__add-column {
+  background: #ac1754;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 1rem;
+  transition: background 0.2s;
+}
+
+.tabs-navigation__add-column:hover {
+  background: #8a1242;
+}

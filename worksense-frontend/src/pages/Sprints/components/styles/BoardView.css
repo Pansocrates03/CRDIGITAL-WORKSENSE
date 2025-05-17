@@ -1,13 +1,17 @@
 .board-view {
-  display: grid;
+  display: flex;
+  flex-direction: row;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   height: 100%;
+  overflow-x: auto;
+  padding-bottom: 1rem;
 }
 
 .board-column {
   background-color: #F9FAFB;
   border-radius: 0.5rem;
+  min-width: 280px;
   padding: 1rem;
 }
 
