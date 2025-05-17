@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation,useQueryClient } from "@tanstack/react-query";
+import { projectService } from "@/services/projectService";
+import { useAuth } from "@/hooks/useAuth";
+
 import '../Sprints/components/styles/SprintPage.css';
+
+// Import components for tabs
+import GeneralInfoView from './components/GeneralInfoView';
 
 // Import the Tabs component from SprintPage.tsx
 import Tabs from '../Sprints/components/Tabs/Tabs';
@@ -28,7 +34,7 @@ const ProjectSettingsPage: React.FC = () => {
   const renderView = () => {
     switch (activeTab) {
         case 'generalInfo':
-            return <div>General Info View</div>;
+            return <GeneralInfoView />;
         case 'scrumSettings':
             return <div>Scrum Settings View</div>;
         case 'customization':
@@ -50,7 +56,7 @@ const ProjectSettingsPage: React.FC = () => {
         <div className="sprint-page__header-content">
           <h1 className="sprint-page__title">Project Settings</h1>
           <p className="sprint-page__description">
-            This section allows administrators and project managers to define and 
+            This section allows administrators and product owners to define and 
             manage key project configurations, including foundational details, 
             SCRUM-related parameters, customization elements, analytical tools, 
             artificial intelligence enhancements, and access controls.
