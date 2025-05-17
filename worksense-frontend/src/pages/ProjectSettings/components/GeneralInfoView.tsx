@@ -155,8 +155,8 @@ const GeneralInfoView: React.FC = () => {
             <div className="text-base">{form.description}</div>
           )}
         </div>
-        {/* Dates */}
-        <div className="flex flex-wrap gap-4">
+        {/* Inline Fields Container */}
+        <div className="bg-white rounded-lg shadow p-4 flex flex-wrap gap-4">
           {/* Start Date */}
           <div className="flex-1 min-w-[180px]">
             <label className="block text-sm font-medium text-gray-700">Start Date</label>
