@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import '../Sprints/components/styles/SprintPage.css';
 
 // Import the Tabs component from SprintPage.tsx
 import Tabs from '../Sprints/components/Tabs/Tabs';
@@ -8,7 +9,7 @@ import Tabs from '../Sprints/components/Tabs/Tabs';
 const ProjectSettingsPage: React.FC = () => {
   const { id: projectId } = useParams<{ id:string }>();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState('generalInfo');
 
   // Define the navigation tabs
   const navigationTabs = [
@@ -44,35 +45,27 @@ const ProjectSettingsPage: React.FC = () => {
   };
 
   return (
-    <div>
-        {/* Ttitle and Description Section */}
-        <div className="flex items-baseline justify-between w-full">
-            <div>
-                <h2 className="text-3xl font-bold tracking-tight text-foreground">
-                    Project Settings
-                </h2>
-                <p className="text-muted-foreground mt-1">
-                    This section allows administrators and project managers to define and 
-                    manage key project configurations, including foundational details, 
-                    SCRUM-related parameters, customization elements, analytical tools, 
-                    artificial intelligence enhancements, and access controls.
-                </p>
-            </div>
+    <div className="sprint-page">
+      <div className="sprint-page__header">
+        <div className="sprint-page__header-content">
+          <h1 className="sprint-page__title">Project Settings</h1>
+          <p className="sprint-page__description">
+            This section allows administrators and project managers to define and 
+            manage key project configurations, including foundational details, 
+            SCRUM-related parameters, customization elements, analytical tools, 
+            artificial intelligence enhancements, and access controls.
+          </p>
         </div>
-        {/* Divider */}
-        <div className="border-b border-border my-4"></div>
-
-        {/* Tabs Navigation */}
-        <Tabs
-            items={navigationTabs}
-            activeTabId={activeTab}
-            onTabClick={handleTabChange}
-        />
-
-        {/* Content Area */}
-        <div className="mt-6">
-            {renderView()}
-        </div>
+      </div>
+      <div className="border-b border-border my-4"></div>
+      <Tabs
+        items={navigationTabs}
+        activeTabId={activeTab}
+        onTabClick={handleTabChange}
+      />
+      <div className="mt-6">
+        {renderView()}
+      </div>
     </div>
   );
 };
