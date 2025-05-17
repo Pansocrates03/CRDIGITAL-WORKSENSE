@@ -93,7 +93,11 @@ export const getSprints: RequestHandler = async (req, res, next) => {
     const { projectId } = req.params; // Assumed present
 
     // Start query on the top-level collection
-    let query = db.collection("sprints").where("projectId", "==", projectId); // Essential filter
+    let query = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("sprints")
+      .where("projectId", "==", projectId); // Essential filter
 
     // --- Filtering by Status  ---
     const { status } = req.query;

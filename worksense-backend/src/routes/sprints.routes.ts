@@ -188,9 +188,16 @@ const router = express.Router({ mergeParams: true });
  *         description: Unauthorized - User is not authenticated
  *       403:
  *         description: Forbidden - User does not have permission to create sprints
- *
+ */
+
+router.post("/", memberAuth, createSprint);
+
+
+/** 
+ * @swagger
+ * /projects/{projectId}/sprints:
  *   get:
- *     summary: Get all sprints for a project
+ *     summary: Get all sprint of a project
  *     tags: [Sprints]
  *     security:
  *       - auth-token: []
@@ -201,30 +208,67 @@ const router = express.Router({ mergeParams: true });
  *         schema:
  *           type: string
  *         description: ID of the project
- *       - in: query
- *         name: status
- *         schema:
- *           type: array
- *           items:
- *             type: string
- *             enum: ["Active", "Planned", "Completed"]
- *         description: Filter sprints by status
  *     responses:
  *       200:
- *         description: List of sprints
+ *         description: Sprint details
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Sprint'
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: ID of the sprint
+ *                 projectId:
+ *                   type: string
+ *                   description: ID of the project
+ *                 name:
+ *                   type: string
+ *                   description: Name of the sprint
+ *                 goal:
+ *                   type: string
+ *                   nullable: true
+ *                   description: Goal of the sprint
+ *                 startDate:
+ *                   type: object
+ *                   properties:
+ *                     _seconds:
+ *                       type: integer
+ *                     _nanoseconds:
+ *                       type: integer
+ *                 endDate:
+ *                   type: object
+ *                   properties:
+ *                     _seconds:
+ *                       type: integer
+ *                     _nanoseconds:
+ *                       type: integer
+ *                 status:
+ *                   type: string
+ *                   enum: ["Active", "Planned", "Completed"]
+ *                 createdAt:
+ *                   type: object
+ *                   properties:
+ *                     _seconds:
+ *                       type: integer
+ *                     _nanoseconds:
+ *                       type: integer
+ *                 updatedAt:
+ *                   type: object
+ *                   properties:
+ *                     _seconds:
+ *                       type: integer
+ *                     _nanoseconds:
+ *                       type: integer
  *       401:
  *         description: Unauthorized - User is not authenticated
  *       403:
  *         description: Forbidden - User is not a member of the project
+ *       404:
+ *         description: Sprint not found or sprint does not belong to the specified project
  */
+router.get("/", memberAuth, getSprints);
 
-router.post("/", memberAuth, createSprint);
 
 /**
  * @swagger
