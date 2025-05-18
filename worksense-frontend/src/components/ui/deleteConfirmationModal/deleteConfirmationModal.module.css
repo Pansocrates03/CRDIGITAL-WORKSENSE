@@ -17,7 +17,6 @@
     background-color: white;
     border-radius: 0.5rem;
     width: 90%;
-    padding: 20px;
     max-width: 600px;
     max-height: 90vh;
     overflow-y: auto;
@@ -90,9 +89,6 @@
 }
 
 .formActions {
-    position: sticky;
-
-    background-color: white;
     display: flex;
     justify-content: flex-end;
     align-items: center;
