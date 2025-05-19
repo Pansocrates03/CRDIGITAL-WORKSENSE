@@ -6,6 +6,7 @@ import aiStoriesService from "@/services/aiStoriesService";
 import {AiStorySuggestion} from "@/types/ai";
 import {BacklogItemType} from "@/types/BacklogItemType";
 import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal.tsx";
+import {Button} from "@/components/ui/button.tsx";
 
 interface GenerateStoriesModalProps {
     projectId: string;
@@ -154,14 +155,6 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                 >
                     <div className={styles.modalHeader}>
                         <h2>AI Suggested Stories for "{epicName}"</h2>
-                        <button
-                            className={styles.closeButton}
-                            onClick={onClose}
-                            aria-label="Close"
-                            disabled={isLoading}
-                        >
-                            <X size={18}/>
-                        </button>
                     </div>
 
                     {error && <div className={styles.errorMessage}>{error}</div>}
@@ -172,18 +165,14 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                             adding them to this epic.
                         </p>
 
-                        <button
+                        <Button
+                            variant={"default"}
                             onClick={generateSuggestions}
                             disabled={isGenerating}
-                            className="flex items-center justify-center gap-1 text-sm bg-pink-50 text-pink-700 px-3 py-1 rounded-md hover:bg-pink-100 transition-colors"
-                            style={{
-                                color: "#ac1754",
-                                backgroundColor: "rgba(172, 23, 84, 0.1)",
-                            }}
                         >
                             <Sparkles size={16}/>
                             {isGenerating ? "Generating..." : "Regenerate Suggestions"}
-                        </button>
+                        </Button>
                     </div>
 
                     {isGenerating ? (
@@ -308,16 +297,18 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                     )}
 
                     <div className={styles.formActions}>
-                        <button
+                        <Button
+                            variant={"secondary"}
                             type="button"
                             className={styles.cancelButton}
                             onClick={handleCloseWithConfirmation}
                             disabled={isLoading || isGenerating}
                         >
                             <X size={16} className="mr-1"/> Cancel
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
+                            variant={"default"}
                             type="button"
                             onClick={handleSave}
                             className={styles.submitButton}
@@ -333,7 +324,7 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                                     Add to Epic
                                 </>
                             )}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

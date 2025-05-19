@@ -1,9 +1,12 @@
 .sectionHeader {
-    background-color: #f9fafb;
-    color: #6b7280;
+    background-color: var(--neutral-200);
+    color: var(--text-primary) !important;
+    text-align: center;
+    justify-content: center;
     font-size: 0.875rem;
     font-weight: 600;
     text-transform: none;
     padding: 0.75rem 1rem;
-  }
+    font-size: larger !important;
+}
   

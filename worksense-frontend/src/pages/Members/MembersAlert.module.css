@@ -1,106 +1,126 @@
 .overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
 .alertContainer {
-  background: white;
-  border-radius: 12px;
-  padding: 32px;
-  width: 100%;
-  max-width: 500px;
-  max-height: 400px;
-  text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  border: 1px solid var(--color-gray, #d0d1d2);
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+    background: var(--color-background);
+    border-radius: 12px;
+    padding: 32px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 400px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--neutral-300);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
 }
 
 .icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
 }
 
 .error {
-  background-color: #ffebee;
-  color: #c62828;
+    background-color: rgba(211, 47, 47, 0.1);
+    color: var(--error);
+    border: 1px solid rgba(211, 47, 47, 0.2);
 }
 
 .title {
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0 0 12px;
-  color: var(--color-charcoal, #253c4f);
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: var(--text-primary);
 }
 
 .message {
-  font-size: 16px;
-  color: var(--color-charcoal-dark, #3b465b);
-  margin: 0 0 24px;
-  line-height: 1.5;
+    font-size: 16px;
+    color: var(--text-primary);
+    margin: 0 0 24px;
+    line-height: 1.5;
 }
 
 .actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: auto;
 }
 
 .button {
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  width: 100%;
-  box-sizing: border-box;
-  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    transition: all 0.2s ease;
+}
+
+.button:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.button:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px var(--ring/50);
 }
 
 .closeButton {
-  background-color: transparent;
-  color: var(--color-purple, #ac1754);
-  text-decoration: underline;
-  border: 1px solid var(--color-gray, #d0d1d2);
+    background-color: var(--neutral-100);
+    color: var(--text-primary);
+    border: 1px solid var(--neutral-300);
+    box-shadow: var(--shadow-sm);
 }
 
 .closeButton:hover {
-  background-color: var(--color-pink-light, #f8eaf0);
-  border-color: var(--color-purple, #ac1754);
+    background-color: var(--surface-light);
+    border-color: var(--accent-pink);
+    color: var(--accent-pink);
+}
+
+.closeButton:focus-visible {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px var(--ring/50);
 }
 
 .actionButton {
-  background-color: var(--color-purple, #ac1754);
-  color: white;
-  box-shadow: 0 2px 4px rgba(172, 23, 84, 0.2);
+    background-color: var(--accent-pink);
+    color: var(--accent-pink-text);
+    box-shadow: var(--shadow-sm);
 }
 
 .actionButton:hover {
-  background-color: var(--color-purple-dark, #8e0e3d);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(172, 23, 84, 0.3);
+    background-color: var(--accent-pink-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
 .actionButton:active {
-  background-color: var(--color-purple-dark, #8e0e3d);
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(172, 23, 84, 0.2);
-} 
+    background-color: var(--accent-pink-active);
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}

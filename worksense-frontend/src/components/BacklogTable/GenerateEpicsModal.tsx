@@ -5,6 +5,7 @@ import styles from "./CreateItemModal.module.css"; // Reutilizamos los estilos e
 import aiEpicsService from "@/services/aiEpicsServices";
 import {AiEpicSuggestion} from "@/types/ai";
 import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal.tsx";
+import {Button} from "@/components/ui/button.tsx";
 
 interface GenerateEpicsModalProps {
     projectId: string;
@@ -268,16 +269,18 @@ const GenerateEpicsModal: FC<GenerateEpicsModalProps> = ({
                     )}
 
                     <div className={styles.formActions}>
-                        <button
+                        <Button
+                            variant={"secondary"}
                             type="button"
                             className={styles.cancelButton}
                             onClick={handleCloseWithConfirmation}
                             disabled={isLoading || isGenerating}
                         >
                             <X size={16} className="mr-1"/> Cancel
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
+                            variant={"default"}
                             type="button"
                             onClick={handleSave}
                             className={styles.submitButton}
@@ -293,7 +296,7 @@ const GenerateEpicsModal: FC<GenerateEpicsModalProps> = ({
                                     Add to Backlog
                                 </>
                             )}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
