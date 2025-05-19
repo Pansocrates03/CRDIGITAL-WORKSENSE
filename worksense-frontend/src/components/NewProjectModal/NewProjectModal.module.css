@@ -1,452 +1,483 @@
-/* NewProjectModal.module.css - With AI population additions */
+/* YourModalComponent.module.css */
+.modalContent {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background: var(--neutral-100);
+    border-radius: var(, 8px);
+    padding: 80px;
+    width: 100%;
+    height: 100%;
+    box-shadow: var(--shadow-lg);
 
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
 }
 
-.modalContent {
-  background: white;
-  border-radius: var(--radius, 8px);
-  padding: 32px;
-  width: 100%;
-  max-width: 600px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-height: calc(100vh - 64px);
-  overflow-y: auto;
+/* Add or adjust styles for the new layout container */
+.modalBodyLayout {
+    display: flex;
 }
 
 .modalHeader {
-  margin-bottom: 24px;
+    flex: 1; /* Allows the header section to grow */
+    max-width: 400px; /* Optional: Set a maximum width for the header text */
+    /* Ensure margin-bottom is added if flex-wrap is used, for spacing when stacked */
+    margin-bottom: 1.5rem; /* Example for when stacked vertically */
+
 }
 
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 30px;
+}
+.modalActions Button {
+    flex: 1;
+    transition: background-color 0.2s;
+}
+
+/* Add styles for the new div wrapping the Form component - it becomes the right column */
+.modalFormArea {
+    flex: 2;
+    min-height: 1200px;
+}
+
+/* Responsive adjustment: stack columns on smaller screens */
+@media (max-width: 768px) { /* Adjust breakpoint as needed */
+    .modalBodyLayout {
+        flex-direction: column; /* Stack header above form */
+        gap: 1.5rem; /* Adjust gap for vertical stacking */
+    }
+
+    .modalHeader,
+    .modalFormArea {
+        flex: none; /* Remove flex grow */
+        width: 100%; /* Take full width */
+        max-width: none; /* Remove max-width limit */
+    }
+
+    .modalHeader {
+        margin-bottom: 0; /* Remove extra bottom margin when stacked */
+    }
+}
+
+/* Keep your existing styles for modalOverlay, modalContent, modalActions, formGroup, etc. */
+/* Styles for the form elements themselves (InputWithClear, textarea, checkboxes) should
+   either be defined within the Form component's styles or accessible here. */
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+
+
+
 .modalHeader h2 {
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0 0 8px;
-  color: var(--foreground, #1a1a1a);
+    font-size: 30px;
+    font-weight: 600;
+    margin: 0 0 20px;
+    color: var(--text-primary);
 }
 
 .modalDescription {
-  font-size: 16px;
-  color: var(--secondary, #666);
-  margin: 0;
-  line-height: 1.5;
+    font-size: 16px;
+    color: var(--neutral-600);
+    margin: 0;
+    line-height: 1.5;
+    overflow-y: auto;
 }
 
 .formGroup {
-  margin-bottom: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
 }
 
 .formGroup label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--foreground, #1a1a1a);
-  margin-bottom: 8px;
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 8px;
 }
 
 .inputWrapper,
 .textareaWrapper {
-  position: relative;
-  width: 100%;
+    position: relative;
+    width: 100%;
+    overflow-y: auto;
+    border: 1px solid var(--neutral-300);
+    border-radius: var(--radius, 8px);
 }
 
 .inputWrapper input,
 .textareaWrapper textarea {
-  width: 100%;
-  padding: 12px;
-  padding-right: 40px;
-  border: 1px solid #e5e7eb;
-  border-radius: var(--radius, 8px);
-  font-size: 16px;
-  color: var(--foreground, #1a1a1a);
+    width: 100%;
+    padding: 12px;
+    border-radius: var(--radius, 8px);
+    font-size: 16px;
+    color: var(--text-primary);
+    background-color: var(--neutral-100);
+    overflow-y: auto;
 }
 
 .textareaWrapper textarea {
-  min-height: 80px;
-  resize: none;
-  line-height: 1.5;
-  overflow-y: hidden;
+    min-height: 80px;
+    resize: none;
+    line-height: 1.5;
+    overflow-y: auto;
+    border: var(--neutral-300);
 }
 
 .inputWrapper input:focus,
 .textareaWrapper textarea:focus {
-  outline: none;
-  border-color: var(--primary, #b4004e);
+    outline: none;
+    border-color: var(--neutral-300);
 }
 
 /* Simple error message */
 .errorMessage {
-  color: #ef4444;
-  font-size: 14px;
-  margin-top: 6px;
+    color: var(--error);
+    font-size: 14px;
+    margin-top: 6px;
 }
 
-.clearButton {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: #666;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.clearButton:hover {
-  color: #1a1a1a;
-}
 
-.modalActions {
-  display: flex;
-  gap: 12px;
-  margin-top: 32px;
-}
 
-.modalActions button {
-  flex: 1;
-  padding: 12px 24px;
-  border-radius: var(--radius, 8px);
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.cancelButton {
-  background-color: transparent;
-  border: 1px solid #e5e7eb;
-  color: var(--secondary, #666);
-}
-
-.cancelButton:hover {
-  background-color: #f3f4f6;
-}
-
-.startButton {
-  background-color: var(--primary, #b4004e);
-  border: none;
-  color: var(--primary-foreground, white);
-}
-
-.startButton:hover {
-  background-color: #8e003e;
-}
 
 .startButton:disabled {
-  background-color: #e5e7eb;
-  cursor: not-allowed;
-  opacity: 0.7;
+    background-color: var(--neutral-300);
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
-/* Member-related styles */
 .memberControls {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 12px;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    border: 1px var(--neutral-800);
 }
 
 .memberSelect,
 .roleSelect {
-  flex: 1;
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
-  background-color: white;
-  color: #1a1a1a;
-  font-size: 14px;
-  cursor: pointer;
-  transition: border-color 0.2s;
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--neutral-300);
+    background-color: var(--neutral-200);
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s;
 }
 
 .memberSelect:hover,
 .roleSelect:hover {
-  border-color: #b4004e;
+    border-color: var(--accent-pink);
 }
 
 .memberSelect:focus,
 .roleSelect:focus {
-  outline: none;
-  border-color: #b4004e;
-  box-shadow: 0 0 0 2px rgba(180, 0, 78, 0.2);
+    outline: none;
+    border-color: var(--accent-pink);
+    box-shadow: 0 0 0 2px rgba(172, 23, 84, 0.1);
 }
 
 .addButton {
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border-radius: 6px;
-  border: none;
-  background-color: #b4004e;
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 6px;
+    border: none;
+    background-color: var(--accent-pink);
+    color: var(--accent-pink-text);
+    font-size: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .addButton:hover:not(:disabled) {
-  background-color: #8e003e;
+    background-color: var(--accent-pink-hover);
 }
 
 .addButton:disabled {
-  background-color: #e5e7eb;
-  cursor: not-allowed;
-  opacity: 0.7;
+    background-color: var(--neutral-300);
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 .membersContainer {
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid #e5e7eb;
-  border-radius: var(--radius, 8px);
-  padding: 8px;
+    max-height: 100px;
+    overflow-y: auto;
+    border-radius: var(--radius, 8px);
+    padding: 8px;
+    border: 2px solid var(--neutral-300);
+    background-color: var(--neutral-100);
 }
 
 .memberRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-bottom: 1px solid #e5e7eb;
-  background-color: white;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-bottom: 2px solid var(--neutral-200);
+    background-color: var(--neutral-100);
 }
 
 .memberRow:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .username {
-  flex: 1;
-  font-weight: 500;
+    flex: 1;
+    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 500;
+    transition: color 0.2s;
 }
 
 .memberRole {
-  padding: 4px 8px;
-  border-radius: 4px;
-  background-color: #f3f4f6;
-  color: #666;
-  font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: var(--neutral-600);
+    font-size: 12px;
 }
 
 .removeMember {
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid #e5e7eb;
-  background-color: transparent;
-  color: #ef4444;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background-color: transparent;
+    color: var(--error);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .removeMember:hover {
-  background-color: #ef4444;
-  color: white;
-  border-color: #ef4444;
+    background-color: var(--error);
+    color: var(--neutral-100);
+    border-color: var(--error);
 }
 
 .noMembers {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100px;
-  color: #666;
-  font-size: 14px;
-  font-style: italic;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    color: var(--neutral-600);
+    font-size: 14px;
+    font-style: italic;
 }
 
 /* BACKLOG POPULATION STYLES */
 .populatingContainer {
-  padding: 2rem;
-  text-align: center;
+    padding: 2rem;
+    text-align: center;
 }
 
 .populatingContainer h2 {
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--foreground, #1a1a1a);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .loaderContainer {
-  margin-top: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .progressBarContainer {
-  width: 100%;
-  height: 10px;
-  background-color: #f0f0f0;
-  border-radius: 5px;
-  overflow: hidden;
-  margin-bottom: 1rem;
+    width: 100%;
+    height: 10px;
+    background-color: var(--surface-light);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.projectImage  {
+    width: 80%;
+    height: auto;
+    object-fit: cover;
+    margin-top: 50px;
 }
 
 .progressBar {
-  height: 100%;
-  background: linear-gradient(90deg, #b4004e 0%, #d30f60 100%);
-  border-radius: 5px;
-  transition: width 0.5s ease-in-out;
+    height: 100%;
+    background: linear-gradient(
+            90deg,
+            var(--accent-pink) 0%,
+            var(--accent-pink-hover) 100%
+    );
+    border-radius: 5px;
+    transition: width 0.5s ease-in-out;
 }
 
 .statusText {
-  margin-bottom: 1.5rem;
-  font-size: 1rem;
-  color: #666;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    color: var(--neutral-600);
 }
 
 .spinnerContainer {
-  margin-top: 2rem;
+    margin-top: 2rem;
 }
 
 .spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-left-color: #b4004e;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--surface-light);
+    border-left-color: var(--accent-pink);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
 .checkboxLabel {
-  display: flex;
-  align-items: center;
-  font-weight: 500;
-  cursor: pointer;
-  transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    color: var(--text-primary);
 }
 
 .checkboxLabel:hover {
-  color: var(--primary, #b4004e);
+    color: var(--accent-pink);
 }
 
 .aiLabel {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #b4004e 0%, #d30f60 100%);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: bold;
-  padding: 0.25rem 0.5rem;
-  border-radius: 1rem;
-  margin-left: 0.75rem;
-  box-shadow: 0 2px 4px rgba(180, 0, 78, 0.2);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+            135deg,
+            var(--accent-pink) 0%,
+            var(--accent-pink-hover) 100%
+    );
+    color: var(--accent-pink-text);
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    margin-left: 0.75rem;
+    box-shadow: 0 2px 4px rgba(172, 23, 84, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .aiLabel:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(180, 0, 78, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(172, 23, 84, 0.3);
 }
 
 .aiDescription {
-  font-size: 0.875rem;
-  color: #666;
-  margin-top: 0.75rem;
-  margin-left: 1.75rem;
-  padding: 0.75rem;
-  background-color: rgba(180, 0, 78, 0.05);
-  border-radius: 0.5rem;
-  border-left: 3px solid var(--primary, #b4004e);
-  transition: all 0.3s ease;
+    font-size: 0.875rem;
+    color: var(--neutral-600);
+    margin-top: 0.75rem;
+    margin-left: 1.75rem;
+    padding: 0.75rem;
+    background-color: var(--neutral-200);
+    border-radius: 0.5rem;
+    border-left: 3px solid var(--accent-pink);
+    transition: all 0.3s ease;
 }
 
 .checkboxWrapper {
-  display: flex;
-  align-items: center;
-  position: relative;
-  padding: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 0.5rem 0;
 }
 
 .checkboxWrapper input[type="checkbox"] {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
 }
 
 .checkboxWrapper input[type="checkbox"] + label {
-  position: relative;
-  padding-left: 2rem;
-  cursor: pointer;
-  display: inline-block;
-  line-height: 1.5;
+    position: relative;
+    padding-left: 2rem;
+    cursor: pointer;
+    display: inline-block;
+    line-height: 1.5;
+    color: var(--text-primary);
 }
 
 .checkboxWrapper input[type="checkbox"] + label:before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.25rem;
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 0.25rem;
-  background-color: white;
-  transition: all 0.2s ease;
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid var(--neutral-300);
+    border-radius: 0.25rem;
+    background-color: var(--neutral-100);
+    transition: all 0.2s ease;
 }
 
 .checkboxWrapper input[type="checkbox"]:checked + label:before {
-  background-color: var(--primary, #b4004e);
-  border-color: var(--primary, #b4004e);
+    background-color: var(--accent-pink);
+    border-color: var(--accent-pink);
 }
 
 .checkboxWrapper input[type="checkbox"]:checked + label:after {
-  content: "";
-  position: absolute;
-  left: 0.4rem;
-  top: 0.5rem;
-  width: 0.5rem;
-  height: 0.75rem;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-  animation: checkmark 0.3s ease-in-out;
+    content: "";
+    position: absolute;
+    left: 0.4rem;
+    top: 0.5rem;
+    width: 0.5rem;
+    height: 0.75rem;
+    border: solid var(--accent-pink-text);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    animation: checkmark 0.3s ease-in-out;
 }
 
 @keyframes checkmark {
-  0% {
-    opacity: 0;
-    transform: rotate(45deg) scale(0.5);
-  }
-  100% {
-    opacity: 1;
-    transform: rotate(45deg) scale(1);
-  }
+    0% {
+        opacity: 0;
+        transform: rotate(45deg) scale(0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: rotate(45deg) scale(1);
+    }
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Simple responsive adjustment */
 @media (max-width: 640px) {
-  .modalContent {
-    margin: 16px;
-    padding: 24px;
-  }
+    .modalContent {
+        margin: 16px;
+        padding: 24px;
+    }
 }

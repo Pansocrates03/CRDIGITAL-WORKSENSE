@@ -1,139 +1,139 @@
 /* CSS Variables - consider moving these to your global CSS if not already there */
 :root {
-  --header-height: 60px;
-  --transition-speed: 0.2s;
-  --border-radius-sm: 4px;
-  --border-radius-md: 8px;
-  --border-radius-circle: 50%;
-  --avatar-size: 32px;
-  --z-index-header: 10;
-  --z-index-dropdown: 1000;
+    --header-height: 60px;
+    --transition-speed: 0.2s;
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-circle: 50%;
+    --avatar-size: 32px;
+    --z-index-header: 10;
+    --z-index-dropdown: 1000;
 }
 
 .membersListContainer {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  color: var(--foreground, #222);
-  overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    color: var(--text-primary);
+    overflow-y: auto;
 }
 
 .membersListContainer h1 {
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--primary, #ac1754);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--accent-pink);
 }
 
 /* Table styles */
 .tableContainer {
-  overflow-x: auto;
-  border: 1px solid #eaeaea;
-  border-radius: 0.5rem;
-  background-color: white;
+    overflow-x: auto;
+    border-radius: var(--border-radius-md);
+    background-color: var(--neutral-100);
 }
 
 .table {
-  width: 100%;
-  border-collapse: collapse;
+    width: 100%;
+    border-collapse: collapse;
 }
 
 .table th,
 .table td {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  border-bottom: 1px solid #eaeaea;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--neutral-300);
+
 }
 
+
 .table th {
-  background-color: #f9fafb;
-  color: var(--secondary, #666);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
+    color: var(--neutral-600);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .table td {
-  font-size: 0.875rem;
-  color: var(--foreground, #222);
+    font-size: 0.875rem;
+    color: var(--text-primary);
 }
 
 /* Avatar styles */
 .avatar {
-  width: var(--avatar-size);
-  height: var(--avatar-size);
-  border-radius: var(--border-radius-circle);
-  background-color: var(--color-purple, #ac1754);
-  transition: transform var(--transition-speed) ease,
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+    border-radius: var(--border-radius-circle);
+    background-color: var(--background-primary);
+    transition: transform var(--transition-speed) ease,
     box-shadow var(--transition-speed) ease;
 }
 
 .avatar:hover {
-  transform: scale(1.05);
+    transform: scale(1.05);
 }
 
 .avatar:focus-visible {
-  outline: 2px solid var(--color-purple, #ac1754);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(172, 23, 84, 0.2);
+    outline: 2px solid var(--accent-pink);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(172, 23, 84, 0.2);
 }
 
 /* Badge for role */
 .badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 
 .roleBadge {
-  background-color: rgba(172, 23, 84, 0.1);
-  color: #ac1754;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: capitalize;
+    border: 1px solid var(--accent-pink);
+    color: var(--accent-pink);
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
 }
 
 /* Action buttons container */
 .actionButtons {
-  text-align: center;
-  padding-top: 5px;
+    text-align: center;
+    padding-top: 5px;
 }
 
 /* Styling individual buttons */
 .button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-  color: #555;
-  margin: 0 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--neutral-600);
+    margin: 0 8px;
+    transition: color var(--transition-speed) ease;
 }
 
 .button:hover {
-  color: #333;
+    color: var(--text-primary);
 }
 
 /* Styling for trash button */
 .trashButton {
-  color: #d9534f;
+    color: var(--error);
 }
 
 .trashButton:hover {
-  color: #c9302c;
+    color: var(--error);
+    opacity: 0.9;
 }
 
 /* Hover effect for table rows */
-.table tr:hover {
-  background-color: #f7f7f7;
-}
+
 
 .lastLogin {
-  color: var(--muted-foreground, #666);
-  font-size: 0.875rem;
-  white-space: nowrap;
+    color: var(--neutral-600);
+    font-size: 0.875rem;
+    white-space: nowrap;
 }
