@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from "react-router-dom";
 import { projectService } from "@/services/projectService.ts";
 import QueryKeys from "@/utils/QueryKeys.ts";
+import { useSprints } from "@/hooks/useSprintData";
 
 // Component Imports
 import BoardView from "./components/BoardView/BoardView";
@@ -44,9 +45,16 @@ const SprintPage: React.FC = () => {
     queryFn: () => projectService.fetchProjectItems(projectId ? projectId : "")
   });
 
+  // Get all sprints hook
+  // Fetch sprints
+  const { data: sprints, error: sprintsError, isLoading: sprintsLoading } = useSprints(projectId ?? "");
+
   const [tasks, setTasks] = useState<BacklogItemType[]>([]);
   const [activeTab, setActiveTab] = useState('board');
   const [columns, setColumns] = useState(DEFAULT_COLUMNS);
+
+  // Store selected sprint
+  const [selectedSprint, setSelectedSprint] = useState<string>('');
 
   const handleCreateColumn = (columnName: string) => {
     // Crea un id único, por ejemplo usando Date.now()
@@ -142,17 +150,16 @@ const SprintPage: React.FC = () => {
           <h1 className="sprint-page__title">Tasks</h1>
           <p className="sprint-page__description">Sprint board for tracking project tasks and progress</p>
         </div>
-        <div className="sprint-page__team">
+        <div className="sprint-page__team"> 
           <SelectInput
           inputName="SPRINT"
-          inputValue="s1"
+          inputValue={selectedSprint}
           isRequired
-          onChange={() => console.log("kml")}
-          options={[
-            {value: "s1", label: "Sprint 1"},
-            {value:"s2", label: "Sprint 2"},
-            {value:"s3", label: "Sprint 3"},
-          ]}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedSprint(e.target.value)}
+          options={sprints?.map(sprint => ({
+            value: sprint.id,
+            label: sprint.name,
+          })) || []}
           />
         </div>
       </div>
