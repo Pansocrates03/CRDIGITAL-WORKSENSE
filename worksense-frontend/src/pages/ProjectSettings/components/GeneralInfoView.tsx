@@ -5,15 +5,15 @@ import { projectService } from "@/services/projectService";
 import { useAuth } from "@/hooks/useAuth"; 
 
 const statusOptions = [
-  { value: "active", label: "Active" },
-  { value: "on-hold", label: "On Hold" },
-  { value: "completed", label: "Completed" },
+  { value: "Active", label: "Active" },
+  { value: "On-hold", label: "On Hold" },
+  { value: "Completed", label: "Completed" },
 ];
 
 const visibilityOptions = [
-  { value: "private", label: "Private" },
-  { value: "team", label: "Team" },
-  { value: "public", label: "Public" },
+  { value: "Private", label: "Private" },
+  { value: "Team", label: "Team" },
+  { value: "Public", label: "Public" },
 ];
 
 const GeneralInfoView: React.FC = () => {
@@ -46,7 +46,7 @@ const GeneralInfoView: React.FC = () => {
     if (project) setForm({
       name: project.name || "",
       description: project.description || "",
-      status: project.status || "active",
+      status: project.status || "Active",
       startDate: project.startDate || "",
       endDate: project.endDate || "",
       visibility: project.visibility || "",
@@ -114,7 +114,7 @@ const GeneralInfoView: React.FC = () => {
                   setForm({
                     name: project?.name || "",
                     description: project?.description || "",
-                    status: project?.status || "active",
+                    status: project?.status || "Active",
                     startDate: project?.startDate || "",
                     endDate: project?.endDate || "",
                     visibility: project?.visibility || "",

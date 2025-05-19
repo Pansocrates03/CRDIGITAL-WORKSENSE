@@ -77,7 +77,7 @@ export const createProject = async (
       name,
       description,
       context,
-      status = "active",
+      status = "Active",
       members = [],
     } = req.body;
     const ownerId = req.user?.userId;
@@ -194,7 +194,7 @@ export const updateProject = async (
   try {
     // Get the project ID and update data from the request
     const { projectId } = req.params;
-    const { name, description, context } = req.body;
+    const { name, description, context, status, startDate, endDate, visibility } = req.body;
 
     // Get the project document reference
     const projectRef = db.collection("projects").doc(projectId);
@@ -227,6 +227,18 @@ export const updateProject = async (
       }
       updateData.context = context;
     }
+
+    // Add status, user will not provide this field
+    updateData.status = status;
+
+    // Add startDate, user will not provide this field
+    updateData.startDate = startDate;
+
+    // Add endDate, user will not provide this field
+    updateData.endDate = endDate;
+
+    // Add visibility, user will not provide this field
+    updateData.visibility = visibility;
 
     // Check if any valid fields were provided
     if (Object.keys(updateData).length === 0) {
