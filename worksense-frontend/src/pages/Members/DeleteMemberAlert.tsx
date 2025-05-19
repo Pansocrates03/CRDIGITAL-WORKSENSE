@@ -1,5 +1,5 @@
 import React from "react";
-import DeleteConfirmationModal from "@/components/ui/DeleteConfirmationModal";
+import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal.tsx";
 
 interface DeleteMemberAlertProps {
     memberName: string,
