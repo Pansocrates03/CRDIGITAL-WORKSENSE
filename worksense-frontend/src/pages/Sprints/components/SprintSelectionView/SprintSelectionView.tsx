@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sprint } from '@/types/SprintType';
+import SprintCard from './SprintCard'; // Adjust path as needed
 import './SprintSelectionView.css';
 
 interface SprintSelectionViewProps {
@@ -14,34 +15,31 @@ const SprintSelectionView: React.FC<SprintSelectionViewProps> = ({
   onSelectSprint
 }) => {
   if (!sprints) return <p>No sprints available.</p>;
-  
-  // Updated formatDate function
+
   const formatDate = (timestamp: any) => {
     if (!timestamp || !timestamp._seconds) return "N/A";
-    
-    // Convert the timestamp to a JavaScript Date object
-    const date = new Date(timestamp._seconds * 1000); // Multiply by 1000 to convert seconds to milliseconds
-    
-    // Return the formatted date
+    const date = new Date(timestamp._seconds * 1000);
     return date.toLocaleDateString();
   };
 
   return (
     <div className="sprint-selection">
-      <h2 className="sprint-selection__title">Select a Sprint</h2>
+      <h1 className="sprint-selection__title">Select a Sprint</h1>
       <div className="sprint-selection__grid">
         {sprints.map((sprint) => (
           <div
             key={sprint.id}
-            className={`sprint-card ${sprint.id === selectedSprintId ? 'sprint-card--active' : ''}`}
             onClick={() => onSelectSprint(sprint.id)}
+            style={{ cursor: 'pointer' }}
           >
-            <h3 className="sprint-card__title">{sprint.name}</h3>
-            <p className="sprint-card__goal">{sprint.goal || 'No goal defined'}</p>
-            <div className="sprint-card__dates">
-                <p><strong>Start:</strong> {formatDate(sprint.startDate)}</p>
-                <p><strong>End:</strong> {formatDate(sprint.endDate)}</p>
-            </div>
+            <SprintCard
+              title={sprint.name}
+              description={sprint.goal || 'No goal defined'}
+              status={sprint.status ?? 'No status'}
+              startDate={formatDate(sprint.startDate)}
+              endDate={formatDate(sprint.endDate)}
+              isSelected={sprint.id === selectedSprintId}
+            />
           </div>
         ))}
       </div>

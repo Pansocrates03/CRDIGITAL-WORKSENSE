@@ -52,7 +52,7 @@ const SprintPage: React.FC = () => {
   const { data: sprints, error: sprintsError, isLoading: sprintsLoading } = useSprints(projectId ?? "");
 
   const [tasks, setTasks] = useState<BacklogItemType[]>([]);
-  const [activeTab, setActiveTab] = useState('board');
+  const [activeTab, setActiveTab] = useState('sprints');
   const [columns, setColumns] = useState(DEFAULT_COLUMNS);
 
   // Store selected sprint
