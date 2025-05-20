@@ -7,6 +7,7 @@ import QueryKeys from "@/utils/QueryKeys.ts";
 import { useSprints } from "@/hooks/useSprintData";
 
 // Component Imports
+import SprintSelectionView from "./components/SprintSelectionView/SprintSelectionView";
 import BoardView from "./components/BoardView/BoardView";
 import OverviewView from "./components/OverviewView/OverviewView";
 import TableView from "./components/TableView/TableView";
@@ -30,6 +31,7 @@ const DEFAULT_COLUMNS = [
 ];
 
 const navigationTabs = [
+  { id:"sprints", label: "Sprint Selection" },
   { id: "overview", label: "Overview" },
   { id: "board", label: "Board" },
   { id: "table", label: "Table" },
@@ -128,6 +130,8 @@ const SprintPage: React.FC = () => {
 
   const renderView = () => {
     switch (activeTab) {
+      case 'sprints':
+        return <SprintSelectionView sprints={sprints} />;
       case 'board':
         return <BoardView
           tasks={tasks}

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FiLayout, FiList, FiGrid, FiClock } from "react-icons/fi";
+import { FiLayout, FiList, FiGrid, FiClock, FiCalendar } from "react-icons/fi";
 import Modal from "@/components/Modal/Modal"; // Ajusta la ruta si es necesario
 import { Input } from "@/components/ui/input";
 import "./Tabs.css";
@@ -18,6 +18,7 @@ interface TabsProps {
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string; size?: number }> | null> = {
+  sprints: FiCalendar,
   overview: null,
   board: FiLayout,
   list: FiList,
