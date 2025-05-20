@@ -131,7 +131,14 @@ const SprintPage: React.FC = () => {
   const renderView = () => {
     switch (activeTab) {
       case 'sprints':
-        return <SprintSelectionView sprints={sprints} />;
+        return <SprintSelectionView 
+          sprints={sprints} 
+          selectedSprintId={selectedSprint} 
+          onSelectSprint={(id) => {
+            setSelectedSprint(id);
+            setActiveTab('board');
+          }} 
+          />;
       case 'board':
         return <BoardView
           tasks={tasks}
@@ -153,18 +160,6 @@ const SprintPage: React.FC = () => {
         <div className="sprint-page__header-content">
           <h1 className="sprint-page__title">Tasks</h1>
           <p className="sprint-page__description">Sprint board for tracking project tasks and progress</p>
-        </div>
-        <div className="sprint-page__team"> 
-          <SelectInput
-          inputName="SPRINT"
-          inputValue={selectedSprint}
-          isRequired
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedSprint(e.target.value)}
-          options={sprints?.map(sprint => ({
-            value: sprint.id,
-            label: sprint.name,
-          })) || []}
-          />
         </div>
       </div>
 

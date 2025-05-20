@@ -1,0 +1,57 @@
+.sprint-selection {
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.sprint-selection__title {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.sprint-selection__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.sprint-card {
+  background: #f9f9f9;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.sprint-card:hover {
+  background: #f0f0f0;
+  border-color: #ddd;
+}
+
+.sprint-card--active {
+  border-color: #007bff;
+  background: #e6f0ff;
+}
+
+.sprint-card__title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.sprint-card__goal {
+  font-style: italic;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.sprint-card__dates {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #333;
+}
