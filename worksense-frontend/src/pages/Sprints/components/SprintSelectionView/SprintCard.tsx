@@ -1,5 +1,6 @@
 import React from "react";
 import "./SprintSelectionView.css";
+import { FiTrash2, FiPenTool } from "react-icons/fi";
 
 type SprintCardProps = {
   title: string;
@@ -8,6 +9,8 @@ type SprintCardProps = {
   startDate: string;
   endDate: string;
   isSelected?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
 };
 
 const SprintCard: React.FC<SprintCardProps> = ({
@@ -16,7 +19,9 @@ const SprintCard: React.FC<SprintCardProps> = ({
   status,
   startDate,
   endDate,
-  isSelected = false
+  isSelected = false,
+  onEdit,
+  onDelete
 }) => {
   const cardClass = `sprint-card${isSelected ? " sprint-card--active" : ""}`;
   const statusClass =
@@ -26,6 +31,20 @@ const SprintCard: React.FC<SprintCardProps> = ({
       : status === "Completed"
       ? " status-completed"
       : "");
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete(); // This will trigger the delete function passed as a prop
+    }
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onEdit) {
+      onEdit(); // This will trigger the edit function passed as a prop
+    }
+  };
 
   return (
     <div className={cardClass}>
@@ -39,6 +58,24 @@ const SprintCard: React.FC<SprintCardProps> = ({
       <div className="sprint-card__dates">
         <p><strong>Start:</strong> {startDate}</p>
         <p><strong>End:</strong> {endDate}</p>
+      </div>
+      
+      <div className="sprint-card__action-buttons">
+        <button
+          className="sprint-card__edit-btn"
+          title="Edit"
+          onClick={handleEditClick}  // Calling the edit function
+        >
+          <FiPenTool />
+        </button>
+
+        <button
+          className="sprint-card__trash-btn"
+          title="Delete"
+          onClick={handleDeleteClick} // Calling the delete function
+        >
+          <FiTrash2 />
+        </button>
       </div>
     </div>
   );

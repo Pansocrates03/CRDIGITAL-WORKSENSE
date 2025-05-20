@@ -88,3 +88,39 @@
   background-color: var(--gray-300);
   color: var(--gray-800);
 }
+
+.sprint-card {
+  position: relative;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.sprint-card__action-buttons {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  gap: 10px; /* spacing between buttons */
+}
+
+.sprint-card__trash-btn,
+.sprint-card__edit-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #888;
+  transition: color 0.2s ease;
+}
+
+.sprint-card__trash-btn:hover {
+  color: red;
+}
+
+.sprint-card__edit-btn:hover {
+  color: black;
+}

@@ -7,15 +7,19 @@ interface SprintSelectionViewProps {
   sprints: Sprint[] | undefined;
   selectedSprintId: string;
   onSelectSprint: (id: string) => void;
+  onDeleteSprint: (sprint: Sprint ) => void;
 }
 
+// SprintSelectionView.tsx
 const SprintSelectionView: React.FC<SprintSelectionViewProps> = ({
   sprints,
   selectedSprintId,
-  onSelectSprint
+  onSelectSprint,
+  onDeleteSprint
 }) => {
   if (!sprints) return <p>No sprints available.</p>;
 
+  // Formate date function
   const formatDate = (timestamp: any) => {
     if (!timestamp || !timestamp._seconds) return "N/A";
     const date = new Date(timestamp._seconds * 1000);
@@ -39,6 +43,7 @@ const SprintSelectionView: React.FC<SprintSelectionViewProps> = ({
               startDate={formatDate(sprint.startDate)}
               endDate={formatDate(sprint.endDate)}
               isSelected={sprint.id === selectedSprintId}
+              onDelete={() => onDeleteSprint(sprint)} // Pass sprint to the delete handler
             />
           </div>
         ))}
@@ -46,5 +51,6 @@ const SprintSelectionView: React.FC<SprintSelectionViewProps> = ({
     </div>
   );
 };
+
 
 export default SprintSelectionView;
