@@ -45,11 +45,9 @@ const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick}) 
                     <div className={styles.titleRow}>
                         <h4>{project.name}</h4>
                         <div
-                            className={`${styles.status} ${getStatusColorClass(
-                                "ACTIVE"
-                            )}`}
+                            className={`${styles.status} ${getStatusColorClass(project.status || "Active")}`}
                         >
-                            active
+                            {project.status?.toLowerCase() || "active"}
                         </div>
                     </div>
                     <p className={styles.projectInfo}>
