@@ -3,13 +3,13 @@ import React, {useEffect, useRef, useState} from "react";
 import {UserListItem} from "../interfaces";
 import {Button} from "@/components/ui/button";
 import {AvatarDisplay} from "@/components/ui/AvatarDisplay";
-import {MoreVertical, Pencil, Trash2, Users, AlertTriangle} from "lucide-react";
+import {MoreVertical, Pencil, Trash2, Users} from "lucide-react";
 import {createPortal} from "react-dom";
 import apiClient from "@/api/apiClient";
 import styles from "../Settings.module.css";
 import {CreateUserModal} from "../CreateUserModal";
 import BacklogAlerts from "@/components/BacklogTable/BacklogAlerts";
-import Modal from "@/components/Modal/Modal";
+import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal";
 
 interface MenuPosition {
     top: number;
@@ -451,44 +451,16 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
             />
 
             {/* Delete Confirmation Modal */}
-            <Modal
+            <DeleteConfirmationModal
                 isOpen={deleteModalOpen}
                 onClose={() => {
                     setDeleteModalOpen(false);
                     setUserToDelete(null);
                 }}
+                onConfirm={handleConfirmDelete}
                 title="Delete User"
-                size="sm"
-            >
-                <div className={styles.deleteModalContent}>
-                    <div className={styles.deleteModalIconWrapper}>
-                        <AlertTriangle className={styles.deleteModalIcon} />
-                    </div>
-                    <div className={styles.deleteModalTextWrapper}>
-                        <h4 className={styles.deleteModalTitle}>Are you sure you want to delete {userToDelete?.firstName} {userToDelete?.lastName}?</h4>
-                        <p className={styles.deleteModalSubtext}>This action cannot be undone.</p>
-                    </div>
-                    <div className={styles.modalActions}>
-                        <Button
-                            variant="outline"
-                            onClick={() => {
-                                setDeleteModalOpen(false);
-                                setUserToDelete(null);
-                            }}
-                            disabled={isUpdating}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={handleConfirmDelete}
-                            disabled={isUpdating}
-                        >
-                            {isUpdating ? "Deleting..." : "Delete"}
-                        </Button>
-                    </div>
-                </div>
-            </Modal>
+                message={`Are you sure you want to delete ${userToDelete?.firstName} ${userToDelete?.lastName}? This action cannot be undone.`}
+            />
         </div>
     );
 };
