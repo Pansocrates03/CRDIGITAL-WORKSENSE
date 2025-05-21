@@ -105,14 +105,24 @@ export const SideBar: React.FC<{showSidebar:boolean}> = ({showSidebar}) => {
         path: `/project/${projectId}/overview`,
       },
       {
+        name: "For You",
+        icon: "/users.svg",
+        path: `/project/${projectId}/for-you`,
+      },
+      {
         name: "Backlog",
         icon: "/backlogPage.svg",
         path: `/project/${projectId}/product-backlog`,
       },
       {
-        name: "Sprint & Workflow",
+        name: "Sprints",
         icon: "/sprint.svg",
         path: `/project/${projectId}/sprint`,
+      },
+      {
+        name: "Workflow",
+        icon: "/workflow.svg",
+        path: `/project/${projectId}/workflow`,
       },
       {
         name: "User Management",

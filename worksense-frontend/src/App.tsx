@@ -17,8 +17,12 @@ import MembersPage from "./pages/Members/MembersPage";
 
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import SprintPage from "./pages/Sprints/SprintPage";
+import WorkflowPage from "./pages/Workflow/WorkflowPage";
 import ProjectSettingsPage from "./pages/ProjectSettings/ProjectSettingsPage";
 import { Toaster } from "sonner";
+import ForYouPage from './pages/ForYouPage';
+
+
 const queryClient = new QueryClient();
 
 console.log("Running");
@@ -109,6 +113,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <SprintPage />
+                  </PrivateRoute>
+                }
+              />
+            <Route
+              path="/project/:id/workflow"
+              element={
+                <PrivateRoute>
+                  <WorkflowPage />
                 </PrivateRoute>
               }
             />
@@ -155,6 +167,14 @@ function App() {
                   {" "}
                   <ProjectPage />{" "}
                   {/* Replace with specific LeaderboardPage if you have one */}{" "}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/project/:id/for-you"
+              element={
+                <PrivateRoute>
+                  <ForYouPage />
                 </PrivateRoute>
               }
             />
