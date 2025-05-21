@@ -5,7 +5,7 @@ import StatusBadge from "./StatusBadge";
 import styles from "../../pages/BacklogTable/BacklogTablePage.module.css";
 import ActionMenu from "./ActionMenu";
 import {AvatarDisplay} from "@/components/ui/AvatarDisplay";
-import {BacklogItemType} from "@/types/BacklogItemType";
+import BacklogItemType from "@/types/BacklogItemType";
 import MemberDetailed from "@/types/MemberDetailedType";
 
 interface Story {
@@ -123,6 +123,7 @@ export const EpicRow: FC<EpicRowProps> = ({
             <td>
                 {epic.status ? <StatusBadge type="status" value={epic.status}/> : "-"}
             </td>
+            <td>-</td>
             <td>
                 {assigneeId ? (
                     <div className="flex items-center gap-2">
@@ -142,7 +143,6 @@ export const EpicRow: FC<EpicRowProps> = ({
                 )}
             </td>
             <td>-</td>
-            {/* Epic doesn't have story points/severity */}
             <td className={styles.actionButtons}>
                 <ActionMenu
                     onEdit={(e) => {
