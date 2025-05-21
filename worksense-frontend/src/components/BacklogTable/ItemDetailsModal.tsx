@@ -44,8 +44,6 @@ interface ItemDetailsModalProps {
     linkedEpic?: BacklogItem | null; // Added optional linkedEpic prop
 
 }
-
-
 const ItemDetailsModal: FC<ItemDetailsModalProps> = ({
                                                          isOpen,
                                                          onClose,

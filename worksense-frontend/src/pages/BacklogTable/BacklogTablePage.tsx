@@ -292,6 +292,7 @@ const BacklogTablePage: FC = () => {
                     <tr>
                         <th>Name</th>
                         <th>Status</th>
+                        <th>Sprint</th>
                         <th>Assignee</th>
                         <th>Size</th>
                         <th>Actions</th>
@@ -316,7 +317,7 @@ const BacklogTablePage: FC = () => {
                                                     : [...prev, epic.id]
                                             )
                                         }
-                                        colSpan={5}
+                                        colSpan={6}
                                         onEdit={() => handleEdit(epic)}
                                         onDelete={() => handleDeleteEpic(epic.id)}
                                         onGenerateStories={handleGenerateStories}

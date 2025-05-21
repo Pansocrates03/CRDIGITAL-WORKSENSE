@@ -237,6 +237,14 @@ export const getSprintTasks: RequestHandler = async (req, res, next) => {
 };
 
 /**
+ * @description Assign a task to a Sprint.
+ *              Verifies task existence and project relationship.
+ * @route  /api/v1/projects/:projectId/tasks/:taskId
+ * @access Private (requires auth, project membership, permissions)
+ */
+
+
+/**
  * @description Update specific fields of a task (excluding status).
  *              Verifies task existence and project relationship.
  * @route PATCH /api/v1/projects/:projectId/tasks/:taskId

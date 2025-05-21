@@ -107,6 +107,9 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
         {item.status ? <StatusBadge type="status" value={item.status} /> : "-"}
       </td>
       <td>
+        {item.type !== "epic" && item.sprint ? item.sprint : "-"}
+      </td>
+      <td>
         {memberInfo ? (
           <div className="flex items-center gap-2">
             <AvatarDisplay

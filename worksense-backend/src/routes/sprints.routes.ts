@@ -464,7 +464,7 @@ router.get("/:sprintId", memberAuth, getSprintById);
  *         description: Sprint not found
  */
 
-router.post("/:sprintId", withPermission("manage:sprints"), memberAuth, updateSprint);
+router.put("/:sprintId", withPermission("manage:sprints"), memberAuth, updateSprint);
 
 
 /**
@@ -603,7 +603,7 @@ router.delete("/:sprintId", withPermission("manage:sprints"), memberAuth, delete
  *       404:
  *         description: Sprint not found or sprint does not belong to the specified project
  */
-router.post("/:sprintId/status", withPermission("manage:sprints"), memberAuth, updateSprintStatus)
+router.put("/:sprintId/status", withPermission("manage:sprints"), memberAuth, updateSprintStatus)
 
 /**
  * @swagger
