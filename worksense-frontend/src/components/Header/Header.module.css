@@ -240,7 +240,7 @@
 }
 
 .breadcrumbCurrent {
-    color: var(--accent-blue);
+    color: var(--accent-pink);
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
