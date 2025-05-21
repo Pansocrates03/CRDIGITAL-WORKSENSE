@@ -11,6 +11,7 @@ import swaggerJsdoc from "swagger-jsdoc";
 import sqlRoutes from "./routes/auth.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import project_Routes from "./routes/project.routes.js";
+import geminiRoutes from "./routes/gemini.routes.js"; 
 import forYouRoutes from './routes/forYou.routes.js';
 // Documenattion Imports
 import { swaggerOptions } from "../swagger/swaggerSetup.js"; // Swagger options
@@ -32,6 +33,7 @@ app.use(express.json());
 app.use(API_PREFIX, sqlRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
 app.use(`${API_PREFIX}/projects`, project_Routes);
+app.use(`${API_PREFIX}/gemini`, geminiRoutes);
 app.use(`${API_PREFIX}/for-you`, forYouRoutes);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
