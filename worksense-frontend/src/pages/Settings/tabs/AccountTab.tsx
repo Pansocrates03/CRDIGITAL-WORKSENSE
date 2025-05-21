@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import {Card, CardContent, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Button} from "@/components/ui/button";
-import {Toaster} from "sonner";
+import BacklogAlerts from "@/components/BacklogTable/BacklogAlerts.tsx";
 import {AvatarPicker} from "@/components/Account/AvatarPicker";
 import {useUserProfile} from "@/hooks/useUserProfile";
 import styles from "../Settings.module.css";
@@ -18,13 +18,26 @@ export const AccountTab: React.FC = () => {
     } = useUserProfile();
     const [editing, setEditing] = useState(false);
     const [pickerOpen, setPickerOpen] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
 
     const handleSave = async () => {
         if (profile) {
-            await save({nickName: profile.nickName, pfp: profile.avatar});
-            setEditing(false);
+            try {
+                await save({nickName: profile.nickName, pfp: profile.avatar});
+                setEditing(false);
+                handleSuccess("Profile updated successfully");
+            } catch (e) {
+                console.error(e);
+            }
         }
     };
+    const handleSuccess = (msg: string) => {
+        setSuccessMessage(msg);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+    };
+
 
     if (loading) return <div/>;
     if (profileError || !profile)
@@ -36,17 +49,8 @@ export const AccountTab: React.FC = () => {
 
     return (
         <div className={styles.accountContainer}>
-            <Toaster
-                position="bottom-right"
-                closeButton
-                toastOptions={{
-                    classNames: {
-                        toast: "rounded-lg border shadow-lg",
-                        success: "bg-[#F8EAF0] text-[#AC1754] border-[#AC1754]",
-                        error: "bg-[#FFEBEE] text-[#C62828] border-[#C62828]",
-                    },
-                    duration: 4000,
-                }}
+            <BacklogAlerts
+                successMessage={showSuccess ? successMessage : undefined}
             />
 
             <Card className={styles.accountCard}>
