@@ -14,12 +14,6 @@ export interface CompletedTask {
   completedAt: Date;
 }
 
-export interface CalendarSprint {
-  id: string;
-  name: string;
-  startDate: Date;
-}
-
 export interface GamificationData {
   // Definir en el futuro
 } 
