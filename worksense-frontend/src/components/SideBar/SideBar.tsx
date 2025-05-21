@@ -35,7 +35,9 @@ const NavItemComponent: React.FC<{
   </li>
 );
 
-export const SideBar: React.FC = () => {
+export const SideBar: React.FC<{showSidebar:boolean}> = ({showSidebar}) => {
+  if(!showSidebar) return null; // Early return if sidebar is not to be shown
+  console.log("Rendering Sidebar", showSidebar);
   const location = useLocation();
   const navigate = useNavigate();
   const [projectName, setProjectName] = useState<string>("");
@@ -121,6 +123,11 @@ export const SideBar: React.FC = () => {
         name: "User Management",
         icon: "/users.svg",
         path: `/project/${projectId}/users`,
+      },
+      {
+        name: "Settings",
+        icon: settingsIcon,
+        path: `/project/${projectId}/settings`,
       },
       // {
       //   name: "Story Management",

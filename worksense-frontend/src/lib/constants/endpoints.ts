@@ -8,5 +8,7 @@ export const endpoints = {
     getUserProjects: () =>                                  `${API_URL}/projects`,
     updateMemberRole: (projectId:string, userId:string) =>  `${API_URL}/projects/${projectId}/members/${userId}`,
     addMemberToProject: (projectId:string) =>               `${API_URL}/projects/${projectId}/members`,
-    removeMemberFromProject: (projectId:string, userId:string) =>  `${API_URL}/projects/${projectId}/${userId}`
+    removeMemberFromProject: (projectId:string, userId:string) =>  `${API_URL}/projects/${projectId}/${userId}`,
+    updateProject: (projectId:string) => `${API_URL}/projects/${projectId}`,
+    deleteProject: (projectId:string) => `${API_URL}/projects/${projectId}`
 }

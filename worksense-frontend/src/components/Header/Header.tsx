@@ -190,6 +190,13 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 className={styles.menuItem}
                 role="menuitem"
+                onClick={() => navigate("/settings")}
+                data-testid="settings-button"
+              >Settings</button>
+              
+              <button
+                className={styles.menuItem}
+                role="menuitem"
                 onClick={handleLogout}
                 data-testid="logout-button"
               >

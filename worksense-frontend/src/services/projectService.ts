@@ -168,4 +168,22 @@ export const projectService = {
       throw error;
     }
   },
+
+  updateProject: async (projectId: string, updated: any) => {
+    try {
+      await apiClient.put(`${API_URL}/projects/${projectId}`, updated);
+    } catch (error) {
+      console.error("Error updating project:", error);
+      throw error;
+    }
+  },
+
+  deleteProject: async (projectId: string) => {
+    try {
+      await apiClient.delete(`${API_URL}/projects/${projectId}`);
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      throw error;
+    }
+  },
 };

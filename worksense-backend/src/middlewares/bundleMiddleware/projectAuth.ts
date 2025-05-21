@@ -70,14 +70,35 @@ export const checkProjectPermission = (requiredPermission: string) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const roleId = req.projectMembership?.roleId;
+      const userId = req.user?.userId;
+      const { projectId } = req.params;
 
-      // This should be caught by checkProjectMembership, but check defensively
+      // 1. Check if user is the project owner
+      const projectRef = db.collection("projects").doc(projectId);
+      const projectSnap = await projectRef.get();
+      if (projectSnap.exists) {
+        const projectData = projectSnap.data();
+        if (projectData && projectData.ownerId == userId) {
+          return next();
+        }
+      }
+
+      // 2. Check if user is a product-owner in the project's members
+      const memberRef = db.collection("projects").doc(projectId).collection("members").doc(String(userId));
+      const memberSnap = await memberRef.get();
+      if (memberSnap.exists) {
+        const memberData = memberSnap.data();
+        if (memberData && memberData.projectRoleId === "product-owner") {
+          return next();
+        }
+      }
+
+      // 3. Fallback to role-based permission check
       if (!roleId) {
         res.status(403).json({ message: "Membership role not determined" });
         return;
       }
 
-      // Get role permissions
       const roleRef = db.collection("projectRoles").doc(roleId);
       const roleSnap = await roleRef.get();
 
@@ -89,7 +110,6 @@ export const checkProjectPermission = (requiredPermission: string) => {
       const roleData = roleSnap.data();
       const permissions: string[] = roleData?.permissions || [];
 
-      // Check if user has the required permission
       if (permissions.includes(requiredPermission)) {
         next();
       } else {

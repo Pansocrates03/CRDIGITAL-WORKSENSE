@@ -216,8 +216,23 @@ export const updateUserByAdmin = async (
   }
 };
 
-export const deleteUser = (req: Request, res: Response) => {
-  res.json({ message: "Delete user endpoint" });
+export const deleteUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const pool = await sqlConnect();
+    if (!pool) {
+      res.status(500).json({ message: "Database connection failed" });
+      return;
+    }
+    // Try to use a stored procedure if you have one, otherwise use direct SQL
+    await pool.request()
+      .input("userId", sql.Int, id)
+      .query("DELETE FROM Users WHERE id = @userId");
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to delete user" });
+  }
 };
 
 export const login = async (req: Request, res: Response) => {

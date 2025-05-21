@@ -15,10 +15,10 @@ const BacklogTableSection: FC<BacklogTableSectionProps> = ({
 }) => (
   <>
     <tr>
-      <td colSpan={5} className={styles.sectionHeader}>{title}</td>
+      <td colSpan={6} className={styles.sectionHeader}>{title}</td>
     </tr>
     {React.Children.count(children) === 0 ? (
-      <tr><td colSpan={5}>{emptyMessage || `No ${title.toLowerCase()} found`}</td></tr>
+      <tr><td colSpan={6}>{emptyMessage || `No ${title.toLowerCase()} found`}</td></tr>
     ) : children}
   </>
 );

@@ -21,6 +21,7 @@ import {projectService} from '@/services/projectService';
 import {useDeleteMember, useMembers, useUpdateMemberRole} from '@/hooks/useMembers';
 import {useUsers} from '@/hooks/useUsers';
 import {useAuth} from '@/hooks/useAuth';
+import BacklogAlerts from "@/components/BacklogTable/BacklogAlerts.tsx";
 
 const MembersPage: React.FC = () => {
     const {id: projectId} = useParams<{ id: string }>();
@@ -31,6 +32,8 @@ const MembersPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAddingMembers, setIsAddingMembers] = useState(false);
     const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
 
     // Alert states
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
@@ -52,9 +55,11 @@ const MembersPage: React.FC = () => {
         try {
             await updateMemberRoleMutation.mutateAsync({userId, role});
             setIsModalOpen(false);
+            handleSuccess('Role updated successfully');
         } catch (error) {
             console.error('Failed to update role:', error);
         }
+
     };
 
     const handleDeleteMember = async (member: MemberDetailed) => {
@@ -68,6 +73,8 @@ const MembersPage: React.FC = () => {
             await deleteMemberMutation.mutateAsync(memberToDelete.userId);
             setShowDeleteAlert(false);
             setMemberToDelete(null);
+            handleSuccess("Member deleted successfully");
+
         } catch (error) {
             console.error('Failed to delete member:', error);
         }
@@ -94,15 +101,26 @@ const MembersPage: React.FC = () => {
             setIsAddingMembers(false);
             // Invalidate the members query to refresh the list
             queryClient.invalidateQueries({queryKey: ['members', projectId]});
+            handleSuccess('Members added successfully');
         } catch (error) {
             console.error('Failed to add members:', error);
         }
     };
 
+    const handleSuccess = (msg: string) => {
+        setSuccessMessage(msg);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+    };
+
+
     if (isLoading) return <div>Loading members...</div>;
 
     return (
         <div>
+            <BacklogAlerts
+                successMessage={showSuccess ? successMessage : undefined}
+            />
             <div className="flex items-baseline justify-between w-full">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight text-foreground">Members</h2>

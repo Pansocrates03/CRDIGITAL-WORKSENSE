@@ -3,7 +3,7 @@ import React, {useEffect} from "react";
 import {RefreshCw, Save, X} from "lucide-react";
 import SelectField from "./SelectField";
 import styles from "./CreateItemModal.module.css";
-import {BacklogItemType} from "@/types/BacklogItemType";
+import BacklogItemType from "@/types/BacklogItemType";
 import {Button} from "@/components/ui/button.tsx";
 
 interface Epic {
@@ -99,6 +99,13 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             {value: "L", label: "L"},
             {value: "XL", label: "XL"},
         ],
+        sprint: [
+            {value: "", label: "Select Sprint (Optional)"},
+            {value: "Sprint 1", label: "Sprint 1"},
+            {value: "Sprint 2", label: "Sprint 2"},
+            {value: "Sprint 3", label: "Sprint 3"},
+            {value: "Sprint 4", label: "Sprint 4"},
+        ],
         assignee: [
             {value: "", label: "Select Assignee (Optional)"},
             ...users.map((u) => ({
@@ -190,6 +197,19 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                         styleClass="size"
                         disabled={loading}
                     />
+
+                    {formData.type && (
+                        <SelectField
+                            id="sprint"
+                            name="sprint"
+                            value={formData.sprint || ""}
+                            onChange={handleChange}
+                            options={selectOptions.sprint}
+                            label="Sprint"
+                            styleClass="sprint"
+                            disabled={loading}
+                        />
+                    )}
 
                     <SelectField
                         id="assigneeId"

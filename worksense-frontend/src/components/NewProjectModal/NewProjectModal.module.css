@@ -38,7 +38,7 @@
 /* Add styles for the new div wrapping the Form component - it becomes the right column */
 .modalFormArea {
     flex: 2;
-    min-height: 1200px;
+    height: 600px;
 }
 
 /* Responsive adjustment: stack columns on smaller screens */
@@ -96,7 +96,8 @@
 }
 
 .formGroup {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    margin-top: 15px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -105,7 +106,7 @@
 
 .formGroup label {
     display: block;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     color: var(--text-primary);
     margin-bottom: 8px;
@@ -314,7 +315,7 @@
 }
 
 .projectImage  {
-    width: 80%;
+    width: 85%;
     height: auto;
     object-fit: cover;
     margin-top: 50px;
@@ -390,9 +391,7 @@
 .aiDescription {
     font-size: 0.875rem;
     color: var(--neutral-600);
-    margin-top: 0.75rem;
-    margin-left: 1.75rem;
-    padding: 0.75rem;
+    padding: 0.50rem;
     background-color: var(--neutral-200);
     border-radius: 0.5rem;
     border-left: 3px solid var(--accent-pink);
