@@ -4,8 +4,7 @@ import Member from "@/types/MemberType";
 import MemberDetailed from "@/types/MemberDetailedType";
 import BacklogItemType from "@/types/BacklogItemType";
 
-import { API_URL } from "@/lib/constants/endpoints";
-import { endpoints } from "@/lib/constants/endpoints";
+import { API_URL, endpoints } from "@/lib/constants/endpoints";
 
 interface CreateProject {
   name: string;
@@ -26,26 +25,10 @@ export const projectService = {
     }
   },
 
-  // Gets the list of members in a project
-  async fetchProjectMembers(id: string): Promise<Member[]> {
-    try {
-      const response = await apiClient.get(
-        `${API_URL}/projects/${id}/members`
-      );
-
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching project members:", error);
-      throw error;
-    }
-  },
-
   // Gets the list of members in a project with email and name
   async fetchProjectMembersDetailed(id: string): Promise<MemberDetailed[]> {
     try {
-      const response = await apiClient.get(
-        `${API_URL}/projects/${id}/members/members-detail`
-      );
+      const response = await apiClient.get(endpoints.getProjectMembersDetailed(id));
       return response.data;
     } catch (error) {
       console.error("Error fetching project members with details:", error);
@@ -56,7 +39,7 @@ export const projectService = {
   // Gets the list of the projects a member has access to
   async fetchUserProjects(): Promise<ProjectDetails[]> {
     try {
-      const response = await apiClient.get(`${API_URL}/projects/`);
+      const response = await apiClient.get(endpoints.getUserProjects());
       return response.data;
     } catch (error) {
       console.error("Error fetching user projects:", error);
@@ -67,8 +50,7 @@ export const projectService = {
   // Gets backlog Items
   async fetchProjectItems(projectId:string): Promise<BacklogItemType[]>{
     try {
-      const response = await apiClient.get(`/projects/${projectId}/backlog/items`);
-      console.log("returning", response.data)
+      const response = await apiClient.get(endpoints.getProjectItems(projectId));
       return response.data;
     } catch ( error ) {
       console.error("Error fetching backlog items", error);
@@ -78,7 +60,6 @@ export const projectService = {
 
   async updateBacklogItem(projectId:string,item:BacklogItemType) {
     try {
-      console.log("Item to be sent", item)
       await apiClient.put(`/projects/${projectId}/backlog/items/${item.id}/?type=${item.type}`,item)
     } catch (error) {
       console.error("Error bla");
@@ -94,10 +75,8 @@ export const projectService = {
   ): Promise<void> {
     try {
       await apiClient.put(
-        `${API_URL}/projects/${projectId}/members/${userId}`,
-        {
-          projectRoleId: roleId,
-        }
+        endpoints.updateMemberRole(projectId,userId.toString()),
+        { projectRoleId: roleId }
       );
     } catch (error) {
       console.error("Error updating member role:", error);
@@ -112,7 +91,7 @@ export const projectService = {
     roleId: string
   ): Promise<void> {
     try {
-      await apiClient.post(`${API_URL}/projects/${projectId}/members`, {
+      await apiClient.post(endpoints.addMemberToProject(projectId), {
         userId: userId,
         projectRoleId: roleId,
       });
@@ -141,7 +120,7 @@ export const projectService = {
     try {
       // Primero se debe crear el proyecto
 
-      const response = await apiClient.post(`${API_URL}/projects/`, {
+      const response = await apiClient.post(endpoints.createProject(), {
         name: receivedData.name,
         description: receivedData.description,
         context: null,
@@ -152,7 +131,7 @@ export const projectService = {
         const member = receivedData.members[i];
 
         await apiClient.post(
-          `${API_URL}/projects/${response.data.id}/members`,
+          endpoints.addMemberToProject(response.data.id),
           {
             projectRoleId: member.projectRoleId,
             userId: member.userId, // Asegúrate de que `member` contenga el ID del miembro

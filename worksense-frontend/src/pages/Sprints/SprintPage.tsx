@@ -1,12 +1,20 @@
 // Core imports
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from "react-router-dom";
-import { projectService } from "@/services/projectService.ts";
 import QueryKeys from "@/utils/QueryKeys.ts";
+
+// Hooks
 import { useSprints } from "@/hooks/useSprintData";
 import { useDeleteSprint } from "@/hooks/useSprintData";
+
+// Services
+import { projectService } from "@/services/projectService.ts";
+import { sprintService } from "@/services/sprintService.ts";
+
+// Types
 import { Sprint } from "@/types/SprintType";
+import BacklogItemType from "@/types/BacklogItemType.ts";
 
 // Component Imports
 import SprintSelectionView from "./components/SprintSelectionView/SprintSelectionView";
@@ -15,8 +23,6 @@ import OverviewView from "./components/OverviewView/OverviewView";
 import TableView from "./components/TableView/TableView";
 import Tabs from "./components/Tabs/Tabs";
 import "./components/styles/SprintPage.css";
-
-// Modals
 import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal";
 
 // Import necessary CSS files
@@ -25,8 +31,6 @@ import "./components/TaskCard/TaskCard.css";
 import "./components/StatusTag/StatusTag.css";
 import "./components/PriorityTag/PriorityTag.css";
 import "./components/avatarGroup/AvatarGroup.css";
-import BacklogItemType from "@/types/BacklogItemType.ts";
-import { SelectInput } from "@/components/SelectInput/SelectInput";
 
 const DEFAULT_COLUMNS = [
   { id: 'sprint_backlog', title: 'Sprint Backlog' },
@@ -46,15 +50,16 @@ const SprintPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { id: projectId } = useParams<{ id: string }>();
 
-  // TODOS LOS HOOKS VAN AQUÍ
-  const { isLoading, data, error } = useQuery<BacklogItemType[], Error>({
-    queryKey: [QueryKeys.backlog, projectId],
-    queryFn: () => projectService.fetchProjectItems(projectId ? projectId : "")
+  // Fetch userStories
+  const { isLoading: userStoriesLoading, data: userStories, error: userStoriesError } = useQuery({
+    queryKey: [QueryKeys.userStories],
+    queryFn: () => sprintService.getUserStories(projectId ?? "", selectedSprint)
   });
 
   // Get all sprints hook
-  // Fetch sprints
   const { data: sprints, error: sprintsError, isLoading: sprintsLoading } = useSprints(projectId ?? "");
+
+  console.log("USER STORIES", userStories)
 
   const [tasks, setTasks] = useState<BacklogItemType[]>([]);
   const [activeTab, setActiveTab] = useState('sprints');
@@ -69,6 +74,30 @@ const SprintPage: React.FC = () => {
   // DELETE MODAL STATES
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [sprintToDelete, setSprintToDelete] = useState<Sprint | null>(null);
+
+  // Convert userStories to tasks when userStories data changes
+  useEffect(() => {
+    if (userStories && projectId) {
+      const userStoryTasks: BacklogItemType[] = userStories.map(story => ({
+        id: story.id,
+        projectId: projectId,
+        name: story.name || '',
+        description: story.description || null,
+        status: story.status || 'new',
+        priority: story.priority || 'medium',
+        type: 'story',
+        createdAt: story.createdAt || new Date().toISOString(),
+        updatedAt: story.updatedAt || new Date().toISOString(),
+        sprint: selectedSprint,
+        assigneeId: story.assigneeId || null,
+        authorId: story.authorId || null,
+        coverImage: story.coverImage || null,
+        size: story.size || null,
+        acceptanceCriteria: story.acceptanceCriteria || null
+      }));
+      setTasks(userStoryTasks);
+    }
+  }, [userStories, projectId, selectedSprint]);
 
   // Handle Delete Sprint
   const handleDeleteSprint = (sprintId: string) => {
@@ -86,31 +115,6 @@ const SprintPage: React.FC = () => {
     };
     setColumns(prev => [...prev, newColumn]);
   };
-
-  const getItemChildren = (item: BacklogItemType): BacklogItemType[] => {
-    if (!item.subItems || item.subItems.length === 0) {
-      return [item];
-    }
-    return [
-      item,
-      ...item.subItems.flatMap(getItemChildren)
-    ];
-  };
-
-  // Update tasks when data changes
-  React.useEffect(() => {
-    if (data) {
-      console.log("DATA", data);
-      // Flatten all subitems
-      let flattenedData = data.flatMap(getItemChildren);
-
-      // Filter out EPIC items
-      let filteredData = flattenedData.filter(item => item.type !== "epic");
-
-      // Set tasks state
-      setTasks(filteredData);
-    }
-  }, [data]);
 
   const handleTaskUpdate = async (
     taskId: string,
@@ -160,9 +164,9 @@ const SprintPage: React.FC = () => {
     }
   };
 
-  if (error) { throw new Error("An error has occurred on SprintPage.tsx"); }
-  if (isLoading) { return <div>Loading...</div> }
-  if (!data) { throw new Error("Nothing received") }
+  if (userStoriesError) { throw new Error("An error has occurred on SprintPage.tsx"); }
+  if (userStoriesLoading) { return <div>Loading...</div> }
+  if (!userStories) { throw new Error("Nothing received") }
 
   return (
     <div className="sprint-page">
@@ -179,7 +183,7 @@ const SprintPage: React.FC = () => {
         activeTabId={activeTab}
         onTabClick={handleTabChange}
         handleCreateColumn={handleCreateColumn}
-        projectId={projectId}
+        projectId={projectId ?? ""}
       />
 
       {/* Render active view based on the selected tab */}

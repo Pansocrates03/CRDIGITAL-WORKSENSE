@@ -1,8 +1,10 @@
 // src/services/sprintService.ts
 
+import BacklogItemType from "@/types/BacklogItemType";
 import apiClient from "../api/apiClient"; // Assuming apiClient is configured
 import { Sprint } from "../types/SprintType"; // Adjust path as needed
 import { ApiResponseTask } from "../types/SprintType"; // Adjust path as needed
+import { endpoints } from "@/lib/constants/endpoints";
 
 // Use the same API_URL pattern for consistency, unless apiClient has baseURL set
 const API_URL = "http://localhost:5050/api/v1";
@@ -55,6 +57,18 @@ export const sprintService = {
       return response.data as Sprint[];
     } catch (error) {
       console.error(`Error fetching sprints for project ${projectId}:`, error);
+      throw error;
+    }
+  },
+
+  async getUserStories(projectId: string, sprintId: string): Promise<BacklogItemType[]> {
+    try {
+      const response = await apiClient.get(
+        endpoints.getStories(projectId,sprintId)
+      );
+      return response.data as BacklogItemType[];
+    } catch (error) {
+      console.error(`Error fetching user stories for project ${projectId}:`, error);
       throw error;
     }
   },
