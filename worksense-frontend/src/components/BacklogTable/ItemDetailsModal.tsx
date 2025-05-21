@@ -6,6 +6,7 @@ import styles from "./CreateItemModal.module.css";
 import { Epic, User as UserType } from "./types";
 import StatusBadge from "./StatusBadge";
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
+import BacklogItemType from "@/types/BacklogItemType";
 
 interface BacklogItemFormData {
   name: string;
@@ -40,7 +41,7 @@ interface ItemDetailsModalProps {
   onClose: () => void;
   onEditClick: () => void;
   onItemUpdated?: () => void;
-  item: BacklogItem | null;
+  item: BacklogItemType | null;
   memberMap?: Map<number, Member>; // Accept memberMap from parent component
 }
 
@@ -56,7 +57,7 @@ const ItemDetailsModal: FC<ItemDetailsModalProps> = ({
   const [linkedEpic, setLinkedEpic] = useState<Epic | null>(null);
   const [assignee, setAssignee] = useState<Member | null>(null);
   const [loading, setLoading] = useState(false);
-  const [itemDetails, setItemDetails] = useState<BacklogItem | null>(null);
+  const [itemDetails, setItemDetails] = useState<BacklogItemType | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [localMemberMap, setLocalMemberMap] = useState<Map<number, Member>>(
@@ -171,12 +172,7 @@ const ItemDetailsModal: FC<ItemDetailsModalProps> = ({
       );
 
       if (response.data) {
-        // Map description to content if needed
-        const itemData = { ...response.data };
-        if (itemData.description && !itemData.content) {
-          itemData.content = itemData.description;
-        }
-        setItemDetails(itemData);
+        setItemDetails(response.data);
       }
     } catch (err) {
       console.error("Error fetching item details:", err);
@@ -188,11 +184,11 @@ const ItemDetailsModal: FC<ItemDetailsModalProps> = ({
     setLoading(true);
 
     try {
-      // Fetch epic data if there's an epicId
-      if (item.epicId) {
+      // Fetch epic data if there's a parentId
+      if (item.parentId) {
         try {
           const epicRes = await apiClient.get(
-            `/projects/${projectId}/backlog/items/${item.epicId}`
+            `/projects/${projectId}/backlog/items/${item.parentId}`
           );
           setLinkedEpic(epicRes.data);
         } catch (err) {
@@ -206,37 +202,17 @@ const ItemDetailsModal: FC<ItemDetailsModalProps> = ({
 
   const fetchAssigneeDirectly = async (assigneeId: number) => {
     try {
-      const userRes = await apiClient.get(
+      const response = await apiClient.get(
         `/projects/${projectId}/members/${assigneeId}`
       );
-
-      if (userRes.data) {
-        setAssignee(userRes.data);
-
-        // Add to local map for future reference
-        setLocalMemberMap((prev) => {
-          const newMap = new Map(prev);
-          newMap.set(assigneeId, userRes.data);
-          return newMap;
-        });
+      if (response.data) {
+        setAssignee(response.data);
       }
     } catch (err) {
       console.error("Error fetching assignee:", err);
     }
   };
 
-  if (!isOpen || !item) {
-    return null;
-  }
-
-  // Use itemDetails if available, otherwise fall back to the original item
-  const displayItem = itemDetails || item;
-
-  // Handle content field by looking at both content and description fields
-  const descriptionContent =
-    displayItem.content || displayItem.description || "";
-
-  // Helper function to get the capitalized type
   const getItemTypeLabel = (type: string) => {
     switch (type) {
       case "epic":
@@ -248,209 +224,101 @@ const ItemDetailsModal: FC<ItemDetailsModalProps> = ({
       case "techTask":
         return "Tech Task";
       case "knowledge":
-        return "Knowledge Item";
+        return "Knowledge";
       default:
-        return type.charAt(0).toUpperCase() + type.slice(1);
+        return type;
     }
   };
 
-  // Get assignee display name using the same pattern as BacklogRow
-  const assigneeName =
-    assignee?.name ||
-    assignee?.nickname ||
-    (assignee?.userId ? `User ${assignee.userId}` : null);
+  if (!isOpen) return null;
 
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div
-        className={styles.modalContent}
-        onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: "700px" }}
-      >
+    <div className={styles.modalOverlay} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h2>{getItemTypeLabel(displayItem.type)} Details</h2>
-          <button
-            className={styles.closeButton}
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
-            {error}
-          </div>
-        )}
-
-        <div className="mb-6">
-          <div className="flex justify-between items-start mb-3">
-            <h1 className="text-xl font-semibold">{displayItem.name}</h1>
+          <h2 style={{margin: 0, fontSize: '1.25rem', fontWeight: 600}}>
+            {itemDetails?.name || 'Item Details'}
+          </h2>
+          <div style={{display: 'flex', gap: 8}}>
             <button
+              className={styles.editButton}
               onClick={onEditClick}
-              className="flex items-center gap-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md transition-colors"
+              disabled={loading}
+              style={{background: 'none', border: 'none', cursor: 'pointer'}}
+              title="Edit"
             >
-              <Edit size={14} />
-              Edit
+              <Edit size={18} />
+            </button>
+            <button
+              className={styles.closeButton}
+              onClick={onClose}
+              disabled={loading}
+              style={{background: 'none', border: 'none', cursor: 'pointer'}}
+              title="Close"
+            >
+              <X size={18} />
             </button>
           </div>
+        </div>
 
-          {/* Assignee Section - Now using same pattern as BacklogRow */}
-          <div className="mb-4 p-3 bg-gray-50 rounded-md">
-            <span className="text-xs text-gray-500 block mb-2">ASSIGNEE</span>
-            <div className="flex items-center gap-3">
-              {assignee ? (
-                <>
-                  <AvatarDisplay
-                    user={{
-                      name: assigneeName || "Unknown User",
-                      profilePicture: assignee.profilePicture,
-                    }}
-                    size="md"
-                  />
-                  <div>
-                    <span className="font-medium block">{assigneeName}</span>
-                    {assignee.userId && (
-                      <span className="text-xs text-gray-500">
-                        ID: {assignee.userId}
-                      </span>
-                    )}
-                  </div>
-                </>
-              ) : displayItem.assigneeId ? (
-                <>
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                    <User size={16} className="text-gray-400" />
-                  </div>
-                  <div>
-                    <span className="font-medium block text-gray-400">
-                      {typeof displayItem.assigneeId === "string" ||
-                      typeof displayItem.assigneeId === "number"
-                        ? `Loading user ${displayItem.assigneeId}...`
-                        : "Loading assignee..."}
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                    <User size={16} className="text-gray-400" />
-                  </div>
-                  <div>
-                    <span className="font-medium block text-gray-400">
-                      Unassigned
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Item Info Section */}
-          <div className="flex flex-wrap gap-3 mb-4 p-3 bg-gray-50 rounded-md">
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-gray-500">STATUS</span>
-              {displayItem.status ? (
-                <StatusBadge type="status" value={displayItem.status} />
-              ) : (
-                <span className="text-sm text-gray-400">No status</span>
-              )}
+        {error && <div className={styles.errorMessage}>{error}</div>}
+        {loading ? (
+          <div className={styles.loadingMessage}>Loading...</div>
+        ) : (
+          <>
+            <div style={{marginBottom: 24}}>
+              <h3 style={{fontWeight: 600, fontSize: '1rem', marginBottom: 12}}>Basic Information</h3>
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12}}>
+                <div><span style={{fontWeight: 500}}>Type</span><div>{itemDetails?.type ? getItemTypeLabel(itemDetails.type) : '-'}</div></div>
+                <div><span style={{fontWeight: 500}}>Status</span><div>{itemDetails?.status ? <StatusBadge type="status" value={itemDetails.status} /> : '-'}</div></div>
+                <div><span style={{fontWeight: 500}}>Priority</span><div>{itemDetails?.priority ? <StatusBadge type="priority" value={itemDetails.priority} /> : '-'}</div></div>
+                {itemDetails?.type !== 'epic' && <div><span style={{fontWeight: 500}}>Sprint</span><div>{itemDetails?.sprint || '-'}</div></div>}
+                <div><span style={{fontWeight: 500}}>Size</span><div>{itemDetails?.size || '-'}</div></div>
+              </div>
             </div>
 
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-gray-500">PRIORITY</span>
-              <StatusBadge type="priority" value={displayItem.priority} />
+            <div style={{marginBottom: 24}}>
+              <h3 style={{fontWeight: 600, fontSize: '1rem', marginBottom: 12}}>Description</h3>
+              <div style={{color: '#444', fontSize: '0.97rem'}}>{itemDetails?.description || 'No description provided.'}</div>
             </div>
 
-            {displayItem.type === "story" && (
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-gray-500">POINTS</span>
-                <span className="text-sm font-medium">
-                  {displayItem.size !== null && displayItem.size !== undefined
-                    ? displayItem.size
-                    : "Not set"}
-                </span>
+            {itemDetails?.acceptanceCriteria && itemDetails.acceptanceCriteria.length > 0 && (
+              <div style={{marginBottom: 24}}>
+                <h3 style={{fontWeight: 600, fontSize: '1rem', marginBottom: 12}}>Acceptance Criteria</h3>
+                <ul style={{paddingLeft: 20, color: '#444'}}>
+                  {itemDetails.acceptanceCriteria.map((criterion, idx) => <li key={idx}>{criterion}</li>)}
+                </ul>
               </div>
             )}
 
-            {displayItem.type === "bug" && displayItem.severity && (
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-gray-500">SEVERITY</span>
-                <StatusBadge type="severity" value={displayItem.severity} />
+            <div style={{marginBottom: 24}}>
+              <h3 style={{fontWeight: 600, fontSize: '1rem', marginBottom: 12}}>Assignment</h3>
+              <div>
+                <span style={{fontWeight: 500}}>Assignee</span>
+                <div>
+                  {assignee ? (
+                    <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                      <AvatarDisplay user={{name: assignee.nickname || assignee.name || `User ${assignee.userId}`, profilePicture: assignee.profilePicture}} size="sm" />
+                      <span>{assignee.nickname || (assignee.name ? assignee.name.split(' ')[0] : `User ${assignee.userId}`)}</span>
+                    </div>
+                  ) : (
+                    'Unassigned'
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {linkedEpic && (
+              <div style={{marginBottom: 24}}>
+                <h3 style={{fontWeight: 600, fontSize: '1rem', marginBottom: 12}}>Linked Epic</h3>
+                <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                  <Link2 size={16} />
+                  <span>{linkedEpic.name}</span>
+                </div>
               </div>
             )}
-          </div>
-
-          {linkedEpic && (
-            <div className="flex items-center gap-2 mb-3 p-3 bg-gray-50 rounded-md">
-              <Link2 className="h-4 w-4 text-gray-500" />
-              <span className="text-sm font-medium">{linkedEpic.name}</span>
-            </div>
-          )}
-
-          <div className="mt-6">
-            <h3 className="text-sm font-medium mb-2">Description</h3>
-            <div className="bg-gray-50 p-3 rounded-md min-h-28 text-sm">
-              {descriptionContent ? (
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: descriptionContent.replace(/\n/g, "<br/>"),
-                  }}
-                />
-              ) : (
-                <span className="text-gray-400">No description provided</span>
-              )}
-            </div>
-          </div>
-
-          {/* Acceptance Criteria Section - Only displayed for stories */}
-          {displayItem.type === "story" && (
-            <div className="mt-6">
-              <h3 className="text-sm font-medium mb-2">Acceptance Criteria</h3>
-              <div className="bg-gray-50 p-3 rounded-md min-h-28 text-sm">
-                {displayItem.acceptanceCriteria &&
-                displayItem.acceptanceCriteria.length > 0 ? (
-                  <ul className="list-disc pl-5 space-y-1">
-                    {displayItem.acceptanceCriteria.map((criterion, index) => (
-                      <li key={index}>{criterion}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <span className="text-gray-400">
-                    No acceptance criteria defined
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {displayItem.tags && displayItem.tags.length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-sm font-medium mb-2">Tags</h3>
-              <div className="flex flex-wrap gap-2">
-                {displayItem.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-700"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className={styles.formActions}>
-          <button
-            type="button"
-            className={styles.cancelButton}
-            onClick={onClose}
-          >
-            <X size={16} className="mr-1" /> Close
-          </button>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
