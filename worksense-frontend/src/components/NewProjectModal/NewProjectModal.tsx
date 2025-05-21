@@ -43,7 +43,6 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
     const inputRef = useRef<HTMLInputElement>(null);
 
 
-    // useEffects para manejar lógica cuando el modal abre o cambia algo
     useEffect(() => {
         if (isOpen) {
             setIsPopulatingBacklog(false);
@@ -115,6 +114,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
                                 </div>
 
                                 {/* Columna derecha: formulario */}
+
                                 <div className={styles.modalFormArea}>
                                     <Form
                                         currentUserId={currentUserId}

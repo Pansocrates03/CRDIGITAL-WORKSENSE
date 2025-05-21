@@ -1,0 +1,219 @@
+/* src/components/BacklogTable/GenerateEpicsModal.module.css */
+
+.generateEpicsViewContainer {
+    display: flex;
+    flex-direction: column;
+    /*
+      OPTION 1: Fixed pixel height (adjust as needed)
+      This makes it independent of parent's dynamic height, ensuring it's always this tall.
+    */
+    height: 110%; /* EXAMPLE: A fixed pixel height */
+    /*
+      OPTION 2: Viewport height (if it's meant to fill a large part of the screen directly)
+      height: 70vh;
+    */
+    /*
+      OPTION 3: If the parent div in Form.tsx *reliably* provides a large, stable height for this view
+      then height: 100%; can work. The 35% was likely too small or the parent wasn't stable.
+    */
+
+    width: 100%;
+    background-color: var(--neutral-100);
+    overflow: hidden; /* Children will handle their own scroll */
+}
+
+.viewHeader {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.viewHeader h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+
+.staticContentTop {
+    flex-shrink: 0;
+    padding: 16px 24px;
+    border-bottom: 1px solid #f3f4f6;
+    margin-bottom: 8px;
+}
+
+.viewDescription {
+    font-size: 0.875rem;
+    color: #4b5563;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.regenerateButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    cursor: pointer;
+    border: 1px solid transparent;
+    color: #ac1754;
+    background-color: rgba(172, 23, 84, 0.1);
+}
+
+.regenerateButton:hover:not(:disabled) {
+    background-color: rgba(172, 23, 84, 0.2);
+}
+
+.regenerateButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.scrollableEpicsArea {
+    flex-grow: 1; /* Takes up remaining space within the fixed height of .generateEpicsViewContainer */
+    overflow-y: auto; /* Enables vertical scrolling for this part only */
+    min-height: 300px; /* IMPORTANT: Ensures this area doesn't shrink too much. Adjust value as needed. */
+    /* This min-height will be respected. If content is less, it will be at least 200px. */
+    /* If content is more, flex-grow and overflow-y allow it to expand (up to available space) and scroll. */
+    padding: 8px 24px 16px 24px;
+}
+
+
+.centeredContent {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    height: 100%;
+    min-height: 150px; /* Or match the min-height of .scrollableEpicsArea if that's desired */
+    color: #6b7280;
+    padding: 20px;
+    text-align: center;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 4px solid rgba(172, 23, 84, 0.2);
+    border-top-color: #ac1754;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.epicItem {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 16px;
+    background-color: #f9fafb;
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.epicItem:last-child {
+    margin-bottom: 0;
+}
+
+.removeEpicButton {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: #9ca3af;
+    background: none;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.removeEpicButton:hover:not(:disabled) {
+    color: #ef4444;
+    background-color: #fee2e2;
+}
+
+.removeEpicButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.formGroup {
+    margin-bottom: 12px;
+}
+
+.formGroup:last-of-type {
+    margin-bottom: 0;
+}
+
+.formGroup label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.formGroup input[type="text"],
+.formGroup textarea,
+.formGroup select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 0.875rem;
+    background-color: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.formGroup input[type="text"]:focus,
+.formGroup textarea:focus,
+.formGroup select:focus {
+    outline: none;
+    border-color: #ac1754;
+    box-shadow: 0 0 0 2px rgba(172, 23, 84, 0.2);
+}
+
+.formGroup input[type="text"]:disabled,
+.formGroup textarea:disabled,
+.formGroup select:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.formGroup textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.viewActions {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #e5e7eb;
+    background-color: white;
+    /* border: 1px solid green; /* Optional: for debugging */
+}
+
+.errorMessage {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 0.875rem;
+    border: 1px solid #fca5a5;
+}
