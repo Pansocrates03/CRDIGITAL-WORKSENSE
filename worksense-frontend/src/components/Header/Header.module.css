@@ -130,13 +130,11 @@
 /* Dropdown menu */
 .dropdownMenu {
     position: absolute;
-    top: calc(100% + 8px);
     right: 0;
     background-color: var(--background-primary);
     border-radius: var(--border-radius-md);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     min-width: 220px; /* Increased for better readability */
-    padding: 8px 0;
     z-index: var(--z-index-dropdown);
     border: 1px solid var(--neutral-200);
     animation: fadeIn 0.2s ease-out;
@@ -157,7 +155,7 @@
 .menuItem {
     display: block;
     width: 100%;
-    padding: 10px 16px; /* Increased vertical padding */
+    padding: 10px 10px; /* Increased vertical padding */
     text-align: left;
     background: none;
     border: none;
@@ -168,19 +166,20 @@
 }
 
 .menuItem:hover {
-    background-color: var(--neutral-500);
+    background-color: var(--neutral-200);
+    color: var(--accent-pink-hover);
+
 }
 
 .menuItem:focus-visible {
     outline: 2px solid var(--accent-pink);
-    background-color: var(--neutral-500);
+    background-color: var(--neutral-200);
 }
 
 /* User info section */
 .userInfo {
     padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--neutral-600);
-    margin-bottom: 0.5rem;
 }
 
 .userName {
