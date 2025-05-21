@@ -20,9 +20,7 @@ import SprintPage from "./pages/Sprints/SprintPage";
 import WorkflowPage from "./pages/Workflow/WorkflowPage";
 import ProjectSettingsPage from "./pages/ProjectSettings/ProjectSettingsPage";
 import { Toaster } from "sonner";
-import ForYouPage from './pages/ForYouPage';
-
-
+import ForYouPage from "./pages/ForYouPage.tsx";
 const queryClient = new QueryClient();
 
 console.log("Running");
