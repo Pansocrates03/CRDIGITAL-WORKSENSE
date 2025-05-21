@@ -17,7 +17,21 @@ import MembersPage from "./pages/Members/MembersPage";
 
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import SprintPage from "./pages/Sprints/SprintPage";
+
+import { persistQueryClient } from "@tanstack/react-query-persist-client";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
+
 const queryClient = new QueryClient();
+
+const localStoragePersister = createSyncStoragePersister({
+  storage: window.localStorage,
+});
+
+persistQueryClient({
+  queryClient,
+  persister: localStoragePersister,
+  maxAge: 1000 * 60 * 60 * 24, // 24 horas
+});
 
 console.log("Running");
 

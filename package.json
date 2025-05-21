@@ -24,5 +24,8 @@
   "homepage": "https://github.com/Pansocrates03/CRDIGITAL-WORKSENSE#readme",
   "devDependencies": {
     "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "@tanstack/react-query-persist-client": "^5.76.1"
   }
 }

@@ -1,0 +1,21 @@
+import { F as QueryKey, _ as QueryFunctionContext, W as QueryFunction } from './hydration-BaHDIfRR.js';
+import './removable.js';
+import './subscribable.js';
+
+/**
+ * This is a helper function to create a query function that streams data from an AsyncIterable.
+ * Data will be an Array of all the chunks received.
+ * The query will be in a 'pending' state until the first chunk of data is received, but will go to 'success' after that.
+ * The query will stay in fetchStatus 'fetching' until the stream ends.
+ * @param queryFn - The function that returns an AsyncIterable to stream data from.
+ * @param refetchMode - Defines how re-fetches are handled.
+ * Defaults to `'reset'`, erases all data and puts the query back into `pending` state.
+ * Set to `'append'` to append new data to the existing data.
+ * Set to `'replace'` to write the data to the cache at the end of the stream.
+ */
+declare function streamedQuery<TQueryFnData = unknown, TQueryKey extends QueryKey = QueryKey>({ queryFn, refetchMode, }: {
+    queryFn: (context: QueryFunctionContext<TQueryKey>) => AsyncIterable<TQueryFnData> | Promise<AsyncIterable<TQueryFnData>>;
+    refetchMode?: 'append' | 'reset' | 'replace';
+}): QueryFunction<Array<TQueryFnData>, TQueryKey>;
+
+export { streamedQuery };

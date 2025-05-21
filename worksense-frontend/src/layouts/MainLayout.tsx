@@ -5,6 +5,7 @@ import { SideBar } from "../components/SideBar/SideBar"; // Adjust path
 import { Header } from "../components/Header/Header"; // Adjust path
 import { projectService } from "../services/projectService"; // Adjust path
 import styles from "./MainLayout.module.css";
+import FridaChat from "@/components/FridaChat/FridaChat";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -39,7 +40,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       if (projectId) {
         setProjectLoading(true);
         try {
-          const projectData = await projectService.fetchProjectDetails(projectId);
+          const projectData = await projectService.fetchProjectDetails(
+            projectId
+          );
           // Use the actual project name for the header title within project context
           setProjectName(projectData.name || "Untitled Project");
         } catch (error) {
@@ -127,6 +130,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             children // Render page content once project name is loaded or not applicable
           )}
         </main>
+        <FridaChat projectId={projectId} />
       </div>
     </div>
   );
