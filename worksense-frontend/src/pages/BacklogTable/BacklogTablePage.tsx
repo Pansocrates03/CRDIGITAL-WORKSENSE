@@ -17,7 +17,7 @@ import ItemDetailsModal from "@/components/BacklogTable/ItemDetailsModal";
 import {EpicRow} from "@/components/BacklogTable/EpicRow";
 import {useMembers} from "@/hooks/useMembers";
 
-import {BacklogItemType} from "@/types/BacklogItemType";
+import BacklogItemType from "@/types/BacklogItemType";
 import MemberDetailed from "@/types/MemberDetailedType";
 
 const BacklogTablePage: FC = () => {
@@ -48,7 +48,7 @@ const BacklogTablePage: FC = () => {
 
     // Estado para el modal de detalles
     const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [selectedItem, setSelectedItem] = useState<BacklogItem | null>(null);
+    const [selectedItem, setSelectedItem] = useState<BacklogItemType | null>(null);
 
     const {data, isLoading, error, refetch} = useQuery({
         queryKey: ["backlog", projectId],
@@ -292,6 +292,7 @@ const BacklogTablePage: FC = () => {
                     <tr>
                         <th>Name</th>
                         <th>Status</th>
+                        <th>Sprint</th>
                         <th>Assignee</th>
                         <th>Size</th>
                         <th>Actions</th>
@@ -316,7 +317,7 @@ const BacklogTablePage: FC = () => {
                                                     : [...prev, epic.id]
                                             )
                                         }
-                                        colSpan={5}
+                                        colSpan={6}
                                         onEdit={() => handleEdit(epic)}
                                         onDelete={() => handleDeleteEpic(epic.id)}
                                         onGenerateStories={handleGenerateStories}
@@ -387,6 +388,9 @@ const BacklogTablePage: FC = () => {
                 <ItemDetailsModal
                     projectId={projectId}
                     isOpen={showDetailsModal}
+                    linkedEpic={selectedItem?.parentId ?
+                        categorized.epics.find(epic => epic.id === selectedItem.parentId) || null
+                        : null}
                     onClose={() => setShowDetailsModal(false)}
                     onEditClick={() => {
                         setItemToEdit(selectedItem);
@@ -394,7 +398,7 @@ const BacklogTablePage: FC = () => {
                         setShowDetailsModal(false);
                     }}
                     item={selectedItem}
-                    memberMap={memberMap}
+                    memberInfo={getMemberInfo(selectedItem?.assigneeId)}
                 />
             )}
 
