@@ -10,4 +10,7 @@ export default interface ProjectDetails {
   startDate?: string;
   endDate?: string;
   visibility?: string;
+  aiContext?: string;
+  aiTechStack?: string;
+  enableAiSuggestions?: boolean;
 }

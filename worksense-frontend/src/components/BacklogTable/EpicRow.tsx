@@ -33,6 +33,7 @@ interface EpicRowProps {
     onGenerateStories?: (epicId: string, epicName: string) => void;
     onViewDetails?: (epic: BacklogItemType) => void;
     memberMap: Map<number, MemberDetailed>;
+    enableAiSuggestions: boolean;
 }
 
 export const EpicRow: FC<EpicRowProps> = ({
@@ -45,6 +46,7 @@ export const EpicRow: FC<EpicRowProps> = ({
                                               onGenerateStories,
                                               onViewDetails,
                                               memberMap,
+                                              enableAiSuggestions,
                                           }) => {
     const [isHovered, setIsHovered] = useState(false);
 
@@ -161,6 +163,7 @@ export const EpicRow: FC<EpicRowProps> = ({
                     }
                     isEpic={true}
                     itemType="epic"
+                    enableAiSuggestions={enableAiSuggestions}
                 />
             </td>
         </tr>

@@ -16,6 +16,8 @@ import GenerateStoriesModal from "@/components/BacklogTable/GenerateStoriesModal
 import ItemDetailsModal from "@/components/BacklogTable/ItemDetailsModal";
 import {EpicRow} from "@/components/BacklogTable/EpicRow";
 import {useMembers} from "@/hooks/useMembers";
+import { projectService } from "@/services/projectService";
+import ProjectDetails from "@/types/ProjectType";
 
 import BacklogItemType from "@/types/BacklogItemType";
 import MemberDetailed from "@/types/MemberDetailedType";
@@ -239,6 +241,13 @@ const BacklogTablePage: FC = () => {
         !searchTerm ||
         (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
+    // Fetch project details for enableAiSuggestions
+    const { data: project } = useQuery<ProjectDetails>({
+        queryKey: ["project", projectId],
+        queryFn: () => projectService.fetchProjectDetails(projectId!),
+        enabled: !!projectId,
+    });
+
     const renderRows = (items: BacklogItemType[], indent = false) =>
         items
             .filter(matchesSearch)
@@ -251,6 +260,7 @@ const BacklogTablePage: FC = () => {
                     onEdit={() => handleEdit(item)}
                     onDelete={() => handleDelete(item)}
                     onViewDetails={() => handleViewDetails(item)}
+                    enableAiSuggestions={project?.enableAiSuggestions ?? true}
                 />
             ));
 
@@ -322,6 +332,7 @@ const BacklogTablePage: FC = () => {
                                         onDelete={() => handleDeleteEpic(epic.id)}
                                         onGenerateStories={handleGenerateStories}
                                         memberMap={memberMap}
+                                        enableAiSuggestions={project?.enableAiSuggestions ?? true}
                                     />
                                     {expandedEpics.includes(epic.id) &&
                                         renderRows(epicStories, true)}
