@@ -103,6 +103,11 @@ export const SideBar: React.FC = () => {
         path: `/project/${projectId}/overview`,
       },
       {
+        name: "For You",
+        icon: "/users.svg",
+        path: `/project/${projectId}/for-you`,
+      },
+      {
         name: "Backlog",
         icon: "/backlogPage.svg",
         path: `/project/${projectId}/product-backlog`,
