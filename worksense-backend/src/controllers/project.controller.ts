@@ -203,7 +203,7 @@ export const updateProject = async (
   try {
     // Get the project ID and update data from the request
     const { projectId } = req.params;
-    const { name, description, context, status, startDate, endDate, visibility } = req.body;
+    const { name, description, context, status, startDate, endDate, visibility, aiContext, aiTechStack, enableAiSuggestions } = req.body;
 
     // Get the project document reference
     const projectRef = db.collection("projects").doc(projectId);
@@ -248,6 +248,29 @@ export const updateProject = async (
 
     // Add visibility, user will not provide this field
     updateData.visibility = visibility;
+
+    // Add AI fields if provided
+    if (aiContext !== undefined) {
+      if (aiContext !== null && typeof aiContext !== "string") {
+        res.status(400).json({ message: "Invalid aiContext type" });
+        return;
+      }
+      updateData.aiContext = aiContext;
+    }
+    if (aiTechStack !== undefined) {
+      if (aiTechStack !== null && typeof aiTechStack !== "string") {
+        res.status(400).json({ message: "Invalid aiTechStack type" });
+        return;
+      }
+      updateData.aiTechStack = aiTechStack;
+    }
+    if (enableAiSuggestions !== undefined) {
+      if (typeof enableAiSuggestions !== "boolean") {
+        res.status(400).json({ message: "Invalid enableAiSuggestions type" });
+        return;
+      }
+      updateData.enableAiSuggestions = enableAiSuggestions;
+    }
 
     // Check if any valid fields were provided
     if (Object.keys(updateData).length === 0) {
