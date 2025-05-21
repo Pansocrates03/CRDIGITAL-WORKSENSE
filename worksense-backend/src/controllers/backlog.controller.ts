@@ -421,3 +421,40 @@ export const updateSubItem = async (
     next(error);
   }
 };
+
+// Cambia el sprint de un item
+export const changeItemSprint = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { projectId, itemId, sprintId } = req.params;
+
+    const itemRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .doc(itemId);
+    const docSnap = await itemRef.get();
+
+    if (!docSnap.exists) {
+      res.status(404).json({ message: "Item not found" });
+      return;
+    }
+
+    // Update only the sprint field
+    await itemRef.update({
+      sprint: sprintId,
+      updatedAt: new Date()
+    });
+
+    res.status(200).json({ 
+      message: "Sprint updated successfully",
+      sprintId: sprintId
+    });
+
+  } catch(error) {
+    next(error);
+  }
+};
