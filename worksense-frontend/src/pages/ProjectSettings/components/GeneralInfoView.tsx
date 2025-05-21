@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectService } from "@/services/projectService"; 
 import { useAuth } from "@/hooks/useAuth"; 
+import { Button } from "@/components/ui/button";
 
 const statusOptions = [
   { value: "Active", label: "Active" },
@@ -92,23 +93,16 @@ const GeneralInfoView: React.FC = () => {
             </p>
           </div>
           {isProductOwner && !editMode && (
-            <button
-              className="bg-[#ac1754] text-white px-4 py-2 rounded hover:bg-[#8e0e3d] transition"
+            <Button
               onClick={() => setEditMode(true)}
             >
               Edit
-            </button>
+            </Button>
           )}
           {isProductOwner && editMode && (
             <div className="flex gap-2">
-              <button
-                className="bg-[#ac1754] text-white px-4 py-2 rounded hover:bg-[#8e0e3d] transition"
-                onClick={handleSave}
-              >
-                Save
-              </button>
-              <button
-                className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition"
+              <Button
+                variant="secondary"
                 onClick={() => {
                   setEditMode(false);
                   setForm({
@@ -122,7 +116,12 @@ const GeneralInfoView: React.FC = () => {
                 }}
               >
                 Cancel
-              </button>
+              </Button>
+              <Button
+                onClick={handleSave}
+              >
+                Save
+              </Button>
             </div>
           )}
         </div>
@@ -234,52 +233,55 @@ const GeneralInfoView: React.FC = () => {
           <p className="text-sm text-muted-foreground mb-4">
             Deleting this project is irreversible. All data will be lost.
           </p>
-          <button
-            className="bg-[#ac1754] text-white px-4 py-2 rounded hover:bg-[#8e0e3d] transition"
+          <Button
+            variant="destructive"
             onClick={() => setShowDeleteModal(true)}
             disabled={!isProductOwner}
           >
             Delete Project
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Delete Modal */}
       {showDeleteModal && (
-        <div className="fixed top-1/2 left-1/2 z-50 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-md shadow-lg border">
-          <h2 className="text-xl font-bold mb-2">Delete Project</h2>
-          <p className="mb-4">
-            This action <span className="font-bold text-[#ac1754]">cannot be undone</span>.<br />
-            To confirm, type <span className="font-mono bg-gray-100 px-1">{form.name}</span> below:
-          </p>
-          <input
-            type="text"
-            className="w-full border px-3 py-2 rounded mb-4"
-            value={deleteInput}
-            onChange={e => setDeleteInput(e.target.value)}
-            placeholder={`Type "${form.name}" to confirm`}
-          />
-          <div className="flex justify-end gap-2">
-            <button
-              className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-              onClick={() => {
-                setShowDeleteModal(false);
-                setDeleteInput("");
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              className="px-4 py-2 rounded bg-[#ac1754] text-white hover:bg-[#8e0e3d]"
-              disabled={deleteInput !== form.name}
-              onClick={() => {
-                deleteMutation.mutate();
-                setShowDeleteModal(false);
-                setDeleteInput("");
-              }}
-            >
-              Delete
-            </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative bg-white rounded-lg p-6 w-full max-w-md shadow-lg border z-10">
+            <h2 className="text-xl font-bold mb-2">Delete Project</h2>
+            <p className="mb-4">
+              This action <span className="font-bold text-[#ac1754]">cannot be undone</span>.<br />
+              To confirm, type <span className="font-mono bg-gray-100 px-1">{form.name}</span> below:
+            </p>
+            <input
+              type="text"
+              className="w-full border px-3 py-2 rounded mb-4"
+              value={deleteInput}
+              onChange={e => setDeleteInput(e.target.value)}
+              placeholder={`Type "${form.name}" to confirm`}
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteInput("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={deleteInput !== form.name}
+                onClick={() => {
+                  deleteMutation.mutate();
+                  setShowDeleteModal(false);
+                  setDeleteInput("");
+                }}
+              >
+                Delete
+              </Button>
+            </div>
           </div>
         </div>
       )}
