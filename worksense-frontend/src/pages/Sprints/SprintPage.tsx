@@ -36,10 +36,10 @@ const DEFAULT_COLUMNS = [
 ];
 
 const navigationTabs = [
-  { id:"sprints", label: "Sprint Selection" },
-  { id: "overview", label: "Overview" },
-  { id: "board", label: "Board" },
-  { id: "table", label: "Table" },
+  { id: "sprints", label: "Sprint Selection" },
+  { id: "overview", label: "Overview", requiresSprint: true },
+  { id: "board", label: "Board", requiresSprint: true },
+  { id: "table", label: "Table", requiresSprint: true },
 ];
 
 const SprintPage: React.FC = () => {
@@ -179,7 +179,8 @@ const SprintPage: React.FC = () => {
         activeTabId={activeTab}
         onTabClick={handleTabChange}
         handleCreateColumn={handleCreateColumn}
-        projectId={projectId}
+        projectId={projectId ?? ""}
+        selectedSprintId={selectedSprint}
       />
 
       {/* Render active view based on the selected tab */}
@@ -194,7 +195,7 @@ const SprintPage: React.FC = () => {
         }}
         onConfirm={() => {
           if (sprintToDelete) {
-            handleDeleteSprint(sprintToDelete.id); // Call delete function
+            handleDeleteSprint(sprintToDelete.id);
           }
         }}
         title="Delete Sprint"

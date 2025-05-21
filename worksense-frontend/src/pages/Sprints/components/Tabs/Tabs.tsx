@@ -17,6 +17,7 @@ import { Sprint } from '@/types/SprintType';
 interface TabItem {
   id: string;
   label: string;
+  requiresSprint?: boolean;
 }
 
 // Props expected by this Tabs component
@@ -26,9 +27,13 @@ interface TabsProps {
   onTabClick: (id: string) => void; // Callback to switch tabs
   handleCreateColumn: (name: string) => void; // Callback to add column in board
   projectId: string; // Project identifier
+  selectedSprintId?: string; // ID of the currently selected sprint
 }
 
-// Icons associated with each tab
+/**
+ * Maps tab IDs to their corresponding icon components
+ * Used to display appropriate icons in the tab navigation
+ */
 const iconMap: Record<string, React.ComponentType<{ className?: string; size?: number }> | null> = {
   sprints: FiCalendar,
   overview: null,
@@ -38,7 +43,11 @@ const iconMap: Record<string, React.ComponentType<{ className?: string; size?: n
   timeline: FiClock,
 };
 
-const Tabs: React.FC<TabsProps> = ({ items, activeTabId, onTabClick, handleCreateColumn, projectId }) => {
+/**
+ * Tabs component for sprint management navigation
+ * Handles tab switching, sprint creation, and column management
+ */
+const Tabs: React.FC<TabsProps> = ({ items, activeTabId, onTabClick, handleCreateColumn, projectId, selectedSprintId }) => {
   const createSprintMutation = useCreateSprint(projectId); // Mutation hook to create a sprint
 
   // --- State for column creation modal ---
@@ -65,11 +74,11 @@ const Tabs: React.FC<TabsProps> = ({ items, activeTabId, onTabClick, handleCreat
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // Format dates to YYYY-MM-DD for Firebase or similar APIs
+  // Formats a date string to YYYY-MM-DD format for API compatibility
   const formatDate = (date: string | Date) =>
     new Date(date).toISOString().split("T")[0];
 
-  // Handle creating a new sprint
+  // Handles the creation of a new sprint
   const handleCreateSprint = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -95,22 +104,34 @@ const Tabs: React.FC<TabsProps> = ({ items, activeTabId, onTabClick, handleCreat
     }
   };
 
+  /**
+   * Filters tabs based on sprint selection
+   * Shows all tabs that don't require a sprint
+   * Shows sprint-dependent tabs only when a sprint is selected
+   */
+  const visibleTabs = items.filter(item => 
+    !item.requiresSprint || (item.requiresSprint && selectedSprintId)
+  );
+
   return (
     <>
       {/* Tabs Navigation Bar */}
       <nav className="tabs-navigation tabs-navigation--with-action">
         <div className="tabs-navigation__items">
-          {items.map((item) => {
+          {visibleTabs.map((item) => {
             const IconComponent = iconMap[item.id]; // Get icon for the tab
             const isActive = item.id === activeTabId; // Highlight if active
+            const isDisabled = item.requiresSprint && !selectedSprintId;
             return (
               <button
                 key={item.id}
                 className={`tabs-navigation__item ${
                   isActive ? "tabs-navigation__item--active" : ""
-                }`}
-                onClick={() => onTabClick(item.id)} // Switch tab
+                } ${isDisabled ? "tabs-navigation__item--disabled" : ""}`}
+                onClick={() => !isDisabled && onTabClick(item.id)} // Switch tab
                 aria-current={isActive ? "page" : undefined}
+                disabled={isDisabled}
+                title={isDisabled ? "Select a sprint first" : undefined}
               >
                 {/* Icon + Label */}
                 {IconComponent && (
