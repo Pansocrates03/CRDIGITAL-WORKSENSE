@@ -388,6 +388,9 @@ const BacklogTablePage: FC = () => {
                 <ItemDetailsModal
                     projectId={projectId}
                     isOpen={showDetailsModal}
+                    linkedEpic={selectedItem?.parentId ?
+                        categorized.epics.find(epic => epic.id === selectedItem.parentId) || null
+                        : null}
                     onClose={() => setShowDetailsModal(false)}
                     onEditClick={() => {
                         setItemToEdit(selectedItem);
@@ -395,7 +398,7 @@ const BacklogTablePage: FC = () => {
                         setShowDetailsModal(false);
                     }}
                     item={selectedItem}
-                    memberMap={memberMap}
+                    memberInfo={getMemberInfo(selectedItem?.assigneeId)}
                 />
             )}
 
