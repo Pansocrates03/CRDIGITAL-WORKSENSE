@@ -7,9 +7,10 @@ import {useQuery, useQueryClient} from '@tanstack/react-query';
 import styles from "./NewProjectModal.module.css";
 import {User} from "@/types/UserType";
 import apiClient from "../../api/apiClient";
-import GenerateEpicsModal from "../BacklogTable/GenerateEpicsModal";
+import GenerateEpicsModal from "../../pages/CreateProject/GenerateEpicsModal.tsx";
 import {Sparkles} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
+import {useNavigate} from "react-router-dom";
 
 type localFormError = {
     projectName?: string;
@@ -71,6 +72,8 @@ const Form: React.FC<{ currentUserId: number, onClose: () => void }> = ({current
     // FUNCIONES //
     ///////////////
 
+    let navigate = useNavigate();
+
     // Validación del formulario antes de enviar
     const validateForm = (): boolean => {
         const newErrors: localFormError = {};
@@ -126,6 +129,7 @@ const Form: React.FC<{ currentUserId: number, onClose: () => void }> = ({current
             // Si no se solicita generar backlog con IA, cerrar el modal
             if (!shouldPopulateBacklog) {
                 onClose();
+                navigate(`/project/${response.id}`);
             } else {
                 // Si se ha solicitado generar backlog con IA y tenemos el ID del proyecto
                 if (response && response.id) {
@@ -278,6 +282,7 @@ const Form: React.FC<{ currentUserId: number, onClose: () => void }> = ({current
                         setShowGenerateEpicsModal(false);
                         setIsPopulatingBacklog(false);
                         onClose(); // Cerrar el modal principal también
+                        navigate(`/project/${createdProjectId}`);
                     }}
                     onEpicsAdded={handleEpicsAdded}
                     onError={handleEpicGenerationError}
