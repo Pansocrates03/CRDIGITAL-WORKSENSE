@@ -198,7 +198,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                         disabled={loading}
                     />
 
-                    {formData.type !== "epic" && (
+                    {formData.type && (
                         <SelectField
                             id="sprint"
                             name="sprint"
