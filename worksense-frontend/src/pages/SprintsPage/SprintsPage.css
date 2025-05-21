@@ -1,0 +1,89 @@
+.sprints-page__header {
+    margin-bottom: 2rem;
+}
+
+.sprints-page__header h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.sprints-page__header p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.sprints-page__content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+.sprint-name {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.status-badge--active {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-badge--completed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-badge--planned {
+    background-color: #fff3e0;
+    color: #f57c00;
+}
+
+.sprints-page__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.sprints-page__error {
+    color: #d32f2f;
+    text-align: center;
+    padding: 2rem;
+    background-color: #ffebee;
+    border-radius: 8px;
+}
+
+.sprints-page__empty {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+} 
