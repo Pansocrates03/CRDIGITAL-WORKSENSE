@@ -1,3 +1,7 @@
+/*
+MUST BE DELETED : Esteban
+*/
+
 import { Router } from 'express';
 import { getStories } from '../controllers/stories.controller.js';
 

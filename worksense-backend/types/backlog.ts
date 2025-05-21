@@ -3,6 +3,7 @@ import { Timestamp, FieldValue } from "firebase-admin/firestore";
 
 // Define allowed backlog item types
 interface BacklogItemData {
+  id?: string | null;
   acceptanceCriteria?: string[] | null;
   assigneeId?: number | null;
   authorId?: number | null;
@@ -15,6 +16,7 @@ interface BacklogItemData {
   sprint?: string | null;
   type?: "epic" | "story" | "bug" | "techTask" | "knowledge" | null;
   parentId?: string | null;
+  projectId?: string | null
 }
 
 export type { BacklogItemData };
