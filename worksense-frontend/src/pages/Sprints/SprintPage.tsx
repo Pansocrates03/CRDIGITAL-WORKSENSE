@@ -4,13 +4,20 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from "react-router-dom";
 import { projectService } from "@/services/projectService.ts";
 import QueryKeys from "@/utils/QueryKeys.ts";
+import { useSprints } from "@/hooks/useSprintData";
+import { useDeleteSprint } from "@/hooks/useSprintData";
+import { Sprint } from "@/types/SprintType";
 
 // Component Imports
+import SprintSelectionView from "./components/SprintSelectionView/SprintSelectionView";
 import BoardView from "./components/BoardView/BoardView";
 import OverviewView from "./components/OverviewView/OverviewView";
 import TableView from "./components/TableView/TableView";
 import Tabs from "./components/Tabs/Tabs";
 import "./components/styles/SprintPage.css";
+
+// Modals
+import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal";
 
 // Import necessary CSS files
 import "./components/TaskColumn/TaskColumn.css";
@@ -29,9 +36,10 @@ const DEFAULT_COLUMNS = [
 ];
 
 const navigationTabs = [
-  { id: "overview", label: "Overview" },
-  { id: "board", label: "Board" },
-  { id: "table", label: "Table" },
+  { id: "sprints", label: "Sprint Selection" },
+  { id: "overview", label: "Overview", requiresSprint: true },
+  { id: "board", label: "Board", requiresSprint: true },
+  { id: "table", label: "Table", requiresSprint: true },
 ];
 
 const SprintPage: React.FC = () => {
@@ -44,12 +52,34 @@ const SprintPage: React.FC = () => {
     queryFn: () => projectService.fetchProjectItems(projectId ? projectId : "")
   });
 
+  // Get all sprints hook
+  // Fetch sprints
+  const { data: sprints, error: sprintsError, isLoading: sprintsLoading } = useSprints(projectId ?? "");
+
   const [tasks, setTasks] = useState<BacklogItemType[]>([]);
-  const [activeTab, setActiveTab] = useState('board');
+  const [activeTab, setActiveTab] = useState('sprints');
   const [columns, setColumns] = useState(DEFAULT_COLUMNS);
 
+  // Delete sprint hook
+  const { mutate: deleteSprintMutation } = useDeleteSprint(projectId ?? "");
+
+  // Store selected sprint
+  const [selectedSprint, setSelectedSprint] = useState<string>('');
+
+  // DELETE MODAL STATES
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [sprintToDelete, setSprintToDelete] = useState<Sprint | null>(null);
+
+  // Handle Delete Sprint
+  const handleDeleteSprint = (sprintId: string) => {
+    if (sprintId) {
+      deleteSprintMutation(sprintId); // Call mutation to delete the sprint
+      setDeleteModalOpen(false); // Close the modal after deletion
+    }
+  };
+
   const handleCreateColumn = (columnName: string) => {
-    // Crea un id único, por ejemplo usando Date.now()
+    // Create a unique id, for example using Date.now()
     const newColumn = {
       id: columnName.toLowerCase().replace(/\s+/g, "_") + "_" + Date.now(),
       title: columnName
@@ -58,61 +88,47 @@ const SprintPage: React.FC = () => {
   };
 
   const getItemChildren = (item: BacklogItemType): BacklogItemType[] => {
-  if (!item.subItems || item.subItems.length === 0) {
-    return [item];
-  }
-  return [
-    item,
-    ...item.subItems.flatMap(getItemChildren)
-  ];
-};
-
-  // Solo un useEffect para actualizar tasks
-  React.useEffect(() => {
-    if (data) setTasks(data);
-  }, [data]);
-
-  if (error) { throw new Error("An error has ocurred on SprintPage.tsx"); }
-  if(isLoading){ return <div>Loading...</div> }
-  if(!data){ throw new Error("Nothing received") }
+    if (!item.subItems || item.subItems.length === 0) {
+      return [item];
+    }
+    return [
+      item,
+      ...item.subItems.flatMap(getItemChildren)
+    ];
+  };
 
   // Update tasks when data changes
   React.useEffect(() => {
     if (data) {
       console.log("DATA", data);
-      // Normalizar todos los subitems
+      // Flatten all subitems
       let flattenedData = data.flatMap(getItemChildren);
 
-      // Filtrar a los datos que no sean EPIC
-      let filteredData = flattenedData.filter(item => item.type != "epic")
+      // Filter out EPIC items
+      let filteredData = flattenedData.filter(item => item.type !== "epic");
 
-      // Se añade al state
-      setTasks(filteredData)
-    };
+      // Set tasks state
+      setTasks(filteredData);
+    }
   }, [data]);
 
-
-  
-  const  handleTaskUpdate = async (
+  const handleTaskUpdate = async (
     taskId: string,
     newStatus: BacklogItemType["status"]
   ) => {
-    // Se realiza el update de forma manual
     setTasks(prevTasks =>
       prevTasks.map(task =>
         task.id === taskId ? { ...task, status: newStatus } : task
       )
     );
-    // Se actualiza la bdd
-    let task = tasks.find(t => t.id === taskId); // find task
+    let task = tasks.find(t => t.id === taskId); // Find task
     if(!task) throw new Error("Task not found"); // Error handling
     task.status = newStatus
-    await projectService.updateBacklogItem(projectId ? projectId : "",task) // Esperamos a que se actualice antes de invalidar
+    await projectService.updateBacklogItem(projectId ? projectId : "", task); // Wait for update
 
-    // Se invalida el Query Client
-    queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] })
+    // Invalidate Query Client
+    queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] });
   };
-  
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
@@ -120,12 +136,21 @@ const SprintPage: React.FC = () => {
 
   const renderView = () => {
     switch (activeTab) {
+      case 'sprints':
+        return <SprintSelectionView 
+          sprints={sprints} 
+          selectedSprintId={selectedSprint} 
+          onSelectSprint={(id) => {
+            setSelectedSprint(id);
+            setActiveTab('overview');
+          }} 
+          onDeleteSprint={(sprint) => {
+            setSprintToDelete(sprint);
+            setDeleteModalOpen(true);
+          }}
+        />;
       case 'board':
-        return <BoardView
-          tasks={tasks}
-          onTaskUpdate={handleTaskUpdate}
-          columns={columns}
-          />;
+        return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} columns={columns} />;
       case 'overview':
         return <OverviewView tasks={tasks} />;
       case 'table':
@@ -135,6 +160,10 @@ const SprintPage: React.FC = () => {
     }
   };
 
+  if (error) { throw new Error("An error has occurred on SprintPage.tsx"); }
+  if (isLoading) { return <div>Loading...</div> }
+  if (!data) { throw new Error("Nothing received") }
+
   return (
     <div className="sprint-page">
       <div className="sprint-page__header">
@@ -142,29 +171,36 @@ const SprintPage: React.FC = () => {
           <h1 className="sprint-page__title">Tasks</h1>
           <p className="sprint-page__description">Sprint board for tracking project tasks and progress</p>
         </div>
-        <div className="sprint-page__team">
-          <SelectInput
-          inputName="SPRINT"
-          inputValue="s1"
-          isRequired
-          onChange={() => console.log("kml")}
-          options={[
-            {value: "s1", label: "Sprint 1"},
-            {value:"s2", label: "Sprint 2"},
-            {value:"s3", label: "Sprint 3"},
-          ]}
-          />
-        </div>
       </div>
 
+      {/* Tabs Component */}
       <Tabs
         items={navigationTabs}
         activeTabId={activeTab}
         onTabClick={handleTabChange}
         handleCreateColumn={handleCreateColumn}
+        projectId={projectId ?? ""}
+        selectedSprintId={selectedSprint}
       />
 
+      {/* Render active view based on the selected tab */}
       {renderView()}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setSprintToDelete(null);
+        }}
+        onConfirm={() => {
+          if (sprintToDelete) {
+            handleDeleteSprint(sprintToDelete.id);
+          }
+        }}
+        title="Delete Sprint"
+        message={`Are you sure you want to delete the sprint "${sprintToDelete?.name}"? This action cannot be undone.`}
+      />
     </div>
   );
 };

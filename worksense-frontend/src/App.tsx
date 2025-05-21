@@ -17,8 +17,11 @@ import MembersPage from "./pages/Members/MembersPage";
 
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import SprintPage from "./pages/Sprints/SprintPage";
+import WorkflowPage from "./pages/Workflow/WorkflowPage";
 import ProjectSettingsPage from "./pages/ProjectSettings/ProjectSettingsPage";
 import { Toaster } from "sonner";
+
+
 const queryClient = new QueryClient();
 
 console.log("Running");
@@ -109,6 +112,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <SprintPage />
+                  </PrivateRoute>
+                }
+              />
+            <Route
+              path="/project/:id/workflow"
+              element={
+                <PrivateRoute>
+                  <WorkflowPage />
                 </PrivateRoute>
               }
             />
