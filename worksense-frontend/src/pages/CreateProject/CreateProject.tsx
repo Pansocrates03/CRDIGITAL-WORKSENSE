@@ -1,6 +1,7 @@
 // src/pages/CreateProject/CreateProject.tsx
-import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { toast, Toaster } from "sonner";
 import styles from "./CreateProject.module.css";
 
 import NewProjectModal from "../../components/NewProjectModal/NewProjectModal";
@@ -31,6 +32,7 @@ const CreateProject: React.FC = () => {
     message: string;
   } | null>(null);
   const [projectCreated, setProjectCreated] = useState(false);
+  const location = useLocation();
 
   // Use Query to fetch user projects
   const { isLoading, data, isError, error, isSuccess } = useQuery({
@@ -116,97 +118,107 @@ const CreateProject: React.FC = () => {
     navigate(`/project/${projectId}`);
   };
 
+  useEffect(() => {
+    if (location.state?.toast) {
+      toast.success(location.state.toast);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   // Renderizado condicional dentro del return en lugar de retornos tempranos
   if (isLoading || loading || !user) {
     return <div className={styles.loadingContainer}>Loading...</div>;
   }
 
   return (
-    <main className={styles.mainContent}>
-      <section className={styles.projectsSection}>
-        {/* Header Section */}
-        <SectionHeader
-          loading={loading}
-          user={user}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          handleClearSearch={handleClearSearch}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
-          isFilterOpen={isFilterOpen}
-          setIsFilterOpen={setIsFilterOpen}
-          currentSort={currentSort}
-          handleFilterSelect={handleFilterSelect}
-          setIsModalOpen={setIsModalOpen}
+    <>
+      <Toaster />
+      <main className={styles.mainContent}>
+        <section className={styles.projectsSection}>
+          {/* Header Section */}
+          <SectionHeader
+            loading={loading}
+            user={user}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            handleClearSearch={handleClearSearch}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            isFilterOpen={isFilterOpen}
+            setIsFilterOpen={setIsFilterOpen}
+            currentSort={currentSort}
+            handleFilterSelect={handleFilterSelect}
+            setIsModalOpen={setIsModalOpen}
+          />
+
+          <div className={styles.divider} />
+
+          <div
+            className={`${styles.projectCards} ${
+              viewMode === "list" ? styles.listView : ""
+            }`}
+          >
+            {isLoading ? (
+              <div className={styles.loadingContainer}>
+                <div className={styles.loadingSpinner} />
+                <div className={styles.loadingText}>Loading projects...</div>
+              </div>
+            ) : isError ? (
+              <div className={styles.errorContainer}>
+                <div className={styles.errorIcon}>⚠️</div>
+                <h3>Error loading projects</h3>
+                <p>{error instanceof Error ? error.message : "An unknown error occurred"}</p>
+              </div>
+            ) : (
+              <>
+                {filteredProjects.length > 0 ? (
+                  filteredProjects.map((project) => (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      handleProjectClick={() => handleProjectClick(project.id)}
+                    />
+                  ))
+                ) : searchTerm ? (
+                  <div className={styles.noResults}>
+                    <div className={styles.noResultsIcon}>🔍</div>
+                    <h3>No projects found matching "{searchTerm}"</h3>
+                    <p>Try a different search term or clear filters</p>
+                    <button
+                      className={styles.clearSearchButton}
+                      onClick={handleClearSearch}
+                    >
+                      Clear Search
+                    </button>
+                  </div>
+                ) : (
+                  <NoProjectsAvailable setIsModalOpen={setIsModalOpen}/>
+                )}
+              </>
+            )}
+          </div>
+        </section>
+
+        <NewProjectModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          currentUserId={user?.userId ?? -1}
         />
 
-        <div className={styles.divider} />
-
-        <div
-          className={`${styles.projectCards} ${
-            viewMode === "list" ? styles.listView : ""
-          }`}
-        >
-          {isLoading ? (
-            <div className={styles.loadingContainer}>
-              <div className={styles.loadingSpinner} />
-              <div className={styles.loadingText}>Loading projects...</div>
-            </div>
-          ) : isError ? (
-            <div className={styles.errorContainer}>
-              <div className={styles.errorIcon}>⚠️</div>
-              <h3>Error loading projects</h3>
-              <p>{error instanceof Error ? error.message : "An unknown error occurred"}</p>
-            </div>
-          ) : (
-            <>
-              {filteredProjects.length > 0 ? (
-                filteredProjects.map((project) => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    handleProjectClick={() => handleProjectClick(project.id)}
-                  />
-                ))
-              ) : searchTerm ? (
-                <div className={styles.noResults}>
-                  <div className={styles.noResultsIcon}>🔍</div>
-                  <h3>No projects found matching "{searchTerm}"</h3>
-                  <p>Try a different search term or clear filters</p>
-                  <button
-                    className={styles.clearSearchButton}
-                    onClick={handleClearSearch}
-                  >
-                    Clear Search
-                  </button>
-                </div>
-              ) : (
-                <NoProjectsAvailable setIsModalOpen={setIsModalOpen}/>
-              )}
-            </>
-          )}
-        </div>
-      </section>
-
-      <NewProjectModal
-        isOpen={isModalOpen}
-        onClose={handleModalClose}
-        currentUserId={user?.userId ?? -1}
-      />
-
-      {alert && (
-        <Alert
-          type={alert.type}
-          title={alert.title}
-          message={alert.message}
-          onClose={() => setAlert(null)}
-          actionLabel={alert.type === "error" ? "Try again" : undefined}
-          onAction={
-            alert.type === "error" ? () => setIsModalOpen(true) : undefined
-          }
-        />
-      )}
-    </main>
+        {alert && (
+          <Alert
+            type={alert.type}
+            title={alert.title}
+            message={alert.message}
+            onClose={() => setAlert(null)}
+            actionLabel={alert.type === "error" ? "Try again" : undefined}
+            onAction={
+              alert.type === "error" ? () => setIsModalOpen(true) : undefined
+            }
+          />
+        )}
+      </main>
+    </>
   );
 };
 

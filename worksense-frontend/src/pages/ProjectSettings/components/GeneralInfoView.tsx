@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectService } from "@/services/projectService"; 
 import { useAuth } from "@/hooks/useAuth"; 
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 const statusOptions = [
   { value: "Active", label: "Active" },
@@ -21,6 +23,7 @@ const GeneralInfoView: React.FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
   const { data: user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Fetch project data
   const { data: project, isLoading } = useQuery({
@@ -76,7 +79,8 @@ const GeneralInfoView: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: () => projectService.deleteProject(projectId!),
     onSuccess: () => {
-      // Redirect or show a message
+      toast.success("Project successfully deleted");
+      navigate("/create", { state: { toast: "Project successfully deleted" } });
     },
   });
 
@@ -285,6 +289,9 @@ const GeneralInfoView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Place Toaster at the root of the component tree */}
+      <Toaster />
     </div>
   );
 };
