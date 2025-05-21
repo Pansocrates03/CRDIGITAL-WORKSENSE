@@ -2,20 +2,14 @@ import React from 'react';
 import styles from "./CreateProject.module.css";
 import {ArrowRight} from "lucide-react";
 import ProjectDetails from '@/types/ProjectType';
+import {useUser} from "@/hooks/useMembers.ts";
+import {AvatarDisplay} from "@/components/ui/AvatarDisplay.tsx";
 
 type ProjectCardProps = {
     project: ProjectDetails;
     handleProjectClick: (id: string) => void;
 }
 
-const getInitials = (name: string) => {
-    return name
-        .split(" ")
-        .map((part) => part[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
-};
 
 // Get status color class based on status
 const getStatusColorClass = (status: string): string => {
@@ -34,6 +28,26 @@ const getStatusColorClass = (status: string): string => {
 };
 
 const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick}) => {
+
+    const {
+        data: productOwnerDetails,
+        isLoading: isOwnerLoading,
+        isError: isOwnerError,
+        error: ownerError
+    } = useUser(project.ownerId); // Pass the ownerId to the new hook
+
+    let productOwnerName: string = "Loading...";
+
+    if (isOwnerLoading) {
+        productOwnerName = "Loading...";
+    } else if (isOwnerError) {
+        console.error("Error fetching product owner details:", ownerError);
+        productOwnerName = "Error fetching owner";
+    } else if (productOwnerDetails) {
+        console.log(productOwnerDetails);
+        productOwnerName = productOwnerDetails.fullName || productOwnerDetails.name || "N/A"; // Adjust property name
+    }
+
     return (
         <div
             key={project.id}
@@ -60,7 +74,11 @@ const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick}) 
                 <div className={styles.metaInfo}>
 
                     <div className={styles.metaItem}>
-                        <span>{`Product Owner: ${project.ownerId}`}</span>
+                        <AvatarDisplay user={productOwnerDetails} className="h-6 w-6 rounded-full ring-2 ring-white"/>
+                        <div className="flex flex-col"> {/* Use a flex column for name and subtext */}
+                            <span>{productOwnerName}</span> {/* The name */}
+                            <p className="text-xs text-gray-500">Product Owner</p> {/* The subtext */}
+                        </div>
                     </div>
                 </div>
                 <div className={styles.cardAction}>
