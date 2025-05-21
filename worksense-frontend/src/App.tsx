@@ -21,8 +21,6 @@ import WorkflowPage from "./pages/Workflow/WorkflowPage";
 import ProjectSettingsPage from "./pages/ProjectSettings/ProjectSettingsPage";
 import { Toaster } from "sonner";
 
-
-import ForYouPage from './pages/ForYouPage';
 const queryClient = new QueryClient();
 
 console.log("Running");
