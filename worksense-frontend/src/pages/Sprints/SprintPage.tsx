@@ -1,12 +1,15 @@
+// Core imports
 import React, { useState } from "react";
-import { Task, initialTasks } from "./data.ts";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useParams } from "react-router-dom";
+import { projectService } from "@/services/projectService.ts";
+import QueryKeys from "@/utils/QueryKeys.ts";
+
+// Component Imports
 import BoardView from "./components/BoardView/BoardView";
 import OverviewView from "./components/OverviewView/OverviewView";
-import ListView from "./components/ListView/ListView";
 import TableView from "./components/TableView/TableView";
-import TimelineView from "./components/TimelineView/TimelineView";
 import Tabs from "./components/Tabs/Tabs";
-import TeamAvatars from "./components/TeamAvatars/TeamAvatars";
 import "./components/styles/SprintPage.css";
 
 // Import necessary CSS files
@@ -15,43 +18,101 @@ import "./components/TaskCard/TaskCard.css";
 import "./components/StatusTag/StatusTag.css";
 import "./components/PriorityTag/PriorityTag.css";
 import "./components/avatarGroup/AvatarGroup.css";
-import PageHeader from "./components/PageHeader/PageHeader";
+import BacklogItemType from "@/types/BacklogItemType.ts";
+import { SelectInput } from "@/components/SelectInput/SelectInput";
 
-const AVATAR_URL = "https://avatar.iran.liara.run/public";
-
-interface TeamMember {
-  id: string;
-  name: string;
-  avatarUrl: string;
-}
-
-const sampleTeamMembers: TeamMember[] = [
-  { id: "u1", name: "Jon A.", avatarUrl: AVATAR_URL },
-  { id: "u2", name: "Jane B.", avatarUrl: AVATAR_URL },
-  { id: "u3", name: "Chris C.", avatarUrl: AVATAR_URL },
-  { id: "u4", name: "Sara D.", avatarUrl: AVATAR_URL },
-  { id: "u5", name: "Mike E.", avatarUrl: AVATAR_URL },
+const DEFAULT_COLUMNS = [
+  { id: 'sprint_backlog', title: 'Sprint Backlog' },
+  { id: 'in_progress', title: 'In Progress' },
+  { id: 'in_review', title: 'In Review' },
+  { id: 'done', title: 'Done' }
 ];
 
 const navigationTabs = [
   { id: "overview", label: "Overview" },
   { id: "board", label: "Board" },
-  { id: "list", label: "List" },
   { id: "table", label: "Table" },
-  { id: "timeline", label: "Timeline" },
 ];
 
 const SprintPage: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [activeTab, setActiveTab] = useState('board');
+  const queryClient = useQueryClient();
+  const { id: projectId } = useParams<{ id: string }>();
 
-  const handleTaskUpdate = (taskId: string, newStatus: string) => {
+  // TODOS LOS HOOKS VAN AQUÍ
+  const { isLoading, data, error } = useQuery<BacklogItemType[], Error>({
+    queryKey: [QueryKeys.backlog, projectId],
+    queryFn: () => projectService.fetchProjectItems(projectId ? projectId : "")
+  });
+
+  const [tasks, setTasks] = useState<BacklogItemType[]>([]);
+  const [activeTab, setActiveTab] = useState('board');
+  const [columns, setColumns] = useState(DEFAULT_COLUMNS);
+
+  const handleCreateColumn = (columnName: string) => {
+    // Crea un id único, por ejemplo usando Date.now()
+    const newColumn = {
+      id: columnName.toLowerCase().replace(/\s+/g, "_") + "_" + Date.now(),
+      title: columnName
+    };
+    setColumns(prev => [...prev, newColumn]);
+  };
+
+  const getItemChildren = (item: BacklogItemType): BacklogItemType[] => {
+  if (!item.subItems || item.subItems.length === 0) {
+    return [item];
+  }
+  return [
+    item,
+    ...item.subItems.flatMap(getItemChildren)
+  ];
+};
+
+  // Solo un useEffect para actualizar tasks
+  React.useEffect(() => {
+    if (data) setTasks(data);
+  }, [data]);
+
+  if (error) { throw new Error("An error has ocurred on SprintPage.tsx"); }
+  if(isLoading){ return <div>Loading...</div> }
+  if(!data){ throw new Error("Nothing received") }
+
+  // Update tasks when data changes
+  React.useEffect(() => {
+    if (data) {
+      console.log("DATA", data);
+      // Normalizar todos los subitems
+      let flattenedData = data.flatMap(getItemChildren);
+
+      // Filtrar a los datos que no sean EPIC
+      let filteredData = flattenedData.filter(item => item.type != "epic")
+
+      // Se añade al state
+      setTasks(filteredData)
+    };
+  }, [data]);
+
+
+  
+  const  handleTaskUpdate = async (
+    taskId: string,
+    newStatus: BacklogItemType["status"]
+  ) => {
+    // Se realiza el update de forma manual
     setTasks(prevTasks =>
       prevTasks.map(task =>
         task.id === taskId ? { ...task, status: newStatus } : task
       )
     );
+    // Se actualiza la bdd
+    let task = tasks.find(t => t.id === taskId); // find task
+    if(!task) throw new Error("Task not found"); // Error handling
+    task.status = newStatus
+    await projectService.updateBacklogItem(projectId ? projectId : "",task) // Esperamos a que se actualice antes de invalidar
+
+    // Se invalida el Query Client
+    queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] })
   };
+  
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
@@ -60,17 +121,17 @@ const SprintPage: React.FC = () => {
   const renderView = () => {
     switch (activeTab) {
       case 'board':
-        return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} />;
+        return <BoardView
+          tasks={tasks}
+          onTaskUpdate={handleTaskUpdate}
+          columns={columns}
+          />;
       case 'overview':
         return <OverviewView tasks={tasks} />;
-      case 'list':
-        return <ListView tasks={tasks} />;
       case 'table':
         return <TableView tasks={tasks} />;
-      case 'timeline':
-        return <TimelineView tasks={tasks} />;
       default:
-        return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} />;
+        return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} columns={columns} />;
     }
   };
 
@@ -82,7 +143,17 @@ const SprintPage: React.FC = () => {
           <p className="sprint-page__description">Sprint board for tracking project tasks and progress</p>
         </div>
         <div className="sprint-page__team">
-          <TeamAvatars members={sampleTeamMembers} />
+          <SelectInput
+          inputName="SPRINT"
+          inputValue="s1"
+          isRequired
+          onChange={() => console.log("kml")}
+          options={[
+            {value: "s1", label: "Sprint 1"},
+            {value:"s2", label: "Sprint 2"},
+            {value:"s3", label: "Sprint 3"},
+          ]}
+          />
         </div>
       </div>
 
@@ -90,6 +161,7 @@ const SprintPage: React.FC = () => {
         items={navigationTabs}
         activeTabId={activeTab}
         onTabClick={handleTabChange}
+        handleCreateColumn={handleCreateColumn}
       />
 
       {renderView()}

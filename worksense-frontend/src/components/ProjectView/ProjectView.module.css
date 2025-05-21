@@ -1,489 +1,506 @@
 .projectViewContainer {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--color-background, #f5f5f5);
-  overflow: auto;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-primary, #f5f5f5);
+    overflow: auto;
 }
 
 .projectView {
-  flex: 1;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  overflow: auto;
-  min-height: 100vh;
-  background-color: var(--color-background, #f5f5f5);
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow: auto;
+    min-height: 100vh;
+    background-color: var(--background-primary, #f5f5f5);
 }
 
 .header {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  background-color: var(--color-white);
-  padding: 1.25rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    background-color: var(--color-white);
+    border: 1px solid var(--neutral-300);
+    padding: 1.25rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .header:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .projectIcon {
-  width: 48px;
-  height: 48px;
-  background-color: var(--color-pink-light);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
+    width: 48px;
+    height: 48px;
+    background-color: var(--accent-pink);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+    color: var(--color-white);
+    font-weight: 700;
 }
 
 .projectIcon:hover {
-  transform: scale(1.05);
+    transform: scale(1.05);
 }
 
 .projectInfo h1 {
-  font-size: 1.5rem;
-  color: var(--color-charcoal-dark);
-  margin: 0 0 0.25rem 0;
-  font-weight: 600;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+    font-weight: 600;
 }
 
 .projectMeta {
-  display: flex;
-  gap: 1.5rem;
-  color: var(--color-gray-dark);
-  font-size: 0.9rem;
+    display: flex;
+    gap: 1.5rem;
+    color: var(--neutral-600);
+    font-size: 0.9rem;
 }
 
 .projectMeta span {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .mainContent {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
 }
 
 .aboutSection {
-  grid-column: 1 / -1;
-  background-color: var(--color-white);
-  padding: 1.25rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+    grid-column: 1 / -1;
+    background-color: var(--color-white);
+    padding: 1.25rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--neutral-300);
 }
 
 .aboutSection:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .aboutSection h2 {
-  font-size: 1.25rem;
-  color: var(--color-charcoal-dark);
-  margin-bottom: 0.75rem;
-  font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
 }
 
 .aboutSection p {
-  color: var(--color-gray-dark);
-  line-height: 1.5;
-  font-size: 0.95rem;
-  margin: 0;
+    color: var(--neutral-700);
+    line-height: 1.5;
+    font-size: 0.95rem;
+    font-weight: normal;
+    margin: 0;
+}
+
+.teamSection::-webkit-scrollbar {
+    display: none;
 }
 
 .teamSection {
-  grid-column: 1;
-  grid-row: 3;
-  background-color: var(--color-white);
-  padding: 1.25rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  height: auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+    grid-column: 1;
+    grid-row: 3;
+    background-color: var(--color-white);
+    padding: 1.25rem;
+    overflow-y: auto;
+
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--neutral-300);
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .teamSection:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .teamSection h2 {
-  font-size: 1.25rem;
-  color: var(--color-charcoal-dark);
-  margin-bottom: 0.75rem;
-  font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
 }
 
 .teamAvatars {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(70px, 90px));
-  gap: 1rem;
-  padding: 0.5rem 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 90px));
+    gap: 1rem;
+    padding: 0.5rem 0;
 }
 
 .avatar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
 }
 
 .avatarImage {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  position: relative;
-  min-width: 40px;
-  max-width: 60px;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    min-width: 40px;
+    max-width: 60px;
 }
 
 .avatarImage:hover {
-  /* Removed hover effect */
+    /* Removed hover effect */
 }
 
 .avatarImage img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .avatarName {
-  font-size: 0.75rem;
-  color: var(--color-charcoal-dark);
-  margin: 0;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.2;
+    font-size: 0.75rem;
+    color: var(--neutral-600);
+    margin: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.2;
 }
 
 .avatarTooltip {
-  position: absolute;
-  bottom: -35px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--color-charcoal);
-  color: white;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  white-space: nowrap;
-  opacity: 0;
-  transition: all 0.2s ease;
-  pointer-events: none;
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--text-primary);
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: all 0.2s ease;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .avatarTooltip::before {
-  content: "";
-  position: absolute;
-  top: -4px;
-  left: 50%;
-  transform: translateX(-50%) rotate(45deg);
-  width: 8px;
-  height: 8px;
-  background-color: var(--color-charcoal);
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    background-color: var(--text-primary);
 }
 
 .avatar:hover .avatarTooltip {
-  /* Removed hover effect */
+    /* Removed hover effect */
 }
 
 .backlogPreview {
-  grid-column: 2;
-  grid-row: 3;
-  margin-top: 0;
-  padding: 1.5rem;
-  background: var(--color-white);
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+    grid-column: 2;
+    grid-row: 3;
+    margin-top: 0;
+    padding: 1.5rem;
+    background: var(--color-white);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--neutral-300);
+    height: 400px;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow: auto;
 }
 
 .backlogPreview:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .backlogPreview h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 1.25rem;
-  color: var(--color-charcoal-dark);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .backlogPreview h2::before {
-  content: "";
-  display: block;
-  width: 4px;
-  height: 1.25rem;
-  background: var(--color-purple);
-  border-radius: 2px;
+    content: "";
+    display: block;
+    width: 4px;
+    height: 1.25rem;
+    background: var(--accent-pink);
+    border-radius: 2px;
 }
 
 .backlogItems {
-  display: grid;
-  gap: 1rem;
+    display: grid;
+    gap: 1rem;
 }
 
 .backlogItem {
-  padding: 1.25rem;
-  background: var(--color-white);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
+    padding: 1.25rem;
+    background: var(--color-white);
+    border: 1px solid var(--neutral-300);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 .backlogItem::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--color-purple);
-  opacity: 0;
-  transition: opacity 0.2s ease;
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--color-purple);
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
 .backlogItem:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-color: var(--color-purple);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: var(--accent-pink);
 }
 
 .backlogItem:hover::before {
-  opacity: 1;
+    opacity: 1;
 }
 
 .backlogItemHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
 }
 
 .itemType {
-  font-size: 0.75rem;
-  padding: 0.35rem 0.75rem;
-  background: var(--color-purple);
-  color: white;
-  border-radius: 12px;
-  text-transform: capitalize;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    background: var(--color-purple);
+    color: white;
+    border-radius: 12px;
+    text-transform: capitalize;
+    font-weight: 500;
+    letter-spacing: 0.02em;
 }
 
 .itemStatus {
-  font-size: 0.75rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 12px;
-  text-transform: capitalize;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 12px;
+    text-transform: capitalize;
+    font-weight: 500;
+    letter-spacing: 0.02em;
 }
 
 .itemStatus.backlog {
-  background: var(--color-gray-light);
-  color: var(--color-gray-dark);
+    background: var(--neutral-600);
+    color: var(--accent-pink);
 }
 
 .itemStatus.in-progress {
-  background: var(--color-yellow-light);
-  color: var(--color-yellow-dark);
+    background: var(--neutral-600);
+    color: var(--accent-pink);
 }
 
 .itemStatus.done {
-  background: var(--color-green-light);
-  color: var(--color-green-dark);
+    background: var(--color-green-light);
+    color: var(--color-green-dark);
 }
 
 .backlogItem h4 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: var(--color-charcoal-dark);
-  line-height: 1.3;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--neutral-800);
+    line-height: 1.3;
 }
 
 .backlogItem p {
-  font-size: 0.9rem;
-  color: var(--color-gray-dark);
-  margin-bottom: 1rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-height: 1.5;
+    font-size: 0.9rem;
+    color: var(--neutral-500);
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.5;
 }
 
 .itemMeta {
-  display: flex;
-  gap: 1.25rem;
-  font-size: 0.8rem;
-  color: var(--color-gray-dark);
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--color-gray-light);
+    display: flex;
+    gap: 1.25rem;
+    font-size: 0.8rem;
+    color: var(--color-gray-dark);
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-gray-light);
 }
 
 .itemMeta span {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 500;
 }
 
 .itemMeta span:first-child {
-  color: var(--color-purple);
+    color: var(--color-purple);
 }
 
 .teamStats {
-  margin-top: 0.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-gray-light);
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-gray-light);
 }
 
 .teamStats h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--color-charcoal-dark);
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--neutral-800);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .teamStats h3::before {
-  content: "";
-  display: block;
-  width: 3px;
-  height: 1.1rem;
-  background: var(--color-purple);
-  border-radius: 2px;
+    content: "";
+    display: block;
+    width: 3px;
+    height: 1.1rem;
+    background: var(--accent-blue-hover);
+    border-radius: 2px;
 }
 
 .statsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
 }
 
 .statItem {
-  background: var(--color-background);
-  padding: 1rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+    background: var(--color-background);
+    padding: 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
 }
 
 .statItem:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .statValue {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--color-purple);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--accent-blue);
 }
 
 .statLabel {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--color-gray-dark);
-  text-align: center;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--neutral-500);
+    text-align: center;
 }
 
 .sectionHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
 }
 
 .sectionHeader h2 {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .editButton {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: var(--color-background);
-  border: 1px solid var(--color-gray-light);
-  border-radius: 8px;
-  color: var(--color-charcoal-dark);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--neutral-300);
+    border: 1px solid var(--neutral-500);
+    border-radius: 8px;
+    color: var(--color-charcoal-dark);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .editButton:hover {
-  background-color: var(--color-purple-light);
-  border-color: var(--color-purple);
-  color: var(--color-purple);
-  transform: translateY(-1px);
+    background-color: var(--accent-blue);
+    border-color: var(--color-purple);
+    color: var(--color-purple);
+    transform: translateY(-1px);
 }
 
 .editButton svg {
-  width: 16px;
-  height: 16px;
-  color: currentColor;
+    width: 16px;
+    height: 16px;
+    color: currentColor;
 }
 
 .errorContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-  padding: 2rem;
-  text-align: center;
-  background-color: var(--color-background);
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: 2rem;
+    text-align: center;
+    background-color: var(--color-background);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .errorContainer h2 {
-  color: var(--color-error);
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
+    color: var(--color-error);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
 }
 
 .errorContainer p {
-  color: var(--color-gray-dark);
-  max-width: 400px;
-  margin: 0 auto;
+    color: var(--color-gray-dark);
+    max-width: 400px;
+    margin: 0 auto;
 }

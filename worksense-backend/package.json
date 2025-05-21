@@ -4,7 +4,6 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "start": "nodemon index.ts",
     "dev": "nodemon"
   },
   "author": "",

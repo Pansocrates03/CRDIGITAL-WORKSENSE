@@ -8,11 +8,28 @@
   overflow: visible;
 }
 
+/* components/Settings/Settings.module.css */
+
+/* Add this class */
+.hiddenTabContent {
+  display: none;
+}
+
+/* Add or adjust .tabContent if you need base styling for the content area divs */
+.tabContent {
+  /* Optional: Add some padding or other base styles */
+  padding: 16px;
+  /* Ensure it takes up space when visible */
+  width: 100%;
+  height: 100%; /* Or whatever layout is needed */
+  box-sizing: border-box; /* Include padding in size */
+}
+
 .title {
-  color: var(--color-charcoal);
+  color: var(--text-primary);
   margin-bottom: 2rem;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 800;
 }
 
 .section {
@@ -27,7 +44,7 @@
 }
 
 .sectionTitle {
-  color: var(--color-charcoal);
+  color: var(--text-primary);
   margin: 0;
   font-size: 1.1rem;
   font-weight: 500;
@@ -403,12 +420,14 @@
 }
 
 .modalContainer {
-  background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
+  background: var(--neutral-100);
+  border-radius: var(--radius, 8px);
+  padding: 32px;
   width: 100%;
   max-width: 500px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
 }
 
 .modalHeader {
@@ -421,7 +440,7 @@
 .modalTitle {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--color-charcoal);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -429,18 +448,19 @@
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: var(--muted-foreground);
+  color: var(--neutral-600);
   cursor: pointer;
   padding: 0.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
 .closeButton:hover {
-  background-color: var(--muted);
-  color: var(--foreground);
+  background-color: var(--surface-light);
+  color: var(--text-primary);
 }
 
 .modalContent {
@@ -456,7 +476,7 @@
   font-size: 0.875rem;
   font-weight: 500;
   margin-bottom: 0.5rem;
-  color: var(--color-charcoal);
+  color: var(--text-primary);
 }
 
 .input {
@@ -465,11 +485,12 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.875rem;
-  background-color: white;
+  background-color: var(--neutral-100);
+  color: var(--text-primary);
 }
 
 .input:disabled {
-  background-color: var(--muted);
+  background-color: var(--surface-light);
   opacity: 0.7;
   cursor: not-allowed;
 }
@@ -482,32 +503,39 @@
 
 .cancelButton {
   padding: 0.5rem 1rem;
-  background-color: var(--muted);
-  color: var(--foreground);
+  background-color: var(--surface-light);
+  color: var(--text-primary);
   border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .cancelButton:hover {
-  background-color: var(--muted-hover);
+  background-color: var(--neutral-200);
 }
 
 .createButton {
   padding: 0.5rem 1rem;
-  background-color: var(--color-purple);
-  color: white;
+  background-color: var(--accent-pink);
+  color: var(--accent-pink-text);
   border: none;
   border-radius: 4px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .createButton:hover {
-  background-color: var(--color-purple-dark);
+  background-color: var(--accent-pink-hover);
+}
+
+.createButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .deleteButton {
@@ -572,12 +600,15 @@
 .table th:nth-child(1) {
   width: 30%;
 }
+
 .table th:nth-child(2) {
   width: 35%;
 }
+
 .table th:nth-child(3) {
   width: 20%;
 }
+
 .table th:nth-child(4) {
   width: 15%;
 }

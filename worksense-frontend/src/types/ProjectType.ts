@@ -5,4 +5,9 @@ export default interface ProjectDetails {
   ownerId: number;
   context: {};
   createdAt: {};
+  members?: Array<{ userId: number; role: string; projectRoleId?: string }>;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+  visibility?: string;
 }

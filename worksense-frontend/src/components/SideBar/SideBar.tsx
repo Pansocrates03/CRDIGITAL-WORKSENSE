@@ -117,6 +117,11 @@ export const SideBar: React.FC = () => {
         icon: "/users.svg",
         path: `/project/${projectId}/users`,
       },
+      {
+        name: "Settings",
+        icon: settingsIcon,
+        path: `/project/${projectId}/settings`,
+      },
       // {
       //   name: "Story Management",
       //   icon: "/story.svg",

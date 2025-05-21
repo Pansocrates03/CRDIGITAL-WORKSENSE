@@ -1,53 +1,57 @@
 /* src/components/BacklogTable/SearchFilter.module.css */
+
 .searchContainer {
-    margin-bottom: 1rem;
     display: flex;
+    max-width: 300px;
     align-items: center;
-    background-color: white;
-    border: 1px solid #eaeaea;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    padding: 0.625rem 1rem;
+    background: #fff;
+    border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    padding: 0.5rem 0.75rem;
-    transition: all 0.3s ease;
-  }
-  
-  .searchContainer:focus-within {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+    margin-bottom: 1rem;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.searchContainer:focus-within {
     border-color: var(--primary-color, #ac1754);
-    box-shadow: 0 0 0 2px rgba(172, 23, 84, 0.1);
-  }
-  
-  .searchIcon {
+    box-shadow: 0 0 0 3px rgba(172, 23, 84, 0.15);
+}
+
+.searchIcon {
     color: #6b7280;
-    margin-right: 0.5rem;
-  }
-  
-  .searchInput {
+    flex-shrink: 0;
+}
+
+.searchInput {
     flex: 1;
     border: none;
     outline: none;
-    font-size: 0.875rem;
+    background: transparent;
+    font-size: 0.9375rem;
     color: var(--foreground, #222);
-    background-color: transparent;
-    padding: 0.25rem 0;
-  }
-  
-  .searchInput::placeholder {
+}
+
+.searchInput::placeholder {
     color: #9ca3af;
-  }
-  
-  .clearButton {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #6b7280;
-    font-size: 1rem;
-    padding: 0;
-    margin-left: 0.5rem;
+}
+
+.clearButton {
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-  
-  .clearButton:hover {
-    color: #374151;
-  }
+    padding: 0.25rem;
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 1rem;
+    transition: color 0.2s;
+}
+
+.clearButton:hover {
+    color: #4b5563;
+}
