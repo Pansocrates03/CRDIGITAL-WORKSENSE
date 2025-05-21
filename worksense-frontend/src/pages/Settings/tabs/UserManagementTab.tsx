@@ -3,12 +3,13 @@ import React, {useEffect, useRef, useState} from "react";
 import {UserListItem} from "../interfaces";
 import {Button} from "@/components/ui/button";
 import {AvatarDisplay} from "@/components/ui/AvatarDisplay";
-import {MoreVertical, Pencil, Users} from "lucide-react";
+import {MoreVertical, Pencil, Trash2, Users} from "lucide-react";
 import {createPortal} from "react-dom";
 import apiClient from "@/api/apiClient";
 import styles from "../Settings.module.css";
 import {CreateUserModal} from "../CreateUserModal";
 import BacklogAlerts from "@/components/BacklogTable/BacklogAlerts";
+import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal";
 
 interface MenuPosition {
     top: number;
@@ -42,6 +43,8 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
     const menuButtonRefs = useRef<{ [key: number]: HTMLButtonElement | null }>(
         {}
     );
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState<UserListItem | null>(null);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -199,6 +202,42 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
         }
     };
 
+    const handleDeleteClick = (user: UserListItem) => {
+        setUserToDelete(user);
+        setDeleteModalOpen(true);
+        setActiveMenuId(null);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!userToDelete) return;
+
+        try {
+            setIsUpdating(true);
+            const response = await apiClient.delete(`/users/${userToDelete.id}`);
+
+            if (response.status >= 200 && response.status < 300) {
+                setSuccessMessage(`User ${userToDelete.firstName} ${userToDelete.lastName} deleted successfully`);
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 3000);
+                setDeleteModalOpen(false);
+                setUserToDelete(null);
+                refetchUsers();
+            } else {
+                setErrorMessage("Deletion succeeded but received an unexpected status.");
+                setShowError(true);
+                setTimeout(() => setShowError(false), 5000);
+            }
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || "Failed to delete user";
+            setErrorMessage(errorMessage);
+            setShowError(true);
+            setTimeout(() => setShowError(false), 5000);
+            console.error("Error deleting user:", error);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
     if (usersLoading) {
         return <div className={styles.loadingContainer}/>
     }
@@ -307,6 +346,13 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                                             <Pencil className="h-4 w-4"/>
                                             <span>Edit</span>
                                         </button>
+                                        <button
+                                            className={styles.menuItem}
+                                            onClick={() => handleDeleteClick(user)}
+                                        >
+                                            <Trash2 className={`h-4 w-4 ${styles.deleteIcon}`}/>
+                                            <span className={styles.deleteIcon}>Delete</span>
+                                        </button>
                                     </React.Fragment>
                                 )
                         )}
@@ -402,6 +448,18 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 onSubmit={handleCreateUser}
+            />
+
+            {/* Delete Confirmation Modal */}
+            <DeleteConfirmationModal
+                isOpen={deleteModalOpen}
+                onClose={() => {
+                    setDeleteModalOpen(false);
+                    setUserToDelete(null);
+                }}
+                onConfirm={handleConfirmDelete}
+                title="Delete User"
+                message={`Are you sure you want to delete ${userToDelete?.firstName} ${userToDelete?.lastName}? This action cannot be undone.`}
             />
         </div>
     );

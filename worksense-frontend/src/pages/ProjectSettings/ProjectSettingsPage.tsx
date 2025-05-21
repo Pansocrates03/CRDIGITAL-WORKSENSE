@@ -8,6 +8,7 @@ import '../Sprints/components/styles/SprintPage.css';
 
 // Import components for tabs
 import GeneralInfoView from './components/GeneralInfoView';
+import AISettingsView from './components/AISettingsView';
 
 // Import the Tabs component from SprintPage.tsx
 import Tabs from '../Sprints/components/Tabs/Tabs';
@@ -24,7 +25,6 @@ const ProjectSettingsPage: React.FC = () => {
     { id: "customization", label: "Customization" },
     { id: "analytics", label: "Metrics & Analytics" },
     { id: "aiSettings", label: "AI Settings" },
-    { id: "security", label: "Security & Access" },
   ];
 
   const handleTabChange = (tabId: string) => { 
@@ -42,7 +42,7 @@ const ProjectSettingsPage: React.FC = () => {
         case 'analytics':
             return <div>Analytics View</div>;
         case 'aiSettings':
-            return <div>AI Settings View</div>;
+            return <AISettingsView />;
         case 'security':
             return <div>Security & Access View</div>;
         default:

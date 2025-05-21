@@ -14,6 +14,7 @@ const router = express.Router({ mergeParams: true });
  *   description: Backlog item management operations
  */
 
+
 /**
  * @swagger
  * components:
@@ -536,17 +537,73 @@ router.delete(
   backlogController.deleteBacklogItem
 );
 
+/**
+ * @swagger
+ * /projects/{projectId}/backlog/items/{itemId}/sprints/{sprintId}:
+ *   put:
+ *     summary: Change the sprint of a backlog item
+ *     description: Updates the sprint field of a backlog item with the provided sprint ID
+ *     tags: [Backlog Items]
+ *     security:
+ *       - authToken: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the project
+ *         example: "proj_abc123"
+ *       - in: path
+ *         name: itemId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the backlog item
+ *         example: "story_001"
+ *       - in: path
+ *         name: sprintId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the sprint to assign
+ *         example: "sprint_789"
+ *     responses:
+ *       200:
+ *         description: Sprint updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *                   example: "Sprint updated successfully"
+ *                 sprintId:
+ *                   type: string
+ *                   description: ID of the sprint that was assigned
+ *                   example: "sprint_789"
+ *       401:
+ *         description: Unauthorized - User is not authenticated
+ *       403:
+ *         description: Forbidden - User does not have permission to edit the backlog
+ *       404:
+ *         description: Project or backlog item not found
+ */
+router.put(
+  "/items/:itemId/sprints/:sprintId",
+  backlogController.changeItemSprint
+)
+
+
 router.delete(
   "/items/:itemId/subitems/:subItemId",
   withPermission("edit:backlog"),
   backlogController.deleteSubItem
 );
 
-router.put(
-  "/items/:itemId/subitems/:subItemId",
-  withPermission("edit:backlog"),
-  backlogController.updateSubItem
-);
+
 
 router.post(
   "/items/:itemId/subitems",

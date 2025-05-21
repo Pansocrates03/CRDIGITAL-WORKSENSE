@@ -756,7 +756,7 @@
 }
 
 .title {
-  color: var(--color-charcoal);
+  color: var(--text-primary);
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
@@ -927,4 +927,46 @@
 .cancelButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.deleteIcon {
+  color: var(--destructive);
+}
+
+.deleteModalContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.2rem 1.5rem 1rem 1.5rem;
+  text-align: center;
+}
+
+.deleteModalIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.deleteModalIcon {
+  color: var(--destructive);
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.deleteModalTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+}
+
+.deleteModalSubtext {
+  font-size: 0.95rem;
+  color: var(--muted-foreground);
+  margin-bottom: 1.5rem;
+}
+
+.deleteModalTextWrapper {
+  margin-bottom: 1rem;
 }
