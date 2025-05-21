@@ -167,10 +167,19 @@ export const getProjectDetails = async (
       res.status(404).json({ message: "Project not found" });
       return;
     }
-    // Return the project details
+
+    // Fetch members subcollection
+    const membersSnap = await projectRef.collection("members").get();
+    const members = membersSnap.docs.map(memberDoc => ({
+      userId: memberDoc.data().userId,
+      projectRoleId: memberDoc.data().projectRoleId,
+    }));
+
+    // Return the project details with members array
     res.status(200).json({
       id: doc.id,
       ...doc.data(),
+      members,
     });
   } catch (error) {
     next(error);

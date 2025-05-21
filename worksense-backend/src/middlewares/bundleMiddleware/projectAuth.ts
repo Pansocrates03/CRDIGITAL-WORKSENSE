@@ -83,7 +83,17 @@ export const checkProjectPermission = (requiredPermission: string) => {
         }
       }
 
-      // 2. Fallback to role-based permission check
+      // 2. Check if user is a product-owner in the project's members
+      const memberRef = db.collection("projects").doc(projectId).collection("members").doc(String(userId));
+      const memberSnap = await memberRef.get();
+      if (memberSnap.exists) {
+        const memberData = memberSnap.data();
+        if (memberData && memberData.projectRoleId === "product-owner") {
+          return next();
+        }
+      }
+
+      // 3. Fallback to role-based permission check
       if (!roleId) {
         res.status(403).json({ message: "Membership role not determined" });
         return;

@@ -32,13 +32,6 @@ const GeneralInfoView: React.FC = () => {
     enabled: !!projectId,
   });
 
-  // Check if user is product owner
-  const isProductOwner =
-    project?.ownerId === user?.userId || // This does not work !!! 
-    project?.members?.some(
-      member => member.userId === user?.userId && ( member.projectRoleId === "product-owner")
-    );
-
   // Local state for edit mode
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState<any>(null);
@@ -84,7 +77,17 @@ const GeneralInfoView: React.FC = () => {
     },
   });
 
-  if (isLoading || !form) return <div>Loading...</div>;
+  if (isLoading || !form || !user || !project) return <div>Loading...</div>;
+
+  // Now both user and project are defined!
+  const isProductOwner =
+    project.ownerId == user.userId ||
+    (Array.isArray(project.members) &&
+      project.members.some(
+        member =>
+          String(member.userId) === String(user.userId) &&
+          member.projectRoleId === "product-owner"
+      ));
 
   return (
     <div className="general-info-view">
