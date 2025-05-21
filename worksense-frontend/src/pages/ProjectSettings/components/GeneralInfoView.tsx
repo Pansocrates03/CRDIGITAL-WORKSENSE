@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectService } from "@/services/projectService"; 
 import { useAuth } from "@/hooks/useAuth"; 
 import { Button } from "@/components/ui/button";
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
 const statusOptions = [
@@ -61,6 +60,12 @@ const GeneralInfoView: React.FC = () => {
     onSuccess: () => {
       setEditMode(false);
       queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+      console.log("TOAST: Project updated successfully!");
+      toast.success("Project updated successfully!");
+    },
+    onError: () => {
+      setEditMode(false);
+      toast.error("There was an error updating the project");
     },
   });
 
@@ -74,6 +79,11 @@ const GeneralInfoView: React.FC = () => {
     onSuccess: () => {
       toast.success("Project successfully deleted");
       navigate("/create", { state: { toast: "Project successfully deleted" } });
+    },
+    onError: () => {
+      setShowDeleteModal(false);
+      setDeleteInput("");
+      toast.error("There was an error deleting the project");
     },
   });
 
@@ -292,9 +302,6 @@ const GeneralInfoView: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Place Toaster at the root of the component tree */}
-      <Toaster />
     </div>
   );
 };

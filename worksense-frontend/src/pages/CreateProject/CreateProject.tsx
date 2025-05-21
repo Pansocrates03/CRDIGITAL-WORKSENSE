@@ -132,7 +132,7 @@ const CreateProject: React.FC = () => {
 
   return (
     <>
-      <Toaster />
+      {/* <Toaster /> */}
       <main className={styles.mainContent}>
         <section className={styles.projectsSection}>
           {/* Header Section */}
