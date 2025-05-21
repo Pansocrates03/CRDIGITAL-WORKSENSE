@@ -63,6 +63,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const currentSection = getSectionFromPath(location.pathname, projectId);
 
   let headerTitle: string;
+  let showSidebar = true; // Default to showing sidebar
 
   if (isInProjectView) {
     // In project view, the Header's 'title' prop will be the project name
@@ -72,6 +73,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       : projectName || "Project";
   } else if (location.pathname.startsWith("/create")) {
     headerTitle = "My Projects";
+    showSidebar = false; // Hide sidebar on create page
+  } else if (location.pathname.startsWith("/settings")) {
+    headerTitle = "Settings";
+    showSidebar = false; // Hide sidebar on settings page
   } else if (location.pathname.startsWith("/account")) {
     headerTitle = "Account Settings";
   } else if (location.pathname.startsWith("/guides")) {
@@ -88,7 +93,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   // This requires modifying the Header component slightly.
   const titleForHeader = isInProjectView ? currentSection : headerTitle;
   const showBreadcrumb = isInProjectView; // Show breadcrumbs only inside a project
-  const showBackButton = isInProjectView; // Show back button only inside a project
+  const showBackButton = isInProjectView || location.pathname.startsWith("/settings"); // Show back button only inside a project
 
   // Loading UI component
   const LoadingUI = () => (
@@ -106,7 +111,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     <div className={styles.layoutContainer}>
       {" "}
       {/* Flex row */}
-      <SideBar />
+      <SideBar showSidebar={showSidebar} />
       <div className={styles.mainPanel}>
         {" "}
         {/* Container for Header + Content */}

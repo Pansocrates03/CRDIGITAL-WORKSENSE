@@ -35,7 +35,9 @@ const NavItemComponent: React.FC<{
   </li>
 );
 
-export const SideBar: React.FC = () => {
+export const SideBar: React.FC<{showSidebar:boolean}> = ({showSidebar}) => {
+  if(!showSidebar) return null; // Early return if sidebar is not to be shown
+  console.log("Rendering Sidebar", showSidebar);
   const location = useLocation();
   const navigate = useNavigate();
   const [projectName, setProjectName] = useState<string>("");
