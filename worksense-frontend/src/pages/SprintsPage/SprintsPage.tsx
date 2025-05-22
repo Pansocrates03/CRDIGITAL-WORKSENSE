@@ -22,6 +22,7 @@ import {
     TableRow,
     TableCell,
 } from "@/components/ui/table";
+import { toast } from "sonner";
 
 /* Icons */
 import { PlusIcon, Pencil, Trash2 } from "lucide-react";
@@ -192,6 +193,8 @@ const SprintsPage: React.FC = () => {
                     endDate: formatDateForAPI(endDate),
                     status: newSprint.status
                 });
+
+                toast.success("Sprint updated successfully!")
             } else {
                 await createSprintMutation.mutateAsync({
                     name: newSprint.name,
@@ -200,11 +203,14 @@ const SprintsPage: React.FC = () => {
                     startDate: formatDateForAPI(startDate),
                     endDate: formatDateForAPI(endDate),
                 });
+
+                toast.success("Sprint created successfully!")
             }
             handleCloseModal();
         } catch (error) {
             console.error("Failed to save sprint:", error);
-            // TODO: Add error notification
+
+            toast.error("Error saving sprint!")
         }
     };
 
@@ -220,9 +226,11 @@ const SprintsPage: React.FC = () => {
             try {
                 await deleteSprintMutation.mutateAsync(sprintToDelete);
                 setSprintToDelete(null);
+
+                toast.success("Sprint deleted successfully!")
             } catch (error) {
                 console.error("Failed to delete sprint:", error);
-                // TODO: Add error notification
+                toast.error("Failed to delete sprint!")
             }
         }
     };
