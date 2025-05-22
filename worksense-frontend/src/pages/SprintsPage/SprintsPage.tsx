@@ -4,6 +4,8 @@ import { useParams } from "react-router-dom";
 
 /* Custom hooks for sprint data management */
 import { useSprints, useCreateSprint, useDeleteSprint, useUpdateSprint } from "@/hooks/useSprintData";
+import { useAuth } from "@/hooks/useAuth";
+import { useMembers } from "@/hooks/useMembers";
 
 /* Types */
 import { Sprint } from "@/types/SprintType";
@@ -31,6 +33,17 @@ const SprintsPage: React.FC = () => {
     // Get project ID from URL parameters
     const { id: projectId } = useParams<{ id: string }>();
     
+    // Get current user and members data
+    const { data: user } = useAuth();
+    const { data: members = [] } = useMembers(projectId ?? "");
+    
+    // Check if user has management permissions
+    const canManageSprints = members.some(
+        member => 
+            member.userId === user?.userId && 
+            (member.projectRoleId === 'product-owner' || member.projectRoleId === 'scrum-master')
+    );
+    
     // Fetch sprints data using custom hook
     const { data: sprints, isLoading, error } = useSprints(projectId ?? "");
     
@@ -54,12 +67,6 @@ const SprintsPage: React.FC = () => {
     // State to track if we're editing
     const [isEditing, setIsEditing] = useState(false);
     const [editingSprint, setEditingSprint] = useState<Sprint | null>(null);
-
-    // Mock user role - Replace this with actual user role check
-    const userRole = "product-owner"; // This should come from your auth context
-
-    // Check if user has edit permissions
-    const canEdit = userRole === "product-owner" || userRole === "scrum-master";
 
     // State for delete confirmation modal
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -163,6 +170,18 @@ const SprintsPage: React.FC = () => {
             return;
         }
 
+        // Check if trying to set a sprint as active when another is already active
+        if (newSprint.status === "Active") {
+            const hasActiveSprint = sprints?.some(
+                sprint => sprint.status === "Active" && (!isEditing || sprint.id !== editingSprint?.id)
+            );
+            
+            if (hasActiveSprint) {
+                alert("There can only be one active sprint at a time. Please complete or cancel the current active sprint first.");
+                return;
+            }
+        }
+
         try {
             if (isEditing && editingSprint) {
                 await updateSprintMutation.mutateAsync({
@@ -176,7 +195,7 @@ const SprintsPage: React.FC = () => {
             } else {
                 await createSprintMutation.mutateAsync({
                     name: newSprint.name,
-                    status: "Planned",
+                    status: "Planned", // New sprints always start as Planned
                     goal: newSprint.goal,
                     startDate: formatDateForAPI(startDate),
                     endDate: formatDateForAPI(endDate),
@@ -239,14 +258,16 @@ const SprintsPage: React.FC = () => {
                     <h1>Sprints</h1>
                     <p>Manage your project sprints</p>
                 </div>
-                <Button
-                    variant="default"
-                    size="default"
-                    onClick={() => setIsModalOpen(true)}
-                >
-                    <PlusIcon className="mr-1 h-4 w-4" />
-                    Create Sprint
-                </Button>
+                {canManageSprints && (
+                    <Button
+                        variant="default"
+                        size="default"
+                        onClick={() => setIsModalOpen(true)}
+                    >
+                        <PlusIcon className="mr-1 h-4 w-4" />
+                        Create Sprint
+                    </Button>
+                )}
             </div>
 
             {/* Divider line */}
@@ -263,7 +284,7 @@ const SprintsPage: React.FC = () => {
                                 <TableHead>Goal</TableHead>
                                 <TableHead>Start Date</TableHead>
                                 <TableHead>End Date</TableHead>
-                                {canEdit && <TableHead>Actions</TableHead>}
+                                {canManageSprints && <TableHead>Actions</TableHead>}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -286,7 +307,7 @@ const SprintsPage: React.FC = () => {
                                     <TableCell>
                                         {formatDate(sprint.endDate)}
                                     </TableCell>
-                                    {canEdit && (
+                                    {canManageSprints && (
                                         <TableCell>
                                             <div className="flex gap-2">
                                                 <Button
@@ -315,7 +336,7 @@ const SprintsPage: React.FC = () => {
                 ) : (
                     // Empty state message
                     <div className="sprints-page__empty">
-                        <p>No sprints found. Create your first sprint to get started!</p>
+                        <p>No sprints found. {canManageSprints ? "Create your first sprint to get started!" : "No sprints have been created yet."}</p>
                     </div>
                 )}
             </div>
@@ -374,7 +395,12 @@ const SprintsPage: React.FC = () => {
                                     className="w-full p-2 border rounded"
                                 >
                                     <option value="Planned">Planned</option>
-                                    <option value="Active">Active</option>
+                                    <option 
+                                        value="Active" 
+                                        disabled={sprints?.some(s => s.status === "Active" && s.id !== editingSprint?.id)}
+                                    >
+                                        Active {sprints?.some(s => s.status === "Active" && s.id !== editingSprint?.id) ? "(Another sprint is active)" : ""}
+                                    </option>
                                     <option value="Completed">Completed</option>
                                 </select>
                             </div>
