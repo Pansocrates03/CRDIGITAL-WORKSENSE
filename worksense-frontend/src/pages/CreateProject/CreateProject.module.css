@@ -30,7 +30,7 @@
 }
 
 .mainContent {
-    padding: 8px 48px;
+    padding: 40px 32px 32px;
     width: 100%;
     max-width: 100%;
     height: 100%;
@@ -351,13 +351,6 @@
     box-shadow: var(--shadow-lg);
 }
 
-.projectCards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    grid-auto-rows: auto;
-    gap: 2rem;
-}
-
 .featuredCard {
     grid-column: span 2;
     grid-row: span 2;
@@ -419,7 +412,7 @@
 /* Enhanced Card Design */
 .card {
     background-color: var(--neutral-100);
-    padding: 1.5rem;
+    padding: 1rem 1.5rem;
     border-radius: var(--border-radius-lg);
     display: flex;
     flex-direction: column;
