@@ -36,7 +36,7 @@
 .contentArea {
     flex-grow: 1;
     overflow-y: auto; /* Crucial para permitir scroll en el contenido */
-    padding: 0 30px; /* Padding para el contenido */
+    padding: 20px 30px; /* Padding para el contenido */
     height: calc(100vh - 60px); /* Altura del viewport menos el header */
     max-height: calc(100vh - 60px); /* Altura máxima para mantener consistencia */
 }
