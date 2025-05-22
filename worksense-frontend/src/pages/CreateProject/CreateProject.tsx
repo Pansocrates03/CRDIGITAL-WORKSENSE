@@ -45,31 +45,6 @@ const CreateProject: React.FC = () => {
         }
     });
 
-    const filteredProjects = useMemo(() => {
-        // Si no hay datos, devolver array vacío
-        if (!data) return [];
-
-        const searchTermLower = searchTerm.toLowerCase();
-
-        // First filter by search term
-        let filtered = data.filter(
-            (project) =>
-                project.name.toLowerCase().includes(searchTermLower) ||
-                project.description.toLowerCase().includes(searchTermLower)
-        );
-
-        // Then sort based on current sort option
-        return filtered.sort((a, b) => {
-            switch (currentSort) {
-                case "a-z":
-                    return a.name.localeCompare(b.name);
-                case "z-a":
-                    return b.name.localeCompare(a.name);
-                default:
-                    return 0;
-            }
-        });
-    }, [data, searchTerm, currentSort]);
 
     const processedProjects = useMemo(() => {
         if (!data) return []; // If no projects data yet, return empty array
@@ -93,9 +68,7 @@ const CreateProject: React.FC = () => {
                 (project.description && project.description.toLowerCase().includes(searchTermLower)) // Check if description exists
         );
 
-        // Then, apply sorting (A-Z, Z-A)
-        // The featured item is already at the top, so it won't be affected by this sort
-        // unless it's filtered out by the search term.
+
         return filtered.sort((a, b) => {
             // If 'a' is the featured project, it should stay at the top relative to 'b' (unless b is also featured, which shouldn't happen here)
             if (a.id === featuredProjectId && filtered.length > 1 && filtered[0].id === a.id) return -1;
@@ -112,7 +85,6 @@ const CreateProject: React.FC = () => {
             }
         });
     }, [data, featuredProjectId, searchTerm, currentSort]);
-    // --- END OF MODIFICATION FOR STEP 3 ---
 
     const handleModalClose = () => {
         setIsModalOpen(false);
@@ -140,7 +112,6 @@ const CreateProject: React.FC = () => {
         const lastViewedId = localStorage.getItem('lastViewedProjectId');
         if (lastViewedId) {
             setFeaturedProjectId(lastViewedId);
-            localStorage.removeItem('lastViewedProjectId');
         }
     }, []);
 
