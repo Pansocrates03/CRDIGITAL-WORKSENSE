@@ -26,10 +26,10 @@ const DEFAULT_COLUMNS = [
 ];
 
 const navigationTabs = [
-  { id: "sprints", label: "Sprint Selection" },
-  { id: "overview", label: "Overview", requiresSprint: true },
-  { id: "board", label: "Board", requiresSprint: true },
-  { id: "table", label: "Table", requiresSprint: true },
+  { id: "overview", label: "Overview"},
+  { id: "board", label: "Board" },
+  { id: "table", label: "Table" },
+  { id: "burndown_chart", label: "Burndown Chart"}
 ]
 
 const WorkflowPage: React.FC = () => {
@@ -113,7 +113,6 @@ const WorkflowPage: React.FC = () => {
 
     const renderView = () => {
         switch (activeTab) {
-
             case 'board':
                 return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} columns={columns} />;
             case 'overview':
@@ -133,14 +132,14 @@ const WorkflowPage: React.FC = () => {
     <div className="sprint-page">
       <div className="sprint-page__header">
         <div className="sprint-page__header-content">
-          <h1 className="sprint-page__title">Tasks</h1>
+          <h1 className="sprint-page__title">Workflow (Sprint 1)</h1>
           <p className="sprint-page__description">Sprint board for tracking project tasks and progress</p>
         </div>
       </div>
 
       {/* Tabs Component */}
       <Tabs
-        items={navigationTabs}
+        TabItems={navigationTabs}
         activeTabId={activeTab}
         onTabClick={handleTabChange}
         handleCreateColumn={handleCreateColumn}

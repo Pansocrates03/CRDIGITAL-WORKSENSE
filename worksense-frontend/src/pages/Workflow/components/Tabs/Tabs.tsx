@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button"; // Reusable UI button component
 import {
-  FiLayout, FiList, FiGrid, FiClock, FiCalendar // Icons for tab navigation
+  FiLayout, FiGrid, FiClock, FiBarChart // Icons for tab navigation
 } from "react-icons/fi";
 import Modal from "@/components/Modal/Modal"; // Generic modal component
 import { Input } from "@/components/ui/input"; // Reusable input component
@@ -17,12 +17,11 @@ import { Sprint } from '@/types/SprintType';
 interface TabItem {
   id: string;
   label: string;
-  requiresSprint?: boolean;
 }
 
 // Props expected by this Tabs component
 interface TabsProps {
-  items: TabItem[]; // Array of navigation tabs (board, sprints, overview, etc.)
+  TabItems: TabItem[]; // Array of navigation tabs (board, sprints, overview, etc.)
   activeTabId: string; // Currently selected tab
   onTabClick: (id: string) => void; // Callback to switch tabs
   handleCreateColumn: (name: string) => void; // Callback to add column in board
@@ -35,19 +34,18 @@ interface TabsProps {
  * Used to display appropriate icons in the tab navigation
  */
 const iconMap: Record<string, React.ComponentType<{ className?: string; size?: number }> | null> = {
-  sprints: FiCalendar,
   overview: null,
   board: FiLayout,
-  list: FiList,
   table: FiGrid,
   timeline: FiClock,
+  burndown_chart: FiBarChart
 };
 
 /**
  * Tabs component for sprint management navigation
  * Handles tab switching, sprint creation, and column management
  */
-const Tabs: React.FC<TabsProps> = ({ items, activeTabId, onTabClick, handleCreateColumn, projectId, selectedSprintId }) => {
+const Tabs: React.FC<TabsProps> = ({ TabItems, activeTabId, onTabClick, handleCreateColumn, projectId, selectedSprintId }) => {
   const createSprintMutation = useCreateSprint(projectId); // Mutation hook to create a sprint
 
   // --- State for column creation modal ---
@@ -109,29 +107,24 @@ const Tabs: React.FC<TabsProps> = ({ items, activeTabId, onTabClick, handleCreat
    * Shows all tabs that don't require a sprint
    * Shows sprint-dependent tabs only when a sprint is selected
    */
-  const visibleTabs = items.filter(item => 
-    !item.requiresSprint || (item.requiresSprint && selectedSprintId)
-  );
 
   return (
     <>
       {/* Tabs Navigation Bar */}
       <nav className="tabs-navigation tabs-navigation--with-action">
         <div className="tabs-navigation__items">
-          {visibleTabs.map((item) => {
+          {TabItems.map((item) => {
             const IconComponent = iconMap[item.id]; // Get icon for the tab
             const isActive = item.id === activeTabId; // Highlight if active
-            const isDisabled = item.requiresSprint && !selectedSprintId;
             return (
               <button
                 key={item.id}
                 className={`tabs-navigation__item ${
                   isActive ? "tabs-navigation__item--active" : ""
-                } ${isDisabled ? "tabs-navigation__item--disabled" : ""}`}
-                onClick={() => !isDisabled && onTabClick(item.id)} // Switch tab
+                }`}
+                onClick={() => onTabClick(item.id)} // Switch tab
                 aria-current={isActive ? "page" : undefined}
-                disabled={isDisabled}
-                title={isDisabled ? "Select a sprint first" : undefined}
+                disabled={false}
               >
                 {/* Icon + Label */}
                 {IconComponent && (
@@ -150,11 +143,6 @@ const Tabs: React.FC<TabsProps> = ({ items, activeTabId, onTabClick, handleCreat
           </Button>
         )}
 
-        {activeTabId === "sprints" && (
-          <Button onClick={() => setIsCreateSprintModalOpen(true)}>
-            + Sprint
-          </Button>
-        )}
       </nav>
 
       {/* --- Column Modal --- */}
