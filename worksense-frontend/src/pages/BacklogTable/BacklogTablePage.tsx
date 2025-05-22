@@ -18,6 +18,7 @@ import {EpicRow} from "@/components/BacklogTable/EpicRow";
 import {useMembers} from "@/hooks/useMembers";
 import { projectService } from "@/services/projectService";
 import ProjectDetails from "@/types/ProjectType";
+import { useSprints } from "@/hooks/useSprintData";
 
 import BacklogItemType from "@/types/BacklogItemType";
 import MemberDetailed from "@/types/MemberDetailedType";
@@ -64,6 +65,7 @@ const BacklogTablePage: FC = () => {
     });
 
     const {data: members = []} = useMembers(projectId || "");
+    const { data: sprints = [] } = useSprints(projectId || "");
 
     const memberMap = useMemo(() => {
         const map = new Map<number, MemberDetailed>();
@@ -261,6 +263,7 @@ const BacklogTablePage: FC = () => {
                     onDelete={() => handleDelete(item)}
                     onViewDetails={() => handleViewDetails(item)}
                     enableAiSuggestions={project?.enableAiSuggestions ?? true}
+                    sprints={sprints}
                 />
             ));
 
@@ -333,6 +336,7 @@ const BacklogTablePage: FC = () => {
                                         onGenerateStories={handleGenerateStories}
                                         memberMap={memberMap}
                                         enableAiSuggestions={project?.enableAiSuggestions ?? true}
+                                        sprints={sprints}
                                     />
                                     {expandedEpics.includes(epic.id) &&
                                         renderRows(epicStories, true)}

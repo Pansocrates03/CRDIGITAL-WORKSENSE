@@ -35,6 +35,7 @@ interface ItemModalFormProps {
     error?: string;
     users: User[];
     epics: Epic[];
+    sprints: { id: string; name: string }[];
     disableTypeChange?: boolean;
 }
 
@@ -49,6 +50,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                                                          error,
                                                          users,
                                                          epics,
+                                                         sprints,
                                                          disableTypeChange = false,
                                                      }) => {
     const handleChange = (
@@ -100,11 +102,8 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             {value: "XL", label: "XL"},
         ],
         sprint: [
-            {value: "", label: "Select Sprint (Optional)"},
-            {value: "Sprint 1", label: "Sprint 1"},
-            {value: "Sprint 2", label: "Sprint 2"},
-            {value: "Sprint 3", label: "Sprint 3"},
-            {value: "Sprint 4", label: "Sprint 4"},
+            { value: "", label: "Select Sprint (Optional)" },
+            ...sprints.map((s) => ({ value: s.id, label: s.name })),
         ],
         assignee: [
             {value: "", label: "Select Assignee (Optional)"},
