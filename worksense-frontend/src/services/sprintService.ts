@@ -5,7 +5,8 @@ import { Sprint } from "../types/SprintType"; // Adjust path as needed
 import { ApiResponseTask } from "../types/SprintType"; // Adjust path as needed
 
 // Use the same API_URL pattern for consistency, unless apiClient has baseURL set
-const API_URL = "http://localhost:5050/api/v1";
+import {API_URL} from "@/lib/constants/endpoints";
+
 
 export const sprintService = {
   /**
