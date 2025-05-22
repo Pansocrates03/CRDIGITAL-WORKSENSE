@@ -520,7 +520,7 @@
 .memberAvatars {
     display: flex;
     align-items: center;
-    padding-top: 0.25rem; /* Small space above the avatar stack */
+    padding-top: 1rem; /* Small space above the avatar stack */
 }
 
 
