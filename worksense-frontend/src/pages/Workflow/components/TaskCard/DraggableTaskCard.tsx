@@ -1,7 +1,10 @@
-import React from 'react';
-import { Task } from '../../data';
-// import '../styles/TaskCard.css';
+import React, { useState } from 'react';
+import './TaskCard.css';
 import BacklogItemType from '@/types/BacklogItemType';
+import { Button } from '@/components/ui/button';
+import { FaAngleDown, FaAngleUp, FaPlus } from "react-icons/fa";
+import Modal from '@/components/Modal/Modal';
+import { Input } from '@/components/ui/input';
 
 interface DraggableTaskCardProps {
   task: BacklogItemType;
@@ -9,6 +12,8 @@ interface DraggableTaskCardProps {
 }
 
 const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) => {
+  const [showSubtasks, setShowSubtasks] = useState(false);
+
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('taskId', task.id);
     e.dataTransfer.setData('sourceIndex', index.toString());
@@ -54,24 +59,13 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) =>
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       className="task-card"
-    >
-      {task.coverImage && (
-        <div className="task-card__cover">
-          <img
-            src={task.coverImage}
-            alt={task.name ? task.name : "NaN"}
-            className="task-card__cover-image"
-          />
-        </div>
-      )}
-      
+    >      
       <h3 className="task-card__title">{task.name}</h3>
       
       <div className="task-card__meta">
         <span className={`task-card__status ${getStatusClass(task.status ? task.status : "")}`}>
           {task.status}
         </span>
-        
         {task.priority && (
           <span className={`task-card__priority ${getPriorityClass(task.priority)}`}>
             {task.priority}
@@ -79,47 +73,51 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) =>
         )}
       </div>
 
-      {task.subItems && task.subItems.length < 0 && (
-        <div className="task-card__progress">
-          <div className="task-card__progress-bar">
-            <div
-              className="task-card__progress-fill"
-              style={{ width: `${(10 / 30 ) * 100}%` }} // subtasks completed / total subtasks
-            />
-          </div>
-          <span className="task-card__progress-text">
-            {10}/{30} // 
-          </span>
-        </div>
-      )}
-
       <div className="task-card__footer">
-        <div className="task-card__assignees">
-          
-          {/*task.assignees.map(assignee => (
-            <img
-              key={assignee.id}
-              className="task-card__assignee"
-              src={assignee.avatarUrl}
-              alt={assignee.name}
-              title={assignee.name}
-            />
-          ))*/}
-        </div>
-        
-        {/* 
-        <div className="task-card__stats">
-          {task.commentsCount > 0 && (
-            <span>💬 {task.commentsCount}</span>
-          )}
-          {task.linksCount > 0 && (
-            <span>🔗 {task.linksCount}</span>
-          )}
-        </div>
-        */}
+        <span style={{fontSize: 12}}>
+          Tasks: {task.subItems ? task.subItems.length : 0}
+        </span>
+        <button
+          type="button"
+          onClick={() => setShowSubtasks((prev) => !prev)}
+          className='task-card__toggle-subtasks'
+          aria-label={showSubtasks ? "Ocultar subtasks" : "Mostrar subtasks"}
+        >
+          {showSubtasks ? <FaAngleUp size={16} /> : <FaAngleDown size={16} />}
+        </button>
       </div>
+
+{showSubtasks && (
+  <>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <FaPlus />
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        (e.target as HTMLFormElement).reset();
+
+      }}>
+      <Input
+        type="text"
+        placeholder="Add task"
+        className="task-card__search"
+        />
+        </form>
+    </div>
+
+    {task.subItems && task.subItems.length > 0 && (
+      <ul className="task-card__subitems">
+        {task.subItems.map((sub, idx) => (
+          <li key={sub.id ?? idx} className="task-card__subitem">
+            {sub.name}
+          </li>
+        ))}
+      </ul>
+    )}
+  </>
+)}
+
     </div>
   );
 };
 
-export default DraggableTaskCard; 
+export default DraggableTaskCard;
