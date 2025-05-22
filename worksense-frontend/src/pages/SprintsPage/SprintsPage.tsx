@@ -48,6 +48,7 @@ const SprintsPage: React.FC = () => {
         goal: "",
         startDate: "",
         endDate: "",
+        status: "Planned" as "Planned" | "Active" | "Completed"
     });
 
     // State to track if we're editing
@@ -71,6 +72,7 @@ const SprintsPage: React.FC = () => {
             goal: "",
             startDate: "",
             endDate: "",
+            status: "Planned"
         });
         setIsEditing(false);
         setEditingSprint(null);
@@ -105,7 +107,7 @@ const SprintsPage: React.FC = () => {
     };
 
     // Handle form input changes
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         
         // If changing start date, validate against end date
@@ -142,6 +144,7 @@ const SprintsPage: React.FC = () => {
             goal: sprint.goal || "",
             startDate: sprint.startDate ? formatDateForAPI(convertTimestampToDate(sprint.startDate) || new Date()) : "",
             endDate: sprint.endDate ? formatDateForAPI(convertTimestampToDate(sprint.endDate) || new Date()) : "",
+            status: sprint.status || "Planned"
         });
         setIsEditing(true);
         setIsModalOpen(true);
@@ -168,7 +171,7 @@ const SprintsPage: React.FC = () => {
                     goal: newSprint.goal,
                     startDate: formatDateForAPI(startDate),
                     endDate: formatDateForAPI(endDate),
-                    status: editingSprint.status
+                    status: newSprint.status
                 });
             } else {
                 await createSprintMutation.mutateAsync({
@@ -357,6 +360,25 @@ const SprintsPage: React.FC = () => {
                                 rows={3}
                             />
                         </div>
+                        {/* Status Dropdown - Only show when editing */}
+                        {isEditing && (
+                            <div>
+                                <label htmlFor="status" className="block text-sm font-medium mb-1">
+                                    Status
+                                </label>
+                                <select
+                                    id="status"
+                                    name="status"
+                                    value={newSprint.status}
+                                    onChange={handleInputChange}
+                                    className="w-full p-2 border rounded"
+                                >
+                                    <option value="Planned">Planned</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>
+                        )}
                         {/* Start Date Input */}
                         <div>
                             <label htmlFor="startDate" className="block text-sm font-medium mb-1">
