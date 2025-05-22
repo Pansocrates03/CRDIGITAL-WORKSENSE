@@ -196,16 +196,15 @@ export const updateProject = async (
     next: NextFunction
 ): Promise<void> => {
     try {
-        // Get the project ID and update data from the request
         const {projectId} = req.params;
-        const {name, description, context, status, startDate, endDate, visibility} = req.body;
+        const {
+            name, description, context, status, startDate, endDate, visibility,
+            aiContext, aiTechStack, enableAiSuggestions
+        } = req.body;
 
-        // Get the project document reference
         const projectRef = db.collection("projects").doc(projectId);
-
         const updateData: { [key: string]: any } = {};
 
-        // Validate and add name if provided
         if (name !== undefined) {
             if (typeof name !== "string" || name.trim() === "") {
                 res.status(400).json({message: "Invalid project name"});
@@ -214,49 +213,76 @@ export const updateProject = async (
             updateData.name = name.trim();
         }
 
-        // Validate and add description if provided
         if (description !== undefined) {
-            if (description !== null && typeof description !== "string") {
+            if (description !== null && typeof description !== "string") { // Allow null for description to clear it
                 res.status(400).json({message: "Invalid description type"});
                 return;
             }
             updateData.description = description;
         }
 
-        // Validate and add context if provided
         if (context !== undefined) {
-            if (context !== null && typeof context !== "object") {
+            if (context !== null && typeof context !== "object") { // Allow null for context to clear it
                 res.status(400).json({message: "Invalid context type"});
                 return;
             }
             updateData.context = context;
         }
 
-        // Add status, user will not provide this field
-        updateData.status = status;
+        // Only add to updateData if they are actually provided in the request
+        if (status !== undefined) {
+            // Add validation for status if necessary (e.g., string, enum)
+            // e.g., if (typeof status !== "string" || !["active", "inactive", "completed"].includes(status)) { ... }
+            updateData.status = status;
+        }
 
-        // Add startDate, user will not provide this field
-        updateData.startDate = startDate;
+        if (startDate !== undefined) {
+            // Add validation for startDate if necessary (e.g., valid date string/timestamp)
+            // You might want to convert it to a Firestore Timestamp:
+            // updateData.startDate = new Date(startDate); // or admin.firestore.Timestamp.fromDate(new Date(startDate));
+            updateData.startDate = startDate;
+        }
 
-        // Add endDate, user will not provide this field
-        updateData.endDate = endDate;
+        if (endDate !== undefined) {
+            // Add validation for endDate
+            updateData.endDate = endDate;
+        }
 
-        // Add visibility, user will not provide this field
-        updateData.visibility = visibility;
+        if (visibility !== undefined) {
+            // Add validation for visibility (e.g., string, enum like "public", "private")
+            updateData.visibility = visibility;
+        }
 
-        // Check if any valid fields were provided
+        if (aiContext !== undefined) {
+            if (aiContext !== null && typeof aiContext !== "string") {
+                res.status(400).json({message: "Invalid aiContext type"});
+                return;
+            }
+            updateData.aiContext = aiContext;
+        }
+        if (aiTechStack !== undefined) {
+            if (aiTechStack !== null && typeof aiTechStack !== "string") {
+                res.status(400).json({message: "Invalid aiTechStack type"});
+                return;
+            }
+            updateData.aiTechStack = aiTechStack;
+        }
+        if (enableAiSuggestions !== undefined) {
+            if (typeof enableAiSuggestions !== "boolean") {
+                res.status(400).json({message: "Invalid enableAiSuggestions type"});
+                return;
+            }
+            updateData.enableAiSuggestions = enableAiSuggestions;
+        }
+
         if (Object.keys(updateData).length === 0) {
-            res.status(400).json({message: "No valid fields provided"});
+            res.status(400).json({message: "No valid fields provided for update"});
             return;
         }
 
-        // Add the update timestamp
         updateData.updatedAt = FieldValue.serverTimestamp();
-
-        // Update the project document
         await projectRef.update(updateData);
 
-        // Get the updated project and return it
         const updatedDoc = await projectRef.get();
         res.status(200).json({
             id: updatedDoc.id,
