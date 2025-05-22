@@ -7,6 +7,8 @@ export interface AssignedItem {
   status: string;
   assigneeId: string;
   projectId: string;
+  description?: string;
+  priority?: string;
   createdAt: {
     _seconds: number;
     _nanoseconds: number;
