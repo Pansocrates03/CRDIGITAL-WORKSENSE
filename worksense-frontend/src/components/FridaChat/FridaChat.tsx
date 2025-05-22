@@ -55,16 +55,6 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
     }
   }, [input]);
 
-  const resizeTextarea = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(
-        textareaRef.current.scrollHeight,
-        120
-      )}px`;
-    }
-  };
-
   const localStorageKey = `frida-chat-${projectId}`;
 
   // Cargar historial desde localStorage al iniciar
@@ -95,16 +85,9 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
     }
   }, [messages, projectId]);
 
-  // Para azure
-  const handleVoiceInputAzure = () => {
-    const key = import.meta.env.VITE_AZURE_SPEECH_KEY;
-    const region = import.meta.env.VITE_AZURE_SPEECH_REGION;
-
-    if (!key || !region) {
-      alert("Azure Speech config missing.");
-      return;
-    }
-
+  // Para azure - Modified to get token from backend
+  const handleVoiceInputAzure = async () => {
+    // If already recording, stop
     if (isRecording && recognizer) {
       recognizer.stopContinuousRecognitionAsync();
       setIsRecording(false);
@@ -112,28 +95,54 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
       return;
     }
 
-    const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(key, region);
-    speechConfig.speechRecognitionLanguage = "en-US";
-    const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+    try {
+      // Get token from backend
+      const tokenResponse = await apiClient.get("/speech/token");
+      const { token, region, language } = tokenResponse.data;
 
-    const newRecognizer = new SpeechSDK.SpeechRecognizer(
-      speechConfig,
-      audioConfig
-    );
-    setRecognizer(newRecognizer);
-    setIsRecording(true);
-
-    newRecognizer.recognizeOnceAsync((result) => {
-      if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-        setInput(result.text);
-        //resizeTextarea();
-      } else {
-        alert("Speech not recognized.");
+      if (!token || !region) {
+        alert("Failed to initialize speech service.");
+        return;
       }
-      newRecognizer.close();
-      setRecognizer(null);
+
+      // Create speech config with token from backend
+      const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
+      speechConfig.speechRecognitionLanguage = language || "en-US";
+      
+      const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+
+      const newRecognizer = new SpeechSDK.SpeechRecognizer(
+        speechConfig,
+        audioConfig
+      );
+      
+      setRecognizer(newRecognizer);
+      setIsRecording(true);
+
+      newRecognizer.recognizeOnceAsync(
+        (result) => {
+          if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+            setInput(result.text);
+          } else {
+            alert("Speech not recognized. Please try again.");
+          }
+          newRecognizer.close();
+          setRecognizer(null);
+          setIsRecording(false);
+        },
+        (error) => {
+          console.error("Speech recognition error:", error);
+          alert("Error recognizing speech. Please try again.");
+          newRecognizer.close();
+          setRecognizer(null);
+          setIsRecording(false);
+        }
+      );
+    } catch (error) {
+      console.error("Error initializing speech recognition:", error);
+      alert("Could not connect to speech service. Please try again.");
       setIsRecording(false);
-    });
+    }
   };
 
   const handleSend = async () => {
