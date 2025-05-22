@@ -22,6 +22,18 @@ export function useCreateSprint(projectId: string) {
   });
 }
 
+export function useUpdateSprint(projectId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (sprintData: { id: string } & Partial<Omit<Sprint, "id" | "projectId" | "createdAt" | "updatedAt">>) =>
+      sprintService.updateSprint(projectId, sprintData.id, sprintData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sprints", projectId] });
+    },
+  });
+}
+
 export function useDeleteSprint(projectId: string) {
   const queryClient = useQueryClient();
 
