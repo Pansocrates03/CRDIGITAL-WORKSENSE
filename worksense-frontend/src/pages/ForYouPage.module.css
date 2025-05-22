@@ -20,7 +20,7 @@
   display: flex;
   gap: 2.5rem;
   border-bottom: 2px solid #eee;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .tab {
@@ -33,17 +33,42 @@
   cursor: pointer;
   border-bottom: 3px solid transparent;
   transition: color 0.2s, border-bottom 0.2s;
+  position: relative;
 }
 
 .tabActive {
   color: #ac1754;
+  font-weight: 600;
   border-bottom: 3px solid #ac1754;
+}
+
+.tab:hover {
+  color: #ac1754;
 }
 
 .sections {
   display: flex;
   gap: 2rem;
   align-items: flex-start;
+}
+
+.column {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media (max-width: 900px) {
+  .sections {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .column {
+    max-width: 100%;
+  }
 }
 
 .leftCol {
@@ -214,4 +239,128 @@
   margin-bottom: 1.5rem;
   margin-top: 0.1rem;
   font-weight: 400;
+}
+
+.emptyState {
+  color: #aaa;
+  font-size: 1.05rem;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.backlogItems {
+  display: grid;
+  gap: 1rem;
+}
+
+.backlogItem {
+  padding: 1.25rem;
+  background: var(--color-white);
+  border: 1px solid var(--neutral-300);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.backlogItem::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--color-purple);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.backlogItem:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--accent-pink);
+}
+
+.backlogItem:hover::before {
+  opacity: 1;
+}
+
+.backlogItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.itemType {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  background: var(--color-purple);
+  color: white;
+  border-radius: 12px;
+  text-transform: capitalize;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.itemStatus {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 12px;
+  text-transform: capitalize;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.itemStatus.backlog {
+  background: var(--neutral-600);
+  color: var(--accent-pink);
+}
+
+.itemStatus.in-progress {
+  background: var(--neutral-600);
+  color: var(--accent-pink);
+}
+
+.itemStatus.done {
+  background: var(--color-green-light);
+  color: var(--color-green-dark);
+}
+
+.backlogItem h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--neutral-800);
+  line-height: 1.3;
+}
+
+.backlogItem p {
+  font-size: 0.9rem;
+  color: var(--neutral-500);
+  margin-bottom: 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+.itemMeta {
+  display: flex;
+  gap: 1.25rem;
+  font-size: 0.8rem;
+  color: var(--color-gray-dark);
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-gray-light);
+}
+
+.itemMeta span {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 500;
+}
+
+.itemMeta span:first-child {
+  color: var(--color-purple);
 } 

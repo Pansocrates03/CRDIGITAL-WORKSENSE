@@ -6,6 +6,12 @@ import styles from './ForYouPage.module.css';
 import { forYouService, AssignedItem, CompletedTask } from '@/services/forYouService';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/Loading/LoadingSpinner';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import Modal from '@/components/Modal/Modal';
+import { Button } from '@/components/ui/button';
+import UpdateItemModal from '@/components/BacklogTable/UpdateItemModal';
+import { MoreVertical } from 'lucide-react';
 
 const allStates = ['New', 'To Do', 'In Progress', 'In Review', 'Done'];
 const bulkTypes = ['story', 'bug', 'task', 'knowledge'];
@@ -19,6 +25,8 @@ const ForYouPage = () => {
   const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [bulkState, setBulkState] = useState('');
   const [activeTab, setActiveTab] = useState<'general' | 'gamification'>('general');
+  const [showAllAssigned, setShowAllAssigned] = useState(false);
+  const [editItem, setEditItem] = useState<AssignedItem | null>(null);
 
   // Fetch assigned items
   const { 
@@ -129,67 +137,148 @@ const ForYouPage = () => {
       {/* Tab Content */}
       {activeTab === 'general' && (
         <div className={styles.sections}>
-          {/* Main dashboard column */}
-          <div className={styles.leftCol}>
-            <div className={styles.card}>
-              <h2 className={styles.sectionTitle}>Assigned Items</h2>
-              <div className={styles.tableContainer}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th className={styles.checkboxCell}></th>
-                      <th>Type</th>
-                      <th>Name</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {assignedItems.map((item) => (
-                      <tr key={item.id}>
-                        <td className={styles.checkboxCell}>
-                          {bulkTypes.includes(item.type) && (
-                            <input
-                              type="checkbox"
-                              checked={selectedItems.includes(item.id)}
-                              onChange={() => handleSelectItem(item.id)}
-                            />
-                          )}
-                        </td>
-                        <td style={{ textTransform: 'capitalize' }}>{item.type}</td>
-                        <td>{item.name}</td>
-                        <td>{item.status}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {selectedItems.length > 0 && (
-                <div style={{ marginTop: 12 }}>
-                  <button
-                    className={styles.bulkButton}
-                    onClick={handleBulkChange}
-                  >
-                    Change State ({selectedItems.length})
-                  </button>
+          <div className={styles.column}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Assigned Items</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {assignedItems.length === 0 ? (
+                  <div className={styles.emptyState}>No items assigned to you yet.</div>
+                ) : (
+                  <>
+                    <div className={styles.backlogItems}>
+                      {assignedItems.slice(0, 3).map((item) => (
+                        <div key={item.id} className={styles.backlogItem}>
+                          <div className={styles.backlogItemHeader}>
+                            <span className={styles.itemType}>{item.type}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span className={`${styles.itemStatus} ${styles[item.status?.toLowerCase() || '']}`}>{item.status}</span>
+                              <button
+                                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                                onClick={() => setEditItem(item)}
+                                aria-label="Edit item"
+                              >
+                                <MoreVertical size={18} />
+                              </button>
+                            </div>
+                          </div>
+                          <h4>{item.name}</h4>
+                          {item.description && <p>{item.description}</p>}
+                          <div className={styles.itemMeta}>
+                            <span>Priority: {item.priority || '—'}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {assignedItems.length > 3 && (
+                      <div style={{ marginTop: 12, textAlign: 'center' }}>
+                        <Button variant="outline" onClick={() => setShowAllAssigned(true)}>
+                          See more
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                )}
+                {selectedItems.length > 0 && (
+                  <div style={{ marginTop: 12 }}>
+                    <Button
+                      variant="default"
+                      onClick={handleBulkChange}
+                    >
+                      Change State ({selectedItems.length})
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            <Modal
+              isOpen={showAllAssigned}
+              onClose={() => setShowAllAssigned(false)}
+              title="All Assigned Items"
+              size="l"
+            >
+              <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                <div className={styles.backlogItems}>
+                  {assignedItems.map((item) => (
+                    <div key={item.id} className={styles.backlogItem}>
+                      <div className={styles.backlogItemHeader}>
+                        <span className={styles.itemType}>{item.type}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span className={`${styles.itemStatus} ${styles[item.status?.toLowerCase() || '']}`}>{item.status}</span>
+                          <button
+                            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                            onClick={() => setEditItem(item)}
+                            aria-label="Edit item"
+                          >
+                            <MoreVertical size={18} />
+                          </button>
+                        </div>
+                      </div>
+                      <h4>{item.name}</h4>
+                      {item.description && <p>{item.description}</p>}
+                      <div className={styles.itemMeta}>
+                        <span>Priority: {item.priority || '—'}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
-
-            <div className={styles.card}>
-              <h2 className={styles.sectionTitle}>Completed Tasks</h2>
-              <ul className={styles.completedList}>
-                {completedTasks.slice(0, 3).map((task) => (
-                  <li key={task.id} className={styles.completedItem}>
-                    <span style={{ fontWeight: 500 }}>{task.name}</span>
-                    <span className={styles.completedDate}>
-                      {task.completedAt && typeof task.completedAt._seconds === 'number'
-                        ? `(${new Date(task.completedAt._seconds * 1000).toLocaleDateString()})`
-                        : '(No date)'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+              </div>
+            </Modal>
+            <UpdateItemModal
+              projectId={projectId || ''}
+              isOpen={!!editItem}
+              onClose={() => setEditItem(null)}
+              onItemUpdated={() => {
+                setEditItem(null);
+                queryClient.invalidateQueries({ queryKey: ['assignedItems'] });
+              }}
+              item={editItem as any}
+            />
+          </div>
+          <div className={styles.column}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Completed Items</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {completedTasks.length === 0 ? (
+                  <div className={styles.emptyState}>No completed tasks yet.</div>
+                ) : (
+                  <div className={styles.backlogItems}>
+                    {completedTasks.slice(0, 3).map((task) => {
+                      const canEdit = (task as any).id && (task as any).name;
+                      return (
+                        <div key={task.id} className={styles.backlogItem}>
+                          <div className={styles.backlogItemHeader}>
+                            <span className={styles.itemType}>Task</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span className={`${styles.itemStatus} ${styles['done']}`}>Done</span>
+                              <button
+                                style={{ background: 'none', border: 'none', cursor: canEdit ? 'pointer' : 'not-allowed' }}
+                                onClick={() => canEdit && setEditItem(task as any)}
+                                aria-label="Edit task"
+                                disabled={!canEdit}
+                              >
+                                <MoreVertical size={18} />
+                              </button>
+                            </div>
+                          </div>
+                          <h4>{task.name}</h4>
+                          <div className={styles.itemMeta}>
+                            <span>
+                              {task.completedAt && typeof task.completedAt._seconds === 'number'
+                                ? `Completed: ${new Date(task.completedAt._seconds * 1000).toLocaleDateString()}`
+                                : 'Completed: (No date)'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}
@@ -200,38 +289,49 @@ const ForYouPage = () => {
       )}
 
       {/* Bulk state change dialog */}
-      {showBulkDialog && (
-        <div className={styles.bulkDialogOverlay}>
-          <div className={styles.bulkDialog}>
-            <h3 className={styles.bulkDialogTitle}>Change State for {selectedItems.length} items</h3>
-            <select 
-              value={bulkState} 
-              onChange={e => setBulkState(e.target.value)} 
-              style={{ width: '100%', marginBottom: 16 }}
-            >
-              <option value="">Select new state</option>
-              {allStates.map(state => (
-                <option key={state} value={state}>{state}</option>
-              ))}
-            </select>
-            <div className={styles.bulkDialogActions}>
-              <button 
-                onClick={() => setShowBulkDialog(false)} 
-                className={styles.cancelButton}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmBulkChange}
-                className={styles.bulkButton}
-                disabled={!bulkState || updateStatusMutation.isPending}
-              >
-                {updateStatusMutation.isPending ? 'Updating...' : 'Confirm'}
-              </button>
-            </div>
-          </div>
+      <Modal
+        isOpen={showBulkDialog}
+        onClose={() => setShowBulkDialog(false)}
+        title={`Change State for ${selectedItems.length} items`}
+        size="sm"
+      >
+        <select 
+          value={bulkState} 
+          onChange={e => setBulkState(e.target.value)} 
+          style={{ width: '100%', marginBottom: 16 }}
+        >
+          <option value="">Select new state</option>
+          {allStates.map(state => (
+            <option key={state} value={state}>{state}</option>
+          ))}
+        </select>
+        <div className={styles.bulkDialogActions}>
+          <Button 
+            variant="outline"
+            onClick={() => setShowBulkDialog(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="default"
+            onClick={confirmBulkChange}
+            disabled={!bulkState || updateStatusMutation.isPending}
+          >
+            {updateStatusMutation.isPending ? 'Updating...' : 'Confirm'}
+          </Button>
         </div>
-      )}
+      </Modal>
+      <UpdateItemModal
+        projectId={projectId || ''}
+        isOpen={!!editItem}
+        onClose={() => setEditItem(null)}
+        onItemUpdated={() => {
+          setEditItem(null);
+          queryClient.invalidateQueries({ queryKey: ['assignedItems'] });
+          queryClient.invalidateQueries({ queryKey: ['completedTasks'] });
+        }}
+        item={editItem as any}
+      />
     </div>
   );
 };
