@@ -29,23 +29,37 @@ const getStatusColorClass = (status: string): string => {
 
 const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick}) => {
 
+
     const {
         data: productOwnerDetails,
         isLoading: isOwnerLoading,
         isError: isOwnerError,
         error: ownerError
-    } = useUser(project.ownerId); // Pass the ownerId to the new hook
+    } = useUser(project.ownerId);
 
     let productOwnerName: string = "Loading...";
+    let avatarComponent = null; // Initialize a variable to hold the AvatarDisplay or a placeholder
 
     if (isOwnerLoading) {
         productOwnerName = "Loading...";
+        // Optionally, show a loading spinner or skeleton avatar
+        avatarComponent =
+            <div className={`${styles.avatarPlaceholder} h-6 w-6 rounded-full bg-gray-200 animate-pulse`}></div>;
     } else if (isOwnerError) {
         console.error("Error fetching product owner details:", ownerError);
         productOwnerName = "Error fetching owner";
+        // Optionally, show a generic error avatar
+        avatarComponent = <AvatarDisplay user={{name: "Error"}} className="h-6 w-6 rounded-full ring-2 ring-white"/>;
     } else if (productOwnerDetails) {
         console.log(productOwnerDetails);
         productOwnerName = productOwnerDetails.fullName || productOwnerDetails.name || "N/A"; // Adjust property name
+        // Render AvatarDisplay only when productOwnerDetails is available
+        avatarComponent = (
+            <AvatarDisplay
+                user={productOwnerDetails}
+                className="h-6 w-6 rounded-full ring-2 ring-white"
+            />
+        );
     }
 
     return (
@@ -74,7 +88,7 @@ const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick}) 
                 <div className={styles.metaInfo}>
 
                     <div className={styles.metaItem}>
-                        <AvatarDisplay user={productOwnerDetails} className="h-6 w-6 rounded-full ring-2 ring-white"/>
+                        {avatarComponent}
                         <div className="flex flex-col"> {/* Use a flex column for name and subtext */}
                             <span>{productOwnerName}</span> {/* The name */}
                             <p className="text-xs text-gray-500">Product Owner</p> {/* The subtext */}
