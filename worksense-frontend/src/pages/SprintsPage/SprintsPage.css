@@ -18,6 +18,7 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 1.5rem;
+    overflow-x: auto;
 }
 
 .sprint-name {
@@ -91,4 +92,20 @@
 .sprints-page__divider {
     border-bottom: 2px solid #e5e7eb;
     margin-bottom: 1rem;
+}
+
+.sprints-page__content td {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sprints-page__content td:nth-child(3) {
+    max-width: 200px;
+}
+
+.sprints-page__content td:hover {
+    white-space: normal;
+    word-break: break-word;
 } 
