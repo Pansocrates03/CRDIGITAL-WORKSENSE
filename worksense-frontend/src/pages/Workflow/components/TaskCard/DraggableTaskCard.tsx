@@ -1,6 +1,6 @@
 import React from 'react';
 import { Task } from '../../data';
-import '../styles/TaskCard.css';
+// import '../styles/TaskCard.css';
 import BacklogItemType from '@/types/BacklogItemType';
 
 interface DraggableTaskCardProps {
