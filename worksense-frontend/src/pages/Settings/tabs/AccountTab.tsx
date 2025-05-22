@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import {Card, CardContent, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Button} from "@/components/ui/button";
-import BacklogAlerts from "@/components/BacklogTable/BacklogAlerts.tsx";
+import { toast } from "sonner";
 import {AvatarPicker} from "@/components/Account/AvatarPicker";
 import {useUserProfile} from "@/hooks/useUserProfile";
 import styles from "../Settings.module.css";
@@ -18,8 +18,6 @@ export const AccountTab: React.FC = () => {
     } = useUserProfile();
     const [editing, setEditing] = useState(false);
     const [pickerOpen, setPickerOpen] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");
 
     const handleSave = async () => {
         if (profile) {
@@ -32,12 +30,10 @@ export const AccountTab: React.FC = () => {
             }
         }
     };
-    const handleSuccess = (msg: string) => {
-        setSuccessMessage(msg);
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 3000);
-    };
 
+    const handleSuccess = (msg: string) => {
+        toast.success(msg);
+    };
 
     if (loading) return <div/>;
     if (profileError || !profile)
@@ -49,10 +45,6 @@ export const AccountTab: React.FC = () => {
 
     return (
         <div className={styles.accountContainer}>
-            <BacklogAlerts
-                successMessage={showSuccess ? successMessage : undefined}
-            />
-
             <Card className={styles.accountCard}>
                 <CardHeader className="flex items-center justify-between">
                     <CardTitle>My Account</CardTitle>
