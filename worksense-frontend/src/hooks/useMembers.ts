@@ -2,20 +2,44 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {projectService} from "@/services/projectService";
 import MemberDetailed from "@/types/MemberDetailedType";
 
-export function useMembers(projectId: string) {
+export const useMembers = (projectId: string | undefined | null, options?: UseMembersOptions) => {
+    const passedEnabledOption = options?.enabled;
+    let queryShouldBeEnabled: boolean;
+
+    if (passedEnabledOption === false) {
+        // If 'enabled: false' is explicitly passed, the query is disabled.
+        queryShouldBeEnabled = false;
+    } else if (passedEnabledOption === true) {
+        // If 'enabled: true' is explicitly passed, enable only if projectId is also present.
+        queryShouldBeEnabled = !!projectId;
+    } else {
+        // If 'enabled' option is not passed (undefined), then enable based solely on projectId.
+        queryShouldBeEnabled = !!projectId;
+    }
+
     return useQuery<MemberDetailed[], Error>({
         queryKey: ["members", projectId],
-        queryFn: () => projectService.fetchProjectMembersDetailed(projectId),
-        enabled: !!projectId, // Only fetch if projectId exists
+        queryFn: () => {
+            if (!projectId) {
+                // Should not happen if queryShouldBeEnabled is false due to !projectId,
+                // but good for type safety and preventing calls with undefined projectId.
+                return Promise.reject(new Error("projectId is required to fetch members."));
+            }
+            return projectService.fetchProjectMembersDetailed(projectId);
+        },
+        enabled: queryShouldBeEnabled, // Use the calculated enabled status
+        staleTime: 1000 * 60 * 5,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        refetchOnReconnect: false,
     });
-}
+};
 
 export function useUser(userId: number | undefined) {
     return useQuery<MemberDetailed, Error>({
-        queryKey: ["user", userId], // Key is now just based on the userId
+        queryKey: ["user", userId],
         queryFn: () => projectService.fetchUserById(userId!), // Call the new service method
         enabled: !!userId, // Only enable the query if userId exists
-        // Optional: Add staleTime and cacheTime for optimal caching
         staleTime: 1000 * 60 * 5, // Data is fresh for 5 minutes
         cacheTime: 1000 * 60 * 60, // Keep data in cache for 1 hour even if inactive
     });

@@ -378,6 +378,7 @@
     align-items: center;
     font-size: 0.85rem; /* Smaller font for details */
     color: var(--neutral-700, #374151); /* Slightly softer text color */
+    margin-bottom: 1rem;
 }
 
 .detailIcon {
@@ -511,6 +512,50 @@
     color: var(--accent-pink);
     border: 1px solid rgba(172, 23, 84, 0.15);
 }
+
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .5;
+    }
+}
+
+
+/* --- Styling for Member Avatars (in Featured Details Section) --- */
+/* This is the container for the stack of member avatars */
+.memberAvatars {
+    display: flex;
+    align-items: center;
+    padding-top: 0.25rem; /* Small space above the avatar stack */
+}
+
+
+.memberAvatars .memberAvatar:first-child {
+    margin-left: 0; /* First avatar has no negative margin */
+}
+
+
+/* The "+N" More Members Bubble */
+.moreMembers {
+    /* Tailwind h-8 w-8 */
+    height: 2.1rem; /* 32px - match member avatar size */
+    width: 2.1rem; /* 32px */
+    border-radius: var(--border-radius-full, 9999px);
+    background-color: var(--neutral-200, #e5e7eb); /* Background of the bubble */
+
+    display: flex; /* Tailwind: flex */
+    align-items: center; /* Tailwind: items-center */
+    justify-content: center; /* Tailwind: justify-center */
+
+    font-size: 0.8rem; /* text-xs or text-sm, adjust for readability */
+    font-weight: 600; /* font-semibold */
+    margin-left: -0.325rem; /* -10px; Overlap like other avatars */
+    box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
 
 .statusOnHold {
     background-color: var(--neutral-200);
@@ -884,20 +929,6 @@
     font-weight: 500;
 }
 
-.moreMembers {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid var(--background-color);
-    background-color: var(--secondary-color);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 500;
-    margin-left: -8px;
-}
 
 .divider {
     height: 1px;
