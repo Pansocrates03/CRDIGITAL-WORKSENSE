@@ -1,18 +1,16 @@
-// Actualización del controlador de Gemini para usar inglés como idioma predeterminado
 import { Request, Response } from "express";
-import { db } from "../models/firebase.js";
 import { sqlConnect, sql } from "../models/sqlModel.js";
 import { Timestamp } from "firebase-admin/firestore";
-
-import { BacklogItemType } from "../../types/BacklogItemType.js";
-import { ProjectMember, ProjectContext } from "../../types/project.js";
-import { ProjectRole, AvailablePermission } from "../../types/permissions.js";
-import { 
-  getOrCreateConversation, 
-  addMessageToConversation, 
+import { projectCacheService } from "../service/projectCache.service.js";
+import {
+  getOrCreateConversation,
+  addMessageToConversation,
   getConversationHistory,
-  extractUserPreferences
+  extractUserPreferences,
 } from "../controllers/conversation.controller.js";
+
+// Keep track of active subscriptions
+const activeSubscriptions = new Map<string, () => void>();
 
 export const handleGeminiPrompt = async (
   req: Request,
@@ -21,7 +19,6 @@ export const handleGeminiPrompt = async (
   console.log("Solicitud recibida en handleGeminiPrompt");
 
   const { prompt, projectId } = req.body;
-  // Para desarrollo: si no hay usuario autenticado, usar ID 1 por defecto
   const userId = req.user?.userId || 1;
 
   if (!prompt || !projectId) {
@@ -30,108 +27,71 @@ export const handleGeminiPrompt = async (
   }
 
   try {
-    // Obtener o crear la conversación para este usuario y proyecto
+    // Set up real-time subscription if not already active
+    if (!activeSubscriptions.has(projectId)) {
+      const unsubscribe =
+        projectCacheService.subscribeToProjectUpdates(projectId);
+      activeSubscriptions.set(projectId, unsubscribe);
+      console.log(`📡 Set up real-time updates for project ${projectId}`);
+    }
+
+    // Get or create conversation
     const conversation = await getOrCreateConversation(userId, projectId);
     console.log(`Conversación obtenida/creada con ID: ${conversation.id}`);
-    
-    // Añadir el mensaje del usuario a la conversación
+
+    // Add user message to conversation
     const userMessage = {
       role: "user" as const,
       content: prompt,
-      timestamp: Timestamp.now()
+      timestamp: Timestamp.now(),
     };
-    
-    // Extraer preferencias del usuario del mensaje (si las hay)
+
+    // Extract user preferences
     const metadataUpdates = extractUserPreferences(prompt);
     console.log("🧠 Preferencias detectadas:", metadataUpdates);
-    
-    await addMessageToConversation(conversation.id!, userMessage, metadataUpdates ?? undefined);
-    
-    // Obtener historial reciente de conversaciones
+
+    await addMessageToConversation(
+      conversation.id!,
+      userMessage,
+      metadataUpdates ?? undefined
+    );
+
+    // Get conversation history
     const recentMessages = await getConversationHistory(conversation.id!, 10);
     console.log(`📝 Recuperado historial: ${recentMessages.length} mensajes`);
 
-    // Obtener información del proyecto
-    const projectRef = db.collection("projects").doc(projectId);
-    const projectSnap = await projectRef.get();
+    // Get cached project data
+    const cachedData = await projectCacheService.getProjectData(projectId);
 
-    if (!projectSnap.exists) {
+    if (!cachedData) {
       res.status(404).json({ message: "Project not found" });
       return;
     }
 
-    const projectData = projectSnap.data() || {};
-    const projectContext: ProjectContext = projectData.context || {};
+    const {
+      projectData,
+      members,
+      backlogItems,
+      projectRoles,
+      availablePermissions,
+    } = cachedData;
 
-    // Get available permissions
-    const permissionsRef = db.collection("availablePermissions");
-    const permissionsSnap = await permissionsRef.get();
-    
-    const availablePermissions: Map<string, AvailablePermission> = new Map();
-    permissionsSnap.forEach((doc) => {
-      const permission = doc.data() as AvailablePermission;
-      availablePermissions.set(permission.key, permission);
-    });
+    // Extract AI configuration from project data
+    const aiConfig = {
+      aiContext: projectData.aiContext || projectData.context?.objectives || "",
+      aiTechStack:
+        projectData.aiTechStack ||
+        projectData.context?.techStack?.join(", ") ||
+        "",
+      enableAiSuggestions: projectData.enableAiSuggestions !== false, // Default to true
+    };
 
-    // Get project roles
-    const rolesRef = db.collection("projectRoles");
-    const rolesSnap = await rolesRef.get();
-    
-    const projectRoles: Map<string, ProjectRole> = new Map();
-    rolesSnap.forEach((doc) => {
-      const role = {
-        id: doc.id,
-        ...(doc.data() as Omit<ProjectRole, "id">)
-      };
-      projectRoles.set(doc.id, role);
-    });
+    // Enrich members with SQL data if needed
+    let enrichedMembers = members;
+    const userIds = members.map((m) => m.userId);
 
-    // Get backlog items
-    const backlogRef = db.collection(`projects/${projectId}/backlog`);
-    const backlogSnap = await backlogRef.get();
-
-    const backlogItems: BacklogItemType[] = backlogSnap.docs.map((doc) => ({
-      ...(doc.data() as BacklogItemType),
-      id: doc.id,
-    }));
-
-    // Get team members
-    const membersRef = db.collection(`projects/${projectId}/members`);
-    const membersSnap = await membersRef.get();
-    
-    let members: (ProjectMember & { roleName?: string; permissions?: string[] })[] = [];
-    const userIds: number[] = [];
-    
-    // Extract basic member info
-    membersSnap.forEach((doc) => {
-      const memberData = doc.data();
-      const memberId = parseInt(doc.id, 10);
-      userIds.push(memberId);
-      members.push({
-        userId: memberId,
-        projectRoleId: memberData.projectRoleId || "",
-        joinedAt: memberData.joinedAt
-      });
-    });
-    
-    // Enrich members with role and permission information
-    const rolePromises = members.map(async (member) => {
-      if (member.projectRoleId) {
-        const role = projectRoles.get(member.projectRoleId);
-        if (role) {
-          return {
-            ...member,
-            roleName: role.name,
-            permissions: role.permissions
-          };
-        }
-      }
-      return member;
-    });
-    
-    // Enrich member data with user details from SQL if possible
-    try {
-      if (userIds.length > 0) {
+    if (userIds.length > 0) {
+      try {
         const pool = await sqlConnect();
         if (pool) {
           const userIdsString = userIds.join(",");
@@ -141,139 +101,135 @@ export const handleGeminiPrompt = async (
             .execute("spGetUsersByIds");
 
           if (result.recordset && result.recordset.length > 0) {
-            // Create a map of user data
             const userDataMap = new Map();
             result.recordset.forEach((userData) => {
               userDataMap.set(userData.id, userData);
             });
 
-            // Wait for role information and then enrich with user data
-            members = await Promise.all(rolePromises);
-            
-            // Add user details to members
-            members = members.map((member) => {
+            enrichedMembers = members.map((member) => {
               const userData = userDataMap.get(member.userId);
-              if (userData) {
-                return {
-                  ...member,
-                  name: `${userData.firstName} ${userData.lastName}`,
-                  fullName: `${userData.firstName} ${userData.lastName}`,
-                  email: userData.email
-                };
-              }
-              return member;
+              const role = projectRoles.get(member.projectRoleId);
+
+              return {
+                ...member,
+                name: userData
+                  ? `${userData.firstName} ${userData.lastName}`
+                  : undefined,
+                fullName: userData
+                  ? `${userData.firstName} ${userData.lastName}`
+                  : undefined,
+                email: userData?.email,
+                roleName: role?.name,
+                permissions: role?.permissions,
+              };
             });
           }
         }
-      } else {
-        // Just wait for role information if no SQL enrichment
-        members = await Promise.all(rolePromises);
-      }
-    } catch (sqlError) {
-      console.error("Error fetching member details:", sqlError);
-      // Continue with basic member info if SQL fails
-      members = await Promise.all(rolePromises);
-    }
-
-    // Agrupar por tipo
-    const stories: BacklogItemType[] = [];
-    const bugs: BacklogItemType[] = [];
-    const techTasks: BacklogItemType[] = [];
-    const knowledgeItems: BacklogItemType[] = [];
-    const epics: BacklogItemType[] = [];
-
-    for (const item of backlogItems) {
-      switch (item.type) {
-        case "story":
-          stories.push(item);
-          break;
-        case "bug":
-          bugs.push(item);
-          break;
-        case "techTask":
-          techTasks.push(item);
-          break;
-        case "knowledge":
-          knowledgeItems.push(item);
-          break;
-        case "epic":
-          epics.push(item);
-
-          const subitemsSnap = await db
-            .collection(`projects/${projectId}/backlog/${item.id}/subitems`)
-            .get();
-
-          const subitems: BacklogItemType[] = subitemsSnap.docs.map((doc) => ({
-            ...(doc.data() as BacklogItemType),
-            id: doc.id
-          }));
-
-          // Add each story from the epic to the stories array
-          subitems.forEach((sub) => {
-            if (sub.type === "story") {
-              stories.push({
-                ...sub,
-                parentId: item.name || "Unnamed Epic",
-              });
-            }
-          });
-
-          break;
+      } catch (sqlError) {
+        console.error("Error fetching member details from SQL:", sqlError);
       }
     }
 
-    // Create a human-readable list of permissions for each role
+    // Group backlog items by type
+    const stories = backlogItems.filter((item) => item.type === "story");
+    const bugs = backlogItems.filter((item) => item.type === "bug");
+    const techTasks = backlogItems.filter((item) => item.type === "techTask");
+    const knowledgeItems = backlogItems.filter(
+      (item) => item.type === "knowledge"
+    );
+    const epics = backlogItems.filter((item) => item.type === "epic");
+
+    // Create role permission descriptions
     const rolePermissionDescriptions: Record<string, string[]> = {};
     projectRoles.forEach((role) => {
       const permDescriptions: string[] = [];
-      
+
       role.permissions.forEach((permKey) => {
         const permission = availablePermissions.get(permKey);
         if (permission) {
-          permDescriptions.push(`${permission.description} (${permission.key})`);
+          permDescriptions.push(
+            `${permission.description} (${permission.key})`
+          );
         } else {
           permDescriptions.push(permKey);
         }
       });
-      
+
       if (role.id) {
         rolePermissionDescriptions[role.id] = permDescriptions;
       }
     });
 
-    // Obtener el miembro actual (el usuario que está haciendo la pregunta)
-    const currentMember = members.find(m => m.userId === userId);
-    
-    // Obtener las preferencias del usuario de la conversación
+    // Get current member and preferences
+    const currentMember = enrichedMembers.find((m) => m.userId === userId);
     const userPreferences = conversation.metadata?.userPreferences || {};
     const userNickname = userPreferences.nickname;
-    
-    // CAMBIO PRINCIPAL: El idioma predeterminado ahora es inglés ('en')
-    const preferredLanguage = userPreferences.preferredLanguage || 'en'; 
-    
-    const verbosityLevel = conversation.metadata?.assistantSettings?.verbosityLevel || 'normal';
-    
-    // Construir el historial de la conversación para el contexto
-    const conversationHistory = recentMessages.map(msg => 
-      `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
-    ).join('\n\n');
+    const preferredLanguage = userPreferences.preferredLanguage || "en";
+    const verbosityLevel =
+      conversation.metadata?.assistantSettings?.verbosityLevel || "normal";
 
-    // Detectar idioma del mensaje actual para adaptarse dinámicamente
+    // Build conversation history
+    const conversationHistory = recentMessages
+      .map(
+        (msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`
+      )
+      .join("\n\n");
+
+    // Detect language
     const messageLanguage = detectLanguage(prompt);
     console.log(`Idioma detectado en el mensaje: ${messageLanguage}`);
 
+    // Build context prompt with AI configuration
     const contextPrompt = `
         You are Frida, a smart assistant helping with project management.
+        
+        ${
+          aiConfig.enableAiSuggestions
+            ? `### AI Configuration
+        ${aiConfig.aiContext ? `Project Context: ${aiConfig.aiContext}` : ""}
+        ${
+          aiConfig.aiTechStack
+            ? `Tech Stack Focus: ${aiConfig.aiTechStack}`
+            : ""
+        }
+        You should provide proactive suggestions and insights based on this context.
+        `
+            : "AI suggestions are disabled for this project. Provide answers but avoid proactive suggestions."
+        }
 
         ### Current User Context
-        ${currentMember ? `- You are talking to: ${currentMember.fullName || currentMember.name || `User ${userId}`}` : '- Unknown user'}
-        ${currentMember ? `- Their role is: ${currentMember.roleName || 'Unknown'}` : ''}
-        ${userNickname ? `- They prefer to be called: "${userNickname}"` : ''}
-        ${verbosityLevel !== 'normal' ? `- They prefer ${verbosityLevel} responses` : ''}
-        ${preferredLanguage ? `- Their preferred language is: ${preferredLanguage === 'es' ? 'Spanish' : 'English'}` : ''}
+        ${
+          currentMember
+            ? `- You are talking to: ${
+                currentMember.fullName || currentMember.name || `User ${userId}`
+              }`
+            : "- Unknown user"
+        }
+        ${
+          currentMember
+            ? `- Their role is: ${currentMember.roleName || "Unknown"}`
+            : ""
+        }
+        ${userNickname ? `- They prefer to be called: "${userNickname}"` : ""}
+        ${
+          verbosityLevel !== "normal"
+            ? `- They prefer ${verbosityLevel} responses`
+            : ""
+        }
+        ${
+          preferredLanguage
+            ? `- Their preferred language is: ${
+                preferredLanguage === "es" ? "Spanish" : "English"
+              }`
+            : ""
+        }
 
         ### Recent Conversation History
-        ${conversationHistory ? conversationHistory : 'This is the start of your conversation.'}
+        ${
+          conversationHistory
+            ? conversationHistory
+            : "This is the start of your conversation."
+        }
 
         Use the following project context to answer the user's question.
 
@@ -283,109 +239,124 @@ export const handleGeminiPrompt = async (
         - Name: ${projectData.name || "N/A"}
         - Description: ${projectData.description || "No description provided."}
         - Owner ID: ${projectData.ownerId || "Unknown"}
-        ${projectContext.techStack ? `- Tech Stack: ${projectContext.techStack.join(", ")}` : ""}
-        ${projectContext.objectives ? `- Objectives: ${projectContext.objectives}` : ""}
+        ${
+          projectData.context?.techStack
+            ? `- Tech Stack: ${projectData.context.techStack.join(", ")}`
+            : ""
+        }
+        ${
+          projectData.context?.objectives
+            ? `- Objectives: ${projectData.context.objectives}`
+            : ""
+        }
         - Status: ${projectData.status || "active"}
 
-        ### Team Members and Roles
+        ### Team Members and Roles (${enrichedMembers.length} members)
         ${
-          members.length > 0
-            ? members
+          enrichedMembers.length > 0
+            ? enrichedMembers
                 .map((m) => {
                   const memberName = m.fullName || m.name || `User ${m.userId}`;
-                  const roleName = m.roleName || m.projectRoleId || "Unknown Role";
+                  const roleName =
+                    m.roleName || m.projectRoleId || "Unknown Role";
                   const email = m.email ? ` (${m.email})` : "";
-                  
+
                   let memberInfo = `- ${memberName}: ${roleName}${email}`;
-                  
+
                   // Add permissions if available
-                  if (m.projectRoleId && rolePermissionDescriptions[m.projectRoleId]) {
-                    const permissions = rolePermissionDescriptions[m.projectRoleId];
+                  if (
+                    m.projectRoleId &&
+                    rolePermissionDescriptions[m.projectRoleId]
+                  ) {
+                    const permissions =
+                      rolePermissionDescriptions[m.projectRoleId];
                     if (permissions.length > 0) {
-                      memberInfo += `\n  Permissions: ${permissions.slice(0, 3).join(", ")}${permissions.length > 3 ? ` and ${permissions.length - 3} more` : ""}`;
+                      memberInfo += `\n  Permissions: ${permissions
+                        .slice(0, 3)
+                        .join(", ")}${
+                        permissions.length > 3
+                          ? ` and ${permissions.length - 3} more`
+                          : ""
+                      }`;
                     }
                   }
-                  
+
                   return memberInfo;
                 })
                 .join("\n")
             : "No team members found."
         }
 
-        ### Project Roles
-        ${
-          Array.from(projectRoles.values()).length > 0
-            ? Array.from(projectRoles.values())
-                .map((role) => {
-                  const permissionsList = rolePermissionDescriptions[role.id || ""] || [];
-                  return `- ${role.name}:\n  ${
-                    permissionsList.length > 0 
-                      ? permissionsList.join("\n  ") 
-                      : "No permissions defined"
-                  }`;
-                })
-                .join("\n\n")
-            : "No project roles defined."
-        }
+        ### Backlog Summary
+        - ${epics.length} Epics
+        - ${stories.length} Stories
+        - ${bugs.length} Bugs
+        - ${techTasks.length} Tech Tasks
+        - ${knowledgeItems.length} Knowledge Items
 
-        ### Epics
         ${
           epics.length > 0
-            ? epics
-                .map((e) => `- ${e.name} (${e.status || "unknown"})${
-                  e.assigneeId ? ` [Assigned to: ${members.find(m => m.userId === e.assigneeId)?.fullName || members.find(m => m.userId === e.assigneeId)?.name || `User ${e.assigneeId}`}]` : ""
-                }`)
-                .join("\n")
-            : "No epics found."
-        }
-
-        ### Stories
-        ${
-          stories.length > 0
-            ? stories
+            ? `### Epics\n${epics
                 .map(
-                  (s) =>
-                    `- ${s.name} (${s.size || "?"} pts) ${
-                      s.parentId ? `(from epic: ${s.parentId})` : ""
-                    }${
-                      s.assigneeId ? ` [Assigned to: ${members.find(m => m.userId === s.assigneeId)?.fullName || members.find(m => m.userId === s.assigneeId)?.name || `User ${s.assigneeId}`}]` : ""
+                  (e) =>
+                    `- ${e.name} (${e.status || "unknown"})${
+                      e.assigneeId
+                        ? ` [Assigned to: ${
+                            enrichedMembers.find(
+                              (m) => m.userId === e.assigneeId
+                            )?.fullName || `User ${e.assigneeId}`
+                          }]`
+                        : ""
                     }`
                 )
-                .join("\n")
-            : "No stories found."
+                .join("\n")}`
+            : ""
         }
 
-        ### Bugs
+        ${
+          stories.length > 0
+            ? `### Stories\n${stories
+                .slice(0, 10)
+                .map(
+                  (s) =>
+                    `- ${s.name} (${s.size || "?"} pts)${
+                      s.assigneeId
+                        ? ` [Assigned to: ${
+                            enrichedMembers.find(
+                              (m) => m.userId === s.assigneeId
+                            )?.fullName || `User ${s.assigneeId}`
+                          }]`
+                        : ""
+                    }`
+                )
+                .join("\n")}${
+                stories.length > 10
+                  ? `\n... and ${stories.length - 10} more stories`
+                  : ""
+              }`
+            : ""
+        }
+
         ${
           bugs.length > 0
-            ? bugs
-                .map((b) => `- ${b.name} [${b.size || "medium"}]${
-                  b.assigneeId ? ` [Assigned to: ${members.find(m => m.userId === b.assigneeId)?.fullName || members.find(m => m.userId === b.assigneeId)?.name || `User ${b.assigneeId}`}]` : ""
-                }`)
-                .join("\n")
-            : "No bugs found."
-        }
-
-        ### Tech Tasks
-        ${
-          techTasks.length > 0
-            ? techTasks
-                .map((t) => `- ${t.name}${
-                  t.assigneeId ? ` [Assigned to: ${members.find(m => m.userId === t.assigneeId)?.fullName || members.find(m => m.userId === t.assigneeId)?.name || `User ${t.assigneeId}`}]` : ""
-                }`)
-                .join("\n")
-            : "No tech tasks found."
-        }
-
-        ### 📘 Knowledge Items
-        ${
-          knowledgeItems.length > 0
-            ? knowledgeItems
-                .map((k) => `- ${k.name}${
-                  k.assigneeId ? ` [Assigned to: ${members.find(m => m.userId === k.assigneeId)?.fullName || members.find(m => m.userId === k.assigneeId)?.name || `User ${k.assigneeId}`}]` : ""
-                }`)
-                .join("\n")
-            : "No knowledge items found."
+            ? `### Bugs\n${bugs
+                .slice(0, 5)
+                .map(
+                  (b) =>
+                    `- ${b.name} [${b.size || "medium"}]${
+                      b.assigneeId
+                        ? ` [Assigned to: ${
+                            enrichedMembers.find(
+                              (m) => m.userId === b.assigneeId
+                            )?.fullName || `User ${b.assigneeId}`
+                          }]`
+                        : ""
+                    }`
+                )
+                .join("\n")}${
+                bugs.length > 5 ? `\n... and ${bugs.length - 5} more bugs` : ""
+              }`
+            : ""
         }
 
         ---
@@ -394,35 +365,51 @@ export const handleGeminiPrompt = async (
         "${prompt}"
 
         Provide a helpful and prioritized answer based on the context.
-        ${preferredLanguage === 'es' ? 'Responde siempre en español.' : 'Always respond in English.'}
-        ${userNickname ? `${preferredLanguage === 'es' ? 'Dirígete al usuario como' : 'Address the user as'} "${userNickname}" ${preferredLanguage === 'es' ? 'de vez en cuando.' : 'occasionally.'}` : ''}
-        ${verbosityLevel === 'concise' 
-          ? (preferredLanguage === 'es' 
-              ? 'Sé conciso y directo en tu respuesta, evita detalles innecesarios.' 
-              : 'Be concise and direct in your response, avoid unnecessary details.')
-          : verbosityLevel === 'detailed' 
-              ? (preferredLanguage === 'es' 
-                  ? 'Proporciona respuestas detalladas con toda la información disponible.' 
-                  : 'Provide detailed responses with all available information.')
-              : (preferredLanguage === 'es' 
-                  ? 'Proporciona una respuesta equilibrada con información relevante.' 
-                  : 'Provide a balanced response with relevant information.')
+        ${
+          preferredLanguage === "es"
+            ? "Responde siempre en español."
+            : "Always respond in English."
         }
-        When discussing team members, acknowledge their roles and permissions.
-        When discussing backlog items, mention who they're assigned to if applicable.
-        If the user asks about team responsibilities, who is working on what, or who has permission to do something, provide that information based on the roles and permissions.
-        ${messageLanguage === 'es' && preferredLanguage !== 'es' 
-          ? 'The user is writing in Spanish but your configured language is English. ' +
-            'Consider responding in Spanish for this message or asking if they prefer to switch to Spanish permanently.'
-          : ''}
+        ${
+          userNickname
+            ? `${
+                preferredLanguage === "es"
+                  ? "Dirígete al usuario como"
+                  : "Address the user as"
+              } "${userNickname}" ${
+                preferredLanguage === "es"
+                  ? "de vez en cuando."
+                  : "occasionally."
+              }`
+            : ""
+        }
+        ${
+          verbosityLevel === "concise"
+            ? preferredLanguage === "es"
+              ? "Sé conciso y directo en tu respuesta, evita detalles innecesarios."
+              : "Be concise and direct in your response, avoid unnecessary details."
+            : verbosityLevel === "detailed"
+            ? preferredLanguage === "es"
+              ? "Proporciona respuestas detalladas con toda la información disponible."
+              : "Provide detailed responses with all available information."
+            : preferredLanguage === "es"
+            ? "Proporciona una respuesta equilibrada con información relevante."
+            : "Provide a balanced response with relevant information."
+        }
+        ${
+          aiConfig.enableAiSuggestions
+            ? preferredLanguage === "es"
+              ? "Cuando sea apropiado, ofrece sugerencias proactivas basadas en el contexto del proyecto."
+              : "When appropriate, offer proactive suggestions based on the project context."
+            : ""
+        }
         `.trim();
 
-    console.log("🧠 Prompt contextual construido con inglés como idioma predeterminado");
+    console.log("🧠 Prompt contextual construido con caché");
 
-    // API de Gemini
+    // Call Gemini API
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
-    // Enhanced Gemini model parameters
     const body = {
       contents: [
         {
@@ -430,7 +417,7 @@ export const handleGeminiPrompt = async (
         },
       ],
       generationConfig: {
-        temperature: 0.2,
+        temperature: aiConfig.enableAiSuggestions ? 0.3 : 0.2, // Temperatura mas alta para sugerencias
         topP: 0.8,
         topK: 40,
         maxOutputTokens: 2048,
@@ -438,21 +425,21 @@ export const handleGeminiPrompt = async (
       safetySettings: [
         {
           category: "HARM_CATEGORY_HARASSMENT",
-          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
         },
         {
           category: "HARM_CATEGORY_HATE_SPEECH",
-          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
         },
         {
           category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
         },
         {
           category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-          threshold: "BLOCK_MEDIUM_AND_ABOVE"
-        }
-      ]
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
+        },
+      ],
     };
 
     try {
@@ -468,7 +455,9 @@ export const handleGeminiPrompt = async (
       if (!response.ok) {
         const errJson = await response.json();
         console.error("❌ Gemini API error:", errJson);
-        throw new Error(`Gemini API error: ${errJson.error?.message || 'Unknown error'}`);
+        throw new Error(
+          `Gemini API error: ${errJson.error?.message || "Unknown error"}`
+        );
       }
 
       const data = await response.json();
@@ -476,102 +465,147 @@ export const handleGeminiPrompt = async (
       console.log("✅ Respuesta recibida de Gemini");
 
       if (reply) {
-        // Añadir la respuesta del asistente a la conversación
+        // Agregar respuesta a la conversación
         const assistantMessage = {
           role: "assistant" as const,
           content: reply,
-          timestamp: Timestamp.now()
+          timestamp: Timestamp.now(),
         };
-        
+
         await addMessageToConversation(conversation.id!, assistantMessage);
-        
-        // Log assistant responses for quality monitoring (optional)
-        console.log(`Frida assistant response for project ${projectId}: ${reply.substring(0, 100)}...`);
-    
-        res.json({ 
+
+        // Log cache stats
+        const cacheStats = projectCacheService.getCacheStats();
+        console.log(
+          `📊 Cache stats: ${cacheStats.size} projects cached, ~${(
+            cacheStats.memoryUsage / 1024
+          ).toFixed(2)}KB memory used`
+        );
+
+        res.json({
           reply,
           timestamp: new Date().toISOString(),
           conversation: {
             id: conversation.id,
-            metadata: conversation.metadata
-          }
+            metadata: conversation.metadata,
+          },
+          cacheHit: cachedData.lastUpdated > Date.now() - 300000, // Checar si el caché fue usado
         });
       } else {
-        // Si no hay respuesta de Gemini
+        // Respeusta de emergencia 
         console.warn("⚠️ No se recibió respuesta de Gemini");
-        
-        // Respuesta de fallback
-        const fallbackReply = preferredLanguage === 'es'
-          ? `Lo siento${userNickname ? `, ${userNickname}` : ''}, no pude generar una respuesta en este momento. Por favor, inténtalo de nuevo.`
-          : `I'm sorry${userNickname ? `, ${userNickname}` : ''}, I couldn't generate a response at this time. Please try again.`;
-          
+
+        const fallbackReply =
+          preferredLanguage === "es"
+            ? `Lo siento${
+                userNickname ? `, ${userNickname}` : ""
+              }, no pude generar una respuesta en este momento. Por favor, inténtalo de nuevo.`
+            : `I'm sorry${
+                userNickname ? `, ${userNickname}` : ""
+              }, I couldn't generate a response at this time. Please try again.`;
+
         const assistantMessage = {
           role: "assistant" as const,
           content: fallbackReply,
-          timestamp: Timestamp.now()
+          timestamp: Timestamp.now(),
         };
-        
+
         await addMessageToConversation(conversation.id!, assistantMessage);
-        
-        res.json({ 
+
+        res.json({
           reply: fallbackReply,
           timestamp: new Date().toISOString(),
           conversation: {
             id: conversation.id,
-            metadata: conversation.metadata
-          }
+            metadata: conversation.metadata,
+          },
         });
       }
     } catch (apiError) {
       console.error("❌ Error llamando a la API de Gemini:", apiError);
-      
-      // Respuesta de fallback en caso de error
-      const fallbackReply = preferredLanguage === 'es'
-        ? `Lo siento${userNickname ? `, ${userNickname}` : ''}, estoy teniendo problemas para responder. Por favor, inténtalo de nuevo más tarde.`
-        : `I'm sorry${userNickname ? `, ${userNickname}` : ''}, I'm having trouble responding. Please try again later.`;
-        
+
+      const fallbackReply =
+        preferredLanguage === "es"
+          ? `Lo siento${
+              userNickname ? `, ${userNickname}` : ""
+            }, estoy teniendo problemas para responder. Por favor, inténtalo de nuevo más tarde.`
+          : `I'm sorry${
+              userNickname ? `, ${userNickname}` : ""
+            }, I'm having trouble responding. Please try again later.`;
+
       res.json({
         reply: fallbackReply,
         timestamp: new Date().toISOString(),
-        error: typeof apiError === 'object' && apiError !== null && 'message' in apiError ? (apiError as any).message : String(apiError),
+        error:
+          typeof apiError === "object" &&
+          apiError !== null &&
+          "message" in apiError
+            ? (apiError as any).message
+            : String(apiError),
         conversation: {
           id: conversation.id,
-          metadata: conversation.metadata
-        }
+          metadata: conversation.metadata,
+        },
       });
     }
   } catch (err) {
     console.error("❌ Error general:", err);
-    res.status(500).json({ 
-      message: "Error interno del servidor", 
-      error: typeof err === 'object' && err !== null && 'message' in err ? (err as any).message : String(err)
+    res.status(500).json({
+      message: "Error interno del servidor",
+      error:
+        typeof err === "object" && err !== null && "message" in err
+          ? (err as any).message
+          : String(err),
     });
   }
 };
 
 /**
- * Detecta el idioma del mensaje del usuario de forma simple
+ * Cleanup subscriptions when server shuts down
  */
+export const cleanupSubscriptions = () => {
+  activeSubscriptions.forEach((unsubscribe, projectId) => {
+    unsubscribe();
+    console.log(`🧹 Cleaned up subscription for project ${projectId}`);
+  });
+  activeSubscriptions.clear();
+  projectCacheService.clearCache();
+};
+
+// Helper function remains the same
 function detectLanguage(text: string): string {
-  // Lista de palabras comunes en español
-  const spanishWords = ['hola', 'gracias', 'por favor', 'ayuda', 'qué', 'cómo', 'quién', 'cuál', 'dónde', 'cuándo',
-    'buenos días', 'buenas tardes', 'buenas noches', 'me gustaría', 'necesito', 'tengo', 'puedes', 'podrías'];
-  
-  // Convertir a minúsculas para comparar
+  const spanishWords = [
+    "hola",
+    "gracias",
+    "por favor",
+    "ayuda",
+    "qué",
+    "cómo",
+    "quién",
+    "cuál",
+    "dónde",
+    "cuándo",
+    "buenos días",
+    "buenas tardes",
+    "buenas noches",
+    "me gustaría",
+    "necesito",
+    "tengo",
+    "puedes",
+    "podrías",
+  ];
+
   const lowerText = text.toLowerCase();
-  
-  // Contar cuántas palabras en español contiene
+
   let spanishWordCount = 0;
-  spanishWords.forEach(word => {
+  spanishWords.forEach((word) => {
     if (lowerText.includes(word)) {
       spanishWordCount++;
     }
   });
-  
-  // También buscar caracteres específicos del español como acentos y ñ
+
   const spanishChars = /[áéíóúüñ¿¡]/;
   const hasSpanishChars = spanishChars.test(lowerText);
-  
-  // Si hay suficientes indicadores, considerar que es español
-  return (spanishWordCount >= 2 || hasSpanishChars) ? 'es' : 'en';
+
+  return spanishWordCount >= 2 || hasSpanishChars ? "es" : "en";
 }
