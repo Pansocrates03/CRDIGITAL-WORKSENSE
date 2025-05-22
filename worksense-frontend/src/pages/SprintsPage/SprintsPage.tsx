@@ -1,10 +1,17 @@
+/* React and Router imports */
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useSprints, useCreateSprint } from "@/hooks/useSprintData";
+
+/* Custom hooks for sprint data management */
+import { useSprints, useCreateSprint, useDeleteSprint, useUpdateSprint } from "@/hooks/useSprintData";
+
+/* Types */
 import { Sprint } from "@/types/SprintType";
-import { PlusIcon } from "lucide-react";
+
+/* UI Components */
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/Modal/Modal";
+import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal";
 import {
     Table,
     TableHeader,
@@ -13,6 +20,11 @@ import {
     TableRow,
     TableCell,
 } from "@/components/ui/table";
+
+/* Icons */
+import { PlusIcon, Pencil, Trash2 } from "lucide-react";
+
+/* Styles */
 import "./SprintsPage.css";
 
 const SprintsPage: React.FC = () => {
@@ -22,8 +34,10 @@ const SprintsPage: React.FC = () => {
     // Fetch sprints data using custom hook
     const { data: sprints, isLoading, error } = useSprints(projectId ?? "");
     
-    // Initialize mutation hook for creating new sprints
+    // Initialize mutation hooks
     const createSprintMutation = useCreateSprint(projectId ?? "");
+    const deleteSprintMutation = useDeleteSprint(projectId ?? "");
+    const updateSprintMutation = useUpdateSprint(projectId ?? "");
     
     // State for controlling modal visibility
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,6 +50,20 @@ const SprintsPage: React.FC = () => {
         endDate: "",
     });
 
+    // State to track if we're editing
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingSprint, setEditingSprint] = useState<Sprint | null>(null);
+
+    // Mock user role - Replace this with actual user role check
+    const userRole = "product-owner"; // This should come from your auth context
+
+    // Check if user has edit permissions
+    const canEdit = userRole === "product-owner" || userRole === "scrum-master";
+
+    // State for delete confirmation modal
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [sprintToDelete, setSprintToDelete] = useState<string | null>(null);
+
     // Function to reset form fields to empty values
     const resetForm = () => {
         setNewSprint({
@@ -44,6 +72,8 @@ const SprintsPage: React.FC = () => {
             startDate: "",
             endDate: "",
         });
+        setIsEditing(false);
+        setEditingSprint(null);
     };
 
     // Function to handle modal closing and form reset
@@ -60,32 +90,118 @@ const SprintsPage: React.FC = () => {
     };
 
     // Format date for API in YYYY-MM-DD format
-    const formatDateForAPI = (date: string | Date) =>
-        new Date(date).toISOString().split("T")[0];
+    const formatDateForAPI = (date: string | Date) => {
+        if (!date) return "";
+        if (typeof date === 'string') {
+            return date;
+        }
+        return date.toISOString().split("T")[0];
+    };
+
+    // Convert Firestore timestamp to Date object
+    const convertTimestampToDate = (timestamp: any): Date | null => {
+        if (!timestamp || !timestamp._seconds) return null;
+        return new Date(timestamp._seconds * 1000);
+    };
 
     // Handle form input changes
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
+        
+        // If changing start date, validate against end date
+        if (name === 'startDate' && newSprint.endDate) {
+            const newStartDate = new Date(value);
+            const endDate = new Date(newSprint.endDate);
+            if (newStartDate > endDate) {
+                alert("Start date cannot be after end date");
+                return;
+            }
+        }
+        
+        // If changing end date, validate against start date
+        if (name === 'endDate' && newSprint.startDate) {
+            const startDate = new Date(newSprint.startDate);
+            const newEndDate = new Date(value);
+            if (newEndDate < startDate) {
+                alert("End date cannot be before start date");
+                return;
+            }
+        }
+
         setNewSprint(prev => ({
             ...prev,
             [name]: value
         }));
     };
 
-    // Handle sprint creation
-    const handleCreateSprint = async () => {
+    // Handle sprint edit
+    const handleEditSprint = (sprint: Sprint) => {
+        setEditingSprint(sprint);
+        setNewSprint({
+            name: sprint.name,
+            goal: sprint.goal || "",
+            startDate: sprint.startDate ? formatDateForAPI(convertTimestampToDate(sprint.startDate) || new Date()) : "",
+            endDate: sprint.endDate ? formatDateForAPI(convertTimestampToDate(sprint.endDate) || new Date()) : "",
+        });
+        setIsEditing(true);
+        setIsModalOpen(true);
+    };
+
+    // Handle form submission (create or edit)
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        // Validate dates
+        const startDate = new Date(newSprint.startDate);
+        const endDate = new Date(newSprint.endDate);
+        
+        if (endDate < startDate) {
+            alert("End date cannot be before start date");
+            return;
+        }
+
         try {
-            await createSprintMutation.mutateAsync({
-                name: newSprint.name,
-                status: "Planned",
-                goal: newSprint.goal,
-                startDate: formatDateForAPI(newSprint.startDate),
-                endDate: formatDateForAPI(newSprint.endDate),
-            });
-            setIsModalOpen(false);
-            resetForm();
+            if (isEditing && editingSprint) {
+                await updateSprintMutation.mutateAsync({
+                    id: editingSprint.id,
+                    name: newSprint.name,
+                    goal: newSprint.goal,
+                    startDate: formatDateForAPI(startDate),
+                    endDate: formatDateForAPI(endDate),
+                    status: editingSprint.status
+                });
+            } else {
+                await createSprintMutation.mutateAsync({
+                    name: newSprint.name,
+                    status: "Planned",
+                    goal: newSprint.goal,
+                    startDate: formatDateForAPI(startDate),
+                    endDate: formatDateForAPI(endDate),
+                });
+            }
+            handleCloseModal();
         } catch (error) {
-            console.error("Failed to create sprint:", error);
+            console.error("Failed to save sprint:", error);
+            // TODO: Add error notification
+        }
+    };
+
+    // Handle sprint delete
+    const handleDeleteSprint = async (sprintId: string) => {
+        setSprintToDelete(sprintId);
+        setIsDeleteModalOpen(true);
+    };
+
+    // Handle delete confirmation
+    const handleConfirmDelete = async () => {
+        if (sprintToDelete) {
+            try {
+                await deleteSprintMutation.mutateAsync(sprintToDelete);
+                setSprintToDelete(null);
+            } catch (error) {
+                console.error("Failed to delete sprint:", error);
+                // TODO: Add error notification
+            }
         }
     };
 
@@ -136,7 +252,6 @@ const SprintsPage: React.FC = () => {
             {/* Main content section */}
             <div className="sprints-page__content">
                 {sprints && sprints.length > 0 ? (
-                    // Table to display sprints
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -145,6 +260,7 @@ const SprintsPage: React.FC = () => {
                                 <TableHead>Goal</TableHead>
                                 <TableHead>Start Date</TableHead>
                                 <TableHead>End Date</TableHead>
+                                {canEdit && <TableHead>Actions</TableHead>}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -167,6 +283,28 @@ const SprintsPage: React.FC = () => {
                                     <TableCell>
                                         {formatDate(sprint.endDate)}
                                     </TableCell>
+                                    {canEdit && (
+                                        <TableCell>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleEditSprint(sprint)}
+                                                    className="h-8 w-8"
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleDeleteSprint(sprint.id)}
+                                                    className="h-8 w-8 text-red-500 hover:text-red-700"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    )}
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -179,17 +317,14 @@ const SprintsPage: React.FC = () => {
                 )}
             </div>
 
-            {/* Create Sprint Modal */}
+            {/* Create/Edit Sprint Modal */}
             <Modal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                title="Create New Sprint"
+                title={isEditing ? "Edit Sprint" : "Create New Sprint"}
                 size="m"
             >
-                <form onSubmit={(e) => {
-                    e.preventDefault();
-                    handleCreateSprint();
-                }} className="p-4">
+                <form onSubmit={handleSubmit} className="p-4">
                     <div className="space-y-4">
                         {/* Sprint Name Input */}
                         <div>
@@ -266,11 +401,23 @@ const SprintsPage: React.FC = () => {
                             type="submit"
                             variant="default"
                         >
-                            Create Sprint
+                            {isEditing ? "Save Changes" : "Create Sprint"}
                         </Button>
                     </div>
                 </form>
             </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <DeleteConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => {
+                    setIsDeleteModalOpen(false);
+                    setSprintToDelete(null);
+                }}
+                onConfirm={handleConfirmDelete}
+                title="Delete Sprint"
+                message="Are you sure you want to delete this sprint? This action cannot be undone."
+            />
         </div>
     );
 };
