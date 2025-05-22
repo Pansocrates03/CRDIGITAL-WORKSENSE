@@ -5,6 +5,7 @@ import { SideBar } from "../components/SideBar/SideBar"; // Adjust path
 import { Header } from "../components/Header/Header"; // Adjust path
 import { projectService } from "../services/projectService"; // Adjust path
 import styles from "./MainLayout.module.css";
+import FridaChat from "@/components/FridaChat/FridaChat";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -39,7 +40,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       if (projectId) {
         setProjectLoading(true);
         try {
-          const projectData = await projectService.fetchProjectDetails(projectId);
+          const projectData = await projectService.fetchProjectDetails(
+            projectId
+          );
           // Use the actual project name for the header title within project context
           setProjectName(projectData.name || "Untitled Project");
         } catch (error) {
@@ -63,6 +66,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const currentSection = getSectionFromPath(location.pathname, projectId);
 
   let headerTitle: string;
+  let showSidebar = true; // Default to showing sidebar
 
   if (isInProjectView) {
     // In project view, the Header's 'title' prop will be the project name
@@ -72,6 +76,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       : projectName || "Project";
   } else if (location.pathname.startsWith("/create")) {
     headerTitle = "My Projects";
+    showSidebar = false; // Hide sidebar on create page
+  } else if (location.pathname.startsWith("/settings")) {
+    headerTitle = "Settings";
+    showSidebar = false; // Hide sidebar on settings page
   } else if (location.pathname.startsWith("/account")) {
     headerTitle = "Account Settings";
   } else if (location.pathname.startsWith("/guides")) {
@@ -88,7 +96,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   // This requires modifying the Header component slightly.
   const titleForHeader = isInProjectView ? currentSection : headerTitle;
   const showBreadcrumb = isInProjectView; // Show breadcrumbs only inside a project
-  const showBackButton = isInProjectView; // Show back button only inside a project
+  const showBackButton =
+    isInProjectView || location.pathname.startsWith("/settings"); // Show back button only inside a project
 
   // Loading UI component
   const LoadingUI = () => (
@@ -106,7 +115,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     <div className={styles.layoutContainer}>
       {" "}
       {/* Flex row */}
-      <SideBar />
+      <SideBar showSidebar={showSidebar} />
       <div className={styles.mainPanel}>
         {" "}
         {/* Container for Header + Content */}
@@ -127,6 +136,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             children // Render page content once project name is loaded or not applicable
           )}
         </main>
+        <FridaChat projectId={projectId} />
       </div>
     </div>
   );

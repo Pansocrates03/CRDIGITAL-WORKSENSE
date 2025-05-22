@@ -1,0 +1,217 @@
+.forYouContainer {
+  padding: 2rem 2.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  min-height: 100vh;
+  background: var(--background-primary, #f5f5f5);
+}
+
+.pageTitle {
+  color: var(--text-primary);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.1rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 2.5rem;
+  border-bottom: 2px solid #eee;
+  margin-bottom: 1rem;
+}
+
+.tab {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #888;
+  padding: 0.75rem 0;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: color 0.2s, border-bottom 0.2s;
+}
+
+.tabActive {
+  color: #ac1754;
+  border-bottom: 3px solid #ac1754;
+}
+
+.sections {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.leftCol {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid #eee;
+  padding: 2rem 1.5rem;
+}
+
+.sectionTitle {
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+.table th, .table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.table th {
+  background: #faf7fa;
+  color: #ac1754;
+  font-weight: 700;
+  font-size: 1rem;
+  border-bottom: 2px solid #eee;
+}
+
+.table td {
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.98rem;
+  color: var(--text-primary);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.checkboxCell {
+  width: 36px;
+}
+
+.completedList {
+  margin-top: 0.5rem;
+  padding-left: 1.2rem;
+}
+
+.completedItem {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.completedDate {
+  color: #aaa;
+  font-size: 0.95rem;
+  margin-left: 0.5rem;
+}
+
+.rightCol {
+  flex: 1;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.calendarCard {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid #eee;
+  padding: 1.5rem 1rem 1rem 1rem;
+}
+
+.gamificationCard {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid #eee;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  color: #888;
+  font-size: 1.3rem;
+}
+
+.bulkDialogOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.bulkDialog {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  min-width: 320px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.bulkDialogTitle {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.bulkDialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.bulkButton {
+  padding: 0.5rem 1.2rem;
+  background: #ac1754;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.bulkButton:disabled {
+  background: #eee;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  background: #eee;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.pageDescription {
+  color: #888;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  margin-top: 0.1rem;
+  font-weight: 400;
+} 

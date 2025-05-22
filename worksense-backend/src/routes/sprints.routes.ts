@@ -12,11 +12,7 @@ import {
   memberAuth,
   withPermission,
 } from "../middlewares/projectMiddlewareBundle.js";
-import {
-  createTask,
-  getSprintTasks,
-  getTaskById,
-} from "../controllers/task.controller.js";
+import { getStories } from "../controllers/stories.controller.js";
 
 /*
 import { Router } from "express";
@@ -189,7 +185,6 @@ const router = express.Router({ mergeParams: true });
  *       403:
  *         description: Forbidden - User does not have permission to create sprints
  */
-
 router.post("/", withPermission("manage:sprints"), memberAuth, createSprint);
 
 
@@ -269,9 +264,7 @@ router.post("/", withPermission("manage:sprints"), memberAuth, createSprint);
  *       404:
  *         description: No sprints found for the specified project
  */
-
 router.get("/", memberAuth, getSprints);
-
 
 /**
  * @swagger
@@ -463,9 +456,7 @@ router.get("/:sprintId", memberAuth, getSprintById);
  *       404:
  *         description: Sprint not found
  */
-
 router.put("/:sprintId", withPermission("manage:sprints"), memberAuth, updateSprint);
-
 
 /**
  * @swagger
@@ -604,6 +595,8 @@ router.delete("/:sprintId", withPermission("manage:sprints"), memberAuth, delete
  *         description: Sprint not found or sprint does not belong to the specified project
  */
 router.put("/:sprintId/status", withPermission("manage:sprints"), memberAuth, updateSprintStatus)
+
+router.get("/:sprintId/userStories", getStories)
 
 /**
  * @swagger
