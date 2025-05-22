@@ -3,6 +3,7 @@ import React, { FC, useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import ItemModalForm, { BacklogItemFormData } from "./ItemModalForm";
 import { Epic, User } from "./types";
+import {useSprints} from "@/hooks/useSprintData.ts";
 
 interface CreateItemModalProps {
   projectId: string;
@@ -82,6 +83,9 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
     }
   };
 
+  const { data: sprints, error: sprintsError, isLoading: sprintsLoading } = useSprints(projectId ?? "");
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -122,6 +126,8 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
         );
       }
 
+
+
       setFormData(initialState);
       onItemCreated();
       onClose();
@@ -153,6 +159,7 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
       error={error || undefined}
       users={users}
       epics={epics}
+      sprints = {sprints}
     />
   );
 };

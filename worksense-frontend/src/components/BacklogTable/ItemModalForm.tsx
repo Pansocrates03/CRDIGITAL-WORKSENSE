@@ -35,7 +35,7 @@ interface ItemModalFormProps {
     error?: string;
     users: User[];
     epics: Epic[];
-    sprints: { id: string; name: string }[];
+    sprints: any[];
     disableTypeChange?: boolean;
 }
 
