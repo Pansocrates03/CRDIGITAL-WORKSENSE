@@ -1,5 +1,5 @@
 .sprints-page__header {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .sprints-page__header h1 {
@@ -86,4 +86,9 @@
     color: #666;
     background-color: #f8f9fa;
     border-radius: 8px;
+}
+
+.sprints-page__divider {
+    border-bottom: 2px solid #e5e7eb;
+    margin-bottom: 1rem;
 } 

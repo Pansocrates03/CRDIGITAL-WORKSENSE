@@ -16,10 +16,19 @@ import {
 import "./SprintsPage.css";
 
 const SprintsPage: React.FC = () => {
+    // Get project ID from URL parameters
     const { id: projectId } = useParams<{ id: string }>();
+    
+    // Fetch sprints data using custom hook
     const { data: sprints, isLoading, error } = useSprints(projectId ?? "");
+    
+    // Initialize mutation hook for creating new sprints
     const createSprintMutation = useCreateSprint(projectId ?? "");
+    
+    // State for controlling modal visibility
     const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    // State for managing form data
     const [newSprint, setNewSprint] = useState({
         name: "",
         goal: "",
@@ -27,7 +36,23 @@ const SprintsPage: React.FC = () => {
         endDate: "",
     });
 
-    // Format date function for display
+    // Function to reset form fields to empty values
+    const resetForm = () => {
+        setNewSprint({
+            name: "",
+            goal: "",
+            startDate: "",
+            endDate: "",
+        });
+    };
+
+    // Function to handle modal closing and form reset
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        resetForm();
+    };
+
+    // Format date for display in the table (converts Firestore timestamp to readable date)
     const formatDate = (timestamp: any) => {
         if (!timestamp || !timestamp._seconds) return "N/A";
         const date = new Date(timestamp._seconds * 1000);
@@ -38,6 +63,16 @@ const SprintsPage: React.FC = () => {
     const formatDateForAPI = (date: string | Date) =>
         new Date(date).toISOString().split("T")[0];
 
+    // Handle form input changes
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setNewSprint(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // Handle sprint creation
     const handleCreateSprint = async () => {
         try {
             await createSprintMutation.mutateAsync({
@@ -48,25 +83,13 @@ const SprintsPage: React.FC = () => {
                 endDate: formatDateForAPI(newSprint.endDate),
             });
             setIsModalOpen(false);
-            setNewSprint({
-                name: "",
-                goal: "",
-                startDate: "",
-                endDate: "",
-            });
+            resetForm();
         } catch (error) {
             console.error("Failed to create sprint:", error);
         }
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setNewSprint(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
+    // Show loading state
     if (isLoading) {
         return (
             <div className="sprints-page">
@@ -78,6 +101,7 @@ const SprintsPage: React.FC = () => {
         );
     }
 
+    // Show error state
     if (error) {
         return (
             <div className="sprints-page">
@@ -90,6 +114,7 @@ const SprintsPage: React.FC = () => {
 
     return (
         <div className="sprints-page">
+            {/* Header section with title and create button */}
             <div className="flex items-baseline justify-between w-full">
                 <div className="sprints-page__header">
                     <h1>Sprints</h1>
@@ -105,10 +130,13 @@ const SprintsPage: React.FC = () => {
                 </Button>
             </div>
 
-            <div className="border-b-2 border-b-gray-200 my-4"></div>
+            {/* Divider line */}
+            <div className="sprints-page__divider"></div>
 
+            {/* Main content section */}
             <div className="sprints-page__content">
                 {sprints && sprints.length > 0 ? (
+                    // Table to display sprints
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -144,15 +172,17 @@ const SprintsPage: React.FC = () => {
                         </TableBody>
                     </Table>
                 ) : (
+                    // Empty state message
                     <div className="sprints-page__empty">
                         <p>No sprints found. Create your first sprint to get started!</p>
                     </div>
                 )}
             </div>
 
+            {/* Create Sprint Modal */}
             <Modal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={handleCloseModal}
                 title="Create New Sprint"
                 size="m"
             >
@@ -161,6 +191,7 @@ const SprintsPage: React.FC = () => {
                     handleCreateSprint();
                 }} className="p-4">
                     <div className="space-y-4">
+                        {/* Sprint Name Input */}
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium mb-1">
                                 Sprint Name
@@ -176,6 +207,7 @@ const SprintsPage: React.FC = () => {
                                 required
                             />
                         </div>
+                        {/* Sprint Goal Input */}
                         <div>
                             <label htmlFor="goal" className="block text-sm font-medium mb-1">
                                 Sprint Goal
@@ -190,6 +222,7 @@ const SprintsPage: React.FC = () => {
                                 rows={3}
                             />
                         </div>
+                        {/* Start Date Input */}
                         <div>
                             <label htmlFor="startDate" className="block text-sm font-medium mb-1">
                                 Start Date
@@ -204,6 +237,7 @@ const SprintsPage: React.FC = () => {
                                 required
                             />
                         </div>
+                        {/* End Date Input */}
                         <div>
                             <label htmlFor="endDate" className="block text-sm font-medium mb-1">
                                 End Date
@@ -219,11 +253,12 @@ const SprintsPage: React.FC = () => {
                             />
                         </div>
                     </div>
+                    {/* Modal Action Buttons */}
                     <div className="flex justify-end gap-2 mt-6">
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() => setIsModalOpen(false)}
+                            onClick={handleCloseModal}
                         >
                             Cancel
                         </Button>
