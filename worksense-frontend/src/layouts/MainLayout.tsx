@@ -6,6 +6,7 @@ import { Header } from "../components/Header/Header"; // Adjust path
 import { projectService } from "../services/projectService"; // Adjust path
 import styles from "./MainLayout.module.css";
 import FridaChat from "@/components/FridaChat/FridaChat";
+import worksenseLogo from "@/assets/images/worksenseLogo.svg";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -75,7 +76,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       ? "Loading Project..."
       : projectName || "Project";
   } else if (location.pathname.startsWith("/create")) {
-    headerTitle = "My Projects";
+    headerTitle = "LOGO"; // Special value to indicate logo should be shown
     showSidebar = false; // Hide sidebar on create page
   } else if (location.pathname.startsWith("/settings")) {
     headerTitle = "Settings";

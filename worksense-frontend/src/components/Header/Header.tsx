@@ -6,6 +6,7 @@ import { authService } from "@/services/auth";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
+import worksenseLogo from "@/assets/images/worksenseLogo.svg";
 
 interface HeaderProps {
   /** Current section/page name */
@@ -146,9 +147,13 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
         ) : (
           // Page Title
-          <h2 className={styles.headerTitle} data-testid="page-title">
-            {title}
-          </h2>
+          title === "LOGO" ? (
+            <img src={worksenseLogo} alt="WorkSense Logo" style={{ height: 36 }} data-testid="worksense-logo" />
+          ) : (
+            <h2 className={styles.headerTitle} data-testid="page-title">
+              {title}
+            </h2>
+          )
         )}
       </div>
 
