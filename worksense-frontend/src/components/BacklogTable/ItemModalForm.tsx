@@ -122,7 +122,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                 <div className={styles.modalHeader}>
                     <h2>
-                        {mode === "create" ? "Create New Item" : `Update ${formData.type}`}
+                        {mode === "create" ? `Create New ${formData.type.charAt(0).toUpperCase() + formData.type.slice(1)}` : `Update ${formData.type}`}
                     </h2>
                     <Button
                         variant={"outline"}
@@ -186,7 +186,8 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                         disabled={loading}
                     />
 
-                    <SelectField
+                    { formData.type !== "epic" && (
+                        <SelectField
                         id="size"
                         name="size"
                         value={formData.size || ""}
@@ -195,9 +196,9 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                         label="Size"
                         styleClass="size"
                         disabled={loading}
-                    />
+                    />)}
 
-                    {formData.type && (
+                    {formData.type !== "epic" && (
                         <SelectField
                             id="sprint"
                             name="sprint"
@@ -210,7 +211,8 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                         />
                     )}
 
-                    <SelectField
+                    {formData.type != 'epic' &&
+                        (<SelectField
                         id="assigneeId"
                         name="assigneeId"
                         value={formData.assigneeId?.toString() || ""}
@@ -219,7 +221,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                         label="Assignee"
                         styleClass="assignee"
                         disabled={loading}
-                    />
+                    />)}
 
                     {formData.type === "story" && (
                         <SelectField
