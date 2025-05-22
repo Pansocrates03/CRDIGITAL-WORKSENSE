@@ -461,9 +461,10 @@
 .metaItem {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 1rem;
     font-size: 0.8rem;
     color: var(--text-primary);
+    flex-wrap: wrap;
 }
 
 .metaIcon {

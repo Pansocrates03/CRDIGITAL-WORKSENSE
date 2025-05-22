@@ -1,15 +1,15 @@
-import { Router } from "express";
+import {Router} from "express";
 import {
-  getUsers,
   createUser,
+  deleteUser,
+  getProfile,
+  getUsers,
+  login,
   updateSelf,
   updateUserByAdmin,
-  deleteUser,
-  login,
-  getProfile,
 } from "../controllers/auth.controller.js";
-import { verifyToken } from "../middlewares/bundleMiddleware/tokenAuth.js";
-import { checkPlatformAdmin } from "../middlewares/bundleMiddleware/adminAuth.js";
+import {verifyToken} from "../middlewares/bundleMiddleware/tokenAuth.js";
+import {checkPlatformAdmin} from "../middlewares/bundleMiddleware/adminAuth.js";
 
 const router = Router();
 
@@ -144,7 +144,7 @@ router.delete("/users/:id", verifyToken, checkPlatformAdmin, deleteUser);
  *       404:
  *         description: User not found
  */
-router.get("/users/:id", verifyToken, getUsers);
+router.get("/users/:id", verifyToken, getProfile);
 
 /**
  * @swagger
@@ -325,7 +325,7 @@ router.post("/login", login);
  *         description: Unauthorized - User is not authenticated
  */
 router.get("/protected", verifyToken, (req, res) => {
-  res.send("Protected route access successful");
+    res.send("Protected route access successful");
 });
 
 /**
