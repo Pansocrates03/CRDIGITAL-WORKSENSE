@@ -47,21 +47,85 @@
 .welcomeMessage {
     padding-bottom: 0;
     border-bottom: none;
+    margin-bottom: 1rem; /* Increased space before controls */
+    opacity: 0; /* Start hidden for animation */
+    transform: translateY(10px); /* Start slightly lower for animation */
+
+}
+
+.welcomeMessage.welcomeAnimation {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.6s var(--transition-normal), transform 0.6s var(--transition-normal); /* Adjust timing */
+    transition-delay: 0.1s; /* Slight delay before animation starts */
 }
 
 .welcomeTitle {
-    font-size: 1.8rem;
-    font-weight: 600;
+    font-size: 2.25rem; /* Example: Playful & friendly size */
+    font-weight: 700;
     color: var(--text-primary);
     margin: 0 0 0.75rem 0;
+    line-height: 1.3;
+    display: flex; /* To align icon and text nicely */
+    align-items: center; /* Vertically align icon with text */
 }
 
 .welcomeText {
-    font-size: 1rem;
-    color: var(--text-primary);
+    font-size: 1.05rem;
+    color: var(--neutral-700, #52525b); /* Fallback color if var not defined */
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.6;
     max-width: 600px;
+}
+
+/* Apply to .pageContainer or .mainContent (needs position: relative) */
+.pageContainer {
+    /* ... */
+    position: relative; /* Needed for absolute positioning of pseudo-elements */
+    overflow: hidden; /* Important to clip blobs that go off-screen */
+    background-color: var(--neutral-100, #f8f9fa); /* Base color */
+    z-index: 0; /* Ensure content stays above */
+}
+
+.pageContainer::before,
+.pageContainer::after {
+    content: '';
+    position: absolute;
+    border-radius: 50% 60% 70% 80% / 80% 70% 60% 50%; /* Creates an organic shape */
+    opacity: 0.05; /* VERY IMPORTANT: keep low opacity */
+    filter: blur(60px); /* Softens the edges significantly */
+    z-index: -1; /* Place behind content */
+    animation: gentleBlobMove 20s infinite alternate ease-in-out; /* Subtle movement */
+}
+
+.pageContainer::before {
+    width: clamp(300px, 40vw, 600px); /* Responsive width */
+    height: clamp(300px, 40vw, 600px); /* Responsive height */
+    background-color: var(--accent-pink);
+    top: -10%;
+    left: -15%;
+    animation-delay: -5s; /* Start animations at different times */
+}
+
+.pageContainer::after {
+    width: clamp(250px, 35vw, 500px);
+    height: clamp(250px, 35vw, 500px);
+    background-color: var(--accent-blue); /* Assuming you have an accent blue */
+    bottom: -15%;
+    right: -10%;
+    border-radius: 70% 50% 80% 60% / 60% 80% 50% 70%; /* Different shape */
+}
+
+@keyframes gentleBlobMove {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    50% {
+        transform: translate(20px, -15px) rotate(10deg) scale(1.05);
+    }
+    100% {
+        transform: translate(-10px, 25px) rotate(-5deg) scale(0.95);
+    }
 }
 
 .compactControls {
@@ -287,6 +351,46 @@
     box-shadow: var(--shadow-lg);
 }
 
+.projectCards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-auto-rows: auto;
+    gap: 2rem;
+}
+
+.featuredCard {
+    grid-column: span 2;
+    grid-row: span 2;
+
+}
+
+.featuredDetailsSection {
+    margin-top: 1rem; /* Space above the details section */
+    padding-top: 1rem; /* Space within the section, above first item */
+    border-top: 1px solid var(--neutral-200, #e5e7eb); /* Subtle separator line */
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; /* Space between detail items */
+}
+
+.detailItem {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem; /* Smaller font for details */
+    color: var(--neutral-700, #374151); /* Slightly softer text color */
+}
+
+.detailIcon {
+    margin-right: 0.5rem;
+    color: var(--accent-blue-hover, #6b7280); /* Icon color */
+    flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.detailItem span {
+    /* Styles for the text part of the detail if needed */
+}
+
+
 /* Project Cards Container */
 .projectsSection {
     width: 100%;
@@ -398,7 +502,7 @@
 
 .statusInactive {
     background-color: var(--neutral-300);
-    color: var(--text-primary);
+    color: var(--accent-pink-hover);
     border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
@@ -409,7 +513,7 @@
 }
 
 .statusOnHold {
-    background-color: var(--neutral-300);
+    background-color: var(--neutral-200);
     color: var(--text-primary);
     border: 1px solid rgba(0, 0, 0, 0.05);
 }
@@ -671,7 +775,7 @@
 
 @media (min-width: 768px) {
     .sectionHeader {
-        flex-direction: row;
+        flex-direction: column;
         align-items: flex-start;
     }
 
@@ -681,8 +785,19 @@
     }
 
     .compactControls {
-        width: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between; /* Search left, actions right WITHIN this bar */
+        width: 100%; /* Ensure it takes full width below welcome message */
+        gap: 1rem;
     }
+}
+
+.userNameHighlight {
+    color: var(--accent-pink); /* Brighter accent for the name */
+    /* font-weight: 700; /* Or inherit from .welcomeTitle */
+    margin-left: 0.25em; /* Small space before the name if greeting ends with comma */
+    margin-right: 0.1em; /* Small space after name before exclamation */
 }
 
 @media (max-width: 767px) {

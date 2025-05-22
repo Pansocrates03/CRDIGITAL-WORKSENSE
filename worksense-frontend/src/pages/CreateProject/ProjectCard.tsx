@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from "./CreateProject.module.css";
-import {ArrowRight} from "lucide-react";
+import {ArrowLeft, ArrowRight} from "lucide-react";
 import ProjectDetails from '@/types/ProjectType';
 import {useUser} from "@/hooks/useMembers.ts";
 import {AvatarDisplay} from "@/components/ui/AvatarDisplay.tsx";
@@ -8,28 +8,47 @@ import {AvatarDisplay} from "@/components/ui/AvatarDisplay.tsx";
 type ProjectCardProps = {
     project: ProjectDetails;
     handleProjectClick: (id: string) => void;
+    isFeatured?: boolean; // Make it optional
+
 }
 
 
 // Get status color class based on status
 const getStatusColorClass = (status: string): string => {
     switch (status) {
-        case "Active":
+        case "active":
             return styles.statusActive;
-        case "Inactive":
+        case "inactive":
             return styles.statusInactive;
-        case "Completed":
+        case "completed":
             return styles.statusCompleted;
-        case "On Hold":
+        case "on-hold":
             return styles.statusOnHold;
         default:
             return styles.statusActive;
     }
 };
 
-const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick}) => {
+const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick, isFeatured}) => {
 
-
+// Corrected Helper function to format date
+    const formatDate = (dateInput: Date | string | number | undefined): string => {
+        if (!dateInput) return 'N/A';
+        try {
+            const dateObject = new Date(dateInput); // This will work fine if dateInput is already a Date object
+            if (isNaN(dateObject.getTime())) {
+                return 'Invalid Date';
+            }
+            return dateObject.toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+            });
+        } catch (e) {
+            console.error("Error formatting date:", e);
+            return 'Error Date';
+        }
+    };
     const {
         data: productOwnerDetails,
         isLoading: isOwnerLoading,
@@ -65,15 +84,16 @@ const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick}) 
     return (
         <div
             key={project.id}
-            className={styles.card}
             onClick={() => handleProjectClick(project.id)}
+            className={`${styles.card} ${isFeatured ? styles.featuredCard : ''}`}
+
         >
             <div className={styles.cardHeader}>
                 <div className={styles.cardTitleArea}>
                     <div className={styles.titleRow}>
                         <h4>{project.name}</h4>
                         <div
-                            className={`${styles.status} ${getStatusColorClass(project.status || "Active")}`}
+                            className={`${styles.status} ${getStatusColorClass(project.status?.toLowerCase() || "active")}`}
                         >
                             {project.status?.toLowerCase() || "active"}
                         </div>
@@ -81,6 +101,26 @@ const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick}) 
                     <p className={styles.projectInfo}>
                         {project.description}
                     </p>
+
+                    {/* --- CONDITIONAL RENDERING FOR EXTRA DETAILS --- */}
+                    {isFeatured && (
+                        <div className={styles.featuredDetailsSection}>
+                            {project.startDate && (
+                                <div className={styles.detailItem}>
+                                    <ArrowRight size={22} className={styles.detailIcon}/>
+                                    <span>Start date: {formatDate(project.startDate)}</span>
+                                </div>
+                            )}
+                            {project.endDate && (
+                                <div className={styles.detailItem}>
+                                    <ArrowLeft size={22}
+                                               className={styles.detailIcon} /* Consider a different icon for updated if desired */ />
+                                    <span>End date: {formatDate(project.endDate)}</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                 </div>
             </div>
 
