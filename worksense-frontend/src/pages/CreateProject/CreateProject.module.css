@@ -364,6 +364,33 @@
 
 }
 
+.featuredDetailsSection {
+    margin-top: 1rem; /* Space above the details section */
+    padding-top: 1rem; /* Space within the section, above first item */
+    border-top: 1px solid var(--neutral-200, #e5e7eb); /* Subtle separator line */
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; /* Space between detail items */
+}
+
+.detailItem {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem; /* Smaller font for details */
+    color: var(--neutral-700, #374151); /* Slightly softer text color */
+}
+
+.detailIcon {
+    margin-right: 0.5rem;
+    color: var(--accent-blue-hover, #6b7280); /* Icon color */
+    flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.detailItem span {
+    /* Styles for the text part of the detail if needed */
+}
+
+
 /* Project Cards Container */
 .projectsSection {
     width: 100%;
@@ -486,7 +513,7 @@
 }
 
 .statusOnHold {
-    background-color: var(--neutral-300);
+    background-color: var(--neutral-200);
     color: var(--text-primary);
     border: 1px solid rgba(0, 0, 0, 0.05);
 }
