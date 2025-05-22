@@ -22,6 +22,7 @@ interface BacklogRowProps {
   onEdit: () => void;
   onDelete: () => void;
   onViewDetails: () => void;
+  enableAiSuggestions: boolean;
 }
 
 const BacklogRow: React.FC<BacklogRowProps> = ({
@@ -31,6 +32,7 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
   onEdit,
   onDelete,
   onViewDetails,
+  enableAiSuggestions,
 }) => {
   let extraInfo = "-";
   if (item.type === "story") {
@@ -152,6 +154,7 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
           }}
           onViewDetails={onViewDetails}
           itemType={item.type}
+          enableAiSuggestions={enableAiSuggestions}
         />
       </td>
     </tr>

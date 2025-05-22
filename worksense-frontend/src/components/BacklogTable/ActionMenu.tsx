@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect, FC } from "react";
 import { MoreHorizontal, Pencil, Trash2, Sparkles, Eye } from "lucide-react";
 import styles from "./ActionMenu.module.css";
+import { toast } from "sonner";
 
 interface ActionMenuProps {
   onEdit: (e: React.MouseEvent) => void;
@@ -10,6 +11,7 @@ interface ActionMenuProps {
   onGenerateStories?: () => void;
   isEpic?: boolean;
   itemType?: string;
+  enableAiSuggestions?: boolean;
 }
 
 const ActionMenu: FC<ActionMenuProps> = ({ 
@@ -18,7 +20,8 @@ const ActionMenu: FC<ActionMenuProps> = ({
   onViewDetails,
   onGenerateStories, 
   isEpic = false,
-  itemType
+  itemType,
+  enableAiSuggestions = true,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -74,6 +77,10 @@ const ActionMenu: FC<ActionMenuProps> = ({
   const handleGenerateStories = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsOpen(false);
+    if (!enableAiSuggestions) {
+      toast.warning("AI Suggestions are currently disabled for this project.");
+      return;
+    }
     onGenerateStories?.();
   };
 
@@ -97,7 +104,12 @@ const ActionMenu: FC<ActionMenuProps> = ({
             </button>
           )}
           {canGenerateStories && onGenerateStories && (
-            <button onClick={handleGenerateStories} className={`${styles.menuItem} ${styles.aiItem}`}>
+            <button
+              onClick={handleGenerateStories}
+              className={`${styles.menuItem} ${styles.aiItem}`}
+              disabled={!enableAiSuggestions}
+              style={!enableAiSuggestions ? { opacity: 0.5, cursor: "not-allowed" } : {}}
+            >
               <Sparkles size={16} className={styles.menuIcon} style={{color: "#ac1754"}} />
               <span>Generate Stories</span>
             </button>

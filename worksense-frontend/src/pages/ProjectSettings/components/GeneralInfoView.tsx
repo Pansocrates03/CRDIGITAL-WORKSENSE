@@ -265,38 +265,38 @@ const GeneralInfoView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" />
           <div className="relative bg-white rounded-lg p-6 w-full max-w-md shadow-lg border z-10">
-            <h2 className="text-xl font-bold mb-2">Delete Project</h2>
-            <p className="mb-4">
-              This action <span className="font-bold text-[#ac1754]">cannot be undone</span>.<br />
-              To confirm, type <span className="font-mono bg-gray-100 px-1">{form.name}</span> below:
-            </p>
-            <input
-              type="text"
-              className="w-full border px-3 py-2 rounded mb-4"
-              value={deleteInput}
-              onChange={e => setDeleteInput(e.target.value)}
-              placeholder={`Type "${form.name}" to confirm`}
-            />
-            <div className="flex justify-end gap-2">
+          <h2 className="text-xl font-bold mb-2">Delete Project</h2>
+          <p className="mb-4">
+            This action <span className="font-bold text-[#ac1754]">cannot be undone</span>.<br />
+            To confirm, type <span className="font-mono bg-gray-100 px-1">{form.name}</span> below:
+          </p>
+          <input
+            type="text"
+            className="w-full border px-3 py-2 rounded mb-4"
+            value={deleteInput}
+            onChange={e => setDeleteInput(e.target.value)}
+            placeholder={`Type "${form.name}" to confirm`}
+          />
+          <div className="flex justify-end gap-2">
               <Button
                 variant="secondary"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setDeleteInput("");
-                }}
-              >
-                Cancel
+              onClick={() => {
+                setShowDeleteModal(false);
+                setDeleteInput("");
+              }}
+            >
+              Cancel
               </Button>
               <Button
                 variant="destructive"
-                disabled={deleteInput !== form.name}
-                onClick={() => {
-                  deleteMutation.mutate();
-                  setShowDeleteModal(false);
-                  setDeleteInput("");
-                }}
-              >
-                Delete
+              disabled={deleteInput !== form.name}
+              onClick={() => {
+                deleteMutation.mutate();
+                setShowDeleteModal(false);
+                setDeleteInput("");
+              }}
+            >
+              Delete
               </Button>
             </div>
           </div>
