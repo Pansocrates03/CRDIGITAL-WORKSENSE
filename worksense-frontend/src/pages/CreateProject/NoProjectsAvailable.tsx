@@ -1,27 +1,26 @@
 import React from 'react';
 import styles from "./CreateProject.module.css";
+import {Cuboid, Plus} from "lucide-react";
+import {Button} from "@/components/ui/button";
 
 type NoProjectsAvailableProps = {
     setIsModalOpen: (isOpen: boolean) => void;
 }
 
-const NoProjectsAvailable: React.FC<NoProjectsAvailableProps> = ( {setIsModalOpen} ) => {
+const NoProjectsAvailable: React.FC<NoProjectsAvailableProps> = ({setIsModalOpen}) => {
     return (
         <div className={styles.emptyState}>
-            <div className={styles.emptyStateIcon}>📋</div>
-            <h4 className={styles.emptyStateTitle}>No projects yet</h4>
+            <Cuboid alt="No projects yet" color="var(--accent-pink)" size="100px"/>
+            <h3 className={styles.emptyStateTitle}>Ready to Start Something Awesome?</h3>
             <p className={styles.emptyStateText}>
-            Create your first project to start organizing your sprints
-            and collaborating with your team.
+                It looks like you don't have any projects yet.
+                Let's get your first one set up!
             </p>
-            <button
-            className={styles.createFirstButton}
-            onClick={() => setIsModalOpen(true)}
-            >
-            Create your first project
-            </button>
+            <Button variant={"default"} className={styles.createFirstButton} onClick={() => setIsModalOpen(true)}>
+                <Plus size={20}/> Create Your First Project
+            </Button>
         </div>
     )
-}
+};
 
 export default NoProjectsAvailable;

@@ -8,6 +8,8 @@ import {AvatarDisplay} from "@/components/ui/AvatarDisplay.tsx";
 type ProjectCardProps = {
     project: ProjectDetails;
     handleProjectClick: (id: string) => void;
+    isFeatured?: boolean; // Make it optional
+
 }
 
 
@@ -27,7 +29,7 @@ const getStatusColorClass = (status: string): string => {
     }
 };
 
-const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick}) => {
+const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick, isFeatured}) => {
 
 
     const {
@@ -65,8 +67,9 @@ const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick}) 
     return (
         <div
             key={project.id}
-            className={styles.card}
             onClick={() => handleProjectClick(project.id)}
+            className={`${styles.card} ${isFeatured ? styles.featuredCard : ''}`}
+
         >
             <div className={styles.cardHeader}>
                 <div className={styles.cardTitleArea}>
