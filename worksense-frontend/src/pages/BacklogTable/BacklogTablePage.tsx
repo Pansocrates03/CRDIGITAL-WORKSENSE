@@ -5,7 +5,7 @@ import {useQuery} from "@tanstack/react-query";
 import apiClient from "@/api/apiClient";
 import styles from "./BacklogTablePage.module.css";
 import BacklogHeader from "@/components/BacklogTable/BacklogHeader";
-import BacklogAlerts from "@/components/BacklogTable/BacklogAlerts";
+import { toast } from "sonner";
 import BacklogTableSection from "@/components/BacklogTable/BacklogTableSection";
 import SearchFilter from "@/components/BacklogTable/SearchFilter";
 import BacklogRow from "@/components/BacklogTable/BacklogRow";
@@ -228,15 +228,11 @@ const BacklogTablePage: FC = () => {
     };
 
     const handleSuccess = (msg: string) => {
-        setSuccessMessage(msg);
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 3000);
+        toast.success(msg);
     };
 
     const handleError = (msg: string) => {
-        setErrorMessage(msg);
-        setShowError(true);
-        setTimeout(() => setShowError(false), 5000);
+        toast.error(msg);
     };
 
     const matchesSearch = (item: BacklogItemType) =>
@@ -286,11 +282,6 @@ const BacklogTablePage: FC = () => {
 
     return (
         <div>
-            <BacklogAlerts
-                successMessage={showSuccess ? successMessage : undefined}
-                errorMessage={showError ? errorMessage : undefined}
-            />
-
             <BacklogHeader onAddItem={() => setIsModalOpen(true)}/>
             <div className="border-b border-border my-4"></div>
             <SearchFilter

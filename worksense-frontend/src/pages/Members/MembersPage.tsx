@@ -4,6 +4,7 @@ import React, {useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {PlusIcon} from 'lucide-react';
 import {useQueryClient} from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 // Components
 import {Button} from '@/components/ui/button';
@@ -21,7 +22,6 @@ import {projectService} from '@/services/projectService';
 import {useDeleteMember, useMembers, useUpdateMemberRole} from '@/hooks/useMembers';
 import {useUsers} from '@/hooks/useUsers';
 import {useAuth} from '@/hooks/useAuth';
-import BacklogAlerts from "@/components/BacklogTable/BacklogAlerts.tsx";
 
 const MembersPage: React.FC = () => {
     const {id: projectId} = useParams<{ id: string }>();
@@ -32,8 +32,6 @@ const MembersPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAddingMembers, setIsAddingMembers] = useState(false);
     const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");
 
     // Alert states
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
@@ -108,9 +106,7 @@ const MembersPage: React.FC = () => {
     };
 
     const handleSuccess = (msg: string) => {
-        setSuccessMessage(msg);
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 3000);
+        toast.success(msg);
     };
 
 
@@ -118,9 +114,6 @@ const MembersPage: React.FC = () => {
 
     return (
         <div>
-            <BacklogAlerts
-                successMessage={showSuccess ? successMessage : undefined}
-            />
             <div className="flex items-baseline justify-between w-full">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight text-foreground">Members</h2>
