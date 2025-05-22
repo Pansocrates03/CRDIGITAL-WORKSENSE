@@ -1,11 +1,8 @@
 import express from "express";
 import * as backlogController from "../controllers/backlog.controller.js";
-import {
-  memberAuth,
-  withPermission,
-} from "../middlewares/projectMiddlewareBundle.js";
+import {memberAuth, withPermission,} from "../middlewares/projectMiddlewareBundle.js";
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router({mergeParams: true});
 
 /**
  * @swagger
@@ -249,9 +246,9 @@ const router = express.Router({ mergeParams: true });
  *         description: Project not found
  */
 router.post(
-  "/items",
-  withPermission("edit:backlog"),
-  backlogController.createBacklogItem
+    "/items",
+    withPermission("edit:backlog"),
+    backlogController.createBacklogItem
 );
 
 /**
@@ -466,9 +463,9 @@ router.get("/items/:itemId", memberAuth, backlogController.getBacklogItem);
  *         description: Project or backlog item not found
  */
 router.put(
-  "/items/:itemId",
-  withPermission("edit:backlog"),
-  backlogController.updateBacklogItem
+    "/items/:itemId",
+    withPermission("edit:backlog"),
+    backlogController.updateBacklogItem
 );
 
 /**
@@ -532,9 +529,9 @@ router.put(
  *         description: Project or backlog item not found
  */
 router.delete(
-  "/items/:itemId",
-  withPermission("edit:backlog"),
-  backlogController.deleteBacklogItem
+    "/items/:itemId",
+    withPermission("edit:backlog"),
+    backlogController.deleteBacklogItem
 );
 
 /**
@@ -592,23 +589,25 @@ router.delete(
  *         description: Project or backlog item not found
  */
 router.put(
-  "/items/:itemId/sprints/:sprintId",
-  backlogController.changeItemSprint
-)
+    "/items/:itemId/sprints/:sprintId",
+    backlogController.changeItemSprint
+);
 
+router.put("/items/:itemId/subitems/:subItemId",
+    withPermission("edit:backlog"),
+    backlogController.updateSubItem);
 
 router.delete(
-  "/items/:itemId/subitems/:subItemId",
-  withPermission("edit:backlog"),
-  backlogController.deleteSubItem
+    "/items/:itemId/subitems/:subItemId",
+    withPermission("edit:backlog"),
+    backlogController.deleteSubItem
 );
 
 
-
 router.post(
-  "/items/:itemId/subitems",
-  withPermission("edit:backlog"),
-  backlogController.createSubItem
+    "/items/:itemId/subitems",
+    withPermission("edit:backlog"),
+    backlogController.createSubItem
 );
 
 export default router;
