@@ -17,6 +17,12 @@ import DeleteConfirmationModal from '@/components/ui/deleteConfirmationModal/del
 // Types
 import BacklogItemType from "@/types/BacklogItemType.ts";
 import { Sprint } from '@/types/SprintType';
+import BurndownChartView from './components/BurndownChartView/BurndownChartView';
+
+import {
+  FiLayout, FiGrid, FiClock, FiBarChart // Icons for tab navigation
+} from "react-icons/fi";
+import { IconType } from 'react-icons/lib';
 
 const DEFAULT_COLUMNS = [
   { id: 'sprint_backlog', title: 'Sprint Backlog' },
@@ -25,11 +31,16 @@ const DEFAULT_COLUMNS = [
   { id: 'done', title: 'Done' }
 ];
 
-const navigationTabs = [
-  { id: "overview", label: "Overview"},
-  { id: "board", label: "Board" },
-  { id: "table", label: "Table" },
-  { id: "burndown_chart", label: "Burndown Chart"}
+export interface TabItem {
+  id: string;
+  label: string;
+  icon: IconType|null
+}
+const navigationTabs: TabItem[] = [
+  { id: "overview", label: "Overview", icon: null },
+  { id: "board", label: "Board", icon:FiLayout },
+  { id: "table", label: "Table", icon:FiGrid },
+  { id: "burndown_chart", label: "Burndown Chart", icon:FiBarChart}
 ]
 
 const WorkflowPage: React.FC = () => {
@@ -111,6 +122,15 @@ const WorkflowPage: React.FC = () => {
         queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] });
     };
 
+    const burndown_chart_data = [
+      { date: '2024-03-01', remainingWork: 100, idealBurndown: 100 },
+      { date: '2024-03-02', remainingWork: 80, idealBurndown: 80 },
+      { date: '2024-03-03', remainingWork: 65, idealBurndown: 60 },
+      { date: '2024-03-04', remainingWork: 50, idealBurndown: 40 },
+      { date: '2024-03-05', remainingWork: 30, idealBurndown: 20 },
+      { date: '2024-03-06', remainingWork: 10, idealBurndown: 0 },
+    ];
+
     const renderView = () => {
         switch (activeTab) {
             case 'board':
@@ -119,6 +139,8 @@ const WorkflowPage: React.FC = () => {
                 return <OverviewView tasks={tasks} />;
             case 'table':
                 return <TableView tasks={tasks} />;
+            case 'burndown_chart':
+                return <BurndownChartView data={burndown_chart_data} />
             default:
                 return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} columns={columns} />;
         }

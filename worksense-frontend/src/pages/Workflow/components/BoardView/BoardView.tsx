@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import DraggableTaskCard from '../TaskCard/DraggableTaskCard';
-import '../styles/BoardView.css';
+import './BoardView.css';
 import BacklogItemType from '@/types/BacklogItemType';
 
 const BASE_COLUMN_ID = "no_column";
@@ -18,9 +18,6 @@ const BoardView: React.FC<BoardViewProps> = ({ tasks, onTaskUpdate, columns }) =
     { id: BASE_COLUMN_ID, title: BASE_COLUMN_TITLE},
     ...columns
   ]
-
-  
-   
 
   const handleDragOver = (e: React.DragEvent, columnId: string) => {
     e.preventDefault();

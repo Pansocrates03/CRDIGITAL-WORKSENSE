@@ -1,23 +1,15 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button"; // Reusable UI button component
-import {
-  FiLayout, FiGrid, FiClock, FiBarChart // Icons for tab navigation
-} from "react-icons/fi";
 import Modal from "@/components/Modal/Modal"; // Generic modal component
 import { Input } from "@/components/ui/input"; // Reusable input component
 import "./Tabs.css";
+import { TabItem } from "../../WorkflowPage";
 
 // Hook to create new sprint
 import { useCreateSprint } from "@/hooks/useSprintData";
 
 // Sprint type definition
 import { Sprint } from '@/types/SprintType';
-
-// Tab item shape
-interface TabItem {
-  id: string;
-  label: string;
-}
 
 // Props expected by this Tabs component
 interface TabsProps {
@@ -28,18 +20,6 @@ interface TabsProps {
   projectId: string; // Project identifier
   selectedSprintId?: string; // ID of the currently selected sprint
 }
-
-/**
- * Maps tab IDs to their corresponding icon components
- * Used to display appropriate icons in the tab navigation
- */
-const iconMap: Record<string, React.ComponentType<{ className?: string; size?: number }> | null> = {
-  overview: null,
-  board: FiLayout,
-  table: FiGrid,
-  timeline: FiClock,
-  burndown_chart: FiBarChart
-};
 
 /**
  * Tabs component for sprint management navigation
@@ -114,7 +94,7 @@ const Tabs: React.FC<TabsProps> = ({ TabItems, activeTabId, onTabClick, handleCr
       <nav className="tabs-navigation tabs-navigation--with-action">
         <div className="tabs-navigation__items">
           {TabItems.map((item) => {
-            const IconComponent = iconMap[item.id]; // Get icon for the tab
+            const IconComponent = item.icon; // Get icon for the tab
             const isActive = item.id === activeTabId; // Highlight if active
             return (
               <button
