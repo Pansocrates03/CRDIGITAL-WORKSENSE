@@ -13,4 +13,5 @@ export default interface ProjectDetails {
   aiContext?: string;
   aiTechStack?: string;
   enableAiSuggestions?: boolean;
+
 }
