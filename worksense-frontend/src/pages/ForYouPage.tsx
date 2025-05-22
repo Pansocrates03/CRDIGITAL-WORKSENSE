@@ -10,6 +10,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import Modal from '@/components/Modal/Modal';
 import { Button } from '@/components/ui/button';
+import UpdateItemModal from '@/components/BacklogTable/UpdateItemModal';
+import { MoreVertical } from 'lucide-react';
 
 const allStates = ['New', 'To Do', 'In Progress', 'In Review', 'Done'];
 const bulkTypes = ['story', 'bug', 'task', 'knowledge'];
@@ -24,6 +26,7 @@ const ForYouPage = () => {
   const [bulkState, setBulkState] = useState('');
   const [activeTab, setActiveTab] = useState<'general' | 'gamification'>('general');
   const [showAllAssigned, setShowAllAssigned] = useState(false);
+  const [editItem, setEditItem] = useState<AssignedItem | null>(null);
 
   // Fetch assigned items
   const { 
@@ -149,7 +152,16 @@ const ForYouPage = () => {
                         <div key={item.id} className={styles.backlogItem}>
                           <div className={styles.backlogItemHeader}>
                             <span className={styles.itemType}>{item.type}</span>
-                            <span className={`${styles.itemStatus} ${styles[item.status?.toLowerCase() || '']}`}>{item.status}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span className={`${styles.itemStatus} ${styles[item.status?.toLowerCase() || '']}`}>{item.status}</span>
+                              <button
+                                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                                onClick={() => setEditItem(item)}
+                                aria-label="Edit item"
+                              >
+                                <MoreVertical size={18} />
+                              </button>
+                            </div>
                           </div>
                           <h4>{item.name}</h4>
                           {item.description && <p>{item.description}</p>}
@@ -192,7 +204,16 @@ const ForYouPage = () => {
                     <div key={item.id} className={styles.backlogItem}>
                       <div className={styles.backlogItemHeader}>
                         <span className={styles.itemType}>{item.type}</span>
-                        <span className={`${styles.itemStatus} ${styles[item.status?.toLowerCase() || '']}`}>{item.status}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span className={`${styles.itemStatus} ${styles[item.status?.toLowerCase() || '']}`}>{item.status}</span>
+                          <button
+                            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                            onClick={() => setEditItem(item)}
+                            aria-label="Edit item"
+                          >
+                            <MoreVertical size={18} />
+                          </button>
+                        </div>
                       </div>
                       <h4>{item.name}</h4>
                       {item.description && <p>{item.description}</p>}
@@ -204,33 +225,56 @@ const ForYouPage = () => {
                 </div>
               </div>
             </Modal>
+            <UpdateItemModal
+              projectId={projectId || ''}
+              isOpen={!!editItem}
+              onClose={() => setEditItem(null)}
+              onItemUpdated={() => {
+                setEditItem(null);
+                queryClient.invalidateQueries({ queryKey: ['assignedItems'] });
+              }}
+              item={editItem as any}
+            />
           </div>
           <div className={styles.column}>
             <Card>
               <CardHeader>
-                <CardTitle>Completed Tasks</CardTitle>
+                <CardTitle>Completed Items</CardTitle>
               </CardHeader>
               <CardContent>
                 {completedTasks.length === 0 ? (
                   <div className={styles.emptyState}>No completed tasks yet.</div>
                 ) : (
                   <div className={styles.backlogItems}>
-                    {completedTasks.slice(0, 3).map((task) => (
-                      <div key={task.id} className={styles.backlogItem}>
-                        <div className={styles.backlogItemHeader}>
-                          <span className={styles.itemType}>Task</span>
-                          <span className={`${styles.itemStatus} ${styles['done']}`}>Done</span>
+                    {completedTasks.slice(0, 3).map((task) => {
+                      const canEdit = (task as any).id && (task as any).name;
+                      return (
+                        <div key={task.id} className={styles.backlogItem}>
+                          <div className={styles.backlogItemHeader}>
+                            <span className={styles.itemType}>Task</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span className={`${styles.itemStatus} ${styles['done']}`}>Done</span>
+                              <button
+                                style={{ background: 'none', border: 'none', cursor: canEdit ? 'pointer' : 'not-allowed' }}
+                                onClick={() => canEdit && setEditItem(task as any)}
+                                aria-label="Edit task"
+                                disabled={!canEdit}
+                              >
+                                <MoreVertical size={18} />
+                              </button>
+                            </div>
+                          </div>
+                          <h4>{task.name}</h4>
+                          <div className={styles.itemMeta}>
+                            <span>
+                              {task.completedAt && typeof task.completedAt._seconds === 'number'
+                                ? `Completed: ${new Date(task.completedAt._seconds * 1000).toLocaleDateString()}`
+                                : 'Completed: (No date)'}
+                            </span>
+                          </div>
                         </div>
-                        <h4>{task.name}</h4>
-                        <div className={styles.itemMeta}>
-                          <span>
-                            {task.completedAt && typeof task.completedAt._seconds === 'number'
-                              ? `Completed: ${new Date(task.completedAt._seconds * 1000).toLocaleDateString()}`
-                              : 'Completed: (No date)'}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -277,6 +321,17 @@ const ForYouPage = () => {
           </Button>
         </div>
       </Modal>
+      <UpdateItemModal
+        projectId={projectId || ''}
+        isOpen={!!editItem}
+        onClose={() => setEditItem(null)}
+        onItemUpdated={() => {
+          setEditItem(null);
+          queryClient.invalidateQueries({ queryKey: ['assignedItems'] });
+          queryClient.invalidateQueries({ queryKey: ['completedTasks'] });
+        }}
+        item={editItem as any}
+      />
     </div>
   );
 };
