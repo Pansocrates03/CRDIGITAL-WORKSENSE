@@ -20,8 +20,7 @@ import SprintPage from "./pages/SprintsPage/SprintsPage";
 import WorkflowPage from "./pages/Workflow/WorkflowPage";
 import ProjectSettingsPage from "./pages/ProjectSettings/ProjectSettingsPage";
 import { Toaster } from "sonner";
-
-
+import ForYouPage from "./pages/ForYouPage.tsx";
 const queryClient = new QueryClient();
 
 console.log("Running");
@@ -166,6 +165,14 @@ function App() {
                   {" "}
                   <ProjectPage />{" "}
                   {/* Replace with specific LeaderboardPage if you have one */}{" "}
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/project/:id/for-you"
+              element={
+                <PrivateRoute>
+                  <ForYouPage />
                 </PrivateRoute>
               }
             />
