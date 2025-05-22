@@ -93,22 +93,37 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) =>
       <FaPlus />
       <form onSubmit={(e) => {
         e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        const taskName = formData.get('taskName') as string;
+        
+        if(!task.tasks){
+          task.tasks = [taskName]
+        } else {
+          task.tasks.push(taskName)
+        }
+        console.log("TASK",task.tasks)
+        
+        if (!taskName?.trim()) return;
+        
+        console.log('Nueva tarea:', taskName);
+        // Aquí puedes usar taskName para crear la nueva tarea
+        
         (e.target as HTMLFormElement).reset();
-
       }}>
-      <Input
-        type="text"
-        placeholder="Add task"
-        className="task-card__search"
+        <Input
+          type="text"
+          name="taskName"
+          placeholder="Add task"
+          className="task-card__search"
         />
-        </form>
+      </form>
     </div>
 
-    {task.subItems && task.subItems.length > 0 && (
+    {task.tasks && task.tasks.length > 0 && (
       <ul className="task-card__subitems">
-        {task.subItems.map((sub, idx) => (
-          <li key={sub.id ?? idx} className="task-card__subitem">
-            {sub.name}
+        {task.tasks.map((sub) => (
+          <li className="task-card__subitem">
+            {sub}
           </li>
         ))}
       </ul>
