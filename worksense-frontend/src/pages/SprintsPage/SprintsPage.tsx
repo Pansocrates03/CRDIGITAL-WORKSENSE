@@ -27,12 +27,16 @@ const SprintsPage: React.FC = () => {
         endDate: "",
     });
 
-    // Format date function
+    // Format date function for display
     const formatDate = (timestamp: any) => {
         if (!timestamp || !timestamp._seconds) return "N/A";
         const date = new Date(timestamp._seconds * 1000);
         return date.toLocaleDateString();
     };
+
+    // Format date for API in YYYY-MM-DD format
+    const formatDateForAPI = (date: string | Date) =>
+        new Date(date).toISOString().split("T")[0];
 
     const handleCreateSprint = async () => {
         try {
@@ -40,8 +44,8 @@ const SprintsPage: React.FC = () => {
                 name: newSprint.name,
                 status: "Planned",
                 goal: newSprint.goal,
-                startDate: new Date(newSprint.startDate),
-                endDate: new Date(newSprint.endDate),
+                startDate: formatDateForAPI(newSprint.startDate),
+                endDate: formatDateForAPI(newSprint.endDate),
             });
             setIsModalOpen(false);
             setNewSprint({
