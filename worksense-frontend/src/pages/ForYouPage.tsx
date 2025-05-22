@@ -23,6 +23,7 @@ const ForYouPage = () => {
   const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [bulkState, setBulkState] = useState('');
   const [activeTab, setActiveTab] = useState<'general' | 'gamification'>('general');
+  const [showAllAssigned, setShowAllAssigned] = useState(false);
 
   // Fetch assigned items
   const { 
@@ -133,8 +134,7 @@ const ForYouPage = () => {
       {/* Tab Content */}
       {activeTab === 'general' && (
         <div className={styles.sections}>
-          {/* Main dashboard column */}
-          <div className={styles.leftCol}>
+          <div className={styles.column}>
             <Card>
               <CardHeader>
                 <CardTitle>Assigned Items</CardTitle>
@@ -143,36 +143,30 @@ const ForYouPage = () => {
                 {assignedItems.length === 0 ? (
                   <div className={styles.emptyState}>No items assigned to you yet.</div>
                 ) : (
-                  <div className={styles.tableContainer}>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead></TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {assignedItems.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell>
-                              {bulkTypes.includes(item.type) && (
-                                <input
-                                  type="checkbox"
-                                  checked={selectedItems.includes(item.id)}
-                                  onChange={() => handleSelectItem(item.id)}
-                                />
-                              )}
-                            </TableCell>
-                            <TableCell style={{ textTransform: 'capitalize' }}>{item.type}</TableCell>
-                            <TableCell>{item.name}</TableCell>
-                            <TableCell>{item.status}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <>
+                    <div className={styles.backlogItems}>
+                      {assignedItems.slice(0, 3).map((item) => (
+                        <div key={item.id} className={styles.backlogItem}>
+                          <div className={styles.backlogItemHeader}>
+                            <span className={styles.itemType}>{item.type}</span>
+                            <span className={`${styles.itemStatus} ${styles[item.status?.toLowerCase() || '']}`}>{item.status}</span>
+                          </div>
+                          <h4>{item.name}</h4>
+                          {item.description && <p>{item.description}</p>}
+                          <div className={styles.itemMeta}>
+                            <span>Priority: {item.priority || '—'}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {assignedItems.length > 3 && (
+                      <div style={{ marginTop: 12, textAlign: 'center' }}>
+                        <Button variant="outline" onClick={() => setShowAllAssigned(true)}>
+                          See more
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
                 {selectedItems.length > 0 && (
                   <div style={{ marginTop: 12 }}>
@@ -186,8 +180,33 @@ const ForYouPage = () => {
                 )}
               </CardContent>
             </Card>
-
-            <Card style={{ marginTop: 24 }}>
+            <Modal
+              isOpen={showAllAssigned}
+              onClose={() => setShowAllAssigned(false)}
+              title="All Assigned Items"
+              size="l"
+            >
+              <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                <div className={styles.backlogItems}>
+                  {assignedItems.map((item) => (
+                    <div key={item.id} className={styles.backlogItem}>
+                      <div className={styles.backlogItemHeader}>
+                        <span className={styles.itemType}>{item.type}</span>
+                        <span className={`${styles.itemStatus} ${styles[item.status?.toLowerCase() || '']}`}>{item.status}</span>
+                      </div>
+                      <h4>{item.name}</h4>
+                      {item.description && <p>{item.description}</p>}
+                      <div className={styles.itemMeta}>
+                        <span>Priority: {item.priority || '—'}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Modal>
+          </div>
+          <div className={styles.column}>
+            <Card>
               <CardHeader>
                 <CardTitle>Completed Tasks</CardTitle>
               </CardHeader>
@@ -195,18 +214,24 @@ const ForYouPage = () => {
                 {completedTasks.length === 0 ? (
                   <div className={styles.emptyState}>No completed tasks yet.</div>
                 ) : (
-                  <ul className={styles.completedList}>
+                  <div className={styles.backlogItems}>
                     {completedTasks.slice(0, 3).map((task) => (
-                      <li key={task.id} className={styles.completedItem}>
-                        <span style={{ fontWeight: 500 }}>{task.name}</span>
-                        <span className={styles.completedDate}>
-                          {task.completedAt && typeof task.completedAt._seconds === 'number'
-                            ? `(${new Date(task.completedAt._seconds * 1000).toLocaleDateString()})`
-                            : '(No date)'}
-                        </span>
-                      </li>
+                      <div key={task.id} className={styles.backlogItem}>
+                        <div className={styles.backlogItemHeader}>
+                          <span className={styles.itemType}>Task</span>
+                          <span className={`${styles.itemStatus} ${styles['done']}`}>Done</span>
+                        </div>
+                        <h4>{task.name}</h4>
+                        <div className={styles.itemMeta}>
+                          <span>
+                            {task.completedAt && typeof task.completedAt._seconds === 'number'
+                              ? `Completed: ${new Date(task.completedAt._seconds * 1000).toLocaleDateString()}`
+                              : 'Completed: (No date)'}
+                          </span>
+                        </div>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 )}
               </CardContent>
             </Card>
