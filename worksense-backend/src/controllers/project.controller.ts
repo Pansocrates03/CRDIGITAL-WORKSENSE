@@ -195,102 +195,102 @@ export const updateProject = async (
     res: Response,
     next: NextFunction
 ): Promise<void> => {
-  try {
-    const { projectId } = req.params;
-    const {
-      name, description, context, status, startDate, endDate, visibility,
-      aiContext, aiTechStack, enableAiSuggestions
-    } = req.body;
+    try {
+        const {projectId} = req.params;
+        const {
+            name, description, context, status, startDate, endDate, visibility,
+            aiContext, aiTechStack, enableAiSuggestions
+        } = req.body;
 
-    const projectRef = db.collection("projects").doc(projectId);
-    const updateData: { [key: string]: any } = {};
+        const projectRef = db.collection("projects").doc(projectId);
+        const updateData: { [key: string]: any } = {};
 
-    if (name !== undefined) {
-      if (typeof name !== "string" || name.trim() === "") {
-        res.status(400).json({ message: "Invalid project name" });
-        return;
-      }
-      updateData.name = name.trim();
+        if (name !== undefined) {
+            if (typeof name !== "string" || name.trim() === "") {
+                res.status(400).json({message: "Invalid project name"});
+                return;
+            }
+            updateData.name = name.trim();
+        }
+
+        if (description !== undefined) {
+            if (description !== null && typeof description !== "string") { // Allow null for description to clear it
+                res.status(400).json({message: "Invalid description type"});
+                return;
+            }
+            updateData.description = description;
+        }
+
+        if (context !== undefined) {
+            if (context !== null && typeof context !== "object") { // Allow null for context to clear it
+                res.status(400).json({message: "Invalid context type"});
+                return;
+            }
+            updateData.context = context;
+        }
+
+        // Only add to updateData if they are actually provided in the request
+        if (status !== undefined) {
+            // Add validation for status if necessary (e.g., string, enum)
+            // e.g., if (typeof status !== "string" || !["active", "inactive", "completed"].includes(status)) { ... }
+            updateData.status = status;
+        }
+
+        if (startDate !== undefined) {
+            // Add validation for startDate if necessary (e.g., valid date string/timestamp)
+            // You might want to convert it to a Firestore Timestamp:
+            // updateData.startDate = new Date(startDate); // or admin.firestore.Timestamp.fromDate(new Date(startDate));
+            updateData.startDate = startDate;
+        }
+
+        if (endDate !== undefined) {
+            // Add validation for endDate
+            updateData.endDate = endDate;
+        }
+
+        if (visibility !== undefined) {
+            // Add validation for visibility (e.g., string, enum like "public", "private")
+            updateData.visibility = visibility;
+        }
+
+        if (aiContext !== undefined) {
+            if (aiContext !== null && typeof aiContext !== "string") {
+                res.status(400).json({message: "Invalid aiContext type"});
+                return;
+            }
+            updateData.aiContext = aiContext;
+        }
+        if (aiTechStack !== undefined) {
+            if (aiTechStack !== null && typeof aiTechStack !== "string") {
+                res.status(400).json({message: "Invalid aiTechStack type"});
+                return;
+            }
+            updateData.aiTechStack = aiTechStack;
+        }
+        if (enableAiSuggestions !== undefined) {
+            if (typeof enableAiSuggestions !== "boolean") {
+                res.status(400).json({message: "Invalid enableAiSuggestions type"});
+                return;
+            }
+            updateData.enableAiSuggestions = enableAiSuggestions;
+        }
+
+        if (Object.keys(updateData).length === 0) {
+            res.status(400).json({message: "No valid fields provided for update"});
+            return;
+        }
+
+        updateData.updatedAt = FieldValue.serverTimestamp();
+        await projectRef.update(updateData);
+
+        const updatedDoc = await projectRef.get();
+        res.status(200).json({
+            id: updatedDoc.id,
+            ...updatedDoc.data(),
+        });
+    } catch (error) {
+        next(error);
     }
-
-    if (description !== undefined) {
-      if (description !== null && typeof description !== "string") { // Allow null for description to clear it
-        res.status(400).json({ message: "Invalid description type" });
-        return;
-      }
-      updateData.description = description;
-    }
-
-    if (context !== undefined) {
-      if (context !== null && typeof context !== "object") { // Allow null for context to clear it
-        res.status(400).json({ message: "Invalid context type" });
-        return;
-      }
-      updateData.context = context;
-    }
-
-    // Only add to updateData if they are actually provided in the request
-    if (status !== undefined) {
-      // Add validation for status if necessary (e.g., string, enum)
-      // e.g., if (typeof status !== "string" || !["active", "inactive", "completed"].includes(status)) { ... }
-      updateData.status = status;
-    }
-
-    if (startDate !== undefined) {
-      // Add validation for startDate if necessary (e.g., valid date string/timestamp)
-      // You might want to convert it to a Firestore Timestamp:
-      // updateData.startDate = new Date(startDate); // or admin.firestore.Timestamp.fromDate(new Date(startDate));
-      updateData.startDate = startDate;
-    }
-
-    if (endDate !== undefined) {
-      // Add validation for endDate
-      updateData.endDate = endDate;
-    }
-
-    if (visibility !== undefined) {
-      // Add validation for visibility (e.g., string, enum like "public", "private")
-      updateData.visibility = visibility;
-    }
-
-    if (aiContext !== undefined) {
-      if (aiContext !== null && typeof aiContext !== "string") {
-        res.status(400).json({ message: "Invalid aiContext type" });
-        return;
-      }
-      updateData.aiContext = aiContext;
-    }
-    if (aiTechStack !== undefined) {
-      if (aiTechStack !== null && typeof aiTechStack !== "string") {
-        res.status(400).json({ message: "Invalid aiTechStack type" });
-        return;
-      }
-      updateData.aiTechStack = aiTechStack;
-    }
-    if (enableAiSuggestions !== undefined) {
-      if (typeof enableAiSuggestions !== "boolean") {
-        res.status(400).json({ message: "Invalid enableAiSuggestions type" });
-        return;
-      }
-      updateData.enableAiSuggestions = enableAiSuggestions;
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      res.status(400).json({ message: "No valid fields provided for update" });
-      return;
-    }
-
-    updateData.updatedAt = FieldValue.serverTimestamp();
-    await projectRef.update(updateData);
-
-    const updatedDoc = await projectRef.get();
-    res.status(200).json({
-      id: updatedDoc.id,
-      ...updatedDoc.data(),
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
 /**
