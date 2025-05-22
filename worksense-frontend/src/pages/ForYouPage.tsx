@@ -6,6 +6,10 @@ import styles from './ForYouPage.module.css';
 import { forYouService, AssignedItem, CompletedTask } from '@/services/forYouService';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/Loading/LoadingSpinner';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import Modal from '@/components/Modal/Modal';
+import { Button } from '@/components/ui/button';
 
 const allStates = ['New', 'To Do', 'In Progress', 'In Review', 'Done'];
 const bulkTypes = ['story', 'bug', 'task', 'knowledge'];
@@ -131,65 +135,81 @@ const ForYouPage = () => {
         <div className={styles.sections}>
           {/* Main dashboard column */}
           <div className={styles.leftCol}>
-            <div className={styles.card}>
-              <h2 className={styles.sectionTitle}>Assigned Items</h2>
-              <div className={styles.tableContainer}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th className={styles.checkboxCell}></th>
-                      <th>Type</th>
-                      <th>Name</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {assignedItems.map((item) => (
-                      <tr key={item.id}>
-                        <td className={styles.checkboxCell}>
-                          {bulkTypes.includes(item.type) && (
-                            <input
-                              type="checkbox"
-                              checked={selectedItems.includes(item.id)}
-                              onChange={() => handleSelectItem(item.id)}
-                            />
-                          )}
-                        </td>
-                        <td style={{ textTransform: 'capitalize' }}>{item.type}</td>
-                        <td>{item.name}</td>
-                        <td>{item.status}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {selectedItems.length > 0 && (
-                <div style={{ marginTop: 12 }}>
-                  <button
-                    className={styles.bulkButton}
-                    onClick={handleBulkChange}
-                  >
-                    Change State ({selectedItems.length})
-                  </button>
-                </div>
-              )}
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Assigned Items</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {assignedItems.length === 0 ? (
+                  <div className={styles.emptyState}>No items assigned to you yet.</div>
+                ) : (
+                  <div className={styles.tableContainer}>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead></TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {assignedItems.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell>
+                              {bulkTypes.includes(item.type) && (
+                                <input
+                                  type="checkbox"
+                                  checked={selectedItems.includes(item.id)}
+                                  onChange={() => handleSelectItem(item.id)}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell style={{ textTransform: 'capitalize' }}>{item.type}</TableCell>
+                            <TableCell>{item.name}</TableCell>
+                            <TableCell>{item.status}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+                {selectedItems.length > 0 && (
+                  <div style={{ marginTop: 12 }}>
+                    <Button
+                      variant="default"
+                      onClick={handleBulkChange}
+                    >
+                      Change State ({selectedItems.length})
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-            <div className={styles.card}>
-              <h2 className={styles.sectionTitle}>Completed Tasks</h2>
-              <ul className={styles.completedList}>
-                {completedTasks.slice(0, 3).map((task) => (
-                  <li key={task.id} className={styles.completedItem}>
-                    <span style={{ fontWeight: 500 }}>{task.name}</span>
-                    <span className={styles.completedDate}>
-                      {task.completedAt && typeof task.completedAt._seconds === 'number'
-                        ? `(${new Date(task.completedAt._seconds * 1000).toLocaleDateString()})`
-                        : '(No date)'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <Card style={{ marginTop: 24 }}>
+              <CardHeader>
+                <CardTitle>Completed Tasks</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {completedTasks.length === 0 ? (
+                  <div className={styles.emptyState}>No completed tasks yet.</div>
+                ) : (
+                  <ul className={styles.completedList}>
+                    {completedTasks.slice(0, 3).map((task) => (
+                      <li key={task.id} className={styles.completedItem}>
+                        <span style={{ fontWeight: 500 }}>{task.name}</span>
+                        <span className={styles.completedDate}>
+                          {task.completedAt && typeof task.completedAt._seconds === 'number'
+                            ? `(${new Date(task.completedAt._seconds * 1000).toLocaleDateString()})`
+                            : '(No date)'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}
@@ -200,38 +220,38 @@ const ForYouPage = () => {
       )}
 
       {/* Bulk state change dialog */}
-      {showBulkDialog && (
-        <div className={styles.bulkDialogOverlay}>
-          <div className={styles.bulkDialog}>
-            <h3 className={styles.bulkDialogTitle}>Change State for {selectedItems.length} items</h3>
-            <select 
-              value={bulkState} 
-              onChange={e => setBulkState(e.target.value)} 
-              style={{ width: '100%', marginBottom: 16 }}
-            >
-              <option value="">Select new state</option>
-              {allStates.map(state => (
-                <option key={state} value={state}>{state}</option>
-              ))}
-            </select>
-            <div className={styles.bulkDialogActions}>
-              <button 
-                onClick={() => setShowBulkDialog(false)} 
-                className={styles.cancelButton}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmBulkChange}
-                className={styles.bulkButton}
-                disabled={!bulkState || updateStatusMutation.isPending}
-              >
-                {updateStatusMutation.isPending ? 'Updating...' : 'Confirm'}
-              </button>
-            </div>
-          </div>
+      <Modal
+        isOpen={showBulkDialog}
+        onClose={() => setShowBulkDialog(false)}
+        title={`Change State for ${selectedItems.length} items`}
+        size="sm"
+      >
+        <select 
+          value={bulkState} 
+          onChange={e => setBulkState(e.target.value)} 
+          style={{ width: '100%', marginBottom: 16 }}
+        >
+          <option value="">Select new state</option>
+          {allStates.map(state => (
+            <option key={state} value={state}>{state}</option>
+          ))}
+        </select>
+        <div className={styles.bulkDialogActions}>
+          <Button 
+            variant="outline"
+            onClick={() => setShowBulkDialog(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="default"
+            onClick={confirmBulkChange}
+            disabled={!bulkState || updateStatusMutation.isPending}
+          >
+            {updateStatusMutation.isPending ? 'Updating...' : 'Confirm'}
+          </Button>
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

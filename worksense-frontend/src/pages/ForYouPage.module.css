@@ -20,7 +20,7 @@
   display: flex;
   gap: 2.5rem;
   border-bottom: 2px solid #eee;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .tab {
@@ -33,11 +33,17 @@
   cursor: pointer;
   border-bottom: 3px solid transparent;
   transition: color 0.2s, border-bottom 0.2s;
+  position: relative;
 }
 
 .tabActive {
   color: #ac1754;
+  font-weight: 600;
   border-bottom: 3px solid #ac1754;
+}
+
+.tab:hover {
+  color: #ac1754;
 }
 
 .sections {
@@ -214,4 +220,11 @@
   margin-bottom: 1.5rem;
   margin-top: 0.1rem;
   font-weight: 400;
+}
+
+.emptyState {
+  color: #aaa;
+  font-size: 1.05rem;
+  text-align: center;
+  padding: 2rem 0;
 } 
