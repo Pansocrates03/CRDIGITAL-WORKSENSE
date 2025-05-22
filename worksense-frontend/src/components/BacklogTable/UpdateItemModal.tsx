@@ -1,7 +1,7 @@
 import React, { FC, useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import ItemModalForm, { BacklogItemFormData } from "./ItemModalForm";
-import { BacklogItemType } from "@/types/BacklogItemType";
+import BacklogItemType from "@/types/BacklogItemType";
 
 interface UpdateItemModalProps {
   projectId: string;
@@ -42,6 +42,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
   const [originalItem, setOriginalItem] = useState<BacklogItemType | null>(
     null
   );
+  const [sprints, setSprints] = useState<{ id: string; name: string }[]>([]);
 
   // Initialize form data when modal opens with an item
   useEffect(() => {
@@ -57,6 +58,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
       // Store the original item for comparison
       setOriginalItem(item);
       fetchOptionsData();
+      fetchSprints();
     } else if (!isOpen) {
       setFormData({
         name: "",
@@ -71,6 +73,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
         parentId: undefined,
       });
       setOriginalItem(null);
+      setSprints([]);
     }
   }, [isOpen, item]);
 
@@ -105,6 +108,20 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
     }
   };
 
+  const fetchSprints = async () => {
+    try {
+      const res = await apiClient.get(`/projects/${projectId}/sprints`);
+      setSprints(
+        Array.isArray(res.data)
+          ? res.data.map((s: any) => ({ id: s.id, name: s.name }))
+          : []
+      );
+    } catch (err) {
+      console.error("Failed to fetch sprints", err);
+      setSprints([]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!item) return;
@@ -116,48 +133,46 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
     const payload = {
       ...formData,
       epicId: formData.epicId || null,
-      // Ensure parentId and isSubItem are properly set
       parentId: item.parentId || formData.parentId || null,
       isSubItem: item.isSubItem || formData.isSubItem || false,
     };
 
-    console.log("Submitting update with payload:", payload);
-
     try {
-      // Debug information to see what values we're working with
-      console.log("Item data for debugging:", {
-        id: item.id,
-        parentId: item.parentId,
-        isSubItem: item.isSubItem,
-        formDataParentId: formData.parentId,
-        formDataIsSubItem: formData.isSubItem,
-      });
-
-      // Check for parentId which is the most reliable indicator of a sub-item
+      // Update item fields (except sprint)
       if (item.parentId || formData.parentId) {
         const parentId = item.parentId || formData.parentId;
-        console.log(
-          "Updating as sub-item:",
-          item.id,
-          "under parent:",
-          parentId
-        );
         await apiClient.put(
           `/projects/${projectId}/backlog/items/${parentId}/subitems/${item.id}`,
           payload
         );
+        // Debug log for subitem sprint update
+        console.log("DEBUG subitem sprint update:", {
+          projectId,
+          parentId,
+          subItemId: item.id,
+          sprintId: formData.sprint
+        });
+        if (formData.sprint !== item.sprint) {
+          await apiClient.put(
+            `/projects/${projectId}/backlog/items/${parentId}/subitems/${item.id}/sprints/${formData.sprint}`
+          );
+        }
       } else {
-        console.log("Updating as regular item:", item.id, "type:", item.type);
         await apiClient.put(
           `/projects/${projectId}/backlog/items/${item.id}?type=${item.type}`,
           payload
         );
+        // Sprint assignment for regular items/epics
+        if (formData.sprint !== item.sprint) {
+          await apiClient.put(
+            `/projects/${projectId}/backlog/items/${item.id}/sprints/${formData.sprint}`
+          );
+        }
       }
       onItemUpdated();
       onClose();
     } catch (err: any) {
       const msg = err.response?.data?.message || "Failed to update item";
-      console.error("Error updating item:", err);
       setError(msg);
       onError?.(msg);
     } finally {
@@ -185,6 +200,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
       error={error || undefined}
       users={users}
       epics={epics}
+      sprints={sprints}
       disableTypeChange
     />
   );

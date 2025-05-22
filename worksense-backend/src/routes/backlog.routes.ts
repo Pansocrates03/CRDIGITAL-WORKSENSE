@@ -610,4 +610,9 @@ router.post(
     backlogController.createSubItem
 );
 
+router.put(
+    "/items/:itemId/subitems/:subItemId/sprints/:sprintId",
+    backlogController.changeSubItemSprint
+);
+
 export default router;
