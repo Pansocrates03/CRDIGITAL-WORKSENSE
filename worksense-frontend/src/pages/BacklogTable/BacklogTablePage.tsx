@@ -278,7 +278,7 @@ const BacklogTablePage: FC = () => {
     if (error) return <div>Failed to load backlog.</div>;
 
     return (
-        <div>
+        <div className={"p-4"}>
             <BacklogHeader onAddItem={() => setIsModalOpen(true)}/>
             <div className="border-b border-border my-4"></div>
             <SearchFilter
@@ -368,7 +368,7 @@ const BacklogTablePage: FC = () => {
                     isOpen={isEditModalOpen}
                     onClose={() => setIsEditModalOpen(false)}
                     onItemUpdated={() => {
-                        handleSuccess(`the ${itemToEdit?.type} ${itemToEdit?.name} was updated successfully!`, "you should now see the updated item in the backlog.");
+                        handleSuccess(`The ${itemToEdit?.type} ${itemToEdit?.name} was updated successfully!`, "You should now see the updated item in the backlog.");
                         refetch();
                     }}
                     onError={handleError}

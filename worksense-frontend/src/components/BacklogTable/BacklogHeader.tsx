@@ -10,7 +10,7 @@ interface BacklogHeaderProps {
 const BacklogHeader: FC<BacklogHeaderProps> = ({onAddItem}) => (
     <div className="flex items-baseline justify-between w-full">
         <div>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            <h2 className="text-4xl font-bold tracking-tight text-foreground mb-4 ">
                 Product Backlog
             </h2>
             <p className="text-muted-foreground mt-1">
