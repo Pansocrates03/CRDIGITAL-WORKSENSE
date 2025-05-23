@@ -69,6 +69,9 @@ const SprintsPage: React.FC = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editingSprint, setEditingSprint] = useState<Sprint | null>(null);
 
+    // State to 
+    const [isFormValid, setIsFormValid] = useState(true);
+
     // State for delete confirmation modal
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [sprintToDelete, setSprintToDelete] = useState<string | null>(null);
@@ -84,6 +87,7 @@ const SprintsPage: React.FC = () => {
         });
         setIsEditing(false);
         setEditingSprint(null);
+        setIsFormValid(true);
     };
 
     // Function to handle modal closing and form reset
@@ -122,20 +126,14 @@ const SprintsPage: React.FC = () => {
         if (name === 'startDate' && newSprint.endDate) {
             const newStartDate = new Date(value);
             const endDate = new Date(newSprint.endDate);
-            if (newStartDate > endDate) {
-                alert("Start date cannot be after end date");
-                return;
-            }
+            setIsFormValid(newStartDate <= endDate);
         }
         
         // If changing end date, validate against start date
         if (name === 'endDate' && newSprint.startDate) {
             const startDate = new Date(newSprint.startDate);
             const newEndDate = new Date(value);
-            if (newEndDate < startDate) {
-                alert("End date cannot be before start date");
-                return;
-            }
+            setIsFormValid(newEndDate >= startDate);
         }
 
         setNewSprint(prev => ({
@@ -167,7 +165,6 @@ const SprintsPage: React.FC = () => {
         const endDate = new Date(newSprint.endDate);
         
         if (endDate < startDate) {
-            alert("End date cannot be before start date");
             return;
         }
 
@@ -447,19 +444,21 @@ const SprintsPage: React.FC = () => {
                             </div>
                         </div>
                         {/* Modal Action Buttons */}
-                        <div className="flex justify-end gap-2 mt-6">
+                        <div className="flex justify-end gap-2 mt-4">
                             <Button
-                                type="button"
-                                variant="outline"
-                                onClick={handleCloseModal}
+                                variant="secondary"
+                                onClick={() => {
+                                    setIsModalOpen(false);
+                                    resetForm();
+                                }}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
-                                variant="default"
+                                disabled={!isFormValid}
                             >
-                                {isEditing ? "Save Changes" : "Create Sprint"}
+                                {isEditing ? 'Update Sprint' : 'Create Sprint'}
                             </Button>
                         </div>
                     </form>
