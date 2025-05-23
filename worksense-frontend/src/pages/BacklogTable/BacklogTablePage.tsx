@@ -22,6 +22,7 @@ import { useSprints } from "@/hooks/useSprintData";
 
 import BacklogItemType from "@/types/BacklogItemType";
 import MemberDetailed from "@/types/MemberDetailedType";
+import { handleSuccess } from "@/utils/handleSuccessToast";
 
 const BacklogTablePage: FC = () => {
     const {id: projectId} = useParams<{ id: string }>();
@@ -216,7 +217,7 @@ const BacklogTablePage: FC = () => {
                 setShowDetailsModal(false);
             }
 
-            handleSuccess(`${itemToDelete.name} successfully deleted`);
+            handleSuccess(`${itemToDelete.name} successfully deleted`,"You should no longer see this item in the backlog.");
             refetch();
         } catch (error) {
             console.error("Error deleting item:", error);
@@ -225,10 +226,6 @@ const BacklogTablePage: FC = () => {
             setShowDeleteModal(false);
             setItemToDelete(null);
         }
-    };
-
-    const handleSuccess = (msg: string) => {
-        toast.success(msg);
     };
 
     const handleError = (msg: string) => {
@@ -271,7 +268,7 @@ const BacklogTablePage: FC = () => {
         }
 
         // Show success message
-        handleSuccess("Stories added successfully!");
+        handleSuccess("Stories added successfully!", "You should now see the stories in the backlog under the epic.");
 
         // Reload the backlog data
         refetch();
@@ -281,7 +278,7 @@ const BacklogTablePage: FC = () => {
     if (error) return <div>Failed to load backlog.</div>;
 
     return (
-        <div>
+        <div className={"p-4"}>
             <BacklogHeader onAddItem={() => setIsModalOpen(true)}/>
             <div className="border-b border-border my-4"></div>
             <SearchFilter
@@ -357,7 +354,8 @@ const BacklogTablePage: FC = () => {
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onItemCreated={() => {
-                        handleSuccess("Item created successfully!");
+                        handleSuccess("Item  created successfully!",
+                            "You should now see the item in the backlog.");
                         refetch();
                     }}
                     onError={handleError}
@@ -370,7 +368,7 @@ const BacklogTablePage: FC = () => {
                     isOpen={isEditModalOpen}
                     onClose={() => setIsEditModalOpen(false)}
                     onItemUpdated={() => {
-                        handleSuccess("Item updated successfully!");
+                        handleSuccess(`The ${itemToEdit?.type} ${itemToEdit?.name} was updated successfully!`, "You should now see the updated item in the backlog.");
                         refetch();
                     }}
                     onError={handleError}

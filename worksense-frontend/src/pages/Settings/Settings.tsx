@@ -1,7 +1,6 @@
 // components/Settings/Settings.tsx
 import React, {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
-import {Toaster} from "sonner";
 import {AccountTab} from "./tabs/AccountTab";
 import {UserManagementTab} from "./tabs/UserManagementTab";
 import {useFetchUsers} from "./hooks";
@@ -35,8 +34,6 @@ const Settings: React.FC = () => {
 
     return (
         <div className={styles.settingsContainer}>
-            <Toaster position="bottom-right"/>
-
             {/* Vertical Tab Navigation */}
             <div className={styles.tabNavigation}>
                 <div className={styles.tabGroup}>
