@@ -9,9 +9,12 @@ import '../Sprints/components/styles/SprintPage.css';
 // Import components for tabs
 import GeneralInfoView from './components/GeneralInfoView';
 import AISettingsView from './components/AISettingsView';
+import MetricsAnalyticsView from "./components/MetricsAnalyticsView";
 
 // Import the Tabs component from SprintPage.tsx
 import Tabs from '../Sprints/components/Tabs/Tabs';
+import ScrumSettingsView from "./components/ScrumSettingsView";
+import CustomizationView from "./components/CustomizationView";
 
 const ProjectSettingsPage: React.FC = () => {
   const { id: projectId } = useParams<{ id:string }>();
@@ -36,11 +39,11 @@ const ProjectSettingsPage: React.FC = () => {
         case 'generalInfo':
             return <GeneralInfoView />;
         case 'scrumSettings':
-            return <div>Scrum Settings View</div>;
+            return <ScrumSettingsView />;
         case 'customization':
-            return <div>Customization View</div>;
+            return <CustomizationView />;
         case 'analytics':
-            return <div>Analytics View</div>;
+            return <MetricsAnalyticsView/>;
         case 'aiSettings':
             return <AISettingsView />;
         case 'security':
