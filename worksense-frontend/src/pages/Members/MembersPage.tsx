@@ -4,7 +4,6 @@ import React, {useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {PlusIcon} from 'lucide-react';
 import {useQueryClient} from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 // Components
 import {Button} from '@/components/ui/button';
@@ -22,6 +21,7 @@ import {projectService} from '@/services/projectService';
 import {useDeleteMember, useMembers, useUpdateMemberRole} from '@/hooks/useMembers';
 import {useUsers} from '@/hooks/useUsers';
 import {useAuth} from '@/hooks/useAuth';
+import {handleSuccess} from "@/utils/handleSuccessToast.ts";
 
 const MembersPage: React.FC = () => {
     const {id: projectId} = useParams<{ id: string }>();
@@ -103,10 +103,6 @@ const MembersPage: React.FC = () => {
         } catch (error) {
             console.error('Failed to add members:', error);
         }
-    };
-
-    const handleSuccess = (msg: string, desc:string) => {
-        toast.success(msg, {description: desc});
     };
 
 

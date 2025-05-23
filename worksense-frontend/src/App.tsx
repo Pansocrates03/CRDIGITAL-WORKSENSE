@@ -56,15 +56,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
-          <Toaster   toastOptions={{
+          <Toaster
+            toastOptions={{
               style: {
-                  color: 'var(--accent-pink)',
-              }
-
-
-          }}
-
-
+                color: "var(--accent-pink)",
+              },
+            }}
           />
           <Routes>
             {/* Login Page - Does NOT use MainLayout */}
@@ -120,9 +117,9 @@ function App() {
               element={
                 <PrivateRoute>
                   <SprintPage />
-                  </PrivateRoute>
-                }
-              />
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/project/:id/workflow"
               element={
@@ -135,7 +132,7 @@ function App() {
               path="/project/:id/settings"
               element={
                 <PrivateRoute>
-                   <ProjectSettingsPage />
+                  <ProjectSettingsPage />
                 </PrivateRoute>
               }
             />
