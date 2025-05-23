@@ -127,7 +127,7 @@ const ForYouPage = () => {
 
   return (
     <div className={styles.forYouContainer}>
-      <h1 className={styles.pageTitle}>For You</h1>
+      <h1 className={styles.pageTitle}>For <span className={"text-[var(--accent-pink)]/80"}>You</span></h1>
       <p className={styles.pageDescription}>A personalized dashboard with your assigned items, completed tasks, and gamification features.</p>
       
       {/* Tabs */}
