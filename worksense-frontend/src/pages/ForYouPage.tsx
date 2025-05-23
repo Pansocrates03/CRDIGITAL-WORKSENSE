@@ -254,7 +254,7 @@ const ForYouPage = () => {
                         return (
                           <div key={item.id} className={styles.backlogItem}>
                             <div className={styles.backlogItemHeader}>
-                              <span className={styles.itemType}>{item.parentType ? `${item.parentType} Subitem` : 'Task'}</span>
+                              <span className={styles.itemType}>{item.parentType ? `${item.parentType} Subitem` : `${item.type}`}</span>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <span className={`${styles.itemStatus} ${styles['done']}`}>Done</span>
                                 <button
