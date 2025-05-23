@@ -248,7 +248,7 @@ const ForYouPage = () => {
                   <div className={styles.emptyState}>No completed tasks yet.</div>
                 ) : (
                   <>
-                    <div className={styles.backlogItems} style={{ maxHeight: 'none', overflow: 'visible', display: 'block' }}>
+                    <div className={styles.backlogItems} style={{ maxHeight: 'none', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '1rem' }} >
                       {(showAllCompleted ? completedTasks : completedTasks.slice(0, 3)).map((item) => {
                         const canEdit = (item as any).id && (item as any).name;
                         return (

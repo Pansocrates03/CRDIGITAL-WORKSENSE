@@ -82,7 +82,7 @@
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   border: 1px solid #eee;
-  padding: 2rem 1.5rem;
+  padding: 1rem 1.5rem;
 }
 
 .sectionTitle {
@@ -132,10 +132,14 @@
 .completedList {
   margin-top: 0.5rem;
   padding-left: 1.2rem;
+  gap: 1rem;
+  overflow-y: hidden;
+  overflow-x: auto;
+  max-height: 150px;
 }
 
 .completedItem {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem !important;
   font-size: 1rem;
 }
 
@@ -249,7 +253,8 @@
 
 .backlogItems {
   display: grid;
-  gap: 1rem;
+  gap: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 .backlogItem {
@@ -292,10 +297,7 @@
 
 .itemType {
   font-size: 0.75rem;
-  padding: 0.35rem 0.75rem;
-  background: var(--color-purple);
-  color: white;
-  border-radius: 12px;
+  color: var(--accent-pink-hover);
   text-transform: capitalize;
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -321,8 +323,9 @@
 }
 
 .itemStatus.done {
-  background: var(--color-green-light);
-  color: var(--color-green-dark);
+  background: var(--neutral-100);
+  color: var(--accent-blue-hover);
+  border: 2px solid var(--accent-blue-hover);
 }
 
 .backlogItem h4 {
@@ -348,9 +351,9 @@
   display: flex;
   gap: 1.25rem;
   font-size: 0.8rem;
-  color: var(--color-gray-dark);
+  color: var(--neutral-300);
   padding-top: 0.75rem;
-  border-top: 1px solid var(--color-gray-light);
+  border-top: 1px solid var(--neutral-300);
 }
 
 .itemMeta span {
@@ -358,8 +361,6 @@
   align-items: center;
   gap: 0.35rem;
   font-weight: 500;
+  color: var(--text-primary);
 }
 
-.itemMeta span:first-child {
-  color: var(--color-purple);
-} 
