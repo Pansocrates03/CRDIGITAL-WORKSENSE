@@ -17,6 +17,7 @@
     "express": "^4.21.2",
     "firebase": "^11.6.0",
     "firebase-admin": "^13.2.0",
+    "microsoft-cognitiveservices-speech-sdk": "^1.44.0",
     "morgan": "^1.10.0",
     "mssql": "^11.0.1",
     "swagger-jsdoc": "^6.2.8",
