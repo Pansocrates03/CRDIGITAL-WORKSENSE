@@ -127,7 +127,7 @@ const ForYouPage = () => {
 
   return (
     <div className={styles.forYouContainer}>
-      <h1 className={styles.pageTitle}>For You</h1>
+      <h1 className={styles.pageTitle}>For <span className={"text-[var(--accent-pink)]/80"}>You</span></h1>
       <p className={styles.pageDescription}>A personalized dashboard with your assigned items, completed tasks, and gamification features.</p>
       
       {/* Tabs */}
@@ -254,7 +254,7 @@ const ForYouPage = () => {
                         return (
                           <div key={item.id} className={styles.backlogItem}>
                             <div className={styles.backlogItemHeader}>
-                              <span className={styles.itemType}>{item.parentType ? `${item.parentType} Subitem` : 'Task'}</span>
+                              <span className={styles.itemType}>{item.parentType ? `${item.parentType} Subitem` : `${item.type}`}</span>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <span className={`${styles.itemStatus} ${styles['done']}`}>Done</span>
                                 <button
