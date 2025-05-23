@@ -37,7 +37,17 @@ const MembersPage: React.FC = () => {
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const [memberToDelete, setMemberToDelete] = useState<MemberDetailed | null>(null);
 
-    const availableRoles = ['product-owner', 'scrum-master', 'developer', 'viewer'];
+    interface Role {
+        id: string;
+        name: string;
+    }
+
+    const availableRoles: Role[] = [
+        { id: 'product-owner', name: 'Product Owner' },
+        { id: 'scrum-master', name: 'Scrum Master' },
+        { id: 'developer', name: 'Developer' },
+        { id: 'viewer', name: 'Viewer' }
+    ];
     const isProductOwner = members.some(member => member.userId === user?.userId && member.projectRoleId === 'product-owner');
 
     const deleteMemberMutation = useDeleteMember(projectId!);
