@@ -21,7 +21,7 @@ import {projectService} from '@/services/projectService';
 import {useDeleteMember, useMembers, useUpdateMemberRole} from '@/hooks/useMembers';
 import {useUsers} from '@/hooks/useUsers';
 import {useAuth} from '@/hooks/useAuth';
-import BacklogAlerts from "@/components/BacklogTable/BacklogAlerts.tsx";
+import {handleSuccess} from "@/utils/handleSuccessToast.ts";
 
 const MembersPage: React.FC = () => {
     const {id: projectId} = useParams<{ id: string }>();
@@ -32,8 +32,6 @@ const MembersPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAddingMembers, setIsAddingMembers] = useState(false);
     const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");
 
     // Alert states
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
@@ -55,7 +53,7 @@ const MembersPage: React.FC = () => {
         try {
             await updateMemberRoleMutation.mutateAsync({userId, role});
             setIsModalOpen(false);
-            handleSuccess('Role updated successfully');
+            handleSuccess('Role updated successfully', `Role updated for ${selectedMember?.name}`);
         } catch (error) {
             console.error('Failed to update role:', error);
         }
@@ -73,7 +71,7 @@ const MembersPage: React.FC = () => {
             await deleteMemberMutation.mutateAsync(memberToDelete.userId);
             setShowDeleteAlert(false);
             setMemberToDelete(null);
-            handleSuccess("Member deleted successfully");
+            handleSuccess("Member deleted successfully", `Member ${memberToDelete.name} deleted`);
 
         } catch (error) {
             console.error('Failed to delete member:', error);
@@ -101,29 +99,20 @@ const MembersPage: React.FC = () => {
             setIsAddingMembers(false);
             // Invalidate the members query to refresh the list
             queryClient.invalidateQueries({queryKey: ['members', projectId]});
-            handleSuccess('Members added successfully');
+            handleSuccess('Members added successfully', "collaborate with the project team!" );
         } catch (error) {
             console.error('Failed to add members:', error);
         }
-    };
-
-    const handleSuccess = (msg: string) => {
-        setSuccessMessage(msg);
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 3000);
     };
 
 
     if (isLoading) return <div>Loading members...</div>;
 
     return (
-        <div>
-            <BacklogAlerts
-                successMessage={showSuccess ? successMessage : undefined}
-            />
+        <div className={"p-4 pt-3"}>
             <div className="flex items-baseline justify-between w-full">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-foreground">Members</h2>
+                    <h2 className="text-3xl mb-4 tracking-tight text-foreground ">Members</h2>
                     <p className="text-muted-foreground mt-1">
                         Manage project members: add, update roles, or remove members from the project.
                     </p>

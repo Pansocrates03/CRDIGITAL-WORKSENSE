@@ -21,8 +21,22 @@ export interface AssignedItem {
 
 export interface CompletedTask {
   id: string;
+  type: 'epic' | 'story' | 'bug' | 'task' | 'knowledge';
   name: string;
+  status: string;
+  assigneeId: string;
+  projectId: string;
+  description?: string;
+  priority?: string;
   completedAt: {
+    _seconds: number;
+    _nanoseconds: number;
+  };
+  createdAt: {
+    _seconds: number;
+    _nanoseconds: number;
+  };
+  updatedAt: {
     _seconds: number;
     _nanoseconds: number;
   };
@@ -34,8 +48,8 @@ class ForYouService {
     return response.data;
   }
 
-  async getCompletedTasks(userId: string, projectId: string): Promise<CompletedTask[]> {
-    const response = await apiClient.get(`/for-you/completed-tasks?userId=${userId}&projectId=${projectId}`);
+  async getCompletedTasks(userId: string, projectId: string, limit?: number): Promise<CompletedTask[]> {
+    const response = await apiClient.get(`/for-you/completed-tasks?userId=${userId}&projectId=${projectId}${limit ? `&limit=${limit}` : ''}`);
     return response.data;
   }
 

@@ -11,4 +11,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  preview: {
+    port: 8080,
+    host: true,
+    allowedHosts: ["frontend-deploy-production.up.railway.app"],
+  },
 });

@@ -8,7 +8,7 @@ import MemberDetailed from '@/types/MemberDetailedType';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 import {MoreVertical} from "lucide-react";
 
-const formatRoleName = (roleId: string) => {
+const formatRoleName = (roleId: any) => {
     if (!roleId) return 'Unknown Role';
     return roleId
         .split('-')

@@ -8,7 +8,7 @@ import {createPortal} from "react-dom";
 import apiClient from "@/api/apiClient";
 import styles from "../Settings.module.css";
 import {CreateUserModal} from "../CreateUserModal";
-import BacklogAlerts from "@/components/BacklogTable/BacklogAlerts";
+import { toast } from "sonner";
 import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal";
 
 interface MenuPosition {
@@ -36,10 +36,6 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
     const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
     const [formData, setFormData] = useState<Partial<UserListItem>>({});
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");
-    const [showError, setShowError] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
     const menuButtonRefs = useRef<{ [key: number]: HTMLButtonElement | null }>(
         {}
     );
@@ -124,9 +120,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
             !formData.firstName ||
             !formData.lastName
         ) {
-            setErrorMessage("Email, first name, and last name are required");
-            setShowError(true);
-            setTimeout(() => setShowError(false), 5000);
+            toast.error("Email, first name, and last name are required");
             return;
         }
 
@@ -147,29 +141,26 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
             );
 
             if (response.status >= 200 && response.status < 300) {
-                setSuccessMessage(
-                    `User ${formData.firstName} ${formData.lastName} updated successfully`
-                );
-                setShowSuccess(true);
-                setTimeout(() => setShowSuccess(false), 3000);
+                toast.success(`User ${formData.firstName} ${formData.lastName} updated successfully`);
                 setIsEditModalOpen(false);
                 setEditingUser(null);
                 refetchUsers();
             } else {
-                setErrorMessage("Update succeeded but received an unexpected status.");
-                setShowError(true);
-                setTimeout(() => setShowError(false), 5000);
+                toast.error("Update succeeded but received an unexpected status.");
             }
         } catch (error: any) {
-            const errorMessage =
-                error.response?.data?.message || "Failed to update user";
-            setErrorMessage(errorMessage);
-            setShowError(true);
-            setTimeout(() => setShowError(false), 5000);
+            const errorMessage = error.response?.data?.message || "Failed to update user";
+            toast.error(errorMessage);
             console.error("Error updating user:", error);
         } finally {
             setIsUpdating(false);
         }
+    };
+
+    const handleModalClose = () => {
+        setIsCreateModalOpen(false);
+        // Only refetch and show success message when modal is closed
+        refetchUsers();
     };
 
     const handleCreateUser = async (userData: any) => {
@@ -177,26 +168,13 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
             const response = await apiClient.post("/users", userData);
 
             if (response.status >= 200 && response.status < 300) {
-                setSuccessMessage(
-                    `User ${userData.firstName} ${userData.lastName} created successfully`
-                );
-                setShowSuccess(true);
-                setTimeout(() => setShowSuccess(false), 3000);
-                refetchUsers();
-                setIsCreateModalOpen(false);
+                toast.success(`User ${userData.firstName} ${userData.lastName} created successfully`);
             } else {
-                setErrorMessage(
-                    "Creation succeeded but received an unexpected status."
-                );
-                setShowError(true);
-                setTimeout(() => setShowError(false), 5000);
+                toast.error("Creation succeeded but received an unexpected status.");
             }
         } catch (error: any) {
-            const errorMessage =
-                error.response?.data?.message || "Failed to create user";
-            setErrorMessage(errorMessage);
-            setShowError(true);
-            setTimeout(() => setShowError(false), 5000);
+            const errorMessage = error.response?.data?.message || "Failed to create user";
+            toast.error(errorMessage);
             console.error("Error creating user:", error);
             throw error; // Re-throw to let the modal handle the error state
         }
@@ -216,22 +194,16 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
             const response = await apiClient.delete(`/users/${userToDelete.id}`);
 
             if (response.status >= 200 && response.status < 300) {
-                setSuccessMessage(`User ${userToDelete.firstName} ${userToDelete.lastName} deleted successfully`);
-                setShowSuccess(true);
-                setTimeout(() => setShowSuccess(false), 3000);
+                toast.success(`User ${userToDelete.firstName} ${userToDelete.lastName} deleted successfully`);
                 setDeleteModalOpen(false);
                 setUserToDelete(null);
                 refetchUsers();
             } else {
-                setErrorMessage("Deletion succeeded but received an unexpected status.");
-                setShowError(true);
-                setTimeout(() => setShowError(false), 5000);
+                toast.error("Deletion succeeded but received an unexpected status.");
             }
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || "Failed to delete user";
-            setErrorMessage(errorMessage);
-            setShowError(true);
-            setTimeout(() => setShowError(false), 5000);
+            toast.error(errorMessage);
             console.error("Error deleting user:", error);
         } finally {
             setIsUpdating(false);
@@ -248,10 +220,6 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
 
     return (
         <div className={styles.userManagementContainer}>
-            <BacklogAlerts
-                successMessage={showSuccess ? successMessage : undefined}
-                errorMessage={showError ? errorMessage : undefined}
-            />
             <div className={styles.userManagementHeader}>
                 <div className={styles.headerLeft}>
                     <h2 className={styles.title}>User Management</h2>
@@ -446,7 +414,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
             {/* Create User Modal */}
             <CreateUserModal
                 isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
+                onClose={handleModalClose}
                 onSubmit={handleCreateUser}
             />
 

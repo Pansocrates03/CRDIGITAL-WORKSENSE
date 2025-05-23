@@ -2,8 +2,9 @@ import React from 'react';
 import styles from "./CreateProject.module.css";
 import {ArrowLeft, ArrowRight} from "lucide-react";
 import ProjectDetails from '@/types/ProjectType';
-import {useUser} from "@/hooks/useMembers.ts";
+import {useMembers, useUser} from "@/hooks/useMembers.ts";
 import {AvatarDisplay} from "@/components/ui/AvatarDisplay.tsx";
+import MemberDetailed from "@/types/MemberDetailedType.ts";
 
 type ProjectCardProps = {
     project: ProjectDetails;
@@ -56,6 +57,12 @@ const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick, i
         error: ownerError
     } = useUser(project.ownerId);
 
+    const {
+        data: members, // Assuming 'members' is an array of user-like objects
+        isLoading: isMembersLoading,
+        isError: isMembersError,
+    } = useMembers(project.id, {enabled: !!isFeatured}); // Conditional fetching
+
     let productOwnerName: string = "Loading...";
     let avatarComponent = null; // Initialize a variable to hold the AvatarDisplay or a placeholder
 
@@ -76,10 +83,57 @@ const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick, i
         avatarComponent = (
             <AvatarDisplay
                 user={productOwnerDetails}
-                className="h-6 w-6 rounded-full ring-2 ring-white"
+                className="h-8 w-8 rounded-full ring-2 ring-white"
             />
         );
     }
+
+    // --- Member Avatars Display Logic (for featured card) ---
+    const MAX_DISPLAY_AVATARS = 3; // Number of member avatars (excluding owner if shown separately)
+
+    const renderMemberAvatarsForFeaturedCard = () => {
+        if (isMembersLoading) {
+            return (
+                <div className={styles.memberAvatars}>
+                    {[...Array(MAX_DISPLAY_AVATARS)].map((_, index) => (
+                        <div key={`loader-avatar-${index}`}
+                             className={`${styles.avatarPlaceholder} ${styles.memberAvatar}  animate-pulse`}></div>
+                    ))}
+                </div>
+            );
+        }
+
+        const actualMembers = members?.filter(member => project.ownerId ? member.userId !== project.ownerId : true) || [];
+
+        if (isMembersError || actualMembers.length === 0) {
+            if (members && members.length === 1 && productOwnerDetails && members[0].userId === project.ownerId) {
+                return <p className="text-xs text-gray-500 mt-1">Owner is the only member.</p>;
+            }
+            return <p className="text-xs text-gray-500 mt-1">No other team members.</p>;
+        }
+
+        const displayableMembers = actualMembers.slice(0, MAX_DISPLAY_AVATARS);
+        const remainingMembersCount = actualMembers.length - displayableMembers.length;
+
+        return (
+            <div className={styles.memberAvatars}>
+                {displayableMembers.map((member: MemberDetailed, index: number) => ( // Use UserLike type
+                    <AvatarDisplay
+                        key={member.userId || `featured-member-${index}`}
+                        user={member}
+                        className={`h-8 w-8 rounded-full ring-2 ring-white`}
+
+                    />
+                ))}
+                {remainingMembersCount > 0 && (
+                    <div
+                        className={`${styles.moreMembers} `}>
+                        +{remainingMembersCount}
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     return (
         <div
@@ -102,7 +156,6 @@ const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick, i
                         {project.description}
                     </p>
 
-                    {/* --- CONDITIONAL RENDERING FOR EXTRA DETAILS --- */}
                     {isFeatured && (
                         <div className={styles.featuredDetailsSection}>
                             {project.startDate && (
@@ -118,6 +171,13 @@ const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick, i
                                     <span>End date: {formatDate(project.endDate)}</span>
                                 </div>
                             )}
+                            <div className={styles.detailItem}> {/* Using detailItem for consistent layout */}
+
+                                <div className="flex flex-col">
+                                    <span className="pt-1">Team</span>
+                                    {renderMemberAvatarsForFeaturedCard()}
+                                </div>
+                            </div>
                         </div>
                     )}
 

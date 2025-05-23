@@ -64,7 +64,7 @@ const CreateProject: React.FC = () => {
         const searchTermLower = searchTerm.toLowerCase();
         let filtered = currentProjects.filter(
             (project) =>
-                project.name.toLowerCase().includes(searchTermLower) ||
+                (project.name && project.name.toLowerCase().includes(searchTermLower)) ||
                 (project.description && project.description.toLowerCase().includes(searchTermLower)) // Check if description exists
         );
 

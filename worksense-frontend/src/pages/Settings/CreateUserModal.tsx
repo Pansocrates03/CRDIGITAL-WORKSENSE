@@ -7,6 +7,8 @@ import { copyToClipboard } from "./utils";
 import LoadingSpinner from "@/components/Loading/LoadingSpinner";
 import { FaClipboard } from "react-icons/fa";
 import styles from "./Settings.module.css";
+import {Button} from "@/components/ui/button.tsx";
+import {generateRandomPassword} from "@/utils/randomPassword.ts";
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -24,22 +26,37 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   const [copySuccess, setCopySuccess] = useState(false);
   const [createdUser, setCreatedUser] = useState<CreatedUser | null>(null);
   const [newUser, setNewUser] = useState<UserCreationForm>({
-    email: "",
+    email: "      @worksense.com",
     firstName: "",
     lastName: "",
-    password: "",
+    password: generateRandomPassword(),
     platformRole: "",
   });
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setNewUser((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    if (name === 'email') {
+      // Ensure @worksense.com is always at the end
+      let emailValue = value;
+      if (!emailValue.includes('@worksense.com')) {
+        // Remove any other @ symbols and domains, then add @worksense.com
+        emailValue = emailValue.split('@')[0] + '@worksense.com';
+      }
+      setNewUser((prev) => ({
+        ...prev,
+        [name]: emailValue,
+      }));
+    } else {
+      setNewUser((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +78,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   const dismissCreatedUser = () => {
     setCreatedUser(null);
     setNewUser({
-      email: "",
+      email: "@worksense.com",
       firstName: "",
       lastName: "",
       password: "",
@@ -82,12 +99,11 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
       <div className={styles.modalContainer}>
         <div className={styles.modalHeader}>
           <h3 className={styles.modalTitle}>Create New User</h3>
-          <button
-            className={styles.closeButton}
-            onClick={() => {
+          <Button
+              variant={"outline"}            onClick={() => {
               onClose();
               setNewUser({
-                email: "",
+                email: "@worksense.com",
                 firstName: "",
                 lastName: "",
                 password: "",
@@ -97,7 +113,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
             }}
           >
             ×
-          </button>
+          </Button>
         </div>
 
         {isLoading ? (
@@ -114,9 +130,8 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
               <h3 className={styles.credentialsTitle}>
                 User Created Successfully
               </h3>
-              <button
-                className={styles.copyButton}
-                onClick={handleCopyToClipboard}
+              <Button
+variant={"ghost"}                onClick={handleCopyToClipboard}
                 title="Copy credentials"
               >
                 <FaClipboard />
@@ -124,7 +139,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 {copySuccess && (
                   <span className={styles.copyTooltip}>Copied!</span>
                 )}
-              </button>
+              </Button>
             </div>
             <div className={styles.credentialsContent}>
               <p>
@@ -143,17 +158,6 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
               <p className={styles.credentialsNote}>
                 Please save these credentials. You will need them to log in.
               </p>
-            </div>
-            <div className={styles.modalActions}>
-              <button
-                className={styles.dismissButton}
-                onClick={() => {
-                  dismissCreatedUser();
-                  onClose();
-                }}
-              >
-                Close
-              </button>
             </div>
           </div>
         ) : (
@@ -181,16 +185,6 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
               labelText="Last Name"
               onChange={handleInputChange}
             />
-
-            <TextInput
-              inputType="password"
-              inputName="password"
-              inputValue={newUser.password}
-              isRequired={true}
-              labelText="Password"
-              onChange={handleInputChange}
-            />
-
             <SelectInput
               inputName="platformRole"
               inputValue={newUser.platformRole}

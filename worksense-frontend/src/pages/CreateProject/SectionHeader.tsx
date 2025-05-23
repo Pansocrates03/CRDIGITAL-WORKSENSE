@@ -49,12 +49,17 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
 
     useEffect(() => {
         const hour = new Date().getHours();
-        if (hour < 12) {
+
+        if (hour >= 0 && hour < 5) {
+            setGreeting("Go to sleep");
+        } else if (hour >= 5 && hour < 12) {
             setGreeting("Good morning");
-        } else if (hour < 18) {
+        } else if (hour >= 12 && hour < 18) {
             setGreeting("Good afternoon");
-        } else {
+        } else if (hour >= 18 && hour < 22) {
             setGreeting("Good evening");
+        } else {
+            setGreeting("Good night");
         }
 
         // Trigger animation after a short delay to ensure it's visible

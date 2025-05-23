@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/api/apiClient";
 import styles from "./BacklogTablePage.module.css";
 import BacklogHeader from "@/components/BacklogTable/BacklogHeader";
-import { toast } from "sonner"; // Keep this import from 'main'
+
+import { toast } from "sonner";
 import BacklogTableSection from "@/components/BacklogTable/BacklogTableSection";
 import SearchFilter from "@/components/BacklogTable/SearchFilter";
 import BacklogRow from "@/components/BacklogTable/BacklogRow";
@@ -23,7 +24,6 @@ import { useSprints } from "@/hooks/useSprintData"; // Keep this import from 'ma
 import BacklogItemType from "@/types/BacklogItemType";
 import MemberDetailed from "@/types/MemberDetailedType";
 import { handleSuccess } from "@/utils/handleSuccessToast"; // This is likely the cause of a conflict if both branches modified it.
-import BacklogAlerts from "@/components/BacklogTable/BacklogAlerts"; // Import for BacklogAlerts
 
 import { useFridaChatPosition } from "@/contexts/FridaChatPositionContext"; // Keep this import from 'geminiFrontIntento2'
 
@@ -82,7 +82,8 @@ const BacklogTablePage: FC = () => {
     });
 
     const {data: members = []} = useMembers(projectId || "");
-    const { data: sprints = [] } = useSprints(projectId || ""); // Keep this from 'main' branch
+
+    const { data: sprints = [] } = useSprints(projectId || "");
 
     const memberMap = useMemo(() => {
         const map = new Map<number, MemberDetailed>();
@@ -235,8 +236,8 @@ const BacklogTablePage: FC = () => {
                 setShowDetailsModal(false);
             }
 
-            // Combined success handling
-            handleSuccess(`${itemToDelete.name} successfully deleted`, "You should no longer see this item in the backlog.");
+
+            handleSuccess(`${itemToDelete.name} successfully deleted`,"You should no longer see this item in the backlog.");
             refetch();
         } catch (error) {
             console.error("Error deleting item:", error);
@@ -247,13 +248,9 @@ const BacklogTablePage: FC = () => {
         }
     };
 
-    // Combined success and error handlers
-    const handleSuccess = (msg: string, description?: string) => {
-        toast.success(msg, { description }); // Use toast for success
-    };
 
     const handleError = (msg: string) => {
-        toast.error(msg); // Use toast for error
+        toast.error(msg);
     };
 
     const matchesSearch = (item: BacklogItemType) =>
@@ -280,7 +277,8 @@ const BacklogTablePage: FC = () => {
                     onDelete={() => handleDelete(item)}
                     onViewDetails={() => handleViewDetails(item)}
                     enableAiSuggestions={project?.enableAiSuggestions ?? true}
-                    sprints={sprints} // Pass sprints to BacklogRow
+
+                    sprints={sprints}
                 />
             ));
 
@@ -302,12 +300,7 @@ const BacklogTablePage: FC = () => {
     if (error) return <div>Failed to load backlog.</div>;
 
     return (
-        <div className={"p-4"}> {/* Added padding from 'main' branch */}
-            <BacklogAlerts // From 'geminiFrontIntento2' branch, but ensure it's still needed if using 'sonner'
-                successMessage={showSuccess ? successMessage : undefined}
-                errorMessage={showError ? errorMessage : undefined}
-            />
-
+        <div className={"p-4"}>
             <BacklogHeader onAddItem={() => setIsModalOpen(true)}/>
             <div className="border-b border-border my-4"></div>
             <SearchFilter
@@ -353,7 +346,8 @@ const BacklogTablePage: FC = () => {
                                         onGenerateStories={handleGenerateStories}
                                         memberMap={memberMap}
                                         enableAiSuggestions={project?.enableAiSuggestions ?? true}
-                                        sprints={sprints} // Pass sprints to EpicRow
+
+                                        sprints={sprints}
                                     />
                                     {expandedEpics.includes(epic.id) &&
                                         renderRows(epicStories, true)}
@@ -383,7 +377,9 @@ const BacklogTablePage: FC = () => {
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onItemCreated={() => {
-                        handleSuccess("Item created successfully!", "You should now see the item in the backlog.");
+
+                        handleSuccess("Item  created successfully!",
+                            "You should now see the item in the backlog.");
                         refetch();
                     }}
                     onError={handleError}

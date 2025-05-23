@@ -2,11 +2,11 @@ import React, {useState} from "react";
 import {Card, CardContent, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Button} from "@/components/ui/button";
-import BacklogAlerts from "@/components/BacklogTable/BacklogAlerts.tsx";
 import {AvatarPicker} from "@/components/Account/AvatarPicker";
 import {useUserProfile} from "@/hooks/useUserProfile";
 import styles from "../Settings.module.css";
 import {Pencil} from "lucide-react";
+import {handleSuccess} from "@/utils/handleSuccessToast.ts";
 
 export const AccountTab: React.FC = () => {
     const {
@@ -18,24 +18,17 @@ export const AccountTab: React.FC = () => {
     } = useUserProfile();
     const [editing, setEditing] = useState(false);
     const [pickerOpen, setPickerOpen] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");
 
     const handleSave = async () => {
         if (profile) {
             try {
                 await save({nickName: profile.nickName, pfp: profile.avatar});
                 setEditing(false);
-                handleSuccess("Profile updated successfully");
+                handleSuccess("Profile updated successfully", `Cool changes ${profile.nickName}`);
             } catch (e) {
                 console.error(e);
             }
         }
-    };
-    const handleSuccess = (msg: string) => {
-        setSuccessMessage(msg);
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 3000);
     };
 
 
@@ -49,10 +42,6 @@ export const AccountTab: React.FC = () => {
 
     return (
         <div className={styles.accountContainer}>
-            <BacklogAlerts
-                successMessage={showSuccess ? successMessage : undefined}
-            />
-
             <Card className={styles.accountCard}>
                 <CardHeader className="flex items-center justify-between">
                     <CardTitle>My Account</CardTitle>

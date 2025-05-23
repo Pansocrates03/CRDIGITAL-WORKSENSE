@@ -35,6 +35,7 @@ interface ItemModalFormProps {
     error?: string;
     users: User[];
     epics: Epic[];
+    sprints: any[];
     disableTypeChange?: boolean;
 }
 
@@ -49,6 +50,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                                                          error,
                                                          users,
                                                          epics,
+                                                         sprints,
                                                          disableTypeChange = false,
                                                      }) => {
     const handleChange = (
@@ -100,11 +102,8 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             {value: "XL", label: "XL"},
         ],
         sprint: [
-            {value: "", label: "Select Sprint (Optional)"},
-            {value: "Sprint 1", label: "Sprint 1"},
-            {value: "Sprint 2", label: "Sprint 2"},
-            {value: "Sprint 3", label: "Sprint 3"},
-            {value: "Sprint 4", label: "Sprint 4"},
+            { value: "", label: "Select Sprint (Optional)" },
+            ...sprints.map((s) => ({ value: s.id, label: s.name })),
         ],
         assignee: [
             {value: "", label: "Select Assignee (Optional)"},
@@ -123,7 +122,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                 <div className={styles.modalHeader}>
                     <h2>
-                        {mode === "create" ? "Create New Item" : `Update ${formData.type}`}
+                        {mode === "create" ? `Create New ${formData.type.charAt(0).toUpperCase() + formData.type.slice(1)}` : `Update ${formData.type}`}
                     </h2>
                     <Button
                         variant={"outline"}
@@ -187,7 +186,8 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                         disabled={loading}
                     />
 
-                    <SelectField
+                    { formData.type !== "epic" && (
+                        <SelectField
                         id="size"
                         name="size"
                         value={formData.size || ""}
@@ -196,9 +196,9 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                         label="Size"
                         styleClass="size"
                         disabled={loading}
-                    />
+                    />)}
 
-                    {formData.type && (
+                    {formData.type !== "epic" && (
                         <SelectField
                             id="sprint"
                             name="sprint"
@@ -211,7 +211,8 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                         />
                     )}
 
-                    <SelectField
+                    {formData.type != 'epic' &&
+                        (<SelectField
                         id="assigneeId"
                         name="assigneeId"
                         value={formData.assigneeId?.toString() || ""}
@@ -220,7 +221,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                         label="Assignee"
                         styleClass="assignee"
                         disabled={loading}
-                    />
+                    />)}
 
                     {formData.type === "story" && (
                         <SelectField

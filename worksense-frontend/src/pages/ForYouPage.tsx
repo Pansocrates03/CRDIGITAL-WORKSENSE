@@ -26,6 +26,7 @@ const ForYouPage = () => {
   const [bulkState, setBulkState] = useState('');
   const [activeTab, setActiveTab] = useState<'general' | 'gamification'>('general');
   const [showAllAssigned, setShowAllAssigned] = useState(false);
+  const [showAllCompleted, setShowAllCompleted] = useState(false);
   const [editItem, setEditItem] = useState<AssignedItem | null>(null);
 
   // Fetch assigned items
@@ -40,15 +41,28 @@ const ForYouPage = () => {
   });
 
   // Fetch completed tasks
+  const userIdString = user?.userId ? user.userId.toString() : '';
+  if (!userIdString) {
+    console.warn('ForYouPage: userId is missing, completed tasks query will not run.');
+  }
   const { 
     data: completedTasks = [], 
     isLoading: isLoadingCompleted,
     error: completedError 
   } = useQuery<CompletedTask[]>({
-    queryKey: ['completedTasks', projectId, user?.userId],
-    queryFn: () => forYouService.getCompletedTasks(user?.userId?.toString() || '', projectId || ''),
-    enabled: !!projectId && !!user?.userId
+    queryKey: ['completedTasks', projectId, userIdString, showAllCompleted],
+    queryFn: () => forYouService.getCompletedTasks(
+      userIdString, 
+      projectId || '',
+      showAllCompleted ? 100 : 3
+    ),
+    enabled: !!projectId && !!userIdString
   });
+
+  console.log('Completed Tasks:', completedTasks);
+  console.log('Number of completed tasks:', completedTasks.length);
+  console.log('Show all completed:', showAllCompleted);
+  console.log('Should show see more:', completedTasks.length > 3 && !showAllCompleted);
 
   // Update item status mutation
   const updateStatusMutation = useMutation({
@@ -70,9 +84,7 @@ const ForYouPage = () => {
     );
   };
 
-  const handleBulkChange = () => {
-    setShowBulkDialog(true);
-  };
+
 
   const confirmBulkChange = async () => {
     if (!bulkState) return;
@@ -115,7 +127,7 @@ const ForYouPage = () => {
 
   return (
     <div className={styles.forYouContainer}>
-      <h1 className={styles.pageTitle}>For You</h1>
+      <h1 className={styles.pageTitle}>For <span className={"text-[var(--accent-pink)]/80"}>You</span></h1>
       <p className={styles.pageDescription}>A personalized dashboard with your assigned items, completed tasks, and gamification features.</p>
       
       {/* Tabs */}
@@ -148,7 +160,7 @@ const ForYouPage = () => {
                 ) : (
                   <>
                     <div className={styles.backlogItems}>
-                      {assignedItems.slice(0, 3).map((item) => (
+                      {(showAllAssigned ? assignedItems : assignedItems.slice(0, 3)).map((item) => (
                         <div key={item.id} className={styles.backlogItem}>
                           <div className={styles.backlogItemHeader}>
                             <span className={styles.itemType}>{item.type}</span>
@@ -171,7 +183,7 @@ const ForYouPage = () => {
                         </div>
                       ))}
                     </div>
-                    {assignedItems.length > 3 && (
+                    {assignedItems.length > 3 && !showAllAssigned && (
                       <div style={{ marginTop: 12, textAlign: 'center' }}>
                         <Button variant="outline" onClick={() => setShowAllAssigned(true)}>
                           See more
@@ -179,16 +191,6 @@ const ForYouPage = () => {
                       </div>
                     )}
                   </>
-                )}
-                {selectedItems.length > 0 && (
-                  <div style={{ marginTop: 12 }}>
-                    <Button
-                      variant="default"
-                      onClick={handleBulkChange}
-                    >
-                      Change State ({selectedItems.length})
-                    </Button>
-                  </div>
                 )}
               </CardContent>
             </Card>
@@ -245,40 +247,81 @@ const ForYouPage = () => {
                 {completedTasks.length === 0 ? (
                   <div className={styles.emptyState}>No completed tasks yet.</div>
                 ) : (
-                  <div className={styles.backlogItems}>
-                    {completedTasks.slice(0, 3).map((task) => {
-                      const canEdit = (task as any).id && (task as any).name;
-                      return (
-                        <div key={task.id} className={styles.backlogItem}>
-                          <div className={styles.backlogItemHeader}>
-                            <span className={styles.itemType}>Task</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              <span className={`${styles.itemStatus} ${styles['done']}`}>Done</span>
-                              <button
-                                style={{ background: 'none', border: 'none', cursor: canEdit ? 'pointer' : 'not-allowed' }}
-                                onClick={() => canEdit && setEditItem(task as any)}
-                                aria-label="Edit task"
-                                disabled={!canEdit}
-                              >
-                                <MoreVertical size={18} />
-                              </button>
+                  <>
+                    <div className={styles.backlogItems} style={{ maxHeight: 'none', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '1rem' }} >
+                      {(showAllCompleted ? completedTasks : completedTasks.slice(0, 3)).map((item) => {
+                        const canEdit = (item as any).id && (item as any).name;
+                        return (
+                          <div key={item.id} className={styles.backlogItem}>
+                            <div className={styles.backlogItemHeader}>
+                              <span className={styles.itemType}>{item.parentType ? `${item.parentType} Subitem` : `${item.type}`}</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span className={`${styles.itemStatus} ${styles['done']}`}>Done</span>
+                                <button
+                                  style={{ background: 'none', border: 'none', cursor: canEdit ? 'pointer' : 'not-allowed' }}
+                                  onClick={() => canEdit && setEditItem(item as any)}
+                                  aria-label="Edit task"
+                                  disabled={!canEdit}
+                                >
+                                  <MoreVertical size={18} />
+                                </button>
+                              </div>
+                            </div>
+                            <h4>{item.name}</h4>
+                            {item.description && <p>{item.description}</p>}
+                            <div className={styles.itemMeta}>
+                              <span>Priority: {item.priority || '—'}</span>
                             </div>
                           </div>
-                          <h4>{task.name}</h4>
-                          <div className={styles.itemMeta}>
-                            <span>
-                              {task.completedAt && typeof task.completedAt._seconds === 'number'
-                                ? `Completed: ${new Date(task.completedAt._seconds * 1000).toLocaleDateString()}`
-                                : 'Completed: (No date)'}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                    {completedTasks.length > 3 && !showAllCompleted && (
+                      <div style={{ marginTop: 12, textAlign: 'center' }}>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {setShowAllCompleted(true);}}>
+                          See more
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
+            <Modal
+              isOpen={showAllCompleted}
+              onClose={() => setShowAllCompleted(false)}
+              title="All Completed Items"
+              size="l"
+            >
+              <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                <div className={styles.backlogItems} style={{ maxHeight: 'none', overflow: 'visible', display: 'block' }}>
+                  {completedTasks.map((item) => (
+                    <div key={item.id} className={styles.backlogItem}>
+                      <div className={styles.backlogItemHeader}>
+                        <span className={styles.itemType}>{item.type}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span className={`${styles.itemStatus} ${styles['done']}`}>Done</span>
+                          <button
+                            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                            onClick={() => setEditItem(item)}
+                            aria-label="Edit item"
+                          >
+                            <MoreVertical size={18} />
+                          </button>
+                        </div>
+                      </div>
+                      <h4>{item.name}</h4>
+                      {item.description && <p>{item.description}</p>}
+                      <div className={styles.itemMeta}>
+                        <span>Priority: {item.priority || '—'}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Modal>
           </div>
         </div>
       )}
@@ -287,40 +330,6 @@ const ForYouPage = () => {
           <p>Gamification features coming soon!</p>
         </div>
       )}
-
-      {/* Bulk state change dialog */}
-      <Modal
-        isOpen={showBulkDialog}
-        onClose={() => setShowBulkDialog(false)}
-        title={`Change State for ${selectedItems.length} items`}
-        size="sm"
-      >
-        <select 
-          value={bulkState} 
-          onChange={e => setBulkState(e.target.value)} 
-          style={{ width: '100%', marginBottom: 16 }}
-        >
-          <option value="">Select new state</option>
-          {allStates.map(state => (
-            <option key={state} value={state}>{state}</option>
-          ))}
-        </select>
-        <div className={styles.bulkDialogActions}>
-          <Button 
-            variant="outline"
-            onClick={() => setShowBulkDialog(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="default"
-            onClick={confirmBulkChange}
-            disabled={!bulkState || updateStatusMutation.isPending}
-          >
-            {updateStatusMutation.isPending ? 'Updating...' : 'Confirm'}
-          </Button>
-        </div>
-      </Modal>
       <UpdateItemModal
         projectId={projectId || ''}
         isOpen={!!editItem}

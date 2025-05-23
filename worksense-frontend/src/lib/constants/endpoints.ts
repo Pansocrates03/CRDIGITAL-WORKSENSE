@@ -1,5 +1,5 @@
-const SERVER = "http://localhost:5050";
-export const API_URL = SERVER + "/api/v1";
+const SERVER = import.meta.env.VITE_API_URL || "http://localhost:5050";
+export const API_URL = SERVER.endsWith("/api/v1") ? SERVER : SERVER + "/api/v1";
 
 export const endpoints = {
     getProjectDetails:  (projectId:string) =>               `${API_URL}/projects/${projectId}`,

@@ -34,6 +34,7 @@ interface EpicRowProps {
     onViewDetails?: (epic: BacklogItemType) => void;
     memberMap: Map<number, MemberDetailed>;
     enableAiSuggestions: boolean;
+    sprints: { id: string; name: string }[];
 }
 
 export const EpicRow: FC<EpicRowProps> = ({
@@ -47,6 +48,7 @@ export const EpicRow: FC<EpicRowProps> = ({
                                               onViewDetails,
                                               memberMap,
                                               enableAiSuggestions,
+                                              sprints,
                                           }) => {
     const [isHovered, setIsHovered] = useState(false);
 
@@ -125,7 +127,9 @@ export const EpicRow: FC<EpicRowProps> = ({
             <td>
                 {epic.status ? <StatusBadge type="status" value={epic.status}/> : "-"}
             </td>
-            <td>-</td>
+            <td>
+                {epic.sprint ? (sprints.find(s => s.id === epic.sprint)?.name || "-") : "-"}
+            </td>
             <td>
                 {assigneeId ? (
                     <div className="flex items-center gap-2">

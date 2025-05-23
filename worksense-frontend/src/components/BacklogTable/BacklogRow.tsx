@@ -23,6 +23,7 @@ interface BacklogRowProps {
   onDelete: () => void;
   onViewDetails: () => void;
   enableAiSuggestions: boolean;
+  sprints: { id: string; name: string }[];
 }
 
 const BacklogRow: React.FC<BacklogRowProps> = ({
@@ -33,6 +34,7 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
   onDelete,
   onViewDetails,
   enableAiSuggestions,
+  sprints,
 }) => {
   let extraInfo = "-";
   if (item.type === "story") {
@@ -109,7 +111,7 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
         {item.status ? <StatusBadge type="status" value={item.status} /> : "-"}
       </td>
       <td>
-        {item.type !== "epic" && item.sprint ? item.sprint : "-"}
+        {item.sprint ? (sprints.find(s => s.id === item.sprint)?.name || "-") : "-"}
       </td>
       <td>
         {memberInfo ? (
