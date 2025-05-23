@@ -74,6 +74,8 @@ export const handleGeminiPrompt = async (
       backlogItems,
       projectRoles,
       availablePermissions,
+      sprints,
+      tasks,
     } = cachedData;
 
     // Extract AI configuration from project data
@@ -138,6 +140,26 @@ export const handleGeminiPrompt = async (
       (item) => item.type === "knowledge"
     );
     const epics = backlogItems.filter((item) => item.type === "epic");
+
+    // Process sprints
+    const activeSprint = sprints.find((s) => s.status === "Active");
+    const plannedSprints = sprints.filter((s) => s.status === "Planned");
+    const completedSprints = sprints.filter((s) => s.status === "Completed");
+
+    // Group tasks by status
+    const tasksByStatus = {
+      todo: tasks.filter((t) => t.status === "todo"),
+      inProgress: tasks.filter(
+        (t) => t.status === "in-progress" || t.status === "inProgress"
+      ),
+      review: tasks.filter((t) => t.status === "review"),
+      done: tasks.filter((t) => t.status === "done"),
+    };
+
+    // If there's an active sprint, get its tasks
+    const activeSprintTasks = activeSprint
+      ? tasks.filter((t) => t.sprintId === activeSprint.id)
+      : [];
 
     // Create role permission descriptions
     const rolePermissionDescriptions: Record<string, string[]> = {};
@@ -294,6 +316,90 @@ export const handleGeminiPrompt = async (
         - ${techTasks.length} Tech Tasks
         - ${knowledgeItems.length} Knowledge Items
 
+        ### Sprint Information
+        ${
+          activeSprint
+            ? `
+        **Active Sprint: ${activeSprint.name}**
+        - Goal: ${activeSprint.goal || "No goal set"}
+        - Period: ${
+          activeSprint.startDate?.toDate?.()?.toLocaleDateString() || "N/A"
+        } to ${activeSprint.endDate?.toDate?.()?.toLocaleDateString() || "N/A"}
+        - Tasks: ${activeSprintTasks.length} total
+          - To Do: ${
+            activeSprintTasks.filter((t) => t.status === "todo").length
+          }
+          - In Progress: ${
+            activeSprintTasks.filter(
+              (t) => t.status === "in-progress" || t.status === "inProgress"
+            ).length
+          }
+          - In Review: ${
+            activeSprintTasks.filter((t) => t.status === "review").length
+          }
+          - Done: ${activeSprintTasks.filter((t) => t.status === "done").length}
+        `
+            : "No active sprint currently."
+        }
+        
+        ${
+          plannedSprints.length > 0
+            ? `\n**Planned Sprints:** ${plannedSprints
+                .map((s) => s.name)
+                .join(", ")}`
+            : ""
+        }
+        ${
+          completedSprints.length > 0
+            ? `\n**Recent Completed Sprints:** ${completedSprints
+                .slice(0, 3)
+                .map((s) => s.name)
+                .join(", ")}`
+            : ""
+        }
+
+        ### Current Tasks Overview
+        - Total tasks in progress: ${tasks.length}
+        - To Do: ${tasksByStatus.todo.length}
+        - In Progress: ${tasksByStatus.inProgress.length}
+        - In Review: ${tasksByStatus.review.length}
+        - Done: ${tasksByStatus.done.length}
+
+        ${
+          activeSprint && activeSprintTasks.length > 0
+            ? `
+        ### Active Sprint Tasks
+        ${activeSprintTasks
+          .slice(0, 10)
+          .map((t) => {
+            const assigneeNames =
+              t.assignees
+                ?.map(
+                  (a: any) =>
+                    enrichedMembers.find((m) => m.userId === a.id)?.fullName ||
+                    a.name ||
+                    `User ${a.id}`
+                )
+                .join(", ") || "Unassigned";
+
+            return `- [${t.status}] ${t.title} (${t.type})${
+              assigneeNames !== "Unassigned"
+                ? ` - Assigned to: ${assigneeNames}`
+                : ""
+            }`;
+          })
+          .join("\n")}
+        ${
+          activeSprintTasks.length > 10
+            ? `\n... and ${
+                activeSprintTasks.length - 10
+              } more tasks in the sprint`
+            : ""
+        }
+        `
+            : ""
+        }
+
         ${
           epics.length > 0
             ? `### Epics\n${epics
@@ -396,6 +502,12 @@ export const handleGeminiPrompt = async (
             ? "Proporciona una respuesta equilibrada con información relevante."
             : "Provide a balanced response with relevant information."
         }
+        When discussing team members, acknowledge their roles and permissions.
+        When discussing backlog items, mention who they're assigned to if applicable.
+        When discussing sprints, provide information about sprint progress, dates, and task distribution.
+        When discussing tasks, include their status, assignees, and which sprint they belong to.
+        If the user asks about sprint progress, workload, or task status, provide detailed information based on the sprint and task data.
+        If the user asks about team responsibilities, who is working on what, or who has permission to do something, provide that information based on the roles and permissions.
         ${
           aiConfig.enableAiSuggestions
             ? preferredLanguage === "es"
@@ -492,7 +604,7 @@ export const handleGeminiPrompt = async (
           cacheHit: cachedData.lastUpdated > Date.now() - 300000, // Checar si el caché fue usado
         });
       } else {
-        // Respeusta de emergencia 
+        // Respeusta de emergencia
         console.warn("⚠️ No se recibió respuesta de Gemini");
 
         const fallbackReply =
