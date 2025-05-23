@@ -109,10 +109,10 @@ const MembersPage: React.FC = () => {
     if (isLoading) return <div>Loading members...</div>;
 
     return (
-        <div>
+        <div className={"p-4 pt-3"}>
             <div className="flex items-baseline justify-between w-full">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-foreground">Members</h2>
+                    <h2 className="text-3xl mb-4 tracking-tight text-foreground ">Members</h2>
                     <p className="text-muted-foreground mt-1">
                         Manage project members: add, update roles, or remove members from the project.
                     </p>
