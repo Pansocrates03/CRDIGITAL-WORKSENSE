@@ -1,12 +1,23 @@
 .floatingWrapper {
   position: fixed;
   bottom: 24px;
-  right: 24px;
   z-index: 1000;
 }
 
+.right {
+  right: 24px;
+}
+
+.left {
+  left: 24px;
+}
+
+.floatingWrapper.left {
+  display: none;
+}
+
 .floatingButton {
-  background-color: var(--color-purple);
+  background-color: var(--color-accent);
   color: white;
   border: none;
   border-radius: 50%;
@@ -21,7 +32,7 @@
 }
 
 .floatingButton:hover {
-  background-color: var(--color-purple-dark);
+  background-color: var(--color-accent-light);
 }
 
 .chatContainer {

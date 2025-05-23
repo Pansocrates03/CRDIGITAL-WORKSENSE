@@ -1,8 +1,9 @@
 // src/components/FridaChat/FridaChat.tsx
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import styles from "./FridaChat.module.css";
-import { MessageCircle, X, Mic, Check, Send } from "lucide-react";
+import { Sparkles, X, Mic, Check, Send } from "lucide-react";
 import apiClient from "@/api/apiClient";
+import { useFridaChatPosition } from "@/contexts/FridaChatPositionContext";
 
 // Azure
 import * as SpeechSDK from "microsoft-cognitiveservices-speech-sdk";
@@ -14,6 +15,7 @@ interface Message {
 
 interface FridaChatProps {
   projectId?: string;
+  position?: "right" | "left";
 }
 
 const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
@@ -25,25 +27,43 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recognizer, setRecognizer] =
     useState<SpeechSDK.SpeechRecognizer | null>(null);
+  const [isManualStop, setIsManualStop] = useState(false);
+
+  // Moverlo de lugar
+  const { position, isHidden } = useFridaChatPosition();
+
+  // Don't render anything if there's no projectId or if it's hidden
+  if (!projectId || isHidden) {
+    return null;
+  }
 
   const handleCancelVoice = () => {
     setInput(""); // clear input
     setIsRecording(false); // stop showing confirm/cancel
+    setIsManualStop(true); // Mark as manual stop
     if (recognizer) {
-      recognizer.close(); // stop recognition
-      setRecognizer(null);
+      recognizer.stopContinuousRecognitionAsync(() => {
+        recognizer.close();
+        setRecognizer(null);
+        setIsManualStop(false);
+      });
     }
   };
 
   const handleVoiceConfirm = () => {
     setIsRecording(false);
+    setIsManualStop(true); // Mark as manual stop
     if (recognizer) {
-      recognizer.close(); // optional: cut early if still listening
-      setRecognizer(null);
+      recognizer.stopContinuousRecognitionAsync(() => {
+        recognizer.close();
+        setRecognizer(null);
+        setIsManualStop(false);
+      });
     }
   };
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null); // Scroll down automatico
 
   useLayoutEffect(() => {
     if (textareaRef.current) {
@@ -85,13 +105,24 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
     }
   }, [messages, projectId]);
 
+  // Scroll down automatico
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isOpen]); // Added isOpen to dependencies
+
   // Para azure - Modified to get token from backend
   const handleVoiceInputAzure = async () => {
     // If already recording, stop
     if (isRecording && recognizer) {
-      recognizer.stopContinuousRecognitionAsync();
-      setIsRecording(false);
-      setRecognizer(null);
+      setIsManualStop(true);
+      recognizer.stopContinuousRecognitionAsync(() => {
+        recognizer.close();
+        setRecognizer(null);
+        setIsRecording(false);
+        setIsManualStop(false);
+      });
       return;
     }
 
@@ -106,34 +137,55 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
       }
 
       // Create speech config with token from backend
-      const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
+      const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(
+        token,
+        region
+      );
       speechConfig.speechRecognitionLanguage = language || "en-US";
-      
+
       const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
 
       const newRecognizer = new SpeechSDK.SpeechRecognizer(
         speechConfig,
         audioConfig
       );
-      
+
       setRecognizer(newRecognizer);
       setIsRecording(true);
+      setIsManualStop(false);
 
       newRecognizer.recognizeOnceAsync(
         (result) => {
+          // Check if this was a manual stop
+          if (isManualStop) {
+            return; // Don't process if manually stopped
+          }
+
           if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
             setInput(result.text);
-          } else {
-            alert("Speech not recognized. Please try again.");
+          } else if (result.reason === SpeechSDK.ResultReason.NoMatch) {
+            // Only show alert if it wasn't manually stopped
+            if (!isManualStop) {
+              alert("Speech not recognized. Please try again.");
+            }
           }
+
+          // Clean up
           newRecognizer.close();
           setRecognizer(null);
           setIsRecording(false);
         },
         (error) => {
-          console.error("Speech recognition error:", error);
-          alert("Error recognizing speech. Please try again.");
-          newRecognizer.close();
+          // Only show error if it wasn't manually stopped
+          if (!isManualStop) {
+            console.error("Speech recognition error:", error);
+            alert("Error recognizing speech. Please try again.");
+          }
+
+          // Clean up
+          if (newRecognizer) {
+            newRecognizer.close();
+          }
           setRecognizer(null);
           setIsRecording(false);
         }
@@ -182,7 +234,11 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
   };
 
   return (
-    <div className={styles.floatingWrapper}>
+    <div
+      className={`${styles.floatingWrapper} ${
+        position === "left" ? styles.left : styles.right
+      }`}
+    >
       {isOpen ? (
         <div className={styles.chatContainer}>
           <div className={styles.chatHeader}>
@@ -213,6 +269,7 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
                 Typing...
               </div>
             )}
+            <div ref={bottomRef} />
           </div>
 
           <div className={styles.chatInputArea}>
@@ -282,7 +339,7 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
           onClick={() => setIsOpen(true)}
           aria-label="Open Frida Chat"
         >
-          <MessageCircle size={20} />
+          <Sparkles size={20} />
         </button>
       )}
     </div>

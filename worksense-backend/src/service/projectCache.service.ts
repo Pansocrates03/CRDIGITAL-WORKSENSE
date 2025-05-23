@@ -11,6 +11,8 @@ interface CachedProjectData {
   backlogItems: BacklogItemType[];
   projectRoles: Map<string, ProjectRole>;
   availablePermissions: Map<string, AvailablePermission>;
+  sprints: any[];
+  tasks: any[];
   lastUpdated: number;
   etag?: string;
 }
@@ -23,29 +25,36 @@ class ProjectCacheService {
   /**
    * Get project data with caching and change detection
    */
-  async getProjectData(projectId: string, forceRefresh: boolean = false): Promise<CachedProjectData | null> {
+  async getProjectData(
+    projectId: string,
+    forceRefresh: boolean = false
+  ): Promise<CachedProjectData | null> {
     const now = Date.now();
     const cached = this.cache.get(projectId);
-    
+
     // Check if we have valid cached data
     if (cached && !forceRefresh) {
       const age = now - cached.lastUpdated;
-      
+
       // If cache is fresh, return immediately
       if (age < this.CACHE_TTL) {
-        console.log(`✅ Returning fresh cached data for project ${projectId} (age: ${age}ms)`);
+        console.log(
+          `✅ Returning fresh cached data for project ${projectId} (age: ${age}ms)`
+        );
         return cached;
       }
-      
+
       // If cache is stale but within revalidation window, return stale data
       // and trigger background refresh
       if (age < this.STALE_WHILE_REVALIDATE) {
-        console.log(`🔄 Returning stale data and refreshing in background for project ${projectId}`);
+        console.log(
+          `🔄 Returning stale data and refreshing in background for project ${projectId}`
+        );
         this.refreshProjectDataInBackground(projectId);
         return cached;
       }
     }
-    
+
     // Fetch fresh data
     console.log(`🔍 Fetching fresh data for project ${projectId}`);
     return await this.fetchAndCacheProjectData(projectId);
@@ -56,11 +65,13 @@ class ProjectCacheService {
    */
   subscribeToProjectUpdates(projectId: string): () => void {
     console.log(`👂 Subscribing to updates for project ${projectId}`);
-    
+
     const unsubscribers: (() => void)[] = [];
-    
+
     // Subscribe to project document changes
-    const projectUnsubscribe = db.collection("projects").doc(projectId)
+    const projectUnsubscribe = db
+      .collection("projects")
+      .doc(projectId)
       .onSnapshot((snapshot) => {
         if (snapshot.exists) {
           console.log(`📢 Project ${projectId} updated, invalidating cache`);
@@ -68,26 +79,44 @@ class ProjectCacheService {
         }
       });
     unsubscribers.push(projectUnsubscribe);
-    
+
     // Subscribe to backlog changes
-    const backlogUnsubscribe = db.collection(`projects/${projectId}/backlog`)
+    const backlogUnsubscribe = db
+      .collection(`projects/${projectId}/backlog`)
       .onSnapshot(() => {
-        console.log(`📢 Backlog for project ${projectId} updated, invalidating cache`);
+        console.log(
+          `📢 Backlog for project ${projectId} updated, invalidating cache`
+        );
         this.invalidateCache(projectId);
       });
     unsubscribers.push(backlogUnsubscribe);
-    
-    // Subscribe to members changes
-    const membersUnsubscribe = db.collection(`projects/${projectId}/members`)
+
+    // Subscribe to sprints changes
+    const sprintsUnsubscribe = db
+      .collection(`projects/${projectId}/sprints`)
       .onSnapshot(() => {
-        console.log(`📢 Members for project ${projectId} updated, invalidating cache`);
+        console.log(
+          `📢 Sprints for project ${projectId} updated, invalidating cache`
+        );
         this.invalidateCache(projectId);
       });
-    unsubscribers.push(membersUnsubscribe);
-    
+    unsubscribers.push(sprintsUnsubscribe);
+
+    // Subscribe to tasks changes (tasks are top-level but filtered by projectId)
+    const tasksUnsubscribe = db
+      .collection("tasks")
+      .where("projectId", "==", projectId)
+      .onSnapshot(() => {
+        console.log(
+          `📢 Tasks for project ${projectId} updated, invalidating cache`
+        );
+        this.invalidateCache(projectId);
+      });
+    unsubscribers.push(tasksUnsubscribe);
+
     // Return unsubscribe function
     return () => {
-      unsubscribers.forEach(unsub => unsub());
+      unsubscribers.forEach((unsub) => unsub());
     };
   }
 
@@ -105,18 +134,25 @@ class ProjectCacheService {
   /**
    * Refresh project data in the background
    */
-  private async refreshProjectDataInBackground(projectId: string): Promise<void> {
+  private async refreshProjectDataInBackground(
+    projectId: string
+  ): Promise<void> {
     try {
       await this.fetchAndCacheProjectData(projectId);
     } catch (error) {
-      console.error(`❌ Error refreshing project ${projectId} in background:`, error);
+      console.error(
+        `❌ Error refreshing project ${projectId} in background:`,
+        error
+      );
     }
   }
 
   /**
    * Fetch and cache all project data
    */
-  private async fetchAndCacheProjectData(projectId: string): Promise<CachedProjectData | null> {
+  private async fetchAndCacheProjectData(
+    projectId: string
+  ): Promise<CachedProjectData | null> {
     try {
       // Start all fetches in parallel
       const [
@@ -124,13 +160,17 @@ class ProjectCacheService {
         backlogSnap,
         membersSnap,
         rolesSnap,
-        permissionsSnap
+        permissionsSnap,
+        sprintsSnap,
+        tasksSnap,
       ] = await Promise.all([
         db.collection("projects").doc(projectId).get(),
         db.collection(`projects/${projectId}/backlog`).get(),
         db.collection(`projects/${projectId}/members`).get(),
         db.collection("projectRoles").get(),
-        db.collection("availablePermissions").get()
+        db.collection("availablePermissions").get(),
+        db.collection(`projects/${projectId}/sprints`).get(),
+        db.collection("tasks").where("projectId", "==", projectId).get(),
       ]);
 
       if (!projectSnap.exists) {
@@ -138,7 +178,7 @@ class ProjectCacheService {
       }
 
       const projectData = projectSnap.data() || {};
-      
+
       // Process permissions
       const availablePermissions: Map<string, AvailablePermission> = new Map();
       permissionsSnap.forEach((doc) => {
@@ -151,7 +191,7 @@ class ProjectCacheService {
       rolesSnap.forEach((doc) => {
         const role = {
           id: doc.id,
-          ...(doc.data() as Omit<ProjectRole, "id">)
+          ...(doc.data() as Omit<ProjectRole, "id">),
         };
         projectRoles.set(doc.id, role);
       });
@@ -164,7 +204,7 @@ class ProjectCacheService {
         members.push({
           userId: memberId,
           projectRoleId: memberData.projectRoleId || "",
-          joinedAt: memberData.joinedAt
+          joinedAt: memberData.joinedAt,
         });
       });
 
@@ -203,8 +243,32 @@ class ProjectCacheService {
       // Wait for all epic subitems to be fetched
       await Promise.all(epicPromises);
 
+      // Process sprints
+      const sprints: any[] = [];
+      sprintsSnap.docs.forEach((doc) => {
+        sprints.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      // Process tasks
+      const tasks: any[] = [];
+      tasksSnap.docs.forEach((doc) => {
+        tasks.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
       // Generate etag based on data
-      const etag = this.generateEtag(projectData, members, backlogItems);
+      const etag = this.generateEtag(
+        projectData,
+        members,
+        backlogItems,
+        sprints,
+        tasks
+      );
 
       const cachedData: CachedProjectData = {
         projectData,
@@ -212,8 +276,10 @@ class ProjectCacheService {
         backlogItems,
         projectRoles,
         availablePermissions,
+        sprints,
+        tasks,
         lastUpdated: Date.now(),
-        etag
+        etag,
       };
 
       // Cache the data
@@ -230,22 +296,34 @@ class ProjectCacheService {
   /**
    * Generate an etag for change detection
    */
-  private generateEtag(projectData: any, members: any[], backlogItems: any[]): string {
+  private generateEtag(
+    projectData: any,
+    members: any[],
+    backlogItems: any[],
+    sprints: any[],
+    tasks: any[]
+  ): string {
     const dataString = JSON.stringify({
       project: projectData.updatedAt?.toMillis() || 0,
       membersCount: members.length,
       backlogCount: backlogItems.length,
-      backlogIds: backlogItems.map(item => item.id).sort().join(',')
+      backlogIds: backlogItems
+        .map((item) => item.id)
+        .sort()
+        .join(","),
+      sprintsCount: sprints.length,
+      tasksCount: tasks.length,
+      activeSprintId: sprints.find((s) => s.status === "Active")?.id || "none",
     });
-    
+
     // Simple hash function
     let hash = 0;
     for (let i = 0; i < dataString.length; i++) {
       const char = dataString.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32bit integer
     }
-    
+
     return hash.toString(36);
   }
 
@@ -279,7 +357,7 @@ class ProjectCacheService {
     return {
       size: this.cache.size,
       projects,
-      memoryUsage
+      memoryUsage,
     };
   }
 }
