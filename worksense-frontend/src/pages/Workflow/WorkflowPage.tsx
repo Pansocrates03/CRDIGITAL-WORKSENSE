@@ -21,6 +21,8 @@ import BacklogItemType from "@/types/BacklogItemType.ts";
 import { Sprint } from '@/types/SprintType';
 import { IconType } from 'react-icons/lib';
 
+import { createBurndownChartData } from './utils/CreateBurndownChartData';
+
 import {
   FiLayout, FiGrid, FiClock, FiBarChart // Icons for tab navigation
 } from "react-icons/fi";
@@ -76,15 +78,10 @@ const WorkflowPage: React.FC = () => {
       return <div>No sprints found</div>
     }
 
-    console.log("Received US", data)
-    console.log("Active sprint is", activeSprint.name)
-
-
     let filteredStories = data?.filter(item => {
       console.log("Item", item.name, "has sprint", item.sprint, "and we are looking for", activeSprint.id)
       return item.sprint == activeSprint.id
     })
-    console.log("FS",filteredStories)
     
 
     // FUNCTIONS
@@ -170,6 +167,8 @@ const WorkflowPage: React.FC = () => {
       { date: '2024-03-05', remainingWork: 30, idealBurndown: 20 },
       { date: '2024-03-06', remainingWork: 10, idealBurndown: 0 },
     ];
+    // use instead:
+    // const brundown_chart_data = createBurndownChartData(tasks)
 
     const renderView = () => {
         switch (activeTab) {
@@ -194,7 +193,7 @@ const WorkflowPage: React.FC = () => {
     <div className="sprint-page">
       <div className="sprint-page__header">
         <div className="sprint-page__header-content">
-          <h1 className="sprint-page__title">Workflow (Sprint 1)</h1>
+          <h1 className="sprint-page__title">Workflow ({activeSprint.name})</h1>
           <p className="sprint-page__description">Sprint board for tracking project tasks and progress</p>
         </div>
       </div>
