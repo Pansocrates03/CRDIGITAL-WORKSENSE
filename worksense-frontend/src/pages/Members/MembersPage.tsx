@@ -4,7 +4,6 @@ import React, {useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {PlusIcon} from 'lucide-react';
 import {useQueryClient} from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 // Components
 import {Button} from '@/components/ui/button';
@@ -22,6 +21,7 @@ import {projectService} from '@/services/projectService';
 import {useDeleteMember, useMembers, useUpdateMemberRole} from '@/hooks/useMembers';
 import {useUsers} from '@/hooks/useUsers';
 import {useAuth} from '@/hooks/useAuth';
+import {handleSuccess} from "@/utils/handleSuccessToast.ts";
 
 const MembersPage: React.FC = () => {
     const {id: projectId} = useParams<{ id: string }>();
@@ -53,7 +53,7 @@ const MembersPage: React.FC = () => {
         try {
             await updateMemberRoleMutation.mutateAsync({userId, role});
             setIsModalOpen(false);
-            handleSuccess('Role updated successfully');
+            handleSuccess('Role updated successfully', `Role updated for ${selectedMember?.name}`);
         } catch (error) {
             console.error('Failed to update role:', error);
         }
@@ -71,7 +71,7 @@ const MembersPage: React.FC = () => {
             await deleteMemberMutation.mutateAsync(memberToDelete.userId);
             setShowDeleteAlert(false);
             setMemberToDelete(null);
-            handleSuccess("Member deleted successfully");
+            handleSuccess("Member deleted successfully", `Member ${memberToDelete.name} deleted`);
 
         } catch (error) {
             console.error('Failed to delete member:', error);
@@ -99,14 +99,10 @@ const MembersPage: React.FC = () => {
             setIsAddingMembers(false);
             // Invalidate the members query to refresh the list
             queryClient.invalidateQueries({queryKey: ['members', projectId]});
-            handleSuccess('Members added successfully');
+            handleSuccess('Members added successfully', "collaborate with the project team!" );
         } catch (error) {
             console.error('Failed to add members:', error);
         }
-    };
-
-    const handleSuccess = (msg: string) => {
-        toast.success(msg);
     };
 
 

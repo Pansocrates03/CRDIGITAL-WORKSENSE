@@ -2,11 +2,11 @@ import React, {useState} from "react";
 import {Card, CardContent, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Button} from "@/components/ui/button";
-import { toast } from "sonner";
 import {AvatarPicker} from "@/components/Account/AvatarPicker";
 import {useUserProfile} from "@/hooks/useUserProfile";
 import styles from "../Settings.module.css";
 import {Pencil} from "lucide-react";
+import {handleSuccess} from "@/utils/handleSuccessToast.ts";
 
 export const AccountTab: React.FC = () => {
     const {
@@ -24,16 +24,13 @@ export const AccountTab: React.FC = () => {
             try {
                 await save({nickName: profile.nickName, pfp: profile.avatar});
                 setEditing(false);
-                handleSuccess("Profile updated successfully");
+                handleSuccess("Profile updated successfully", `Cool changes ${profile.nickName}`);
             } catch (e) {
                 console.error(e);
             }
         }
     };
 
-    const handleSuccess = (msg: string) => {
-        toast.success(msg);
-    };
 
     if (loading) return <div/>;
     if (profileError || !profile)
