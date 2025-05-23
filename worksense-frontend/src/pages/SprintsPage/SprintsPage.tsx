@@ -259,24 +259,26 @@ const SprintsPage: React.FC = () => {
     }
 
     return (
-        <div className="sprints-page">
-            {/* Header section with title and create button */}
-            <div className="flex items-baseline justify-between w-full">
-                <div className="sprints-page__header">
-                    <h1>Sprints</h1>
-                    <p>Manage your project sprints</p>
+        <div className={"p-4 pt-3"}>
+
+            <div className="sprints-page">
+                {/* Header section with title and create button */}
+                <div className="flex items-baseline justify-between w-full">
+                    <div className="sprints-page__header">
+                        <h1>Sprints</h1>
+                        <p>Manage your project sprints</p>
+                    </div>
+                    {canManageSprints && (
+                        <Button
+                            variant="default"
+                            size="default"
+                            onClick={() => setIsModalOpen(true)}
+                        >
+                            <PlusIcon className="mr-1 h-4 w-4" />
+                            Create Sprint
+                        </Button>
+                    )}
                 </div>
-                {canManageSprints && (
-                    <Button
-                        variant="default"
-                        size="default"
-                        onClick={() => setIsModalOpen(true)}
-                    >
-                        <PlusIcon className="mr-1 h-4 w-4" />
-                        Create Sprint
-                    </Button>
-                )}
-            </div>
 
             {/* Divider line */}
             <div className="sprints-page__divider"></div>
@@ -349,131 +351,132 @@ const SprintsPage: React.FC = () => {
                 )}
             </div>
 
-            {/* Create/Edit Sprint Modal */}
-            <Modal
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                title={isEditing ? "Edit Sprint" : "Create New Sprint"}
-                size="m"
-            >
-                <form onSubmit={handleSubmit} className="p-4">
-                    <div className="space-y-4">
-                        {/* Sprint Name Input */}
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium mb-1">
-                                Sprint Name
-                            </label>
-                            <input
-                                type="text"
-                                id="name"
-                                name="name"
-                                value={newSprint.name}
-                                onChange={handleInputChange}
-                                className="w-full p-2 border rounded"
-                                placeholder="Enter sprint name"
-                                required
-                            />
-                        </div>
-                        {/* Sprint Goal Input */}
-                        <div>
-                            <label htmlFor="goal" className="block text-sm font-medium mb-1">
-                                Sprint Goal
-                            </label>
-                            <textarea
-                                id="goal"
-                                name="goal"
-                                value={newSprint.goal}
-                                onChange={handleInputChange}
-                                className="w-full p-2 border rounded"
-                                placeholder="Enter sprint goal"
-                                rows={3}
-                            />
-                        </div>
-                        {/* Status Dropdown - Only show when editing */}
-                        {isEditing && (
+                {/* Create/Edit Sprint Modal */}
+                <Modal
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    title={isEditing ? "Edit Sprint" : "Create New Sprint"}
+                    size="m"
+                >
+                    <form onSubmit={handleSubmit} className="p-4">
+                        <div className="space-y-4">
+                            {/* Sprint Name Input */}
                             <div>
-                                <label htmlFor="status" className="block text-sm font-medium mb-1">
-                                    Status
+                                <label htmlFor="name" className="block text-sm font-medium mb-1">
+                                    Sprint Name
                                 </label>
-                                <select
-                                    id="status"
-                                    name="status"
-                                    value={newSprint.status}
+                                <input
+                                    type="text"
+                                    id="name"
+                                    name="name"
+                                    value={newSprint.name}
                                     onChange={handleInputChange}
                                     className="w-full p-2 border rounded"
-                                >
-                                    <option value="Planned">Planned</option>
-                                    <option 
-                                        value="Active" 
-                                        disabled={sprints?.some(s => s.status === "Active" && s.id !== editingSprint?.id)}
-                                    >
-                                        Active {sprints?.some(s => s.status === "Active" && s.id !== editingSprint?.id) ? "(Another sprint is active)" : ""}
-                                    </option>
-                                    <option value="Completed">Completed</option>
-                                </select>
+                                    placeholder="Enter sprint name"
+                                    required
+                                />
                             </div>
-                        )}
-                        {/* Start Date Input */}
-                        <div>
-                            <label htmlFor="startDate" className="block text-sm font-medium mb-1">
-                                Start Date
-                            </label>
-                            <input
-                                type="date"
-                                id="startDate"
-                                name="startDate"
-                                value={newSprint.startDate}
-                                onChange={handleInputChange}
-                                className="w-full p-2 border rounded"
-                                required
-                            />
+                            {/* Sprint Goal Input */}
+                            <div>
+                                <label htmlFor="goal" className="block text-sm font-medium mb-1">
+                                    Sprint Goal
+                                </label>
+                                <textarea
+                                    id="goal"
+                                    name="goal"
+                                    value={newSprint.goal}
+                                    onChange={handleInputChange}
+                                    className="w-full p-2 border rounded"
+                                    placeholder="Enter sprint goal"
+                                    rows={3}
+                                />
+                            </div>
+                            {/* Status Dropdown - Only show when editing */}
+                            {isEditing && (
+                                <div>
+                                    <label htmlFor="status" className="block text-sm font-medium mb-1">
+                                        Status
+                                    </label>
+                                    <select
+                                        id="status"
+                                        name="status"
+                                        value={newSprint.status}
+                                        onChange={handleInputChange}
+                                        className="w-full p-2 border rounded"
+                                    >
+                                        <option value="Planned">Planned</option>
+                                        <option
+                                            value="Active"
+                                            disabled={sprints?.some(s => s.status === "Active" && s.id !== editingSprint?.id)}
+                                        >
+                                            Active {sprints?.some(s => s.status === "Active" && s.id !== editingSprint?.id) ? "(Another sprint is active)" : ""}
+                                        </option>
+                                        <option value="Completed">Completed</option>
+                                    </select>
+                                </div>
+                            )}
+                            {/* Start Date Input */}
+                            <div>
+                                <label htmlFor="startDate" className="block text-sm font-medium mb-1">
+                                    Start Date
+                                </label>
+                                <input
+                                    type="date"
+                                    id="startDate"
+                                    name="startDate"
+                                    value={newSprint.startDate}
+                                    onChange={handleInputChange}
+                                    className="w-full p-2 border rounded"
+                                    required
+                                />
+                            </div>
+                            {/* End Date Input */}
+                            <div>
+                                <label htmlFor="endDate" className="block text-sm font-medium mb-1">
+                                    End Date
+                                </label>
+                                <input
+                                    type="date"
+                                    id="endDate"
+                                    name="endDate"
+                                    value={newSprint.endDate}
+                                    onChange={handleInputChange}
+                                    className="w-full p-2 border rounded"
+                                    required
+                                />
+                            </div>
                         </div>
-                        {/* End Date Input */}
-                        <div>
-                            <label htmlFor="endDate" className="block text-sm font-medium mb-1">
-                                End Date
-                            </label>
-                            <input
-                                type="date"
-                                id="endDate"
-                                name="endDate"
-                                value={newSprint.endDate}
-                                onChange={handleInputChange}
-                                className="w-full p-2 border rounded"
-                                required
-                            />
+                        {/* Modal Action Buttons */}
+                        <div className="flex justify-end gap-2 mt-6">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleCloseModal}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="default"
+                            >
+                                {isEditing ? "Save Changes" : "Create Sprint"}
+                            </Button>
                         </div>
-                    </div>
-                    {/* Modal Action Buttons */}
-                    <div className="flex justify-end gap-2 mt-6">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleCloseModal}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            variant="default"
-                        >
-                            {isEditing ? "Save Changes" : "Create Sprint"}
-                        </Button>
-                    </div>
-                </form>
-            </Modal>
+                    </form>
+                </Modal>
 
-            {/* Delete Confirmation Modal */}
-            <DeleteConfirmationModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => {
-                    setIsDeleteModalOpen(false);
-                    setSprintToDelete(null);
-                }}
-                onConfirm={handleConfirmDelete}
-                title="Delete Sprint"
-                message="Are you sure you want to delete this sprint? This action cannot be undone."
-            />
+                {/* Delete Confirmation Modal */}
+                <DeleteConfirmationModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => {
+                        setIsDeleteModalOpen(false);
+                        setSprintToDelete(null);
+                    }}
+                    onConfirm={handleConfirmDelete}
+                    title="Delete Sprint"
+                    message="Are you sure you want to delete this sprint? This action cannot be undone."
+                />
+            </div>
         </div>
     );
 };
