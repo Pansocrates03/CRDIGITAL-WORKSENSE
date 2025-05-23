@@ -9,10 +9,11 @@ const BASE_COLUMN_TITLE = "Sin columna";
 interface BoardViewProps {
   tasks: BacklogItemType[];
   onTaskUpdate: (taskId: string, newStatus: string) => void;
+  onTaskContentUpdate: (taskkId: string, newTasks: {name: string, isFinished:boolean}[]) => void;
   columns: {id: string, title: string}[]
 }
 
-const BoardView: React.FC<BoardViewProps> = ({ tasks, onTaskUpdate, columns }) => {
+const BoardView: React.FC<BoardViewProps> = ({ tasks, onTaskUpdate, onTaskContentUpdate, columns }) => {
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const columnsWithBase = [
     { id: BASE_COLUMN_ID, title: BASE_COLUMN_TITLE},
@@ -38,14 +39,17 @@ const BoardView: React.FC<BoardViewProps> = ({ tasks, onTaskUpdate, columns }) =
     setDragOverColumn(null);
   };
 
+  const handleUpdateItem = (updatedItem: BacklogItemType) => {
+    onTaskContentUpdate(updatedItem.id,updatedItem.tasks);
+  };
+
   const getTasksByStatus = (status: string) => {
-  if (status === BASE_COLUMN_ID) {
-    // Devuelve los tasks cuyo status no coincide con ningún column.id
-    const columnIds = columns.map(col => col.id);
-    return tasks.filter(task => !columnIds.includes(task.status ? task.status : ""));
-  }
-  return tasks.filter(task => task.status === status);
-};
+    if (status === BASE_COLUMN_ID) {
+      const columnIds = columns.map(col => col.id);
+      return tasks.filter(task => !columnIds.includes(task.status ? task.status : ""));
+    }
+    return tasks.filter(task => task.status === status);
+  };
 
   return (
     <div className="board-view">
@@ -65,8 +69,9 @@ const BoardView: React.FC<BoardViewProps> = ({ tasks, onTaskUpdate, columns }) =
               {getTasksByStatus(column.id).map((task, index) => (
                 <DraggableTaskCard
                   key={task.id}
-                  task={task}
+                  BacklogItem={task}
                   index={index}
+                  onUpdate={handleUpdateItem}
                 />
               ))}
             </div>

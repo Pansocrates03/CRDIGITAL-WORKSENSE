@@ -1,21 +1,22 @@
-import React, { useState } from 'react';
+import React, { FormEvent, useRef, useState } from 'react';
 import './TaskCard.css';
 import BacklogItemType from '@/types/BacklogItemType';
-import { Button } from '@/components/ui/button';
-import { FaAngleDown, FaAngleUp, FaPlus } from "react-icons/fa";
-import Modal from '@/components/Modal/Modal';
+import { FaAngleDown, FaAngleUp, FaPlus, FaCircle, FaCheckCircle } from "react-icons/fa";
 import { Input } from '@/components/ui/input';
 
 interface DraggableTaskCardProps {
-  task: BacklogItemType;
+  BacklogItem: BacklogItemType;
   index: number;
+  onUpdate?: (updatedItem: BacklogItemType) => void;
 }
 
-const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) => {
+const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ BacklogItem, index, onUpdate }) => {
   const [showSubtasks, setShowSubtasks] = useState(false);
+  const [currentItem, setCurrentItem] = useState<BacklogItemType>(BacklogItem);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData('taskId', task.id);
+    e.dataTransfer.setData('taskId', currentItem.id);
     e.dataTransfer.setData('sourceIndex', index.toString());
     e.currentTarget.classList.add('task-card--dragging');
   };
@@ -53,6 +54,48 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) =>
     }
   };
 
+  // Used when a new task is created
+  const handleAddTask = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+    const taskName = data.taskName as string;
+
+    if (!taskName?.trim()) return;
+
+    const updatedItem: BacklogItemType = {
+      ...currentItem,
+      tasks: [...(currentItem.tasks || []), {isFinished: false, name: taskName}]
+    };
+    
+    setCurrentItem(updatedItem);
+    if (onUpdate) {
+      onUpdate(updatedItem);
+    }
+
+    // Reset form using the ref
+    formRef.current?.reset();
+  };
+
+  const handleToggleTaskCompletion = (taskIndex: number) => {
+    const updatedTasks = [...(currentItem.tasks || [])];
+    updatedTasks[taskIndex] = {
+      ...updatedTasks[taskIndex],
+      isFinished: !updatedTasks[taskIndex].isFinished
+    };
+
+    const updatedItem = {
+      ...currentItem,
+      tasks: updatedTasks
+    };
+
+    setCurrentItem(updatedItem);
+    if (onUpdate) {
+      onUpdate(updatedItem);
+    }
+  };
+
   return (
     <div
       draggable
@@ -60,22 +103,22 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) =>
       onDragEnd={handleDragEnd}
       className="task-card"
     >      
-      <h3 className="task-card__title">{task.name}</h3>
+      <h3 className="task-card__title">{currentItem.name}</h3>
       
       <div className="task-card__meta">
-        <span className={`task-card__status ${getStatusClass(task.status ? task.status : "")}`}>
-          {task.status}
+        <span className={`task-card__status ${getStatusClass(currentItem.status ? currentItem.status : "")}`}>
+          {currentItem.status}
         </span>
-        {task.priority && (
-          <span className={`task-card__priority ${getPriorityClass(task.priority)}`}>
-            {task.priority}
+        {currentItem.priority && (
+          <span className={`task-card__priority ${getPriorityClass(currentItem.priority)}`}>
+            {currentItem.priority}
           </span>
         )}
       </div>
 
       <div className="task-card__footer">
         <span style={{fontSize: 12}}>
-          Tasks: {task.subItems ? task.subItems.length : 0}
+          Completed Tasks: {currentItem.tasks ? currentItem.tasks.filter(t => t.isFinished == true).length : 0}/{currentItem.tasks ? currentItem.tasks.length : 0}
         </span>
         <button
           type="button"
@@ -87,50 +130,53 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) =>
         </button>
       </div>
 
-{showSubtasks && (
-  <>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <FaPlus />
-      <form onSubmit={(e) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const taskName = formData.get('taskName') as string;
-        
-        if(!task.tasks){
-          task.tasks = [taskName]
-        } else {
-          task.tasks.push(taskName)
-        }
-        console.log("TASK",task.tasks)
-        
-        if (!taskName?.trim()) return;
-        
-        console.log('Nueva tarea:', taskName);
-        // Aquí puedes usar taskName para crear la nueva tarea
-        
-        (e.target as HTMLFormElement).reset();
-      }}>
-        <Input
-          type="text"
-          name="taskName"
-          placeholder="Add task"
-          className="task-card__search"
-        />
-      </form>
-    </div>
+      {/* Show tasks */}
+      {showSubtasks && (
+        <>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 8,
+            marginTop: '1rem',
+            width: '100%'
+          }}>
+            <FaPlus />
+            <form ref={formRef} onSubmit={handleAddTask} style={{ flex: 1 }}>
+              <Input
+                type="text"
+                name="taskName"
+                placeholder="Add task"
+                className="task-card__search"
+              />
+            </form>
+          </div>
 
-    {task.tasks && task.tasks.length > 0 && (
-      <ul className="task-card__subitems">
-        {task.tasks.map((sub) => (
-          <li className="task-card__subitem">
-            {sub}
-          </li>
-        ))}
-      </ul>
-    )}
-  </>
-)}
-
+          {currentItem.tasks && currentItem.tasks.length > 0 && (
+            <ul className="task-card__subitems">
+              {currentItem.tasks.map((task, idx) => (
+                <li key={idx} className="task-card__subitem">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleTaskCompletion(idx)}
+                      className={`task-card__completion-btn ${task.isFinished ? 'task-card__completion-btn--completed' : ''}`}
+                      aria-label={task.isFinished ? "Marcar como no completada" : "Marcar como completada"}
+                    >
+                      {task.isFinished ? <FaCheckCircle size={16} /> : <FaCircle size={16} />}
+                    </button>
+                    <span style={{ 
+                      textDecoration: task.isFinished ? 'line-through' : 'none',
+                      color: task.isFinished ? '#6b7280' : '#374151'
+                    }}>
+                      {task.name}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
     </div>
   );
 };
