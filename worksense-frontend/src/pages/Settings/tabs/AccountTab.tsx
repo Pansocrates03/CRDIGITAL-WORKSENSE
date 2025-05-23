@@ -24,15 +24,15 @@ export const AccountTab: React.FC = () => {
             try {
                 await save({nickName: profile.nickName, pfp: profile.avatar});
                 setEditing(false);
-                handleSuccess("Profile updated successfully");
+                handleSuccess("Profile updated successfully", `Cool changes ${profile.nickName}`);
             } catch (e) {
                 console.error(e);
             }
         }
     };
 
-    const handleSuccess = (msg: string) => {
-        toast.success(msg);
+    const handleSuccess = (msg: string, desc: string) => {
+        toast.success(msg, desc);
     };
 
     if (loading) return <div/>;

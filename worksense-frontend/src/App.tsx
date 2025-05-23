@@ -56,7 +56,16 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
-          <Toaster/>
+          <Toaster   toastOptions={{
+              style: {
+                  color: 'var(--accent-pink)',
+              }
+
+
+          }}
+
+
+          />
           <Routes>
             {/* Login Page - Does NOT use MainLayout */}
             <Route path="/login" element={<LoginPage />} />
