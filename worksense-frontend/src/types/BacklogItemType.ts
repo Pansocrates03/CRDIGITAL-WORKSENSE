@@ -17,4 +17,5 @@ export default interface BacklogItemType {
   subItems?: BacklogItemType[];
   isSubItem?: boolean;
   parentId?: string;
+  tasks?: {name: string, isFinished: boolean}[]
 }
