@@ -136,7 +136,7 @@ const AISettingsView: React.FC = () => {
           </div>
           {/* Tech Stack for AI Container */}
           <div className="bg-white rounded-lg shadow p-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tech Stack for AI</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tech Stack</label>
             {editMode ? (
               <textarea
                 value={aiTechStack}
