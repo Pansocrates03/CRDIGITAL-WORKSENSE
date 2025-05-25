@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 
+// Import the Tabs component from SprintPage.tsx
+import Tabs from '../Sprints/components/Tabs/Tabs';
 import '../Sprints/components/styles/SprintPage.css';
 
 // Import components for tabs
 import GeneralInfoView from './tabsViews/GeneralInfoView';
 import AISettingsView from './tabsViews/AISettingsView';
 import MetricsAnalyticsView from "./tabsViews/MetricsAnalyticsView";
-
-// Import the Tabs component from SprintPage.tsx
-import Tabs from '../Sprints/components/Tabs/Tabs';
 import ScrumSettingsView from "./tabsViews/ScrumSettingsView";
 import CustomizationView from "./tabsViews/CustomizationView";
 
