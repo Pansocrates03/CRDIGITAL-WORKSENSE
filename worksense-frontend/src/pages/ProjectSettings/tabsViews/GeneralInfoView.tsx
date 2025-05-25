@@ -89,7 +89,7 @@ const GeneralInfoView: React.FC = () => {
 
   if (isLoading || !form || !user || !project) return <div>Loading...</div>;
 
-  // Now both user and project are defined!
+  // Verify if the user is the product owner of the project
   const isProductOwner =
     project.ownerId == user.userId ||
     (Array.isArray(project.members) &&

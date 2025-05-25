@@ -39,10 +39,9 @@ const ProjectSettingsPage: React.FC = () => {
             return <MetricsAnalyticsView/>;
         case 'aiSettings':
             return <AISettingsView />;
-        case 'security':
-            return <div>Security & Access View</div>;
         default:
-            return <div>General Info View</div>;
+            setActiveTab('generalInfo');
+            return <GeneralInfoView />;
     }
   };
 
