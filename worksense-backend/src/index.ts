@@ -32,7 +32,10 @@ const swaggerDocs = swaggerJsdoc(swaggerOptions);
 // APP USAGE
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://frontend-deploy-production-1aaa.up.railway.app', // your deployed frontend URL
+  credentials: true // if you use cookies or authentication headers
+}));
 app.use(morgan("dev"));
 app.use(express.json({ limit: "10mb" })); // Aumentar el límite de tamaño del cuerpo a 10 MB para el audio
 app.use(API_PREFIX, sqlRoutes);
