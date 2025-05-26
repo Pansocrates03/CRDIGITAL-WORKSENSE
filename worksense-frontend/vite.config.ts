@@ -14,6 +14,6 @@ export default defineConfig({
   preview: {
     port: 8080,
     host: true,
-    allowedHosts: ["frontend-deploy-qa-sprint3.up.railway.app", "frontend-deploy-production.up.railway.app"],
+    allowedHosts: ["frontend-deploy-qa-sprint3.up.railway.app", "frontend-deploy-production.up.railway.app", "worksense-frontend-pre-produccion-sprint-3.up.railway.app"],
   },
 });
