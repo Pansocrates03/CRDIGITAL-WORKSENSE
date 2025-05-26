@@ -1,11 +1,11 @@
 .sprints-page__header {
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
 }
 
 .sprints-page__header h1 {
     font-size: 2rem;
-    color: #333;
-    margin-bottom: 0.5rem;
+    color: var(--text-primary, #253c4f);
+    margin-bottom: 1rem;
 }
 
 .sprints-page__header p {
@@ -24,7 +24,7 @@
 .sprint-name {
     margin: 0;
     font-size: 1.1rem;
-    color: #333;
+    color: var(--text-primary, #253c4f);
 }
 
 .status-badge {

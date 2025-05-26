@@ -4,7 +4,6 @@ import React, {useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {PlusIcon} from 'lucide-react';
 import {useQueryClient} from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 // Components
 import {Button} from '@/components/ui/button';
@@ -22,6 +21,7 @@ import {projectService} from '@/services/projectService';
 import {useDeleteMember, useMembers, useUpdateMemberRole} from '@/hooks/useMembers';
 import {useUsers} from '@/hooks/useUsers';
 import {useAuth} from '@/hooks/useAuth';
+import {handleSuccess} from "@/utils/handleSuccessToast.ts";
 
 const MembersPage: React.FC = () => {
     const {id: projectId} = useParams<{ id: string }>();
@@ -37,7 +37,17 @@ const MembersPage: React.FC = () => {
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const [memberToDelete, setMemberToDelete] = useState<MemberDetailed | null>(null);
 
-    const availableRoles = ['product-owner', 'scrum-master', 'developer', 'viewer'];
+    interface Role {
+        id: string;
+        name: string;
+    }
+
+    const availableRoles: Role[] = [
+        { id: 'product-owner', name: 'Product Owner' },
+        { id: 'scrum-master', name: 'Scrum Master' },
+        { id: 'developer', name: 'Developer' },
+        { id: 'viewer', name: 'Viewer' }
+    ];
     const isProductOwner = members.some(member => member.userId === user?.userId && member.projectRoleId === 'product-owner');
 
     const deleteMemberMutation = useDeleteMember(projectId!);
@@ -53,7 +63,7 @@ const MembersPage: React.FC = () => {
         try {
             await updateMemberRoleMutation.mutateAsync({userId, role});
             setIsModalOpen(false);
-            handleSuccess('Role updated successfully');
+            handleSuccess('Role updated successfully', `Role updated for ${selectedMember?.name}`);
         } catch (error) {
             console.error('Failed to update role:', error);
         }
@@ -71,7 +81,7 @@ const MembersPage: React.FC = () => {
             await deleteMemberMutation.mutateAsync(memberToDelete.userId);
             setShowDeleteAlert(false);
             setMemberToDelete(null);
-            handleSuccess("Member deleted successfully");
+            handleSuccess("Member deleted successfully", `Member ${memberToDelete.name} deleted`);
 
         } catch (error) {
             console.error('Failed to delete member:', error);
@@ -99,24 +109,20 @@ const MembersPage: React.FC = () => {
             setIsAddingMembers(false);
             // Invalidate the members query to refresh the list
             queryClient.invalidateQueries({queryKey: ['members', projectId]});
-            handleSuccess('Members added successfully');
+            handleSuccess('Members added successfully', "collaborate with the project team!" );
         } catch (error) {
             console.error('Failed to add members:', error);
         }
-    };
-
-    const handleSuccess = (msg: string) => {
-        toast.success(msg);
     };
 
 
     if (isLoading) return <div>Loading members...</div>;
 
     return (
-        <div>
+        <div className={"p-4 pt-3"}>
             <div className="flex items-baseline justify-between w-full">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-foreground">Members</h2>
+                    <h2 className="text-3xl mb-4 tracking-tight text-foreground ">Members</h2>
                     <p className="text-muted-foreground mt-1">
                         Manage project members: add, update roles, or remove members from the project.
                     </p>

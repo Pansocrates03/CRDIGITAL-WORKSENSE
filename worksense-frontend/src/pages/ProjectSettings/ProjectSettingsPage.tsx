@@ -1,21 +1,17 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
-import { useQuery, useMutation,useQueryClient } from "@tanstack/react-query";
-import { projectService } from "@/services/projectService";
-import { useAuth } from "@/hooks/useAuth";
-
-import '../Sprints/components/styles/SprintPage.css';
-
-// Import components for tabs
-import GeneralInfoView from './components/GeneralInfoView';
-import AISettingsView from './components/AISettingsView';
 
 // Import the Tabs component from SprintPage.tsx
 import Tabs from '../Sprints/components/Tabs/Tabs';
+import '../Sprints/components/styles/SprintPage.css';
+
+// Import components for tabs
+import GeneralInfoView from './tabsViews/GeneralInfoView';
+import AISettingsView from './tabsViews/AISettingsView';
+import MetricsAnalyticsView from "./tabsViews/MetricsAnalyticsView";
+import ScrumSettingsView from "./tabsViews/ScrumSettingsView";
+import CustomizationView from "./tabsViews/CustomizationView";
 
 const ProjectSettingsPage: React.FC = () => {
-  const { id: projectId } = useParams<{ id:string }>();
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('generalInfo');
 
   // Define the navigation tabs
@@ -36,11 +32,11 @@ const ProjectSettingsPage: React.FC = () => {
         case 'generalInfo':
             return <GeneralInfoView />;
         case 'scrumSettings':
-            return <div>Scrum Settings View</div>;
+            return <ScrumSettingsView />;
         case 'customization':
-            return <div>Customization View</div>;
+            return <CustomizationView />;
         case 'analytics':
-            return <div>Analytics View</div>;
+            return <MetricsAnalyticsView/>;
         case 'aiSettings':
             return <AISettingsView />;
         case 'security':

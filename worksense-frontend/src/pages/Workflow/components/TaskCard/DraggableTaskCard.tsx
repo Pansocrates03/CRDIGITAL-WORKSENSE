@@ -1,16 +1,22 @@
-import React from 'react';
-import { Task } from '../../data';
-// import '../styles/TaskCard.css';
+import React, { FormEvent, useRef, useState } from 'react';
+import './TaskCard.css';
 import BacklogItemType from '@/types/BacklogItemType';
+import { FaAngleDown, FaAngleUp, FaPlus, FaCircle, FaCheckCircle } from "react-icons/fa";
+import { Input } from '@/components/ui/input';
 
 interface DraggableTaskCardProps {
-  task: BacklogItemType;
+  BacklogItem: BacklogItemType;
   index: number;
+  onUpdate?: (updatedItem: BacklogItemType) => void;
 }
 
-const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) => {
+const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ BacklogItem, index, onUpdate }) => {
+  const [showSubtasks, setShowSubtasks] = useState(false);
+  const [currentItem, setCurrentItem] = useState<BacklogItemType>(BacklogItem);
+  const formRef = useRef<HTMLFormElement>(null);
+
   const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData('taskId', task.id);
+    e.dataTransfer.setData('taskId', currentItem.id);
     e.dataTransfer.setData('sourceIndex', index.toString());
     e.currentTarget.classList.add('task-card--dragging');
   };
@@ -48,78 +54,131 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ task, index }) =>
     }
   };
 
+  // Used when a new task is created
+  const handleAddTask = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+    const taskName = data.taskName as string;
+
+    if (!taskName?.trim()) return;
+
+    const updatedItem: BacklogItemType = {
+      ...currentItem,
+      tasks: [...(currentItem.tasks || []), {isFinished: false, name: taskName}]
+    };
+    
+    setCurrentItem(updatedItem);
+    if (onUpdate) {
+      onUpdate(updatedItem);
+    }
+
+    // Reset form using the ref
+    formRef.current?.reset();
+  };
+
+  const handleToggleTaskCompletion = (taskIndex: number) => {
+    const updatedTasks = [...(currentItem.tasks || [])];
+    updatedTasks[taskIndex] = {
+      ...updatedTasks[taskIndex],
+      isFinished: !updatedTasks[taskIndex].isFinished
+    };
+
+    const updatedItem = {
+      ...currentItem,
+      tasks: updatedTasks
+    };
+
+    setCurrentItem(updatedItem);
+    if (onUpdate) {
+      onUpdate(updatedItem);
+    }
+  };
+
   return (
     <div
       draggable
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       className="task-card"
-    >
-      {task.coverImage && (
-        <div className="task-card__cover">
-          <img
-            src={task.coverImage}
-            alt={task.name ? task.name : "NaN"}
-            className="task-card__cover-image"
-          />
-        </div>
-      )}
-      
-      <h3 className="task-card__title">{task.name}</h3>
+    >      
+      <h3 className="task-card__title">{currentItem.name}</h3>
       
       <div className="task-card__meta">
-        <span className={`task-card__status ${getStatusClass(task.status ? task.status : "")}`}>
-          {task.status}
+        <span className={`task-card__status ${getStatusClass(currentItem.status ? currentItem.status : "")}`}>
+          {currentItem.status}
         </span>
-        
-        {task.priority && (
-          <span className={`task-card__priority ${getPriorityClass(task.priority)}`}>
-            {task.priority}
+        {currentItem.priority && (
+          <span className={`task-card__priority ${getPriorityClass(currentItem.priority)}`}>
+            {currentItem.priority}
           </span>
         )}
       </div>
 
-      {task.subItems && task.subItems.length < 0 && (
-        <div className="task-card__progress">
-          <div className="task-card__progress-bar">
-            <div
-              className="task-card__progress-fill"
-              style={{ width: `${(10 / 30 ) * 100}%` }} // subtasks completed / total subtasks
-            />
-          </div>
-          <span className="task-card__progress-text">
-            {10}/{30} // 
-          </span>
-        </div>
-      )}
-
       <div className="task-card__footer">
-        <div className="task-card__assignees">
-          
-          {/*task.assignees.map(assignee => (
-            <img
-              key={assignee.id}
-              className="task-card__assignee"
-              src={assignee.avatarUrl}
-              alt={assignee.name}
-              title={assignee.name}
-            />
-          ))*/}
-        </div>
-        
-        {/* 
-        <div className="task-card__stats">
-          {task.commentsCount > 0 && (
-            <span>💬 {task.commentsCount}</span>
-          )}
-          {task.linksCount > 0 && (
-            <span>🔗 {task.linksCount}</span>
-          )}
-        </div>
-        */}
+        <span style={{fontSize: 12}}>
+          Completed Tasks: {currentItem.tasks ? currentItem.tasks.filter(t => t.isFinished == true).length : 0}/{currentItem.tasks ? currentItem.tasks.length : 0}
+        </span>
+        <button
+          type="button"
+          onClick={() => setShowSubtasks((prev) => !prev)}
+          className='task-card__toggle-subtasks'
+          aria-label={showSubtasks ? "Ocultar subtasks" : "Mostrar subtasks"}
+        >
+          {showSubtasks ? <FaAngleUp size={16} /> : <FaAngleDown size={16} />}
+        </button>
       </div>
+
+      {/* Show tasks */}
+      {showSubtasks && (
+        <>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 8,
+            marginTop: '1rem',
+            width: '100%'
+          }}>
+            <FaPlus />
+            <form ref={formRef} onSubmit={handleAddTask} style={{ flex: 1 }}>
+              <Input
+                type="text"
+                name="taskName"
+                placeholder="Add task"
+                className="task-card__search"
+              />
+            </form>
+          </div>
+
+          {currentItem.tasks && currentItem.tasks.length > 0 && (
+            <ul className="task-card__subitems">
+              {currentItem.tasks.map((task, idx) => (
+                <li key={idx} className="task-card__subitem">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleTaskCompletion(idx)}
+                      className={`task-card__completion-btn ${task.isFinished ? 'task-card__completion-btn--completed' : ''}`}
+                      aria-label={task.isFinished ? "Marcar como no completada" : "Marcar como completada"}
+                    >
+                      {task.isFinished ? <FaCheckCircle size={16} /> : <FaCircle size={16} />}
+                    </button>
+                    <span style={{ 
+                      textDecoration: task.isFinished ? 'line-through' : 'none',
+                      color: task.isFinished ? '#6b7280' : '#374151'
+                    }}>
+                      {task.name}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
     </div>
   );
 };
 
-export default DraggableTaskCard; 
+export default DraggableTaskCard;

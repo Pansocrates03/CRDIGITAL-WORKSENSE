@@ -4,11 +4,16 @@ import React, { useEffect, useState } from 'react';
 import styles from './EditMemberModal.module.css';
 import MemberDetailed from '@/types/MemberDetailedType';
 
+interface Role {
+  id: string;
+  name: string;
+}
+
 interface EditMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
   member: MemberDetailed | null;
-  availableRoles: string[];
+  availableRoles: Role[];
   onSubmit: (userId: number, roleId: string) => void;
 }
 
@@ -60,8 +65,8 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
               className={styles.select}
             >
               {availableRoles.map((role) => (
-                <option key={role} value={role}>
-                  {role}
+                <option key={role.id} value={role.id}>
+                  {role.name}
                 </option>
               ))}
             </select>

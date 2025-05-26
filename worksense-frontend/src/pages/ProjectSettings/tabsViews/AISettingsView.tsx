@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 const AISettingsView: React.FC = () => {
@@ -136,7 +135,7 @@ const AISettingsView: React.FC = () => {
           </div>
           {/* Tech Stack for AI Container */}
           <div className="bg-white rounded-lg shadow p-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tech Stack for AI</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tech Stack</label>
             {editMode ? (
               <textarea
                 value={aiTechStack}

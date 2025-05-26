@@ -157,14 +157,18 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
         }
     };
 
+    const handleModalClose = () => {
+        setIsCreateModalOpen(false);
+        // Only refetch and show success message when modal is closed
+        refetchUsers();
+    };
+
     const handleCreateUser = async (userData: any) => {
         try {
             const response = await apiClient.post("/users", userData);
 
             if (response.status >= 200 && response.status < 300) {
                 toast.success(`User ${userData.firstName} ${userData.lastName} created successfully`);
-                refetchUsers();
-                setIsCreateModalOpen(false);
             } else {
                 toast.error("Creation succeeded but received an unexpected status.");
             }
@@ -410,7 +414,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
             {/* Create User Modal */}
             <CreateUserModal
                 isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
+                onClose={handleModalClose}
                 onSubmit={handleCreateUser}
             />
 

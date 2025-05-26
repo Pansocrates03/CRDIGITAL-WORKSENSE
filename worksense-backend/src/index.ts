@@ -11,10 +11,15 @@ import swaggerJsdoc from "swagger-jsdoc";
 import sqlRoutes from "./routes/auth.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import project_Routes from "./routes/project.routes.js";
-import geminiRoutes from "./routes/gemini.routes.js"; 
-import forYouRoutes from './routes/forYou.routes.js';
+import geminiRoutes from "./routes/gemini.routes.js";
+import forYouRoutes from "./routes/forYou.routes.js";
+import speechRoutes from "./routes/speech.routes.js";
+import cacheRoutes from "./routes/cache.routes.js";
 // Documenattion Imports
 import { swaggerOptions } from "../swagger/swaggerSetup.js"; // Swagger options
+
+// Import cleanup function
+import { cleanupSubscriptions } from "./controllers/gemini.controller.js";
 
 // Obtain URL
 const PORT = process.env.PORT || 5050;
@@ -29,12 +34,14 @@ const app = express();
 
 app.use(cors());
 app.use(morgan("dev"));
-app.use(express.json());
+app.use(express.json({ limit: "10mb" })); // Aumentar el límite de tamaño del cuerpo a 10 MB para el audio
 app.use(API_PREFIX, sqlRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
 app.use(`${API_PREFIX}/projects`, project_Routes);
 app.use(`${API_PREFIX}/gemini`, geminiRoutes);
 app.use(`${API_PREFIX}/for-you`, forYouRoutes);
+app.use(`${API_PREFIX}/speech`, speechRoutes);
+app.use(`${API_PREFIX}/cache`, cacheRoutes);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get("/", (req: any, res: any) => {
@@ -49,8 +56,27 @@ app.use((err: any, req: any, res: any, next: any) => {
 });
 
 // Start Server
-app.listen(PORT, () =>
+const server = app.listen(PORT, () =>
   console.log(
     `Server running at http://localhost:${PORT}, API Prefix: ${API_PREFIX}`
   )
 );
+
+// Graceful shutdown handling
+process.on("SIGTERM", () => {
+  console.log("SIGTERM signal received: closing HTTP server");
+  cleanupSubscriptions();
+  server.close(() => {
+    console.log("HTTP server closed");
+    process.exit(0);
+  });
+});
+
+process.on("SIGINT", () => {
+  console.log("SIGINT signal received: closing HTTP server");
+  cleanupSubscriptions();
+  server.close(() => {
+    console.log("HTTP server closed");
+    process.exit(0);
+  });
+});

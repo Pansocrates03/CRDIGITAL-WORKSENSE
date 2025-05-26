@@ -1,14 +1,23 @@
-/* src/components/FridaChat/FridaChat.module.css */
-
 .floatingWrapper {
   position: fixed;
   bottom: 24px;
-  right: 24px;
   z-index: 1000;
 }
 
+.right {
+  right: 24px;
+}
+
+.left {
+  left: 24px;
+}
+
+.floatingWrapper.left {
+  display: none;
+}
+
 .floatingButton {
-  background-color: var(--color-purple);
+  background-color: var(--color-accent);
   color: white;
   border: none;
   border-radius: 50%;
@@ -23,7 +32,7 @@
 }
 
 .floatingButton:hover {
-  background-color: var(--color-purple);
+  background-color: var(--color-accent-light);
 }
 
 .chatContainer {
@@ -88,33 +97,75 @@
 }
 
 .chatInputArea {
-  padding: 12px 16px;
   display: flex;
-  background-color: white;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
   border-top: 1px solid #e0e0e0;
+  background-color: white;
 }
 
 .chatInput {
   flex: 1;
+  resize: none;
+  overflow: hidden;
   border: 1px solid #ccc;
   border-radius: 16px;
   padding: 10px 14px;
   font-size: 14px;
-  outline: none;
+  line-height: 1.4;
+  min-height: 38px;
+  max-height: 120px;
+  overflow-y: auto;
+  font-family: inherit;
 }
 
-.sendButton {
-  margin-left: 8px;
-  background-color: var(--color-purple);
+.chatInput:focus {
+  outline: none;
+  border-color: var(--color-purple);
+}
+
+.sendButton,
+.cancelButton,
+.confirmButton,
+.micButton {
   color: white;
   padding: 10px 16px;
   border: none;
   border-radius: 16px;
   font-size: 14px;
   cursor: pointer;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background-color 0.2s ease;
 }
 
-.sendButton:hover {
+.sendButton {
   background-color: var(--color-purple);
+}
+.sendButton:hover {
+  background-color: var(--color-purple-dark);
+}
+
+.cancelButton {
+  background-color: #e3342f;
+}
+.cancelButton:hover {
+  background-color: #cc1f1a;
+}
+
+.confirmButton {
+  background-color: var(--color-purple);
+}
+.confirmButton:hover {
+  background-color: var(--color-purple-dark);
+}
+
+.micButton {
+  background-color: var(--color-accent);
+}
+.micButton:hover {
+  background-color: var(--color-accent-light);
 }

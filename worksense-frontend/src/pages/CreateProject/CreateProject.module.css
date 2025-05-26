@@ -46,6 +46,7 @@
 
 .welcomeMessage {
     padding-bottom: 0;
+    width: 100%;
     border-bottom: none;
     margin-bottom: 1rem; /* Increased space before controls */
     opacity: 0; /* Start hidden for animation */
@@ -58,6 +59,7 @@
     transform: translateY(0);
     transition: opacity 0.6s var(--transition-normal), transform 0.6s var(--transition-normal); /* Adjust timing */
     transition-delay: 0.1s; /* Slight delay before animation starts */
+    width: 100%;
 }
 
 .welcomeTitle {
