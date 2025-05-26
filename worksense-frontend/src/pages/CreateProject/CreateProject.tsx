@@ -7,13 +7,12 @@ import styles from "./CreateProject.module.css";
 import NewProjectModal from "../../components/NewProjectModal/NewProjectModal";
 import {Alert} from "../../components/Alert/Alert";
 import {useAuth} from "../../contexts/AuthContext";
-import {projectService} from "../../services/projectService";
-import SectionHeader from "./SectionHeader";
-import ProjectCard from "./ProjectCard";
+import SectionHeader from "./components/SectionHeader";
+import ProjectCard from "./components/ProjectCard";
 
 // Icons
-import NoProjectsAvailable from "./NoProjectsAvailable";
-import {useQuery} from "@tanstack/react-query";
+import NoProjectsAvailable from "./components/NoProjectsAvailable";
+import { useProjects } from "@/hooks/useProjects";
 
 type SortOption = "a-z" | "z-a";
 
@@ -37,13 +36,7 @@ const CreateProject: React.FC = () => {
 
 
     // Use Query to fetch user projects
-    const {isLoading, data, isError, error, isSuccess} = useQuery({
-        queryKey: ['userProjects'],
-        queryFn: async () => {
-            const res = await projectService.fetchUserProjects();
-            return res;
-        }
-    });
+    const {isLoading, data, isError, error, isSuccess} = useProjects()
 
 
     const processedProjects = useMemo(() => {

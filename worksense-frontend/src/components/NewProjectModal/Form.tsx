@@ -7,7 +7,7 @@ import {useQuery, useQueryClient} from '@tanstack/react-query';
 import styles from "./NewProjectModal.module.css";
 import {User} from "@/types/UserType";
 import apiClient from "../../api/apiClient";
-import GenerateEpicsModal from "../../pages/CreateProject/GenerateEpicsModal.tsx";
+import GenerateEpicsModal from "../../pages/CreateProject/components/GenerateEpicsModal.tsx";
 import {Sparkles} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
 import {useNavigate} from "react-router-dom";

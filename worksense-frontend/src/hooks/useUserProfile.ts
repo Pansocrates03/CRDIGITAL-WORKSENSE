@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
-import {User} from "@/types/UserType";
-import {userProfileService} from "@/services/userProfileService";
-import {authService} from "@/services/auth";
+import { User } from "@/types/UserType";
+import { userProfileService } from "@/services/userProfileService";
+import { authService } from "@/services/auth";
 
 export interface UserProfile extends User {
     avatar: string;

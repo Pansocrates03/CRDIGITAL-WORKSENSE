@@ -22,15 +22,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    /*
     console.log(
       "%%% [AuthProvider useEffect] MOUNTING / REFRESH CHECK STARTING %%%"
     );
+    */
     try {
       const userFromStorage = authService.getCurrentUser();
+      /*
       console.log(
         "%%% [AuthProvider useEffect] User received from getCurrentUser():",
         userFromStorage
       );
+      */
       // Only need to set the user state
       setUser(userFromStorage); // Set to user object or null
     } catch (error) {
@@ -50,15 +54,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     // setLoading(true); // Optional
     try {
-      console.log("[AuthProvider] Calling authService.login...");
+      //console.log("[AuthProvider] Calling authService.login...");
       // Login returns the response including the user now
       const loginResponse = await authService.login(email, password);
-      console.log("[AuthProvider] authService.login finished.");
+      //console.log("[AuthProvider] authService.login finished.");
 
       if (loginResponse.user && loginResponse.token) {
+        /*
         console.log(
           "[AuthProvider] User found in login response. Setting state."
         );
+        */
         setUser(loginResponse.user); // Set user directly from login response
         // No need to call getCurrentUser again here
         // No need to set isAuthenticated

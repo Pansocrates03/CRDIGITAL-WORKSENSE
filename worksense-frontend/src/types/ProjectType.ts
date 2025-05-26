@@ -2,7 +2,7 @@ export default interface ProjectDetails {
   id: string;
   name: string;
   description: string;
-  ownerId: number;
+  ownerId: string;
   context: {};
   createdAt: {};
   members?: Array<{ userId: number; role: string; projectRoleId?: string }>;

@@ -1,12 +1,12 @@
 // src/components/Header/Header.tsx
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import { authService } from "@/services/auth";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserProfile } from "@/hooks/useUserProfile";
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 import worksenseLogo from "@/assets/images/worksenseLogo.svg";
+import { useUser } from "@/hooks/useUsers";
 
 interface HeaderProps {
   /** Current section/page name */
@@ -40,7 +40,10 @@ export const Header: React.FC<HeaderProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { profile } = useUserProfile();
+
+  console.log("USER RECEIVED IN HEADER", user)
+
+  const {data: userData} = useUser(user?.id)
 
 
   // Handler for user logout
@@ -168,14 +171,13 @@ export const Header: React.FC<HeaderProps> = ({
             aria-haspopup="true"
             data-testid="user-menu-button"
           >
-            <AvatarDisplay 
-              user={{
-                firstName: user?.firstName,
-                lastName: user?.lastName,
-                profilePicture: profile?.avatar
-              }}
-              size="sm"
-            />
+            {userData && (
+              <AvatarDisplay 
+                user={userData}
+                size="sm"
+              />
+            )}
+            
           </button>
 
           {isMenuOpen && (

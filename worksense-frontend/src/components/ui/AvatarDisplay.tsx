@@ -1,15 +1,9 @@
 import React from 'react';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
+import type { User } from "@/types/UserType"
 
 interface AvatarDisplayProps {
-    user: {
-        pfp?: string | undefined;
-        firstName?: string;
-        lastName?: string;
-        name?: string;
-        profilePicture?: string;
-        avatarUrl?: string;
-    };
+    user: User;
     size?: 'sm' | 'md' | 'lg' | 'xl';
     className?: string;
 }
@@ -20,14 +14,19 @@ const getInitials = (user: AvatarDisplayProps['user']): string => {
         return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
     }
 
-    // If we have a full name, split it and use first letters
-    if (user.name) {
-        const nameParts = user.name.split(' ');
+    // If we have a fullName, split it and use first letters
+    if (user.fullName) {
+        const nameParts = user.fullName.split(' ');
         if (nameParts.length >= 2) {
             return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
         }
         // If only one word name, use first two letters
-        return user.name.slice(0, 2).toUpperCase();
+        return user.fullName.slice(0, 2).toUpperCase();
+    }
+
+    // If we have email, use first two letters
+    if (user.email) {
+        return user.email.slice(0, 2).toUpperCase();
     }
 
     // Fallback
@@ -42,19 +41,28 @@ const sizeClasses = {
 };
 
 export const AvatarDisplay: React.FC<AvatarDisplayProps> = ({
-                                                                user,
-                                                                size = 'md',
-                                                                className = ''
-                                                            }) => {
-    const avatarUrl = user.profilePicture || user.avatarUrl || user.pfp;
+    user,
+    size = 'md',
+    className = ''
+}) => {
+    if (!user) {
+        return (
+            <Avatar className={`${sizeClasses[size]} ${className}`}>
+                <AvatarFallback>??</AvatarFallback>
+            </Avatar>
+        );
+    }
+
+    const avatarUrl = user.pfp;
     const initials = getInitials(user);
+    const displayName = user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'User';
 
     return (
         <Avatar className={`${sizeClasses[size]} ${className}`}>
             {avatarUrl ? (
                 <AvatarImage
                     src={avatarUrl}
-                    alt={user.name || `${user.firstName} ${user.lastName}`}
+                    alt={displayName}
                 />
             ) : (
                 <AvatarFallback>
@@ -73,10 +81,14 @@ interface AvatarGroupProps {
 }
 
 export const AvatarGroup: React.FC<AvatarGroupProps> = ({
-                                                            users,
-                                                            maxVisible = 3,
-                                                            size = 'sm'
-                                                        }) => {
+    users,
+    maxVisible = 3,
+    size = 'sm'
+}) => {
+    if (!users || users.length === 0) {
+        return null;
+    }
+
     const visibleUsers = users.slice(0, maxVisible);
     const remainingCount = users.length - maxVisible;
 

@@ -3,40 +3,48 @@ import {Card, CardContent, CardFooter, CardHeader, CardTitle,} from "@/component
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Button} from "@/components/ui/button";
 import {AvatarPicker} from "@/components/Account/AvatarPicker";
-import {useUserProfile} from "@/hooks/useUserProfile";
+import {toast} from "sonner";
+
 import styles from "../Settings.module.css";
 import {Pencil} from "lucide-react";
 import {handleSuccess} from "@/utils/handleSuccessToast.ts";
+import { useUser } from "@/hooks/useUsers";
 
-export const AccountTab: React.FC = () => {
+export const AccountTab: React.FC<{userId:string}> = ({ userId }) => {
     const {
-        profile,
-        loading,
+        data: profile,
+        isLoading: loading,
         error: profileError,
-        save,
-        setProfile,
-    } = useUserProfile();
+        updateLocalData,
+        updateUser
+    } = useUser(userId);
+
     const [editing, setEditing] = useState(false);
     const [pickerOpen, setPickerOpen] = useState(false);
 
     const handleSave = async () => {
         if (profile) {
             try {
-                await save({nickName: profile.nickName, pfp: profile.avatar});
+                await updateUser({
+                    nickName: profile.nickName,
+                    pfp: profile.pfp
+                });
                 setEditing(false);
                 handleSuccess("Profile updated successfully", `Cool changes ${profile.nickName}`);
             } catch (e) {
                 console.error(e);
+                toast.error("Error updating profile", {
+                    description: "Please try again later"
+                });
             }
         }
     };
-
 
     if (loading) return <div/>;
     if (profileError || !profile)
         return (
             <div className={styles.errorMessage}>
-                {profileError || "Profile not found"}
+                {profileError?.message || "Profile not found"}
             </div>
         );
 
@@ -60,8 +68,8 @@ export const AccountTab: React.FC = () => {
                 <CardContent className="space-y-6">
                     <div className="flex flex-col items-center">
                         <Avatar className="size-24 mb-4">
-                            <AvatarImage src={profile.avatar}/>
-                            <AvatarFallback>{profile.email[0]}</AvatarFallback>
+                            <AvatarImage src={profile.pfp}/>
+                            <AvatarFallback>{profile.email}</AvatarFallback>
                         </Avatar>
                         <h2 className="text-lg font-semibold text-center">
                             {profile.fullName || profile.email}
@@ -73,7 +81,10 @@ export const AccountTab: React.FC = () => {
                             value={profile.nickName || ""}
                             disabled={!editing}
                             onChange={(e) =>
-                                setProfile({...profile, nickName: e.target.value})
+                                updateLocalData(old => ({
+                                    ...old!,
+                                    nickName: e.target.value
+                                }))
                             }
                             className="w-full px-3 py-2 rounded-md border disabled:opacity-50"
                         />
@@ -90,7 +101,10 @@ export const AccountTab: React.FC = () => {
                             {pickerOpen && (
                                 <AvatarPicker
                                     onSelect={(url) => {
-                                        setProfile({...profile, avatar: url});
+                                        updateLocalData(old => ({
+                                            ...old!,
+                                            pfp: url
+                                        }));
                                         setPickerOpen(false);
                                     }}
                                 />

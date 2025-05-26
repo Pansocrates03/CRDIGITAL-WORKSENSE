@@ -6,17 +6,15 @@ import {UserManagementTab} from "./tabs/UserManagementTab";
 import {useFetchUsers} from "./hooks";
 import {TabType} from "./interfaces";
 import styles from "./Settings.module.css";
-import {authService} from "@/services/auth";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUsers } from "@/hooks/useUsers";
 
 const Settings: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<TabType>("account");
-    const [user] = useState(authService.getCurrentUser());
-    const {users, usersLoading, usersError, refetchUsers} = useFetchUsers(
-        activeTab,
-        user?.platformRole
-    );
+    const { user } = useAuth();
+    const { data:users, isLoading:usersLoading, isError:usersError } = useUsers();
 
     // Check if user is admin (case-insensitive)
     const isAdmin = user?.platformRole?.toLowerCase() === "admin";
@@ -66,13 +64,12 @@ const Settings: React.FC = () => {
             {/* Content Area */}
             <div className={styles.contentArea}>
                 {"account" === activeTab ? (
-                    <AccountTab/>
+                    <AccountTab userId={user?.id}/>
                 ) : activeTab === "userManagement" && isAdmin ? (
                     <UserManagementTab
                         users={users}
                         usersLoading={usersLoading}
                         usersError={usersError}
-                        refetchUsers={refetchUsers}
                     />
                 ) : null}
             </div>

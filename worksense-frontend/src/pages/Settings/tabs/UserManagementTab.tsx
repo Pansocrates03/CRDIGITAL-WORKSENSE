@@ -10,6 +10,7 @@ import styles from "../Settings.module.css";
 import {CreateUserModal} from "../CreateUserModal";
 import { toast } from "sonner";
 import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal";
+import { QueryClient, useQueryClient } from "@tanstack/react-query";
 
 interface MenuPosition {
     top: number;
@@ -19,16 +20,16 @@ interface MenuPosition {
 interface UserManagementTabProps {
     users: UserListItem[];
     usersLoading: boolean;
-    usersError: string | null;
-    refetchUsers: () => void;
+    usersError: boolean;
 }
 
 export const UserManagementTab: React.FC<UserManagementTabProps> = ({
-                                                                        users,
-                                                                        usersLoading,
-                                                                        usersError,
-                                                                        refetchUsers,
-                                                                    }) => {
+    users,
+    usersLoading,
+    usersError,
+}) => {
+    const queryClient = useQueryClient()
+    
     const [editingUser, setEditingUser] = useState<UserListItem | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -144,7 +145,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                 toast.success(`User ${formData.firstName} ${formData.lastName} updated successfully`);
                 setIsEditModalOpen(false);
                 setEditingUser(null);
-                refetchUsers();
+                queryClient.invalidateQueries({ queryKey: ["users"]})
             } else {
                 toast.error("Update succeeded but received an unexpected status.");
             }
@@ -160,7 +161,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
     const handleModalClose = () => {
         setIsCreateModalOpen(false);
         // Only refetch and show success message when modal is closed
-        refetchUsers();
+        queryClient.invalidateQueries({ queryKey: ["users"]})
     };
 
     const handleCreateUser = async (userData: any) => {
@@ -197,7 +198,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                 toast.success(`User ${userToDelete.firstName} ${userToDelete.lastName} deleted successfully`);
                 setDeleteModalOpen(false);
                 setUserToDelete(null);
-                refetchUsers();
+                queryClient.invalidateQueries({ queryKey: ["users"]})
             } else {
                 toast.error("Deletion succeeded but received an unexpected status.");
             }
@@ -251,7 +252,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                                     <div className={styles.avatarWrapper}>
                                         <AvatarDisplay
                                             user={{
-                                                name: `${user.firstName} ${user.lastName}`,
+                                                fullName: `${user.firstName} ${user.lastName}`,
                                                 profilePicture: user.pfp,
                                             }}
                                             size="sm"
