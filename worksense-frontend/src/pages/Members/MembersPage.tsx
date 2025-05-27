@@ -3,7 +3,6 @@
 import React, {useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {PlusIcon} from 'lucide-react';
-import {useQueryClient} from '@tanstack/react-query';
 
 // Components
 import {Button} from '@/components/ui/button';
@@ -11,23 +10,31 @@ import MembersList from '@/components/MembersList/MembersList';
 import EditMemberModal from '../../components/EditMemberModal/EditMemberModal';
 import MemberSelection from '@/components/NewProjectModal/MemberSelection';
 import {DeleteMemberAlert} from './DeleteMemberAlert';
+import { handleSuccess } from "@/utils/handleSuccessToast.ts";
 
 // Types
 import MemberDetailed from '@/types/MemberDetailedType';
 import Member from '@/types/MemberType';
 
-// Services
-import {projectService} from '@/services/projectService';
-import {useDeleteMember, useMembers, useUpdateMemberRole} from '@/hooks/useMembers';
-import {useUsers} from '@/hooks/useUsers';
-import {useAuth} from '@/hooks/useAuth';
-import {handleSuccess} from "@/utils/handleSuccessToast.ts";
+// HOOKS
+import { useMembers } from '@/hooks/useMembers';
+import { useUsers } from '@/hooks/useUsers';
+import { useAuth } from '@/hooks/useAuth';
+
+interface Role {
+    id: string;
+    name: string;
+}
 
 const MembersPage: React.FC = () => {
     const {id: projectId} = useParams<{ id: string }>();
-    const queryClient = useQueryClient();
+    
+    // HOOKS
     const {data: user} = useAuth();
-    const {data: members = [], isLoading} = useMembers(projectId!);
+    const {data: users = [], isLoading: isUsersLoading, } = useUsers();
+    const {data: members = [], isLoading, addMember, deleteMember, updateMember} = useMembers(projectId!);
+    
+
     const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAddingMembers, setIsAddingMembers] = useState(false);
@@ -35,12 +42,7 @@ const MembersPage: React.FC = () => {
 
     // Alert states
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
-    const [memberToDelete, setMemberToDelete] = useState<MemberDetailed | null>(null);
-
-    interface Role {
-        id: string;
-        name: string;
-    }
+    const [memberToDelete, setMemberToDelete] = useState<MemberDetailed | null>(null);    
 
     const availableRoles: Role[] = [
         { id: 'product-owner', name: 'Product Owner' },
@@ -48,26 +50,14 @@ const MembersPage: React.FC = () => {
         { id: 'developer', name: 'Developer' },
         { id: 'viewer', name: 'Viewer' }
     ];
-    const isProductOwner = members.some(member => member.userId === user?.userId && member.projectRoleId === 'product-owner');
 
-    const deleteMemberMutation = useDeleteMember(projectId!);
-    const updateMemberRoleMutation = useUpdateMemberRole(projectId!);
-    const {isLoading: isUsersLoading, data: users = []} = useUsers();
+    
+    // Checamos si el usuario es el producto owner para mostrarle el boton de añadir usuario
+    const isProductOwner = members.some(member => member.userId === user?.userId && member.projectRoleId == "product-owner")
 
     const handleEditClick = (member: MemberDetailed) => {
         setSelectedMember(member);
         setIsModalOpen(true);
-    };
-
-    const handleRoleUpdate = async (userId: number, role: string) => {
-        try {
-            await updateMemberRoleMutation.mutateAsync({userId, role});
-            setIsModalOpen(false);
-            handleSuccess('Role updated successfully', `Role updated for ${selectedMember?.name}`);
-        } catch (error) {
-            console.error('Failed to update role:', error);
-        }
-
     };
 
     const handleDeleteMember = async (member: MemberDetailed) => {
@@ -75,46 +65,13 @@ const MembersPage: React.FC = () => {
         setShowDeleteAlert(true);
     };
 
-    const handleConfirmDelete = async () => {
-        if (!memberToDelete || !projectId) return;
-        try {
-            await deleteMemberMutation.mutateAsync(memberToDelete.userId);
-            setShowDeleteAlert(false);
-            setMemberToDelete(null);
-            handleSuccess("Member deleted successfully", `Member ${memberToDelete.name} deleted`);
-
-        } catch (error) {
-            console.error('Failed to delete member:', error);
-        }
-    };
-
     const handleAddMember = (member: Member) => {
         setSelectedMembers((prevMembers) => [...prevMembers, member]);
     };
 
-    const handleRemoveMember = (userId: number) => {
+    const handleRemoveMember = (userId: string) => {
         setSelectedMembers(selectedMembers.filter((m) => m.userId !== userId));
     };
-
-    const handleAddMembersSubmit = async () => {
-        try {
-            for (const member of selectedMembers) {
-                await projectService.addMemberToProject(
-                    projectId!,
-                    member.userId,
-                    member.projectRoleId
-                );
-            }
-            setSelectedMembers([]);
-            setIsAddingMembers(false);
-            // Invalidate the members query to refresh the list
-            queryClient.invalidateQueries({queryKey: ['members', projectId]});
-            handleSuccess('Members added successfully', "collaborate with the project team!" );
-        } catch (error) {
-            console.error('Failed to add members:', error);
-        }
-    };
-
 
     if (isLoading) return <div>Loading members...</div>;
 
@@ -166,7 +123,7 @@ const MembersPage: React.FC = () => {
                             availableUsers={users.filter(
                                 (user) =>
                                     !selectedMembers.some((member) => member.userId === user.userId) &&
-                                    !members.some((member) => member.userId === user.userId)
+                                    !members.some((member) => member.userId === user.id)
                             )}
                         />
                         <div className="flex justify-end gap-2 mt-4">
@@ -181,7 +138,7 @@ const MembersPage: React.FC = () => {
                             </Button>
                             <Button
                                 variant={"default"}
-                                onClick={handleAddMembersSubmit}
+                                onClick={() => console.log("TO-DO")}
                                 disabled={selectedMembers.length === 0}
                             >
                                 Add Members
@@ -205,18 +162,18 @@ const MembersPage: React.FC = () => {
                         onClose={() => setIsModalOpen(false)}
                         member={selectedMember}
                         availableRoles={availableRoles}
-                        onSubmit={handleRoleUpdate}
+                        onSubmit={() => console.log("TODO")}
                     />
 
-                    {memberToDelete && (
+                    {memberToDelete && projectId && (
                         <DeleteMemberAlert
                             showDeleteAlert={showDeleteAlert}
-                            memberName={memberToDelete.name}
+                            memberName={memberToDelete.user.firstName || "unknown"}
                             onClose={() => {
                                 setShowDeleteAlert(false);
                                 setMemberToDelete(null);
                             }}
-                            onDelete={handleConfirmDelete}
+                            onDelete={() => deleteMember(projectId, memberToDelete.userId)}
                         />
                     )}
                 </>

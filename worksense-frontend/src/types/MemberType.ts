@@ -1,5 +1,5 @@
 export default interface Member {
-    userId: number,
+    userId: string,
     projectRoleId: string,
     joinedAt: {},
     updatedAt: {

@@ -10,15 +10,18 @@ interface DeleteMemberAlertProps {
 }
 
 export const DeleteMemberAlert: React.FC<DeleteMemberAlertProps> = ({
-                                                                        memberName,
-                                                                        onClose,
-                                                                        onDelete,
-                                                                        showDeleteAlert,
-                                                                    }) => {
+    memberName,
+    onClose,
+    onDelete,
+    showDeleteAlert,
+}) => {
     return (
-        <DeleteConfirmationModal message={`Are you sure you wan to delete ${memberName} 
-    , this will delete al data related to the envolment of the user in the project`} onClose={onClose}
-                                 onConfirm={onDelete} isOpen={showDeleteAlert}
-                                 title={"Delete Member?"}></DeleteConfirmationModal>
+        <DeleteConfirmationModal
+            message={`Are you sure you wan to delete ${memberName},
+                this will delete al data related to the envolment of the user in the project`}
+            onClose={onClose}
+            onConfirm={onDelete}
+            isOpen={showDeleteAlert}
+            title={"Delete Member?"} />
     );
 }; 

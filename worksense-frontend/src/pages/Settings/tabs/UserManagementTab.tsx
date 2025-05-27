@@ -1,6 +1,5 @@
 // components/Settings/Tabs/UserManagementTab.tsx
 import React, {useEffect, useRef, useState} from "react";
-import {UserListItem} from "../interfaces";
 import {Button} from "@/components/ui/button";
 import {AvatarDisplay} from "@/components/ui/AvatarDisplay";
 import {MoreVertical, Pencil, Trash2, Users} from "lucide-react";
@@ -11,6 +10,7 @@ import {CreateUserModal} from "../CreateUserModal";
 import { toast } from "sonner";
 import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal";
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
+import { User } from "@/types/UserType";
 
 interface MenuPosition {
     top: number;
@@ -18,7 +18,7 @@ interface MenuPosition {
 }
 
 interface UserManagementTabProps {
-    users: UserListItem[];
+    users: User[];
     usersLoading: boolean;
     usersError: boolean;
 }
@@ -30,18 +30,18 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
 }) => {
     const queryClient = useQueryClient()
     
-    const [editingUser, setEditingUser] = useState<UserListItem | null>(null);
+    const [editingUser, setEditingUser] = useState<User | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
     const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
-    const [formData, setFormData] = useState<Partial<UserListItem>>({});
+    const [formData, setFormData] = useState<Partial<User>>({});
     const menuButtonRefs = useRef<{ [key: number]: HTMLButtonElement | null }>(
         {}
     );
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-    const [userToDelete, setUserToDelete] = useState<UserListItem | null>(null);
+    const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -90,7 +90,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
         }
     };
 
-    const handleEditClick = (user: UserListItem) => {
+    const handleEditClick = (user: User) => {
         setEditingUser(user);
         setFormData({
             email: user.email,
@@ -181,7 +181,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
         }
     };
 
-    const handleDeleteClick = (user: UserListItem) => {
+    const handleDeleteClick = (user: User) => {
         setUserToDelete(user);
         setDeleteModalOpen(true);
         setActiveMenuId(null);
@@ -251,10 +251,7 @@ export const UserManagementTab: React.FC<UserManagementTabProps> = ({
                                 <div className={styles.userCell}>
                                     <div className={styles.avatarWrapper}>
                                         <AvatarDisplay
-                                            user={{
-                                                fullName: `${user.firstName} ${user.lastName}`,
-                                                profilePicture: user.pfp,
-                                            }}
+                                            user={user}
                                             size="sm"
                                         />
                                     </div>

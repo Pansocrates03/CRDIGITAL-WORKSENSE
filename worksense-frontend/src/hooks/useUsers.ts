@@ -7,7 +7,8 @@ export const useUsers = () => {
     queryKey: ["users"],
     queryFn: async () => {
       const response = await fetch(endpoints.getUsers());
-      return response.json();
+      const res = await response.json();
+      return res as User[];
     }
   });
 }

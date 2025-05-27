@@ -3,7 +3,6 @@ import React, {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import {AccountTab} from "./tabs/AccountTab";
 import {UserManagementTab} from "./tabs/UserManagementTab";
-import {useFetchUsers} from "./hooks";
 import {TabType} from "./interfaces";
 import styles from "./Settings.module.css";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,7 +13,7 @@ const Settings: React.FC = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<TabType>("account");
     const { user } = useAuth();
-    const { data:users, isLoading:usersLoading, isError:usersError } = useUsers();
+    const { data:users=[], isLoading:usersLoading, isError:usersError } = useUsers();
 
     // Check if user is admin (case-insensitive)
     const isAdmin = user?.platformRole?.toLowerCase() === "admin";

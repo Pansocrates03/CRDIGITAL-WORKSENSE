@@ -48,7 +48,6 @@ const iconMap: Record<string, React.ComponentType<{ className?: string; size?: n
  * Handles tab switching, sprint creation, and column management
  */
 const Tabs: React.FC<TabsProps> = ({ items, activeTabId, onTabClick, handleCreateColumn, projectId, selectedSprintId }) => {
-  const createSprintMutation = useCreateSprint(projectId); // Mutation hook to create a sprint
 
   // --- State for column creation modal ---
   const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
@@ -92,7 +91,7 @@ const Tabs: React.FC<TabsProps> = ({ items, activeTabId, onTabClick, handleCreat
     };
     
     try {
-      await createSprintMutation.mutateAsync(sprintData); // Call backend
+      //await createSprintMutation.mutateAsync(sprintData); // Call backend
       // Reset modal and fields
       setIsCreateSprintModalOpen(false);
       setSprintName("");
