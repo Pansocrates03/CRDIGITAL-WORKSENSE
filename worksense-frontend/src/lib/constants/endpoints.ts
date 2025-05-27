@@ -34,6 +34,13 @@ export const endpoints = {
     createProject: () => `${API_URL}/project/`,
     deleteProject: (projectId:string) => `${API_URL}/project/${projectId}`,
 
+    // ROLES
+    getRoles: (projectId:string) => `${API_URL}/project/${projectId}`,
+    getRole: (projectId:string, roleId:string) => `${API_URL}/project/${projectId}/${roleId}`,
+    updateRole: (projectId:string, roleId:string) => `${API_URL}/project/${projectId}/${roleId}`,
+    createRole: (projectId:string) => `${API_URL}/project/${projectId}`,
+    deleteRole: (projectId:string, roleId:string) => `${API_URL}/project/${projectId}/${roleId}`,
+
     // SPRINTS
     getSprints: (projectId:string) => `${API_URL}/project/${projectId}/sprints`,
     getSprint: (projectId:string, sprintId:string) => `${API_URL}/project/${projectId}/sprint/${sprintId}`,
