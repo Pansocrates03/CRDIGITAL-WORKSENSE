@@ -1,21 +1,6 @@
 import apiClient from "@/api/apiClient";
 import { API_URL } from "@/lib/constants/endpoints";
-
-export interface User {
-  email: string;
-  userId: number;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
-  nickName?: string;
-  pfp?: string;
-  platformRole?: string;
-  // The following fields are no longer used in the database but kept for backward compatibility
-  // gender?: number;
-  // country?: string;
-  // lang?: number;
-  // timezone?: number;
-}
+import { User } from "@/types/UserType";
 
 interface LoginResponse {
   message: string;
@@ -98,21 +83,25 @@ export const authService = {
   },
 
   getCurrentUser(): User | null {
-    console.log("%%% [getCurrentUser] CALLED (Refresh Check) %%%"); // Add a unique identifier
+    //console.log("%%% [getCurrentUser] CALLED (Refresh Check) %%%"); // Add a unique identifier
     const token = localStorage.getItem("token");
     const userStr = localStorage.getItem("user");
+    /*
     console.log(
       `%%% [getCurrentUser] Raw token: ${token ? "Exists" : "MISSING"}`
     );
     console.log(`%%% [getCurrentUser] Raw user string: ${userStr}`);
+    */
 
     if (token && userStr && userStr !== "undefined" && userStr !== "null") {
       try {
         const parsedUser = JSON.parse(userStr);
+        /*
         console.log(
           "%%% [getCurrentUser] Parse attempt successful. Parsed data:",
           parsedUser
         );
+        */
         // TIGHTEN VALIDATION: Check for essential properties
         if (
           parsedUser &&
@@ -125,9 +114,11 @@ export const authService = {
             parsedUser.fullName = `${parsedUser.firstName} ${parsedUser.lastName}`;
           }
 
+          /*
           console.log(
             "%%% [getCurrentUser] VALIDATED as user object. Returning object."
           );
+          */
           return parsedUser as User;
         } else {
           console.warn(

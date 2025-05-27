@@ -5,7 +5,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from "react-router-dom";
 import QueryKeys from '@/utils/QueryKeys';
 import { projectService } from '@/services/projectService';
-import { useDeleteSprint, useSprints } from '@/hooks/useSprintData';
 
 // Views
 import Tabs from './components/Tabs/Tabs';

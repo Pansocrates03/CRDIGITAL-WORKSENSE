@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./SideBar.module.css";
 import worksenseLogo from "@/assets/images/worksenseLogo.svg";
 import settingsIcon from "@/assets/images/settings.svg";
-import { projectService } from "../../services/projectService";
 import { Alert } from "../Alert/Alert";
+import { useProject } from "@/hooks/useProjects";
 
 // Define nav item interface
 interface NavItem {
@@ -37,12 +37,8 @@ const NavItemComponent: React.FC<{
 
 export const SideBar: React.FC<{showSidebar:boolean}> = ({showSidebar}) => {
   if(!showSidebar) return null; // Early return if sidebar is not to be shown
-  console.log("Rendering Sidebar", showSidebar);
   const location = useLocation();
   const navigate = useNavigate();
-  const [projectName, setProjectName] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const [showAlert, setShowAlert] = useState<boolean>(false);
 
   // Extract project ID from URL using useMemo for performance
@@ -52,39 +48,9 @@ export const SideBar: React.FC<{showSidebar:boolean}> = ({showSidebar}) => {
     return { isProjectView: isInProjectView, projectId: id };
   }, [location.pathname]);
 
-  // Fetch project name when project ID changes
-  useEffect(() => {
-    let isMounted = true;
-    const fetchProjectName = async () => {
-      if (!projectId) return;
+  //
+  const { data:projectData, isLoading:projectDataLoading, isError:projectDataError} = useProject(projectId ?? "")
 
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const projectData = await projectService.fetchProjectDetails(projectId);
-        if (isMounted) {
-          setProjectName(projectData.name || "Untitled Project");
-        }
-      } catch (error) {
-        console.error("Error fetching project name:", error);
-        if (isMounted) {
-          setError("Failed to load project data");
-          setProjectName("Untitled Project");
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchProjectName();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [projectId]);
 
   // Improved active state check that works with nested routes
   const isPathActive = (path: string): boolean => {
@@ -198,17 +164,17 @@ export const SideBar: React.FC<{showSidebar:boolean}> = ({showSidebar}) => {
 
       {isProjectView && (
         <div className={styles.projectHeader}>
-          {isLoading ? (
+          {projectDataLoading ? (
             <LoadingUI />
           ) : (
             <div className={styles.projectInfo}>
               <div className={styles.projectIcon}>
-                <span>{projectName.charAt(0).toUpperCase()}</span>
+                <span>{projectData?.name.charAt(0).toUpperCase()}</span>
               </div>
-              <h3 className={styles.projectTitle} title={projectName}>
-                {projectName}
+              <h3 className={styles.projectTitle} title={projectData?.name}>
+                {projectData?.name}
               </h3>
-              {error && <div className={styles.errorMessage}>{error}</div>}
+              {projectDataError && <div className={styles.errorMessage}>{projectDataError}</div>}
             </div>
           )}
         </div>

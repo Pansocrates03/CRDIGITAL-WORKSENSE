@@ -122,7 +122,7 @@ const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick, i
                 {displayableMembers.map((member: MemberDetailed, index: number) => ( // Use UserLike type
                     <AvatarDisplay
                         key={member.userId || `featured-member-${index}`}
-                        user={member}
+                        user={member.user}
                         className={`h-8 w-8 rounded-full ring-2 ring-white`}
 
                     />

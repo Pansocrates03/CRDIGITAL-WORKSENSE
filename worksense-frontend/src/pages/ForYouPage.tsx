@@ -13,9 +13,6 @@ import { Button } from '@/components/ui/button';
 import UpdateItemModal from '@/components/BacklogTable/UpdateItemModal';
 import { MoreVertical } from 'lucide-react';
 
-const allStates = ['New', 'To Do', 'In Progress', 'In Review', 'Done'];
-const bulkTypes = ['story', 'bug', 'task', 'knowledge'];
-
 const ForYouPage = () => {
   const { id: projectId } = useParams<{ id: string }>();
   const { user } = useAuth();

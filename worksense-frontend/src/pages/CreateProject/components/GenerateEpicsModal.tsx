@@ -17,13 +17,13 @@ interface GenerateEpicsModalProps {
 }
 
 const GenerateEpicsModal: FC<GenerateEpicsModalProps> = ({
-                                                             projectId,
-                                                             projectName,
-                                                             isOpen, // Keep for effect, though visibility is by parent
-                                                             onClose,  // This will call the parent's onClose
-                                                             onEpicsAdded,
-                                                             onError,
-                                                         }) => {
+    projectId,
+    projectName,
+    isOpen, // Keep for effect, though visibility is by parent
+    onClose,  // This will call the parent's onClose
+    onEpicsAdded,
+    onError,
+}) => {
     const [suggestedEpics, setSuggestedEpics] = useState<AiEpicSuggestion[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);

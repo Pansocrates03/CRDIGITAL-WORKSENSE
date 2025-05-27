@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import styles from "./ProjectView.module.css";
-import apiClient from "@/api/apiClient";
 // Component Imports
 import EditTeamModal from "../EditTeamModal/EditTeamModal";
 import MemberInfoPopup from "../MemberInfoPopup/MemberInfoPopup";
@@ -13,6 +12,10 @@ import MemberDetailed from "@/types/MemberDetailedType";
 import { AvatarDisplay } from "../ui/AvatarDisplay";
 
 import RecentBacklogItems from "./RecentBacklogItems";
+
+// HOOKS
+import { useEpics } from "@/hooks/useEpics";
+import { useStories } from "@/hooks/useStories";
 
 type FullProjectData = {
   project: ProjectDetails;
@@ -25,35 +28,20 @@ export const ProjectView: React.FC<FullProjectData> = ({
 }) => {
   const { id } = useParams<{ id: string }>();
 
-  const [backlogItems, setBacklogItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
   const [teamMembers, setTeamMembers] = useState<MemberDetailed[]>(members);
   const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(
     null
   );
 
-  useEffect(() => {
-    const fetchBacklogItems = async () => {
-      try {
-        const response = await apiClient.get(`/projects/${id}/backlog/items`);
-        const items = response.data;
-        setBacklogItems(items);
-      } catch (error) {
-        console.error("Error fetching backlog items:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data:epics = [] } = useEpics(id || "");
+  const { data:stories = [], isLoading:isStoriesLoading } = useStories(id || "");
 
-    if (id) {
-      fetchBacklogItems();
-    }
-  }, [id]);
 
   useEffect(() => {
     setTeamMembers(members);
   }, [members]);
+
 
   const handleTeamUpdate = (newTeam: MemberDetailed[]) => {
     setTeamMembers(newTeam);
@@ -70,10 +58,8 @@ export const ProjectView: React.FC<FullProjectData> = ({
     projectDetails: ProjectDetails,
     members: MemberDetailed[]
   ) => {
-    const owner = members.find(
-      (members) => members.userId === projectDetails.ownerId
-    );
-    return owner?.name;
+    const owner = members.find(members => members.userId === projectDetails.ownerId);
+    return owner?.user.firstName;
   };
 
   return (
@@ -129,13 +115,10 @@ export const ProjectView: React.FC<FullProjectData> = ({
                 onClick={(e) => handleAvatarClick(m, e)}
               >
                 <AvatarDisplay
-                  user={{
-                    name: m.name,
-                    profilePicture: m.profilePicture,
-                  }}
+                  user={m.user}
                   size="lg"
                 />
-                <span className={styles.avatarName}>{m.name}</span>
+                <span className={styles.avatarName}>{m.user.firstName}</span>
               </div>
             ))}
           </div>
@@ -145,35 +128,25 @@ export const ProjectView: React.FC<FullProjectData> = ({
             <div className={styles.statsGrid}>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  {backlogItems?.length}
-                  <span className={styles.statLabel}>Total Tasks</span>
+                  {stories?.length}
+                  <span className={styles.statLabel}>Total Stories</span>
                 </div>
               </div>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  {
-                    backlogItems?.filter((item: any) => item.type === "epic")
-                      .length
-                  }
+                  { epics?.length }
                   <span className={styles.statLabel}>Epics</span>
                 </div>
               </div>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  {
-                    backlogItems?.filter(
-                      (item: any) => item.status === "in-progress"
-                    ).length
-                  }
+                  { stories?.filter(story => story.status === "in-progress").length }
                   <span className={styles.statLabel}>In Progress</span>
                 </div>
               </div>
               <div className={styles.statItem}>
                 <div className={styles.statValue}>
-                  {
-                    backlogItems?.filter((item: any) => item.status === "done")
-                      .length
-                  }
+                { stories?.filter(story => story.status === "done").length }v
                   <span className={styles.statLabel}>Completed</span>
                 </div>
               </div>
@@ -182,7 +155,7 @@ export const ProjectView: React.FC<FullProjectData> = ({
         </section>
 
         {/* Backlog Preview Section */}
-        <RecentBacklogItems isloading={loading} items={backlogItems} />
+        <RecentBacklogItems isloading={isStoriesLoading} stories={stories} />
       </div>
 
       <EditTeamModal

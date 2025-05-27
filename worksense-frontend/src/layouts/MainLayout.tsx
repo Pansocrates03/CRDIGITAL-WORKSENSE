@@ -37,24 +37,31 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   let headerTitle: string;
   let showSidebar = true;
 
-  if (isInProjectView) {
-    headerTitle = projectLoading
-      ? "Loading Project..."
-      : projectData?.name || "Project";
-  } else if (location.pathname.startsWith("/create")) {
-    headerTitle = "LOGO";
-    showSidebar = false;
-  } else if (location.pathname.startsWith("/settings")) {
-    headerTitle = "Settings";
-    showSidebar = false;
-  } else if (location.pathname.startsWith("/account")) {
-    headerTitle = "Account Settings";
-  } else if (location.pathname.startsWith("/guides")) {
-    headerTitle = "Guides";
-  } else if (location.pathname.startsWith("/api")) {
-    headerTitle = "API Reference";
-  } else {
-    headerTitle = "WorkSense";
+  switch (true) {
+    case isInProjectView:
+      headerTitle = projectLoading
+        ? "Loading Project..."
+        : projectData?.name || "Project";
+      break;
+    case location.pathname.startsWith("/create"):
+      headerTitle = "LOGO";
+      showSidebar = false;
+      break;
+    case location.pathname.startsWith("/settings"):
+      headerTitle = "Settings";
+      showSidebar = false;
+      break;
+    case location.pathname.startsWith("/account"):
+      headerTitle = "Account Settings";
+      break;
+    case location.pathname.startsWith("/guides"):
+      headerTitle = "Guides";
+      break;
+    case location.pathname.startsWith("/api"):
+      headerTitle = "API Reference";
+      break;
+    default:
+      headerTitle = "WorkSense";
   }
 
   const titleForHeader = isInProjectView ? currentSection : headerTitle;

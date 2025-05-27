@@ -6,7 +6,6 @@ import "./Tabs.css";
 import { TabItem } from "../../WorkflowPage";
 
 // Hook to create new sprint
-import { useCreateSprint } from "@/hooks/useSprintData";
 
 // Sprint type definition
 import { Sprint } from '@/types/SprintType';

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"; // Reusable input component
 import "./Tabs.css";
 
 // Hook to create new sprint
-import { useCreateSprint } from "@/hooks/useSprintData";
+//import { useCreateSprint } from "@/hooks/useSprintData";
 
 // Sprint type definition
 import { Sprint } from '@/types/SprintType';

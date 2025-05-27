@@ -45,13 +45,13 @@ interface ItemDetailsModalProps {
 
 }
 const ItemDetailsModal: FC<ItemDetailsModalProps> = ({
-                                                         isOpen,
-                                                         onClose,
-                                                         onEditClick,
-                                                         item,
-                                                         memberInfo,
-                                                         linkedEpic
-                                                     }) => {
+    isOpen,
+    onClose,
+    onEditClick,
+    item,
+    memberInfo,
+    linkedEpic
+}) => {
     // If item is null or the modal is not open, don't render the modal content
     if (!item || !isOpen) {
         return null;

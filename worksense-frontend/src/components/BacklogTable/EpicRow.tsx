@@ -6,50 +6,38 @@ import styles from "../../pages/BacklogTable/BacklogTablePage.module.css";
 import ActionMenu from "./ActionMenu";
 import {AvatarDisplay} from "@/components/ui/AvatarDisplay";
 import BacklogItemType from "@/types/BacklogItemType";
-import MemberDetailed from "@/types/MemberDetailedType";
 
-interface Story {
-    id: string;
-    name: string;
-}
-
-interface Epic {
-    id: string;
-    name: string;
-    type: string;
-    status: string;
-    stories: Story[];
-    assigneeId?: string | number | null;
-}
+import Member from "@/types/MemberType";
+import type { Epic } from "@/types/EpicType";
+import { Story } from "@/types/StoryType";
 
 interface EpicRowProps {
-    epic: BacklogItemType;
+    epic: Epic;
+    epicStories: Story[];
     isExpanded: boolean;
     onToggle: (epicId: string) => void;
     colSpan: number;
     onEdit?: (epic: BacklogItemType) => void;
     onDelete?: (epicId: string) => void;
-
     onGenerateStories?: (epicId: string, epicName: string) => void;
     onViewDetails?: (epic: BacklogItemType) => void;
-    memberMap: Map<number, MemberDetailed>;
     enableAiSuggestions: boolean;
     sprints: { id: string; name: string }[];
 }
 
 export const EpicRow: FC<EpicRowProps> = ({
-                                              epic,
-                                              isExpanded,
-                                              onToggle,
-                                              colSpan,
-                                              onEdit = () => console.log("Edit epic:", epic.id),
-                                              onDelete = () => console.log("Delete epic:", epic.id),
-                                              onGenerateStories,
-                                              onViewDetails,
-                                              memberMap,
-                                              enableAiSuggestions,
-                                              sprints,
-                                          }) => {
+    epic,
+    epicStories,
+    isExpanded,
+    onToggle,
+    colSpan,
+    onEdit = () => console.log("Edit epic:", epic.id),
+    onDelete = () => console.log("Delete epic:", epic.id),
+    onGenerateStories,
+    onViewDetails,
+    enableAiSuggestions,
+    sprints,
+}) => {
     const [isHovered, setIsHovered] = useState(false);
 
     // Handle toggle action
@@ -70,24 +58,6 @@ export const EpicRow: FC<EpicRowProps> = ({
         }
     };
 
-    // Determinar el ID asignado
-    const assigneeId = epic.assigneeId
-        ? typeof epic.assigneeId === "string"
-            ? parseInt(epic.assigneeId)
-            : Number(epic.assigneeId)
-        : null;
-
-    // Inline styles for the title instead of using a separate CSS module
-    const titleStyle = {
-        cursor: "pointer",
-        transition: "color 0.2s ease",
-        fontWeight: 500,
-        position: "relative",
-        display: "inline-block",
-    } as React.CSSProperties;
-
-
-    const memberInfo = assigneeId ? memberMap.get(assigneeId) : null;
 
     return (
         <tr className={styles.epicRowContainer}>
@@ -101,15 +71,15 @@ export const EpicRow: FC<EpicRowProps> = ({
             {epic.name}
 
           </span>
-                    {epic.subItems && epic.subItems.length > 0 && (
+                    {epicStories && epicStories.length > 0 && (
                         <span
                             className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold bg-[var(--accent-pink)] text-white rounded-full"
-                            title={`${epic.subItems.length} ${epic.subItems.length === 1 ? "story" : "stories"}`} // Add a title for accessibility/hover info
+                            title={`${epicStories.length} ${epicStories.length === 1 ? "story" : "stories"}`} // Add a title for accessibility/hover info
                         >
-                        {epic.subItems.length}
+                        {epicStories.length}
                     </span>
                     )}
-                    {epic.subItems && epic.subItems.length > 0 && (
+                    {epicStories && epicStories.length > 0 && (
                         <button
                             onClick={handleToggle}
                             className="ml-1 p-1 hover:bg-gray-200 rounded flex items-center justify-center"
@@ -127,27 +97,8 @@ export const EpicRow: FC<EpicRowProps> = ({
             <td>
                 {epic.status ? <StatusBadge type="status" value={epic.status}/> : "-"}
             </td>
-            <td>
-                {epic.sprint ? (sprints.find(s => s.id === epic.sprint)?.name || "-") : "-"}
-            </td>
-            <td>
-                {assigneeId ? (
-                    <div className="flex items-center gap-2">
-                        <AvatarDisplay
-                            user={{
-                                name: memberInfo?.nickname || memberInfo?.name || `User ${assigneeId}`,
-                                profilePicture: memberInfo?.profilePicture,
-                            }}
-                            size="sm"
-                        />
-                        <span className="text-sm">
-              {memberInfo?.nickname || (memberInfo?.name ? memberInfo.name.split(' ')[0] : `User ${assigneeId}`)}
-            </span>
-                    </div>
-                ) : (
-                    "-"
-                )}
-            </td>
+            <td>-</td>
+            <td>-</td>
             <td>-</td>
             <td className={styles.actionButtons}>
                 <ActionMenu

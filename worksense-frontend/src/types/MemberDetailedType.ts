@@ -1,14 +1,16 @@
+import { User } from "./UserType"
+
 export default interface MemberDetailed {
-    userId: number,
-    projectRoleId: string,
     joinedAt: {
       _seconds: number,
       _nanoseconds: number,
     },
-    name: string,
-    profilePicture: string,
-    email: string,
-    lastLogin: string,
-    nickname?: string,
+    projectRoleId: string
+    userId: string
+    updatedAt: {
+      _seconds: number,
+      _nanoseconds: number,
+    },
+    user: User
 }
   

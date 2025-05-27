@@ -4,9 +4,9 @@ import { getSprint, updateSprint, createSprint, deleteSprint, getSprints } from 
 const router = express.Router({ mergeParams: true });
 
 router.get("/project/:projectId/sprints", getSprints);
-router.get("/project/:projectId/sprint", getSprint);
-router.put("/project/:projectId/sprint", updateSprint);
+router.get("/project/:projectId/sprint/:sprintId", getSprint);
+router.put("/project/:projectId/sprint/:sprintId", updateSprint);
 router.post("/project/:projectId/sprint", createSprint);
-router.delete("/project/:projectId/sprint", deleteSprint)
+router.delete("/project/:projectId/sprint/:sprintId", deleteSprint)
 
 export default router;

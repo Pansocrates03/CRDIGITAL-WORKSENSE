@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 
 // Import the Tabs component from SprintPage.tsx
-import Tabs from '../Sprints/components/Tabs/Tabs';
-import '../Sprints/components/styles/SprintPage.css';
+import Tabs from './Tabs';
+import './components/SprintPage.css';
 
 // Import components for tabs
 import GeneralInfoView from './tabsViews/GeneralInfoView';

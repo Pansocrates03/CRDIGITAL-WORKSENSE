@@ -45,13 +45,13 @@ export const endpoints = {
 
     // SPRINTS
     getSprints: (projectId:string) => `${API_URL}/project/${projectId}/sprints`,
-    getSprint: (projectId:string) => `${API_URL}/project/${projectId}/sprints`,
-    updateSprint: (projectId:string) => `${API_URL}/project/${projectId}/sprints`,
-    createSprint: (projectId:string) => `${API_URL}/project/${projectId}/sprints`,
-    deleteSprint: (projectId:string) => `${API_URL}/project/${projectId}/sprints`,
+    getSprint: (projectId:string, sprintId:string) => `${API_URL}/project/${projectId}/sprint/${sprintId}`,
+    updateSprint: (projectId:string, sprintId:string) => `${API_URL}/project/${projectId}/sprint/${sprintId}`,
+    createSprint: (projectId:string) => `${API_URL}/project/${projectId}/sprint`,
+    deleteSprint: (projectId:string, sprintId:string) => `${API_URL}/project/${projectId}/sprint/${sprintId}`,
 
     // STORIES
-    getStories: (projectId:string) =>  `${API_URL}/project/${projectId}/epics`,
+    getStories: (projectId:string) =>  `${API_URL}/project/${projectId}/stories`,
     getStory: (projectId:string, storyId:string) => `${API_URL}/project/${projectId}/story/${storyId}`,
     updateStory: (projectId:string, storyId:string) => `${API_URL}/project/${projectId}/story/${storyId}`,
     createStory: (projectId:string) => `${API_URL}/project/${projectId}/story`,

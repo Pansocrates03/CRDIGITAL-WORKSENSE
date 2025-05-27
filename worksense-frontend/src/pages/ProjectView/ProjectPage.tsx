@@ -1,5 +1,5 @@
 import {useNavigate, useParams} from "react-router-dom";
-import {ProjectView} from "../../components/ProjectView/ProjectView";
+import { ProjectView } from "../../components/ProjectView/ProjectView";
 import styles from "./ProjectPage.module.css";
 import LoadingSpinner from "../../components/Loading/LoadingSpinner";
 

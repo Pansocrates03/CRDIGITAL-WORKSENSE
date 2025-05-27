@@ -3,7 +3,7 @@ import React, { FC, useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import ItemModalForm, { BacklogItemFormData } from "./ItemModalForm";
 import { Epic, User } from "./types";
-import {useSprints} from "@/hooks/useSprintData.ts";
+import { useSprints } from "@/hooks/useSprints";
 
 interface CreateItemModalProps {
   projectId: string;

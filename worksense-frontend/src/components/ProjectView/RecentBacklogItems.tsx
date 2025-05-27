@@ -1,9 +1,10 @@
+import { Story } from "@/types/StoryType";
 import LoadingSpinner from "../Loading/LoadingSpinner";
 import styles from "./ProjectView.module.css";
 
-const RecentBacklogItems: React.FC<{ isloading: boolean; items: any[] }> = ({
+const RecentBacklogItems: React.FC<{ isloading: boolean; stories: Story[] }> = ({
   isloading,
-  items,
+  stories,
 }) => {
   return (
     <section className={styles.backlogPreview}>
@@ -13,10 +14,10 @@ const RecentBacklogItems: React.FC<{ isloading: boolean; items: any[] }> = ({
         <LoadingSpinner text="Loading backlog items..." />
       ) : (
         <div className={styles.backlogItems}>
-          {items.slice(0, 5).map((item) => (
+          {stories.slice(0, 5).map((item) => (
             <div key={item.id} className={styles.backlogItem}>
               <div className={styles.backlogItemHeader}>
-                <span className={styles.itemType}>{item.type}</span>
+                <span className={styles.itemType}>Story</span>
                 <span className={`${styles.itemStatus} ${styles[item.status]}`}>
                   {item.status}
                 </span>
@@ -25,8 +26,8 @@ const RecentBacklogItems: React.FC<{ isloading: boolean; items: any[] }> = ({
               <p>{item.description}</p>
               <div className={styles.itemMeta}>
                 <span>Priority: {item.priority}</span>
-                {item.size !== undefined && item.size > 0 && (
-                  <span>Size: {item.size}</span>
+                {item.storyPoints !== undefined && item.storyPoints > 0 && (
+                  <span>Size: {item.storyPoints}</span>
                 )}
               </div>
             </div>

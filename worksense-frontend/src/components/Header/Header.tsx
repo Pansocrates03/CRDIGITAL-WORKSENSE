@@ -41,8 +41,6 @@ export const Header: React.FC<HeaderProps> = ({
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  console.log("USER RECEIVED IN HEADER", user)
-
   const {data: userData} = useUser(user?.id)
 
 

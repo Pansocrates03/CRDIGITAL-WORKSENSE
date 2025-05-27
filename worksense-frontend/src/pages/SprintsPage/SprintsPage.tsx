@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 
 /* Custom hooks for sprint data management */
-import { useSprints, useCreateSprint, useDeleteSprint, useUpdateSprint } from "@/hooks/useSprintData";
+import { useSprints } from "@/hooks/useSprints";
 import { useAuth } from "@/hooks/useAuth";
 import { useMembers } from "@/hooks/useMembers";
 
@@ -46,12 +46,7 @@ const SprintsPage: React.FC = () => {
     );
     
     // Fetch sprints data using custom hook
-    const { data: sprints, isLoading, error } = useSprints(projectId ?? "");
-    
-    // Initialize mutation hooks
-    const createSprintMutation = useCreateSprint(projectId ?? "");
-    const deleteSprintMutation = useDeleteSprint(projectId ?? "");
-    const updateSprintMutation = useUpdateSprint(projectId ?? "");
+    const { data: sprints, isLoading, error, createSprint, deleteSprint, updateSprint } = useSprints(projectId ?? "");
     
     // State for controlling modal visibility
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -68,11 +63,7 @@ const SprintsPage: React.FC = () => {
     // State to track if we're editing
     const [isEditing, setIsEditing] = useState(false);
     const [editingSprint, setEditingSprint] = useState<Sprint | null>(null);
-
-    // State to 
     const [isFormValid, setIsFormValid] = useState(true);
-
-    // State for delete confirmation modal
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [sprintToDelete, setSprintToDelete] = useState<string | null>(null);
 
@@ -181,25 +172,31 @@ const SprintsPage: React.FC = () => {
         }
 
         try {
+            if(!projectId) throw Error("There is no projectId")
             if (isEditing && editingSprint) {
-                await updateSprintMutation.mutateAsync({
+                const sprintData:Sprint = {
+                    projectId: projectId,
                     id: editingSprint.id,
                     name: newSprint.name,
                     goal: newSprint.goal,
                     startDate: formatDateForAPI(startDate),
                     endDate: formatDateForAPI(endDate),
                     status: newSprint.status
-                });
+                }
+                await updateSprint(projectId, sprintData);
 
                 toast.success("Sprint updated successfully!")
             } else {
-                await createSprintMutation.mutateAsync({
+                if(!projectId) throw Error("Thehere is no project Id");
+                const newSprintData:Omit<Sprint, "id"> = {
+                    projectId:projectId,
                     name: newSprint.name,
                     status: "Planned", // New sprints always start as Planned
                     goal: newSprint.goal,
                     startDate: formatDateForAPI(startDate),
                     endDate: formatDateForAPI(endDate),
-                });
+                }
+                await createSprint(projectId, newSprintData);
 
                 toast.success("Sprint created successfully!")
             }
@@ -221,7 +218,7 @@ const SprintsPage: React.FC = () => {
     const handleConfirmDelete = async () => {
         if (sprintToDelete) {
             try {
-                await deleteSprintMutation.mutateAsync(sprintToDelete);
+                await deleteSprint(projectId || "", sprintToDelete);
                 setSprintToDelete(null);
 
                 toast.success("Sprint deleted successfully!")

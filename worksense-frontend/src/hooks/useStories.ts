@@ -15,7 +15,9 @@ export const useStories = (projectId: string) => {
             return response.json() as Promise<Story[]>;
         },
     });
-    const addStory = async (story: { name: string }) => {};
+    const addStory = async (projectId:string, story:Story) => {
+        console.log("to-do")
+    };
 
     const deleteStory = async (storyId: string) => {
         const response = await fetch(endpoints.deleteStory(projectId, storyId), {
