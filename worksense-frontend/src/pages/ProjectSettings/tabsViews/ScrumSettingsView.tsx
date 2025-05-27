@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectService } from "@/services/projectService";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useProject } from "@/hooks/useProjects";
 
 const DAYS_OF_WEEK = [
   { id: "monday", label: "Mon" },
@@ -38,14 +39,14 @@ type SprintDuration = typeof SPRINT_DURATIONS[number]["value"];
 const ScrumSettingsView: React.FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
   const { data: user } = useAuth();
-  const queryClient = useQueryClient();
 
   // Fetch project data
-  const { data: project, isLoading } = useQuery({
-    queryKey: ["project", projectId],
-    queryFn: () => projectService.fetchProjectDetails(projectId!),
-    enabled: !!projectId,
-  });
+  const { data: project, isLoading, isError } = useProject(projectId!)
+
+  if (isLoading) return <div>Loading...</div>;
+  if(isError) return <div>Error loading project data</div>;
+  if (!project) return <div>Project not found</div>;
+  
 
   // Local state for edit mode and scrum settings
   const [editMode, setEditMode] = useState(false);
@@ -67,25 +68,19 @@ const ScrumSettingsView: React.FC = () => {
     mutationFn: async (updated: any) => {
       await projectService.updateProject(projectId!, updated);
     },
-    onSuccess: () => {
-      setEditMode(false);
-      queryClient.invalidateQueries({ queryKey: ["project", projectId] });
-      toast.success("Scrum settings updated successfully!");
-    },
+    onSuccess: () => {console.log("Project updated successfully");},
     onError: () => {
       setEditMode(false);
       toast.error("There was an error updating scrum settings");
     },
   });
 
-  if (isLoading || !user || !project) return <div>Loading...</div>;
-
   const isProductOwner =
-    project.ownerId == user.userId ||
+    project.ownerId == user?.userId ||
     (Array.isArray(project.members) &&
       project.members.some(
         member =>
-          String(member.userId) === String(user.userId) &&
+          String(member.userId) === String(user?.userId) &&
           member.projectRoleId === "product-owner"
       ));
 

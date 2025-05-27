@@ -2,15 +2,6 @@ const SERVER = import.meta.env.VITE_API_URL || "http://localhost:5050";
 export const API_URL = SERVER.endsWith("/api/v1") ? SERVER : SERVER + "/api/v2";
 
 export const endpoints = {
-    getProjectDetails:  (projectId:string) =>               `${API_URL}/projects/${projectId}`,
-    getProjectMembers: (projectId:string) =>                `${API_URL}/projects/${projectId}/members`,
-    getProjectMembersDetailed: (projectId:string) =>        `${API_URL}/projects/${projectId}/members/member-detail`,
-    getUserProjects: () =>                                  `${API_URL}/projects`,
-    updateMemberRole: (projectId:string, userId:string) =>  `${API_URL}/projects/${projectId}/members/${userId}`,
-    addMemberToProject: (projectId:string) =>               `${API_URL}/projects/${projectId}/members`,
-    removeMemberFromProject: (projectId:string, userId:string) =>  `${API_URL}/projects/${projectId}/${userId}`,
-    //updateProject: (projectId:string) =>                    `${API_URL}/projects/${projectId}`,
-    //deleteProject: (projectId:string) =>                       `${API_URL}/projects/${projectId}`,
 
     // AUTH
     login: () => `${API_URL}/login`,
@@ -58,11 +49,11 @@ export const endpoints = {
     deleteStory: (projectId:string, storyId:string) => `${API_URL}/project/${projectId}/story/${storyId}`, 
 
     // TICKETS
-    getTickets: () => "",
-    getTicket: () => "",
-    updateTicket: () => "",
-    createTicket: () => "",
-    deleteTicket: () => "",
+    getTickets: (projectId:string) => `${API_URL}/project/${projectId}/tickets`,
+    getTicket: (projectId:string, ticketId:string) => `${API_URL}/project/${projectId}/ticket/${ticketId}`,
+    updateTicket: (projectId:string, ticketId:string) => `${API_URL}/project/${projectId}/ticket/${ticketId}`,
+    createTicket: (projectId:string) => `${API_URL}/project/${projectId}/ticket`,
+    deleteTicket: (projectId:string, ticketId:string) => `${API_URL}/project/${projectId}/ticket/${ticketId}`,
 
     // USERS
     getUsers: () => `${API_URL}/users`,

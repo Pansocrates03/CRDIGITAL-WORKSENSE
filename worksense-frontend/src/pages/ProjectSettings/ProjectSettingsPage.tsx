@@ -10,12 +10,13 @@ import AISettingsView from './tabsViews/AISettingsView';
 import MetricsAnalyticsView from "./tabsViews/MetricsAnalyticsView";
 import ScrumSettingsView from "./tabsViews/ScrumSettingsView";
 import CustomizationView from "./tabsViews/CustomizationView";
+import TabItem from "./components/TabItemType";
 
 const ProjectSettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('generalInfo');
 
   // Define the navigation tabs
-  const navigationTabs = [
+  const navigationTabs: TabItem[] = [
     { id: "generalInfo", label: "General Info" },
     { id: "scrumSettings", label: "Scrum Settings" },
     { id: "customization", label: "Customization" },
@@ -64,6 +65,8 @@ const ProjectSettingsPage: React.FC = () => {
         items={navigationTabs}
         activeTabId={activeTab}
         onTabClick={handleTabChange}
+        handleCreateColumn={() => console.log("Create column clicked")} // Placeholder for column creation
+        projectId="12345" // Example project ID, replace with actual
       />
       <div className="mt-6">
         {renderView()}

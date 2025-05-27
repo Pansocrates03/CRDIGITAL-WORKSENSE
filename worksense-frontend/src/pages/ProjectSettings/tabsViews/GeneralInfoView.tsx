@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectService } from "@/services/projectService"; 
 import { useAuth } from "@/hooks/useAuth"; 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useProject } from "@/hooks/useProjects";
+import { formatTimestamp } from "@/utils/dateUtils";
 
 const statusOptions = [
   { value: "Active", label: "Active" },
@@ -24,12 +26,12 @@ const GeneralInfoView: React.FC = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // Fetch project data
-  const { data: project, isLoading } = useQuery({
-    queryKey: ["project", projectId],
-    queryFn: () => projectService.fetchProjectDetails(projectId!),
-    enabled: !!projectId,
-  });
+  // HOOKS
+  const { data: project, isLoading } = useProject(projectId!);
+
+  if ( isLoading ) return <div>Loading...</div>;
+  if (!project) return <div>Project not found</div>;
+  console.log("Project data:", project);
 
   // Local state for edit mode
   const [editMode, setEditMode] = useState(false);
@@ -87,15 +89,13 @@ const GeneralInfoView: React.FC = () => {
     },
   });
 
-  if (isLoading || !form || !user || !project) return <div>Loading...</div>;
-
   // Now both user and project are defined!
   const isProductOwner =
-    project.ownerId == user.userId ||
+    project.ownerId == user?.id ||
     (Array.isArray(project.members) &&
       project.members.some(
         member =>
-          String(member.userId) === String(user.userId) &&
+          String(member.userId) === String(user?.id) &&
           member.projectRoleId === "product-owner"
       ));
 
@@ -110,11 +110,7 @@ const GeneralInfoView: React.FC = () => {
             </p>
           </div>
           {isProductOwner && !editMode && (
-            <Button
-              onClick={() => setEditMode(true)}
-            >
-              Edit
-            </Button>
+            <Button onClick={() => setEditMode(true)}>Edit</Button>
           )}
           {isProductOwner && editMode && (
             <div className="flex gap-2">
@@ -125,7 +121,7 @@ const GeneralInfoView: React.FC = () => {
                   setForm({
                     name: project?.name || "",
                     description: project?.description || "",
-                    status: project?.status || "Active",
+                    status: project?.status || "",
                     startDate: project?.startDate || "",
                     endDate: project?.endDate || "",
                     visibility: project?.visibility || "",
@@ -134,9 +130,7 @@ const GeneralInfoView: React.FC = () => {
               >
                 Cancel
               </Button>
-              <Button
-                onClick={handleSave}
-              >
+              <Button onClick={handleSave}>
                 Save
               </Button>
             </div>
@@ -155,7 +149,7 @@ const GeneralInfoView: React.FC = () => {
                 className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
               />
             ) : (
-              <div className="text-lg">{form.name}</div>
+              <div className="text-lg">{form?.name}</div>
             )}
           </div>
           {/* Description */}
@@ -169,7 +163,7 @@ const GeneralInfoView: React.FC = () => {
                 className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
               />
             ) : (
-              <div className="text-base">{form.description}</div>
+              <div className="text-base">{form?.description}</div>
             )}
           </div>
           {/* Inline Fields Container */}
@@ -181,12 +175,12 @@ const GeneralInfoView: React.FC = () => {
                 <input
                   type="date"
                   name="startDate"
-                  value={form.startDate?.slice(0, 10)}
+                  value={formatTimestamp(form?.startDate)}
                   onChange={handleChange}
                   className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
                 />
               ) : (
-                <div>{form.startDate ? form.startDate.slice(0, 10) : "Not set"}</div>
+                <div>{ form?.startDate ? formatTimestamp(form?.startDate) : "Not set"}</div>
               )}
             </div>
             {/* End Date */}
@@ -196,12 +190,12 @@ const GeneralInfoView: React.FC = () => {
                 <input
                   type="date"
                   name="endDate"
-                  value={form.endDate?.slice(0, 10)}
+                  value={ formatTimestamp(form?.endDate) }
                   onChange={handleChange}
                   className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
                 />
               ) : (
-                <div>{form.endDate ? form.endDate.slice(0, 10) : "Not set"}</div>
+                <div>{form?.endDate ? formatTimestamp(form?.endDate) : "Not set"}</div>
               )}
             </div>
             {/* Status */}
@@ -219,7 +213,7 @@ const GeneralInfoView: React.FC = () => {
                   ))}
                 </select>
               ) : (
-                <div>{form.status}</div>
+                <div>{form?.status}</div>
               )}
             </div>
             {/* Visibility */}
@@ -238,7 +232,7 @@ const GeneralInfoView: React.FC = () => {
                   ))}
                 </select>
               ) : (
-                <div>{form.visibility || "Not set"}</div>
+                <div>{form?.visibility || "Not set"}</div>
               )}
             </div>
           </div>

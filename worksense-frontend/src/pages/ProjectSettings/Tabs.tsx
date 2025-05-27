@@ -8,17 +8,10 @@ import { Input } from "@/components/ui/input"; // Reusable input component
 import "./Tabs.css";
 
 // Hook to create new sprint
-//import { useCreateSprint } from "@/hooks/useSprintData";
 
 // Sprint type definition
 import { Sprint } from '@/types/SprintType';
-
-// Tab item shape
-interface TabItem {
-  id: string;
-  label: string;
-  requiresSprint?: boolean;
-}
+import TabItem from "./components/TabItemType";
 
 // Props expected by this Tabs component
 interface TabsProps {
