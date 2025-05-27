@@ -1,12 +1,12 @@
 // src/layouts/MainLayout.tsx
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { SideBar } from "../components/SideBar/SideBar";
 import { Header } from "../components/Header/Header";
-import { projectService } from "../services/projectService";
 import styles from "./MainLayout.module.css";
 import FridaChat from "@/components/FridaChat/FridaChat";
 import { FridaChatProvider } from "@/contexts/FridaChatPositionContext";
+import { useProject } from "@/hooks/useProjects";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -27,30 +27,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { id: projectId } = useParams<{ id?: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const [projectName, setProjectName] = useState<string>("");
-  const [projectLoading, setProjectLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    const fetchProjectDetails = async () => {
-      if (projectId) {
-        setProjectLoading(true);
-        try {
-          const projectData = await projectService.fetchProjectDetails(
-            projectId
-          );
-          setProjectName(projectData.name || "Untitled Project");
-        } catch (error) {
-          console.error("Error fetching project name in Layout:", error);
-          setProjectName("Error Loading Project");
-        } finally {
-          setProjectLoading(false);
-        }
-      } else {
-        setProjectName("");
-      }
-    };
-    fetchProjectDetails();
-  }, [projectId, navigate]);
+  const { data: projectData, isLoading: projectLoading } = useProject(projectId ?? "");
+
 
   const isInProjectView = !!projectId;
   const currentSection = getSectionFromPath(location.pathname, projectId);
@@ -61,7 +40,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   if (isInProjectView) {
     headerTitle = projectLoading
       ? "Loading Project..."
-      : projectName || "Project";
+      : projectData?.name || "Project";
   } else if (location.pathname.startsWith("/create")) {
     headerTitle = "LOGO";
     showSidebar = false;
@@ -101,7 +80,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <div className={styles.mainPanel}>
           <Header
             title={titleForHeader}
-            projectNameForBreadcrumb={isInProjectView ? projectName : undefined}
+            projectNameForBreadcrumb={isInProjectView ? projectData?.name : undefined}
             showBackButton={showBackButton}
             showBreadcrumb={showBreadcrumb}
             projectId={projectId}

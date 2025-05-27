@@ -26,16 +26,6 @@ export const projectService = {
         }
     },
 
-    async fetchProjectDetails(id: string): Promise<ProjectDetails> {
-        try {
-            const response = await apiClient.get(endpoints.getProjectDetails(id));
-            return response.data;
-        } catch (error) {
-            console.error("Error fetching project details:", error);
-            throw error;
-        }
-    },
-
     // Gets the list of members in a project
     async fetchProjectMembers(id: string): Promise<Member[]> {
         try {

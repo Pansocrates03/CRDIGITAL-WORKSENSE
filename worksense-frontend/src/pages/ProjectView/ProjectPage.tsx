@@ -5,11 +5,8 @@ import LoadingSpinner from "../../components/Loading/LoadingSpinner";
 
 
 import React from 'react';
-import ProjectDetails from '@/types/ProjectType';
-import {projectService} from "@/services/projectService";
-
-import {useQuery} from "@tanstack/react-query";
 import {useMembers} from "@/hooks/useMembers.ts";
+import { useProject } from "@/hooks/useProjects";
 
 // Extracted reusable UI components
 const LoadingState = () => (
@@ -23,9 +20,9 @@ const LoadingState = () => (
 );
 
 const ErrorState: React.FC<{ message: string; onRetry: () => void }> = ({
-                                                                            message,
-                                                                            onRetry,
-                                                                        }) => (
+    message,
+    onRetry,
+}) => (
     <div className={styles.stateContainer}>
         <div className={styles.iconContainer}>
             <span className={styles.errorIcon}>!</span>
@@ -41,8 +38,8 @@ const ErrorState: React.FC<{ message: string; onRetry: () => void }> = ({
 );
 
 const NotFoundState: React.FC<{ onBackToProjects: () => void }> = ({
-                                                                       onBackToProjects,
-                                                                   }) => (
+    onBackToProjects,
+}) => (
     <div className={styles.stateContainer}>
         <div className={styles.iconContainer}>
             <span className={styles.errorIcon}>?</span>
@@ -65,26 +62,8 @@ export const ProjectPage: React.FC = () => {
     const navigate = useNavigate();
 
     // Use Query to fetch project and members
-    const {
-        data: project,
-        isLoading: projectLoading,
-        isError: projectError,
-        error: projectErrorMessage
-    } = useQuery<ProjectDetails>({
-        queryKey: ["project", id],
-        queryFn: async () => {
-            if (!id) throw new Error("Project ID is required");
-            const res = await projectService.fetchProjectDetails(id);
-            return res;
-        },
-    });
-
-    const {
-        data: members,
-        isLoading: membersLoading,
-        isError: membersError,
-        error: membersErrorMessage
-    } = useMembers(id);
+    const { data:project, isLoading:projectLoading, isError:projectError, error:projectErrorMessage } = useProject(id ?? "");
+    const { data:members, isLoading: membersLoading, isError: membersError,error: membersErrorMessage } = useMembers(id ?? "");
 
     // Memoized navigation handlers
     const handleRetry = () => window.location.reload();
