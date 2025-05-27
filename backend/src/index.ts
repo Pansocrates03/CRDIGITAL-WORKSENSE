@@ -9,6 +9,7 @@ import BugRoutes from "./routes/bugs.routes.js"
 import MemberRoutes from "./routes/members.routes.js"
 import EpicRoutes from "./routes/epics.routes.js"
 import ProjectRoutes from "./routes/projects.routes.js"
+import RoleRoutes from "./routes/roles.routes.js"
 import SprintRoutes from "./routes/sprints.routes.js"
 import StoryRoutes from "./routes/stories.routes.js"
 import TicketRoutes from "./routes/tickets.routes.js"
@@ -32,6 +33,7 @@ app.use(`${API_PREFIX}/`, BugRoutes)
 app.use(`${API_PREFIX}/`, MemberRoutes)
 app.use(`${API_PREFIX}/`, EpicRoutes)
 app.use(`${API_PREFIX}/`, ProjectRoutes)
+app.use(`${API_PREFIX}/`, RoleRoutes)
 app.use(`${API_PREFIX}/`, SprintRoutes)
 app.use(`${API_PREFIX}/`, StoryRoutes)
 app.use(`${API_PREFIX}/`, TicketRoutes)
