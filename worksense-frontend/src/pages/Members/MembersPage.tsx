@@ -25,9 +25,6 @@ interface Role {
     name: string;
 }
 
-interface MembersListProps {
-  projectMembers: ProjectMember[];
-}
 
 const MembersPage: React.FC = () => {
     const {id: projectId} = useParams<{ id: string }>();
@@ -80,7 +77,7 @@ const MembersPage: React.FC = () => {
         setSelectedMembers(selectedMembers.filter((m) => m.userId !== userId));
     };
 
-    if (isMembersLoading) return <div>Loading members...</div>;
+    if (isMembersLoading && isUsersLoading) return <div>Loading members & users...</div>;
 
     return (
         <div className={"p-4 pt-3"}>
@@ -128,8 +125,7 @@ const MembersPage: React.FC = () => {
                             onRemoveMember={handleRemoveMember}
                             isLoading={isUsersLoading}
                             availableUsers={users.filter(
-                                (user) =>
-                                    !selectedMembers.some((member) => member.userId === user.userId) &&
+                                (user) => 
                                     !members.some((member) => member.userId === user.id)
                             )}
                         />
