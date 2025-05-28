@@ -1,7 +1,7 @@
 // src/pages/MembersPage.tsx
 
 import React, {useState} from 'react';
-import {useParams} from 'react-router-dom';
+import {data, useParams} from 'react-router-dom';
 import {PlusIcon} from 'lucide-react';
 
 // Components
@@ -13,8 +13,7 @@ import {DeleteMemberAlert} from './DeleteMemberAlert';
 import { handleSuccess } from "@/utils/handleSuccessToast.ts";
 
 // Types
-import MemberDetailed from '@/types/MemberDetailedType';
-import Member from '@/types/MemberType';
+import { ProjectMember } from '@/types/ProjectMemberType';
 
 // HOOKS
 import { useMembers } from '@/hooks/useMembers';
@@ -26,23 +25,27 @@ interface Role {
     name: string;
 }
 
+interface MembersListProps {
+  projectMembers: ProjectMember[];
+}
+
 const MembersPage: React.FC = () => {
     const {id: projectId} = useParams<{ id: string }>();
     
     // HOOKS
     const {data: user} = useAuth();
-    const {data: users = [], isLoading: isUsersLoading, } = useUsers();
-    const {data: members = [], isLoading, addMember, deleteMember, updateMember} = useMembers(projectId!);
+    const {data: users, isLoading: isUsersLoading} = useUsers();
+    const {data: members = [], isLoading: isMembersLoading } = useMembers(projectId!);
     
 
-    const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(null);
+    const [selectedMember, setSelectedMember] = useState<ProjectMember | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAddingMembers, setIsAddingMembers] = useState(false);
-    const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
+    const [selectedMembers, setSelectedMembers] = useState<ProjectMember[]>([]);
 
     // Alert states
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
-    const [memberToDelete, setMemberToDelete] = useState<MemberDetailed | null>(null);    
+    const [memberToDelete, setMemberToDelete] = useState<ProjectMember | null>(null);    
 
     const availableRoles: Role[] = [
         { id: 'product-owner', name: 'Product Owner' },
@@ -51,16 +54,20 @@ const MembersPage: React.FC = () => {
         { id: 'viewer', name: 'Viewer' }
     ];
 
-    
-    // Checamos si el usuario es el producto owner para mostrarle el boton de añadir usuario
-    const isProductOwner = members.some(member => member.userId === user?.userId && member.projectRoleId == "product-owner")
 
-    const handleEditClick = (member: MemberDetailed) => {
+    // Checamos si el usuario es el producto owner para mostrarle el boton de añadir usuario
+    const isProductOwner = members.some(
+    (member) => member.userId === user?.id && member.projectRoleId === 'product-owner'
+    );
+
+
+    
+    const handleEditClick = (member: Member) => {
         setSelectedMember(member);
         setIsModalOpen(true);
     };
 
-    const handleDeleteMember = async (member: MemberDetailed) => {
+    const handleDeleteMember = async (member: Member) => {
         setMemberToDelete(member);
         setShowDeleteAlert(true);
     };
@@ -73,7 +80,7 @@ const MembersPage: React.FC = () => {
         setSelectedMembers(selectedMembers.filter((m) => m.userId !== userId));
     };
 
-    if (isLoading) return <div>Loading members...</div>;
+    if (isMembersLoading) return <div>Loading members...</div>;
 
     return (
         <div className={"p-4 pt-3"}>

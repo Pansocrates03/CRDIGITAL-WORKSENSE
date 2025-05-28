@@ -1,13 +1,11 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {projectService} from "@/services/projectService";
-import MemberDetailed from "@/types/MemberDetailedType";
-import { endpoints } from "@/lib/constants/endpoints";
 import Member from "@/types/MemberType";
+import { endpoints } from "@/lib/constants/endpoints";
 
 export const useMembers = (projectId: string) => {
     const queryClient = useQueryClient();
 
-    const query = useQuery<MemberDetailed[], Error>({
+    const query = useQuery<Member[], Error>({
         queryKey: ["members", projectId],
         queryFn: async () => {
             const response = await fetch(endpoints.getMembers(projectId));
@@ -31,7 +29,7 @@ export const useMembers = (projectId: string) => {
     };
     const addMember = async (projectId:string, memberData:Member) => {
         try {
-            const response = await fetch(endpoints.addMemberToProject(projectId), {
+            const response = await fetch(endpoints.createMember(projectId), {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',

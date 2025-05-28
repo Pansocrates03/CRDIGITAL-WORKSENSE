@@ -4,9 +4,11 @@ import React from 'react';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '@/components/ui/table';
 import {AvatarDisplay} from '@/components/ui/AvatarDisplay';
 import styles from './MembersList.module.css';
-import MemberDetailed from '@/types/MemberDetailedType';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 import {MoreVertical} from "lucide-react";
+
+// Import Types
+import { ProjectMember } from '@/types/ProjectMemberType';
 
 const formatRoleName = (roleId: any) => {
     if (!roleId) return 'Unknown Role';
@@ -16,42 +18,12 @@ const formatRoleName = (roleId: any) => {
         .join(' ');
 };
 
-const formatLastLogin = (dateString: string) => {
-    if (!dateString) return '--';
-
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-
-    const timeString = date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-    });
-
-    if (diffInDays === 0) {
-        return `Today at ${timeString}`;
-    } else if (diffInDays === 1) {
-        return `Yesterday at ${timeString}`;
-    } else if (diffInDays < 7) {
-        return `${diffInDays} days ago at ${timeString}`;
-    } else {
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        });
-    }
-};
 
 interface Props {
     projectId: string;
-    members: MemberDetailed[];
-    onEdit?: (member: MemberDetailed) => void;
-    onDelete?: (member: MemberDetailed) => void;
+    members: ProjectMember[];
+    onEdit?: (member: ProjectMember) => void;
+    onDelete?: (member: ProjectMember) => void;
 }
 
 const MembersList: React.FC<Props> = ({members, onEdit, onDelete}) => {
@@ -65,7 +37,7 @@ const MembersList: React.FC<Props> = ({members, onEdit, onDelete}) => {
                             <TableHead>Name</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Role</TableHead>
-                            <TableHead>Last Login</TableHead>
+                            {/* <TableHead>Last Login</TableHead> */}
                             <TableHead>Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -74,25 +46,21 @@ const MembersList: React.FC<Props> = ({members, onEdit, onDelete}) => {
                             <TableRow key={member.userId}>
                                 <TableCell>
                                     <AvatarDisplay
-                                        user={{
-                                            name: member.name,
-                                            profilePicture: member.profilePicture
-                                        }}
-                                        size="sm"
+                                    user={{
+                                        fullName: `${member.user.firstName} ${member.user.lastName}`,
+                                        pfp: member.user.pfp,
+                                    }}
+                                    size="md"
                                     />
                                 </TableCell>
-                                <TableCell>{member.name}</TableCell>
-                                <TableCell>{member.email}</TableCell>
+                                <TableCell>{member.user.firstName} {member.user.lastName} </TableCell>
+                                <TableCell>{member.user.email}</TableCell>
                                 <TableCell>
-                  <span className={`${styles.badge} ${styles.roleBadge}`}>
-                    {formatRoleName(member.projectRoleId)}
-                  </span>
+                                    <span className={`${styles.badge} ${styles.roleBadge}`}>
+                                        {formatRoleName(member.projectRoleId)}
+                                    </span>
                                 </TableCell>
-                                <TableCell>
-                  <span className={styles.lastLogin}>
-                    {formatLastLogin(member.lastLogin)}
-                  </span>
-                                </TableCell>
+                                <TableCell>Last Login</TableCell>
                                 <TableCell className="py-2"> {/* Add vertical padding to the cell */}
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
