@@ -1,10 +1,7 @@
 // Core Imports
 import React from 'react';
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from "react-router-dom";
-import QueryKeys from '@/utils/QueryKeys';
-import { projectService } from '@/services/projectService';
 
 // Views
 import Tabs from './components/Tabs/Tabs';
@@ -16,23 +13,22 @@ import BurndownChartView from './components/BurndownChartView/BurndownChartView'
 import DeleteConfirmationModal from '@/components/ui/deleteConfirmationModal/deleteConfirmationModal';
 
 // Types
-import BacklogItemType from "@/types/BacklogItemType.ts";
 import { Sprint } from '@/types/SprintType';
 import { IconType } from 'react-icons/lib';
 
 import { createBurndownChartData } from './utils/CreateBurndownChartData';
 
 import {
-  FiLayout, FiGrid, FiClock, FiBarChart // Icons for tab navigation
+  FiLayout, FiGrid, FiBarChart // Icons for tab navigation
 } from "react-icons/fi";
+import { useTickets } from '@/hooks/useTickets';
+import { useSprints } from '@/hooks/useSprints';
+import { useStories } from '@/hooks/useStories';
+import { Story } from '@/types/StoryType';
+import { Ticket } from '@/types/TicketType';
 
 
-const DEFAULT_COLUMNS = [
-  { id: 'sprint_backlog', title: 'Sprint Backlog' },
-  { id: 'in_progress', title: 'In Progress' },
-  { id: 'in_review', title: 'In Review' },
-  { id: 'done', title: 'Done' }
-];
+
 
 export interface TabItem {
   id: string;
@@ -46,117 +42,72 @@ const navigationTabs: TabItem[] = [
   { id: "burndown_chart", label: "Burndown Chart", icon:FiBarChart}
 ]
 
+function getTicketSprint(ticket: Ticket, stories: Story[]): string | undefined {
+  const parentStory = stories.find(story => story.id === ticket.parentId);
+  return parentStory?.sprintId;
+}
+
 const WorkflowPage: React.FC = () => {
-    const queryClient = useQueryClient();
     const { id: projectId } = useParams<{ id: string }>();
 
-    // HOOKS
-    const { isLoading, data, error } = useQuery<BacklogItemType[], Error>({
-        queryKey: [QueryKeys.backlog, projectId],
-        queryFn: () => projectService.fetchProjectItems(projectId ? projectId : "")
-    })
-    const { mutate: deleteSprintMutation } = useDeleteSprint(projectId ?? "");
-    
-    // Fetch sprints data using custom hook
-    const { data: sprints, isLoading: sprintsLoading, error: sprintsError } = useSprints(projectId ?? "");
-    
     // STATES
-    const [tasks, setTasks] = useState<BacklogItemType[]>([]);
     const [activeTab, setActiveTab] = useState('sprints');
-    const [columns, setColumns] = useState(DEFAULT_COLUMNS);
-    const [selectedSprint, setSelectedSprint] = useState<string>('');
+    //const [columns, setColumns] = useState(DEFAULT_COLUMNS);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [sprintToDelete, setSprintToDelete] = useState<Sprint | null>(null);
 
-    // get active sprint
-    if(!sprints && !sprintsLoading) {
-      return <div>No sprints found</div>
-    }
-    let activeSprint = sprints?.find(s => s.status == "Active")
-    if(!activeSprint){
-      return <div>No sprints found</div>
+    // HOOKS
+    const { data:stories=[], isLoading:isStoriesLoading, isError:isStoriesError } = useStories(projectId!)
+    const { data:tickets=[], isLoading:isTicketsLoading, isError: isTicketsError, updateTicket } = useTickets(projectId!);
+    const { data:sprints=[], isLoading: isSprintsLoading, error: isSprintsError, createSprint, updateSprint, deleteSprint } = useSprints(projectId!);
+
+    // Error management
+    if(isTicketsLoading || isSprintsLoading || isStoriesLoading){
+      return <div>Loading...</div>
     }
 
-    let filteredStories = data?.filter(item => {
-      console.log("Item", item.name, "has sprint", item.sprint, "and we are looking for", activeSprint.id)
-      return item.sprint == activeSprint.id
-    })
+    if(isTicketsError || isSprintsError || isStoriesError){
+      return <div>An error has ocurred</div>
+    }
+
+    // Logic
+
+    let activeSprint = sprints?.find(s => s.status.toLowerCase() == "active")
+    if(!activeSprint) return <div>No sprints found</div>
+
+    let filteredTickets = tickets.filter(ticket => getTicketSprint(ticket,stories) == activeSprint.id)
+
+    if(activeSprint.columns.length <= 0){
+      updateSprint(projectId!, {
+        ...activeSprint,
+        columns: ["In Progress", "In Review", "Done"]
+      })
+    }
     
 
     // FUNCTIONS
      // Handle Delete Sprint
   const handleDeleteSprint = (sprintId: string) => {
-    if (sprintId) {
-      deleteSprintMutation(sprintId); // Call mutation to delete the sprint
+    if (projectId && sprintId) {
+      deleteSprint(projectId,sprintId);
       setDeleteModalOpen(false); // Close the modal after deletion
     }
   };
 
-    const handleCreateColumn = (columnName: string) => {
-    const newColumn = {
-        id: columnName.toLowerCase().replace(/\s+/g, "_") + "_" + Date.now(), // Create a unique id, for example using Date.now()
-        title: columnName
-        };
-        setColumns(prev => [...prev, newColumn]);
-    };
+  const handleCreateColumn = async (columnName: string) => {
+    if (!activeSprint) return;
+    
+    const updatedColumns = [...activeSprint.columns, columnName];
+    await updateSprint(projectId!, {
+      ...activeSprint,
+      columns: updatedColumns
+    });
+  };
 
     const handleTabChange = (tabId: string) => {
         setActiveTab(tabId);
     };
 
-    const getItemChildren = (item: BacklogItemType): BacklogItemType[] => {
-        if (!item.subItems || item.subItems.length === 0) {
-          return [item];
-        }
-        return [
-          item,
-          ...item.subItems.flatMap(getItemChildren)
-        ];
-      };
-  // Update tasks when data changes
-  React.useEffect(() => {
-    if (filteredStories) {
-      console.log("Filtered Stories", filteredStories);
-      // Flatten all subitems
-      let flattenedData = filteredStories.flatMap(getItemChildren);
-
-      // Filter out EPIC items
-      let filteredData = flattenedData.filter(item => item.type !== "epic");
-
-      // Set tasks state
-      setTasks(filteredData);
-    }
-  }, [data]);
-    const handleTaskUpdate = async (
-        taskId: string,
-        newStatus: BacklogItemType["status"]
-    ) => {
-        setTasks(prevTasks =>
-            prevTasks.map(task => task.id === taskId ? { ...task, status: newStatus } : task )
-        );
-        let task = tasks.find(t => t.id === taskId); // Find task
-        if(!task) throw new Error("Task not found"); // Error handling
-        task.status = newStatus
-        await projectService.updateBacklogItem(projectId ? projectId : "", task); // Wait for update
-
-        // Invalidate Query Client
-        queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] });
-    };
-
-    const onTaskContentUpdate = async (
-      backlogItemId: string,
-      newTasks: {name: string, isFinished: boolean}[]
-    ) => {
-      setTasks(prevItems => 
-        prevItems.map(item => item.id === backlogItemId ? { ...item, tasks: newTasks } : item)
-      )
-      let task = tasks.find(t => t.id === backlogItemId);
-      if(!task) throw new Error("Task not found"); // Error handling
-      task.tasks = newTasks;
-      await projectService.updateBacklogItem(projectId ? projectId : "", task)
-
-      queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] });
-    }
 
     const burndown_chart_data = [
       { date: '2024-03-01', remainingWork: 100, idealBurndown: 100 },
@@ -172,21 +123,25 @@ const WorkflowPage: React.FC = () => {
     const renderView = () => {
         switch (activeTab) {
             case 'board':
-                return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} columns={columns} onTaskContentUpdate={onTaskContentUpdate} />;
+                return <BoardView 
+                  tickets={filteredTickets} 
+                  onTicketUpdate={updateTicket} 
+                  columns={activeSprint.columns || []} 
+                />;
             case 'overview':
-                return <OverviewView tasks={tasks} />;
+                return <OverviewView tasks={filteredTickets} />;
             case 'table':
-                return <TableView tasks={tasks} />;
+                return <TableView tickets={filteredTickets} />;
             case 'burndown_chart':
                 return <BurndownChartView data={burndown_chart_data} />
             default:
-                return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} columns={columns} onTaskContentUpdate={onTaskContentUpdate} />;
+                return <BoardView 
+                  tickets={filteredTickets} 
+                  onTicketUpdate={updateTicket} 
+                  columns={activeSprint.columns || []} 
+                />;
         }
     };
-
-    if (error) { throw new Error("An error has occurred on SprintPage.tsx"); }
-    if (isLoading) { return <div>Loading...</div> }
-    if (!data) { throw new Error("Nothing received") }
 
     return (
     <div className="sprint-page">
@@ -204,7 +159,8 @@ const WorkflowPage: React.FC = () => {
         onTabClick={handleTabChange}
         handleCreateColumn={handleCreateColumn}
         projectId={projectId ?? ""}
-        selectedSprintId={selectedSprint}
+        selectedSprintId={activeSprint.id}
+        createSprint={createSprint}
       />
 
       {/* Render active view based on the selected tab */}

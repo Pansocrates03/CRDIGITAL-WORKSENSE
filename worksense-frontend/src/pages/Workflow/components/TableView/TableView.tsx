@@ -1,15 +1,14 @@
 import React from 'react';
-import { Task } from '../../data';
-import BacklogItemType from '@/types/BacklogItemType';
 import { AvatarDisplay } from '@/components/ui/AvatarDisplay';
 import { projectService } from '@/services/projectService';
 import MemberDetailed from '@/types/MemberDetailedType';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { QueryKeys } from '@/lib/constants/queryKeys';
+import { Ticket } from '@/types/TicketType';
 
 interface TableViewProps {
-  tasks: BacklogItemType[];
+  tickets: Ticket[];
 }
 
 const renderAsignee = (memmberId:number|null|undefined) => {
@@ -36,14 +35,14 @@ const renderAsignee = (memmberId:number|null|undefined) => {
   )
 }
 
-const TableView: React.FC<TableViewProps> = ({ tasks }) => {
+const TableView: React.FC<TableViewProps> = ({ tickets }) => {
   return (
     <div className="bg-white rounded-lg shadow overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Task
+              Ticket
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Status
@@ -72,48 +71,58 @@ const TableView: React.FC<TableViewProps> = ({ tasks }) => {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {tasks.map(task => (
-            <tr key={task.id} className="hover:bg-gray-50">
+          {tickets.map(ticket => (
+            <tr key={ticket.id} className="hover:bg-gray-50">
+            
+              {/* NAME */}
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">{task.name}</div>
+                <div className="text-sm font-medium text-gray-900">{ticket.name}</div>
               </td>
+
+              {/* STATUS */}
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                  task.status === 'sprint_backlog' ? 'bg-yellow-100 text-yellow-800' :
-                  task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                  task.status === 'in_review' ? 'bg-purple-100 text-purple-800' :
+                  ticket.status === 'sprint_backlog' ? 'bg-yellow-100 text-yellow-800' :
+                  ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                  ticket.status === 'in_review' ? 'bg-purple-100 text-purple-800' :
                   'bg-green-100 text-green-800'
                 }`}>
-                  {task.status?.replace('_', ' ')}
+                  {ticket.status.length <= 0 ? "Sprint Backlog" : ticket.status}
                 </span>
               </td>
+
+              {/* PRIORITY */}
               <td className="px-6 py-4 whitespace-nowrap">
-                {task.priority && (
+                {ticket.priority && (
                   <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                    task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                    task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    ticket.priority === 'high' ? 'bg-red-100 text-red-800' :
+                    ticket.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
                     'bg-green-100 text-green-800'
                   }`}>
-                    {task.priority}
+                    {ticket.priority}
                   </span>
                 )}
               </td>
+
+              {/* Asignee */}
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex -space-x-2">
-                  {task.assigneeId && renderAsignee(task.assigneeId)}
+                  {ticket.assigneeId && renderAsignee(ticket.assigneeId)}
                 </div>
               </td>
+
+              {/* PROGRESS BAR */}
               <td className="px-6 py-4 whitespace-nowrap">
                 {30 > 0 && ( // {task.subtasksTotal > 0 && (
                   <div className="w-32">
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-blue-600 h-2 rounded-full"
-                        style={{ width: `${(10 / 30) * 100}%` }} // style={{ width: `${(task.subtasksCompleted / task.subtasksTotal) * 100}%` }}
+                        style={{ width: `${(2 / ticket.tasks.length) * 100}%` }} // style={{ width: `${(task.subtasksCompleted / task.subtasksTotal) * 100}%` }}
                       />
                     </div>
                     <span className="text-xs text-gray-500 mt-1">
-                      {10}/{30} {/*  {task.subtasksCompleted}/{task.subtasksTotal} */}
+                      {ticket.tasks.filter(t => t.isFinished == true).length}/{ticket.tasks.length} {/*  {task.subtasksCompleted}/{task.subtasksTotal} */}
                     </span>
                   </div>
                 )}

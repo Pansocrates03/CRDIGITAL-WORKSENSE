@@ -1,18 +1,18 @@
 import React, { FormEvent, useRef, useState } from 'react';
 import './TaskCard.css';
-import BacklogItemType from '@/types/BacklogItemType';
 import { FaAngleDown, FaAngleUp, FaPlus, FaCircle, FaCheckCircle } from "react-icons/fa";
 import { Input } from '@/components/ui/input';
+import { Ticket } from '@/types/TicketType';
 
 interface DraggableTaskCardProps {
-  BacklogItem: BacklogItemType;
+  ticket: Ticket;
   index: number;
-  onUpdate?: (updatedItem: BacklogItemType) => void;
+  onUpdate?: (ticket:Ticket) => void
 }
 
-const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ BacklogItem, index, onUpdate }) => {
+const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ ticket, index, onUpdate }) => {
   const [showSubtasks, setShowSubtasks] = useState(false);
-  const [currentItem, setCurrentItem] = useState<BacklogItemType>(BacklogItem);
+  const [currentItem, setCurrentItem] = useState<Ticket>(ticket);
   const formRef = useRef<HTMLFormElement>(null);
 
   const handleDragStart = (e: React.DragEvent) => {
@@ -64,7 +64,7 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ BacklogItem, inde
 
     if (!taskName?.trim()) return;
 
-    const updatedItem: BacklogItemType = {
+    const updatedItem: Ticket = {
       ...currentItem,
       tasks: [...(currentItem.tasks || []), {isFinished: false, name: taskName}]
     };
@@ -107,7 +107,7 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ BacklogItem, inde
       
       <div className="task-card__meta">
         <span className={`task-card__status ${getStatusClass(currentItem.status ? currentItem.status : "")}`}>
-          {currentItem.status}
+          {currentItem.status.length <= 0 ? "Sprint Backlog" : currentItem.status}
         </span>
         {currentItem.priority && (
           <span className={`task-card__priority ${getPriorityClass(currentItem.priority)}`}>
