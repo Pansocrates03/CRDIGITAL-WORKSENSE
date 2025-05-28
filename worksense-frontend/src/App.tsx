@@ -137,7 +137,7 @@ function App() {
               }
             />
             <Route
-              path="/project/:id/users"
+              path="/project/:id/members"
               element={
                 <PrivateRoute>
                   <MembersPage />
