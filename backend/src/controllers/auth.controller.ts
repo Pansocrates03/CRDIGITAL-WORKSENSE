@@ -39,6 +39,7 @@ export const login = async (req: Request, res: Response) => {
         }
 
         const user: User = {
+            firstName: userData.firstName, lastName: userData.lastName, nickName: userData.nickName, pfp: userData.pfp, platformRole: userData.platformRole, updatedAt: userData.updatedAt,
             id: userDoc.id,
             email: userData.email,
             password: userData.password

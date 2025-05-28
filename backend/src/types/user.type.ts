@@ -8,5 +8,7 @@ export interface User {
     lastName: string;
     nickName: string;
     pfp: string;
+    platformRole: string;
     updatedAt: Timestamp
+
 }
