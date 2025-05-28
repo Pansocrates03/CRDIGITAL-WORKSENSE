@@ -5,7 +5,7 @@ import { projectService } from "@/services/projectService";
 import { useAuth } from "@/hooks/useAuth"; 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useProject } from "@/hooks/useProjects";
+import { useProject, useUpdateProject } from "@/hooks/useProjects";
 import { formatTimestamp } from "@/utils/dateUtils";
 
 const statusOptions = [
@@ -28,6 +28,12 @@ const GeneralInfoView: React.FC = () => {
 
   // HOOKS
   const { data: project, isLoading } = useProject(projectId!);
+  const updateProject = useUpdateProject({
+    onSuccess: () => {
+      setEditMode(false);
+      toast.success("Project updated successfully!");
+    },
+  });
 
   if ( isLoading ) return <div>Loading...</div>;
   if (!project) return <div>Project not found</div>;
@@ -57,22 +63,11 @@ const GeneralInfoView: React.FC = () => {
   };
 
   // Save changes
-  const mutation = useMutation({
-    mutationFn: (updated: any) => projectService.updateProject(projectId!, updated),
-    onSuccess: () => {
-      setEditMode(false);
-      queryClient.invalidateQueries({ queryKey: ["project", projectId] });
-      console.log("TOAST: Project updated successfully!");
-      toast.success("Project updated successfully!");
-    },
-    onError: () => {
-      setEditMode(false);
-      toast.error("There was an error updating the project");
-    },
-  });
-
   const handleSave = () => {
-    mutation.mutate(form);
+    updateProject.mutate({
+      id: projectId!,
+      data: form,
+    });
   };
 
   // Delete project

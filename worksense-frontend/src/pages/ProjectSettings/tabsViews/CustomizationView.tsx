@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { projectService } from "@/services/projectService";
+import { useProject } from "@/hooks/useProjects";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -15,11 +15,12 @@ const CustomizationView: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Fetch project data
-  const { data: project, isLoading } = useQuery({
-    queryKey: ["project", projectId],
-    queryFn: () => projectService.fetchProjectDetails(projectId!),
-    enabled: !!projectId,
-  });
+  // const { data: project, isLoading } = useQuery({
+  //   queryKey: ["project", projectId],
+  //   queryFn: () => projectService.fetchProjectDetails(projectId!),
+  //   enabled: !!projectId,
+  // });
+  const { data: project, isLoading } = useProject(projectId!);
 
   // Local state for edit mode and customization settings
   const [editMode, setEditMode] = useState(false);
