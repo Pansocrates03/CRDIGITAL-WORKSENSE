@@ -51,3 +51,27 @@ export const useUpdateProject = (
         ...options,
     });
 };
+
+export const useDeleteProject = (
+    options: UseMutationOptions<any, any, string> = {}
+) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const response = await fetch(endpoints.deleteProject(id), {
+                method: "DELETE",
+            });
+            if (!response.ok) {
+                throw new Error("Failed to delete project");
+            }
+            return response.json();
+        },
+        onSuccess: (data, variables, context) => {
+            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            if (options.onSuccess) {
+                options.onSuccess(data, variables, context);
+            }
+        },
+        ...options,
+    });
+};

@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useProject } from "@/hooks/useProjects";
+import { useProject, useUpdateProject } from "@/hooks/useProjects";
 
 const DAYS_OF_WEEK = [
   { id: "monday", label: "Mon" },
@@ -41,7 +41,13 @@ const ScrumSettingsView: React.FC = () => {
   const { data: user } = useAuth();
 
   // Fetch project data
-  const { data: project, isLoading, isError } = useProject(projectId!)
+  const { data: project, isLoading, isError } = useProject(projectId!);
+  const updateProject = useUpdateProject({
+    onSuccess: () => {
+      setEditMode(false);
+      toast.success("Scrum settings updated successfully!");
+    },
+  });
 
   if (isLoading) return <div>Loading...</div>;
   if(isError) return <div>Error loading project data</div>;
@@ -63,33 +69,24 @@ const ScrumSettingsView: React.FC = () => {
     }
   }, [project]);
 
-  // Save changes
-  const mutation = useMutation({
-    mutationFn: async (updated: any) => {
-      await projectService.updateProject(projectId!, updated);
-    },
-    onSuccess: () => {console.log("Project updated successfully");},
-    onError: () => {
-      setEditMode(false);
-      toast.error("There was an error updating scrum settings");
-    },
-  });
-
   const isProductOwner =
-    project.ownerId == user?.userId ||
+    project.ownerId == user.id ||
     (Array.isArray(project.members) &&
       project.members.some(
         member =>
-          String(member.userId) === String(user?.userId) &&
+          String(member.userId) === String(user.id) &&
           member.projectRoleId === "product-owner"
       ));
 
   const handleSave = () => {
-    mutation.mutate({
-      ...project,
-      sprintDuration,
-      workingDays,
-      storyPointScale,
+    updateProject.mutate({
+      id: projectId!,
+      data: {
+        ...project,
+        sprintDuration,
+        workingDays,
+        storyPointScale,
+      },
     });
   };
 

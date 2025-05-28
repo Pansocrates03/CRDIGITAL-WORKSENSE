@@ -46,11 +46,11 @@ const AISettingsView: React.FC = () => {
   if (isLoading || !user || !project) return <div>Loading...</div>;
 
   const isProductOwner =
-    project.ownerId == user.userId ||
+    project.ownerId == user.id ||
     (Array.isArray(project.members) &&
       project.members.some(
         member =>
-          String(member.userId) === String(user.userId) &&
+          String(member.userId) === String(user.id) &&
           member.projectRoleId === "product-owner"
       ));
 

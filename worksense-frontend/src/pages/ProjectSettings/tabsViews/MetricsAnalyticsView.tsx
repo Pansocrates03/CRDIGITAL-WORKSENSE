@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useProject } from "@/hooks/useProjects";
+import { useProject, useUpdateProject } from "@/hooks/useProjects";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
@@ -20,6 +20,12 @@ const MetricsAnalyticsView: React.FC = () => {
   //   enabled: !!projectId,
   // });
   const { data: project, isLoading } = useProject(projectId!);
+  const updateProject = useUpdateProject({
+    onSuccess: () => {
+      setEditMode(false);
+      toast.success("Metrics settings updated successfully!");
+    },
+  });
 
   // Local state for edit mode and metrics settings
   const [editMode, setEditMode] = useState(false);
@@ -36,39 +42,26 @@ const MetricsAnalyticsView: React.FC = () => {
     }
   }, [project]);
 
-  // Save changes
-  const mutation = useMutation({
-    mutationFn: async (updated: any) => {
-      await projectService.updateProject(projectId!, updated);
-    },
-    onSuccess: () => {
-      setEditMode(false);
-      queryClient.invalidateQueries({ queryKey: ["project", projectId] });
-      toast.success("Metrics settings updated successfully!");
-    },
-    onError: () => {
-      setEditMode(false);
-      toast.error("There was an error updating metrics settings");
-    },
-  });
-
   if (isLoading || !user || !project) return <div>Loading...</div>;
 
   const isProductOwner =
-    project.ownerId == user.userId ||
+    project.ownerId == user.id ||
     (Array.isArray(project.members) &&
       project.members.some(
         member =>
-          String(member.userId) === String(user.userId) &&
+          String(member.userId) === String(user.id) &&
           member.projectRoleId === "product-owner"
       ));
 
   const handleSave = () => {
-    mutation.mutate({
-      ...project,
-      enableBurndownChart: burndownChartEnabled,
-      enableVelocityTracking: velocityTrackingEnabled,
-      enableWorkloadHeatmaps: workloadHeatmapsEnabled,
+    updateProject.mutate({
+      id: projectId!,
+      data: {
+        ...project,
+        enableBurndownChart: burndownChartEnabled,
+        enableVelocityTracking: velocityTrackingEnabled,
+        enableWorkloadHeatmaps: workloadHeatmapsEnabled,
+      },
     });
   };
 
