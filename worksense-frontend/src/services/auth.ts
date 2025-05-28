@@ -25,7 +25,6 @@ export const authService = {
         }
       );
 
-      //console.log("Respuesta del servidor:", response.data);
 
       if (response.data.token) {
         const tokenToSet = response.data.token;
@@ -107,18 +106,16 @@ export const authService = {
           parsedUser &&
           typeof parsedUser === "object" &&
           typeof parsedUser.email === "string" &&
-          typeof parsedUser.userId === "number"
+          typeof parsedUser.id === "string"
         ) {
-          // Agregar fullName si firstName y lastName están presentes
           if (parsedUser.firstName && parsedUser.lastName) {
             parsedUser.fullName = `${parsedUser.firstName} ${parsedUser.lastName}`;
           }
 
-          /*
+
           console.log(
             "%%% [getCurrentUser] VALIDATED as user object. Returning object."
           );
-          */
           return parsedUser as User;
         } else {
           console.warn(
@@ -184,6 +181,7 @@ export const authService = {
   },
 
   getToken(): string | null {
+    console.log("Getting token from localStorage");
     return localStorage.getItem("token");
   },
 
