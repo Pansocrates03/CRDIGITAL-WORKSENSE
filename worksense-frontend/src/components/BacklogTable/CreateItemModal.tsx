@@ -20,6 +20,7 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
   onItemCreated,
   onError,
 }) => {
+  
   const initialState: BacklogItemFormData = {
     name: "",
     type: "story",

@@ -1,10 +1,15 @@
 // src/components/BacklogTable/BacklogHeader.tsx
 import {FC} from "react";
-import {PlusIcon} from "lucide-react";
+import {PlusIcon, BookOpen, FileText, Ticket} from "lucide-react";
 import {Button} from "@/components/ui/button";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface BacklogHeaderProps {
-    onAddItem: () => void;
+    onAddItem: (type: 'epic' | 'story' | 'ticket') => void;
 }
 
 const BacklogHeader: FC<BacklogHeaderProps> = ({onAddItem}) => (
@@ -17,14 +22,42 @@ const BacklogHeader: FC<BacklogHeaderProps> = ({onAddItem}) => (
                 Track and manage epics, stories, bugs, tech tasks, and knowledge.
             </p>
         </div>
-        <Button
-            variant="default"
-            size="default"
-            onClick={onAddItem}
-        >
-            <PlusIcon className="mr-1 h-4 w-4"/>
-            Add Item
-        </Button>
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="default" size="default">
+                    <PlusIcon className="mr-1 h-4 w-4"/>
+                    Add Item
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-2">
+                <div className="flex flex-col gap-1">
+                    <Button 
+                        variant="ghost" 
+                        className="justify-start"
+                        onClick={() => onAddItem('epic')}
+                    >
+                        <BookOpen className="mr-2 h-4 w-4" />
+                        Create Epic
+                    </Button>
+                    <Button 
+                        variant="ghost" 
+                        className="justify-start"
+                        onClick={() => onAddItem('story')}
+                    >
+                        <FileText className="mr-2 h-4 w-4" />
+                        Create Story
+                    </Button>
+                    <Button 
+                        variant="ghost" 
+                        className="justify-start"
+                        onClick={() => onAddItem('ticket')}
+                    >
+                        <Ticket className="mr-2 h-4 w-4" />
+                        Create Ticket
+                    </Button>
+                </div>
+            </PopoverContent>
+        </Popover>
     </div>
 );
 

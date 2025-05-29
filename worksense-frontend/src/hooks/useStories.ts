@@ -16,7 +16,17 @@ export const useStories = (projectId: string) => {
         },
     });
     const addStory = async (projectId:string, story:Story) => {
-        console.log("to-do")
+        const response = await fetch(endpoints.createStory(projectId), {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(story)
+        })
+        if (!response.ok) {
+            throw new Error('Failed to delete story');
+        }
+        queryClient.invalidateQueries({ queryKey: ["stories"] });
     };
 
     const deleteStory = async (storyId: string) => {

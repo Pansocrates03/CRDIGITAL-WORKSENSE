@@ -16,7 +16,39 @@ export const useEpics = (projectId: string) => {
         },
     });
 
-    const addEpic = async (epic: { name: string }) => {};
+    const addEpic = async (epic: Omit<Epic, 'id' | 'createdAt' | 'updatedAt'>) => {
+        const response = await fetch(endpoints.createEpic(projectId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(epic),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to create epic");
+        }
+
+        queryClient.invalidateQueries({ queryKey: ["epics", projectId] });
+        return response.json() as Promise<Epic>;
+    };
+
+    const updateEpic = async (epicId: string, epic: Partial<Epic>) => {
+        const response = await fetch(endpoints.updateEpic(projectId, epicId), {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(epic),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to update epic");
+        }
+
+        queryClient.invalidateQueries({ queryKey: ["epics", projectId] });
+        return response.json() as Promise<Epic>;
+    };
 
     const deleteEpic = async (epicId: string) => {
         const response = await fetch(endpoints.deleteEpic(projectId, epicId), {
@@ -32,6 +64,7 @@ export const useEpics = (projectId: string) => {
     return {
         ...query, 
         addEpic,
+        updateEpic,
         deleteEpic
     }
 };

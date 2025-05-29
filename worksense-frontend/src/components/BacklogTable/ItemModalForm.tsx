@@ -40,19 +40,19 @@ interface ItemModalFormProps {
 }
 
 const ItemModalForm: React.FC<ItemModalFormProps> = ({
-                                                         mode,
-                                                         formData,
-                                                         onChange,
-                                                         onSubmit,
-                                                         onClose,
-                                                         onClearOrReset,
-                                                         loading,
-                                                         error,
-                                                         users,
-                                                         epics,
-                                                         sprints,
-                                                         disableTypeChange = false,
-                                                     }) => {
+    mode,
+    formData,
+    onChange,
+    onSubmit,
+    onClose,
+    onClearOrReset,
+    loading,
+    error,
+    users,
+    epics,
+    sprints,
+    disableTypeChange = false,
+}) => {
     const handleChange = (
         e: React.ChangeEvent<
             HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
