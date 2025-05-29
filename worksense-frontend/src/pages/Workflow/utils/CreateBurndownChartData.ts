@@ -1,4 +1,4 @@
-import BacklogItemType from "@/types/BacklogItemType";
+import { Story } from "@/types/StoryType";
 
 interface burndown_chart_data {
     date: string,
@@ -6,19 +6,11 @@ interface burndown_chart_data {
     idealBurndown: number
 }
 
-const size2Number = {
-    "XS": 1,
-    "S": 2,
-    "M": 3,
-    "L": 5,
-    "XL": 8
-} 
-
-export const createBurndownChartData = (userStories: BacklogItemType[]): burndown_chart_data[] => {
+export const createBurndownChartData = (stories: Story[]): burndown_chart_data[] => {
     let data: burndown_chart_data[] = [];
 
     // Get the total work for all the stories
-    const totalWork = userStories.reduce((sum, story) => sum + (size2Number[story.size || "M"] || 0), 0);
+    const totalWork = stories.reduce((sum, story) => sum + (story.storyPoints || 0), 0);
     
     // Calculate ideal burndown rate per day
     const sprintDuration = 14; // Assuming 2-week sprints
@@ -39,12 +31,12 @@ export const createBurndownChartData = (userStories: BacklogItemType[]): burndow
         });
         
         // Update remaining work based on completed stories
-        const completedStories = userStories.filter(story => 
+        const completedStories = stories.filter(story => 
             story.status === 'done' && 
             new Date(story.updatedAt || '') <= date
         );
         
-        remainingWork = totalWork - completedStories.reduce((sum, story) => sum + (size2Number[story.size || "M"]  || 0), 0);
+        remainingWork = totalWork - completedStories.reduce((sum, story) => sum + (story.storyPoints || 0), 0);
     }
     
     return data;

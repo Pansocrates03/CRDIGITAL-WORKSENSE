@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { projectService } from "@/services/projectService";
+import { useProject, useUpdateProject } from "@/hooks/useProjects";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -15,10 +15,17 @@ const CustomizationView: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Fetch project data
-  const { data: project, isLoading } = useQuery({
-    queryKey: ["project", projectId],
-    queryFn: () => projectService.fetchProjectDetails(projectId!),
-    enabled: !!projectId,
+  // const { data: project, isLoading } = useQuery({
+  //   queryKey: ["project", projectId],
+  //   queryFn: () => projectService.fetchProjectDetails(projectId!),
+  //   enabled: !!projectId,
+  // });
+  const { data: project, isLoading } = useProject(projectId!);
+  const updateProject = useUpdateProject({
+    onSuccess: () => {
+      setEditMode(false);
+      toast.success("Customization settings updated successfully!");
+    },
   });
 
   // Local state for edit mode and customization settings
@@ -36,38 +43,25 @@ const CustomizationView: React.FC = () => {
     }
   }, [project]);
 
-  // Save changes
-  const mutation = useMutation({
-    mutationFn: async (updated: any) => {
-      await projectService.updateProject(projectId!, updated);
-    },
-    onSuccess: () => {
-      setEditMode(false);
-      queryClient.invalidateQueries({ queryKey: ["project", projectId] });
-      toast.success("Customization settings updated successfully!");
-    },
-    onError: () => {
-      setEditMode(false);
-      toast.error("There was an error updating customization settings");
-    },
-  });
-
   if (isLoading || !user || !project) return <div>Loading...</div>;
 
   const isProductOwner =
-    project.ownerId == user.userId ||
+    project.ownerId == user.id ||
     (Array.isArray(project.members) &&
       project.members.some(
         member =>
-          String(member.userId) === String(user.userId) &&
+          String(member.userId) === String(user.id) &&
           member.projectRoleId === "product-owner"
       ));
 
   const handleSave = () => {
-    mutation.mutate({
-      ...project,
-      workflowStages,
-      tags,
+    updateProject.mutate({
+      id: projectId!,
+      data: {
+        ...project,
+        workflowStages,
+        tags,
+      },
     });
   };
 

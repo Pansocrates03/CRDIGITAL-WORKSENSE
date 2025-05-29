@@ -3,7 +3,8 @@ export interface Ticket {
     assignedTo: string;
     description: string;
     name: string;
+    parentId: string;
     priority: string;
     status: string;
-    subtasks: string[]
+    tasks: {isFinished:boolean, name:string}[]
 }

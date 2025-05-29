@@ -12,7 +12,8 @@ export const useTickets = (projectId: string) => {
             if (!response.ok) {
                 throw new Error('Failed to fetch tickets');
             }
-            return response.json();
+            const data = await response.json();
+            return data as Ticket[];
         },
     });
 
@@ -30,6 +31,20 @@ export const useTickets = (projectId: string) => {
         queryClient.invalidateQueries({ queryKey: ["tickets"] });
     };
 
+    const updateTicket = async (ticket:Ticket) => {
+        const response = await fetch(endpoints.updateTicket(projectId,ticket.id), {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(ticket),
+        })
+        if (!response.ok) {
+            throw new Error('Failed to update ticket');
+        }
+        queryClient.invalidateQueries({ queryKey: ["tickets"] });
+    }
+
     const deleteTicket = async (ticketId:string) => {
         const response = await fetch(endpoints.deleteTicket(projectId, ticketId), {
             method: 'DELETE',
@@ -43,6 +58,7 @@ export const useTickets = (projectId: string) => {
     return {
         ...query,
         addTicket,
+        updateTicket,
         deleteTicket
     };
 };

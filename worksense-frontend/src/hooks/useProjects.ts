@@ -1,6 +1,7 @@
 import { endpoints } from "@/lib/constants/endpoints"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import ProjectDetails from "@/types/ProjectType"
+import { UseMutationOptions } from "@tanstack/react-query"
 
 export const useProjects = () => {
     return useQuery({
@@ -21,3 +22,56 @@ export const useProject = (projectId:string) => {
         }
     })
 }
+
+export const useUpdateProject = (
+    options: UseMutationOptions<any, any, { id: string; data: any }> = {}
+) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, data }: { id: string, data: any }) => {
+            const response = await fetch(endpoints.updateProject(id), {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+            if (!response.ok) {
+                throw new Error("Failed to update project");
+            }
+            return response.json();
+        },
+        onSuccess: (data, variables, context) => {
+            queryClient.invalidateQueries({ queryKey: ["project", variables.id] });
+            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            if (options.onSuccess) {
+                options.onSuccess(data, variables, context);
+            }
+        },
+        ...options,
+    });
+};
+
+export const useDeleteProject = (
+    options: UseMutationOptions<any, any, string> = {}
+) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            const response = await fetch(endpoints.deleteProject(id), {
+                method: "DELETE",
+            });
+            if (!response.ok) {
+                throw new Error("Failed to delete project");
+            }
+            return response.json();
+        },
+        onSuccess: (data, variables, context) => {
+            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            if (options.onSuccess) {
+                options.onSuccess(data, variables, context);
+            }
+        },
+        ...options,
+    });
+};

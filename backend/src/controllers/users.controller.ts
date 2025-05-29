@@ -3,6 +3,7 @@ import { db } from "../models/firebase.model.js";
 import { FieldValue } from "firebase-admin/firestore";
 import { User } from "../types/user.type.js";
 import bcrypt from "bcryptjs";
+import {platform} from "node:os";
 
 export const getUsers = async (req: Request, res: Response) => {
     try {
@@ -83,17 +84,19 @@ export const updateUser = async (req: Request, res: Response) => {
 export const createUser = async (req: Request, res: Response) => {
     try {
 
-        const { email, password } = req.body;
+        const { email, password, firstName,lastName,platformRole } = req.body;
 
-        if(!email || !password){
-            res.status(400).json({ message: "Email and password is needed" });
+        if(!email || !password || !firstName || !lastName || !platformRole){
+            res.status(400).json({ message: "Check if you have all the required fields: email, password, firstName, lastName, platformRole" });
         }
 
         let hashedPassword = await bcrypt.hash(req.body.password, 10);
-
         const newUserData: Omit<User,"id"> = {
-            email: email,
-            password: hashedPassword
+            firstName,
+            lastName,
+            email,
+            password: hashedPassword,
+            platformRole,
         }
 
         const collectionRef = db.collection("users");

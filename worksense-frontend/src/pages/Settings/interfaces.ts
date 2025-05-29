@@ -11,12 +11,12 @@ export interface CreatedUser {
   firstName: string;
   lastName: string;
   password: string;
-  userId?: number;
+  userId?: string;
   platformRole: string;
 }
 
 export interface UserListItem {
-  id: number;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;

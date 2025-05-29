@@ -6,7 +6,7 @@ const router = express.Router({ mergeParams: true });
 router.get("/projects/", getProjects)
 router.get("/project/:projectId/", getProject);
 router.put("/project/:projectId/", updateProject);
-router.post("/project/", createProject);
+router.post("/projects/", createProject);
 router.delete("/project/:projectId/", deleteProject)
 
 export default router;

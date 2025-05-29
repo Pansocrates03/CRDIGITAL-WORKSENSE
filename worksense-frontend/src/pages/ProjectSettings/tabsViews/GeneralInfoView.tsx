@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { projectService } from "@/services/projectService"; 
 import { useAuth } from "@/hooks/useAuth"; 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useProject } from "@/hooks/useProjects";
-import { formatTimestamp } from "@/utils/dateUtils";
+import { useProject, useUpdateProject, useDeleteProject } from "@/hooks/useProjects";
 
 const statusOptions = [
   { value: "Active", label: "Active" },
@@ -20,14 +17,51 @@ const visibilityOptions = [
   { value: "Public", label: "Public" },
 ];
 
+// Helper to convert Firestore Timestamp or ISO string to 'YYYY-MM-DD'
+function timestampToDateInput(ts: any): string {
+  if (!ts) return "";
+  if (typeof ts === "object" && "_seconds" in ts) {
+    const date = new Date(ts._seconds * 1000);
+    return date.toISOString().slice(0, 10);
+  }
+  if (typeof ts === "string") {
+    return ts.slice(0, 10);
+  }
+  return "";
+}
+
+// Helper to convert 'YYYY-MM-DD' to ISO string
+function dateInputToISO(dateStr: string): string | null {
+  if (!dateStr) return null;
+  return new Date(dateStr).toISOString();
+}
+
 const GeneralInfoView: React.FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
   const { data: user } = useAuth();
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   // HOOKS
   const { data: project, isLoading } = useProject(projectId!);
+  const updateProject = useUpdateProject({
+    onSuccess: () => {
+      setEditMode(false);
+      toast.success("Project updated successfully!");
+    },
+  });
+  const deleteProject = useDeleteProject({
+    onSuccess: () => {
+      toast.success("Project successfully deleted");
+      navigate("/create", { state: { toast: "Project successfully deleted" } });
+      setShowDeleteModal(false);
+      setDeleteInput("");
+    },
+    onError: () => {
+      setShowDeleteModal(false);
+      setDeleteInput("");
+      toast.error("There was an error deleting the project");
+    },
+  });
 
   if ( isLoading ) return <div>Loading...</div>;
   if (!project) return <div>Project not found</div>;
@@ -45,8 +79,8 @@ const GeneralInfoView: React.FC = () => {
       name: project.name || "",
       description: project.description || "",
       status: project.status || "Active",
-      startDate: project.startDate || "",
-      endDate: project.endDate || "",
+      startDate: timestampToDateInput(project.startDate),
+      endDate: timestampToDateInput(project.endDate),
       visibility: project.visibility || "",
     });
   }, [project]);
@@ -57,37 +91,16 @@ const GeneralInfoView: React.FC = () => {
   };
 
   // Save changes
-  const mutation = useMutation({
-    mutationFn: (updated: any) => projectService.updateProject(projectId!, updated),
-    onSuccess: () => {
-      setEditMode(false);
-      queryClient.invalidateQueries({ queryKey: ["project", projectId] });
-      console.log("TOAST: Project updated successfully!");
-      toast.success("Project updated successfully!");
-    },
-    onError: () => {
-      setEditMode(false);
-      toast.error("There was an error updating the project");
-    },
-  });
-
   const handleSave = () => {
-    mutation.mutate(form);
+    updateProject.mutate({
+      id: projectId!,
+      data: {
+        ...form,
+        startDate: dateInputToISO(form.startDate),
+        endDate: dateInputToISO(form.endDate),
+      },
+    });
   };
-
-  // Delete project
-  const deleteMutation = useMutation({
-    mutationFn: () => projectService.deleteProject(projectId!),
-    onSuccess: () => {
-      toast.success("Project successfully deleted");
-      navigate("/create", { state: { toast: "Project successfully deleted" } });
-    },
-    onError: () => {
-      setShowDeleteModal(false);
-      setDeleteInput("");
-      toast.error("There was an error deleting the project");
-    },
-  });
 
   // Now both user and project are defined!
   const isProductOwner =
@@ -122,8 +135,8 @@ const GeneralInfoView: React.FC = () => {
                     name: project?.name || "",
                     description: project?.description || "",
                     status: project?.status || "",
-                    startDate: project?.startDate || "",
-                    endDate: project?.endDate || "",
+                    startDate: project?.startDate ? timestampToDateInput(project?.startDate) : "",
+                    endDate: project?.endDate ? timestampToDateInput(project?.endDate) : "",
                     visibility: project?.visibility || "",
                   });
                 }}
@@ -175,12 +188,12 @@ const GeneralInfoView: React.FC = () => {
                 <input
                   type="date"
                   name="startDate"
-                  value={formatTimestamp(form?.startDate)}
+                  value={form.startDate}
                   onChange={handleChange}
                   className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
                 />
               ) : (
-                <div>{ form?.startDate ? formatTimestamp(form?.startDate) : "Not set"}</div>
+                <div>{form?.startDate ? form.startDate : "Not set"}</div>
               )}
             </div>
             {/* End Date */}
@@ -190,12 +203,12 @@ const GeneralInfoView: React.FC = () => {
                 <input
                   type="date"
                   name="endDate"
-                  value={ formatTimestamp(form?.endDate) }
+                  value={form.endDate}
                   onChange={handleChange}
                   className="input border border-gray-300 focus:border-[#ac1754] rounded px-3 py-2 w-full"
                 />
               ) : (
-                <div>{form?.endDate ? formatTimestamp(form?.endDate) : "Not set"}</div>
+                <div>{form?.endDate ? form.endDate : "Not set"}</div>
               )}
             </div>
             {/* Status */}
@@ -285,7 +298,7 @@ const GeneralInfoView: React.FC = () => {
                 variant="destructive"
               disabled={deleteInput !== form.name}
               onClick={() => {
-                deleteMutation.mutate();
+                deleteProject.mutate(projectId!);
                 setShowDeleteModal(false);
                 setDeleteInput("");
               }}
