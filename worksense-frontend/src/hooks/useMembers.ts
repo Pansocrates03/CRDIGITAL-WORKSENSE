@@ -27,7 +27,7 @@ export const useMembers = (projectId: string) => {
             throw error;
         }
     };
-    const addMember = async (projectId:string, memberData:Member) => {
+    const addMember = async (projectId:string, memberData: { userId: string, projectRoleId: string }) => {
         try {
             const response = await fetch(endpoints.createMember(projectId), {
                 method: "POST",
@@ -35,13 +35,16 @@ export const useMembers = (projectId: string) => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(memberData)
-            })
+            });
 
-            if (!response.ok) throw new Error('Failed to update user');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                throw new Error(errorData?.message || `Failed to add member: ${response.status} ${response.statusText}`);
+            }
 
-            queryClient.invalidateQueries({ queryKey: ["members"] })
+            queryClient.invalidateQueries({ queryKey: ["members"] });
         } catch (error) {
-            console.error('Error updating user:', error);
+            console.error('Error adding member:', error);
             throw error;
         }
     };

@@ -32,7 +32,7 @@ const MembersPage: React.FC = () => {
     // HOOKS
     const {data: user} = useAuth();
     const {data: users, isLoading: isUsersLoading} = useUsers();
-    const {data: members = [], isLoading: isMembersLoading, updateMemberRole, deleteMember } = useMembers(projectId!);
+    const {data: members = [], isLoading: isMembersLoading, updateMemberRole, deleteMember, addMember } = useMembers(projectId!);
     
     // SELECTS, MODALS STATE
     const [selectedMember, setSelectedMember] = useState<ProjectMember | null>(null);
@@ -76,11 +76,13 @@ const MembersPage: React.FC = () => {
         setIsEditMemberModalOpen(true);
     };
 
+    // Handle Delete Member, when clicking the delet emember option it will grab the member and show the alert
     const handleDeleteMemberClick = (member: ProjectMember) => {
         setMemberToDelete(member);
         setShowDeleteAlert(true);
     };
 
+    // Handle detele, if confirm delete, call the useMember delete hook to delete the member
     const handleConfirmDelete = async () => {
         if (!memberToDelete || !projectId) return;
 
@@ -94,13 +96,35 @@ const MembersPage: React.FC = () => {
         }
     };
 
+    // Handle add member, sets the selected members in a list and sends them to handle AddMembers
     const handleAddMember = (member: ProjectMember) => {
         setSelectedMembers((prevMembers) => [...prevMembers, member]);
     };
 
+    // The members saved in setSelectedMembers are added to the project using useMembers add members hook
+    const handleAddMembers = async () => {
+        if (!projectId) return;
+
+        try {
+            for (const member of selectedMembers) {
+                await addMember(projectId, {
+                    userId: member.userId,
+                    projectRoleId: member.projectRoleId
+                });
+            }
+            handleSuccess("Members added successfully");
+            setIsAddingMembers(false);
+            setSelectedMembers([]);
+        } catch (error) {
+            alert("Error adding members");
+        }
+    };
+
+
     const handleRemoveMember = (userId: string) => {
         setSelectedMembers(selectedMembers.filter((m) => m.userId !== userId));
     };
+
 
     if (isMembersLoading && isUsersLoading) return <div>Loading members & users...</div>;
 
@@ -166,7 +190,7 @@ const MembersPage: React.FC = () => {
                             </Button>
                             <Button
                                 variant={"default"}
-                                onClick={() => console.log("TO-DO")}
+                                onClick={handleAddMembers}
                                 disabled={selectedMembers.length === 0}
                             >
                                 Add Members
