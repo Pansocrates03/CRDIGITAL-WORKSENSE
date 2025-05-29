@@ -1,13 +1,11 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {projectService} from "@/services/projectService";
-import MemberDetailed from "@/types/MemberDetailedType";
-import { endpoints } from "@/lib/constants/endpoints";
 import Member from "@/types/MemberType";
+import { endpoints } from "@/lib/constants/endpoints";
 
 export const useMembers = (projectId: string) => {
     const queryClient = useQueryClient();
 
-    const query = useQuery<MemberDetailed[], Error>({
+    const query = useQuery<Member[], Error>({
         queryKey: ["members", projectId],
         queryFn: async () => {
             const response = await fetch(endpoints.getMembers(projectId));
@@ -29,21 +27,24 @@ export const useMembers = (projectId: string) => {
             throw error;
         }
     };
-    const addMember = async (projectId:string, memberData:Member) => {
+    const addMember = async (projectId:string, memberData: { userId: string, projectRoleId: string }) => {
         try {
-            const response = await fetch(endpoints.addMemberToProject(projectId), {
+            const response = await fetch(endpoints.createMember(projectId), {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(memberData)
-            })
+            });
 
-            if (!response.ok) throw new Error('Failed to update user');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                throw new Error(errorData?.message || `Failed to add member: ${response.status} ${response.statusText}`);
+            }
 
-            queryClient.invalidateQueries({ queryKey: ["members"] })
+            queryClient.invalidateQueries({ queryKey: ["members"] });
         } catch (error) {
-            console.error('Error updating user:', error);
+            console.error('Error adding member:', error);
             throw error;
         }
     };
@@ -61,11 +62,26 @@ export const useMembers = (projectId: string) => {
         queryClient.invalidateQueries({ queryKey: ["members"] })
     }
 
+    const updateMemberRole = async (projectId: string, memberId: string, projectRoleId: string) => {
+    const response = await fetch(endpoints.updateMemberRole(projectId, memberId), {
+        method: "PATCH",
+        headers: {
+        'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ projectRoleId })
+    });
+
+    if (!response.ok) throw new Error('Failed to update member role');
+
+    queryClient.invalidateQueries({ queryKey: ["members"] });
+    };
+
     return {
         ...query,
         addMember,
         updateMember,
-        deleteMember
+        deleteMember,
+        updateMemberRole
     }
 
 };

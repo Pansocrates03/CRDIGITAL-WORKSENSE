@@ -1,9 +1,12 @@
 export default interface Member {
-    userId: string,
-    projectRoleId: string,
-    joinedAt: {},
+    joinedAt: {
+    _seconds: number;
+    _nanoseconds: number;
+    };
+    projectRoleId: string;
     updatedAt: {
-        _seconds: number,
-        _nanoseconds: number,
-    },
+    _seconds: number;
+    _nanoseconds: number;
+    };
+    userId: string;
 }

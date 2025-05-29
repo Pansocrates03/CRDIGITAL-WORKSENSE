@@ -40,8 +40,8 @@ const SprintsPage: React.FC = () => {
     
     // Check if user has management permissions
     const canManageSprints = members.some(
-        member => 
-            member.userId === user?.userId && 
+        (member) => 
+            member.userId === user?.id && 
             (member.projectRoleId === 'product-owner' || member.projectRoleId === 'scrum-master')
     );
     
