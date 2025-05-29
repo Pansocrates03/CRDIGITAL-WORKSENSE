@@ -59,28 +59,15 @@ const MembersPage: React.FC = () => {
 
     // FUNCTION: useMember hook to update members role
     const handleUpdateMemberRole = async (userId: string, newProjectRoleId: string) => {
-    if (!projectId) return;
+        if (!projectId) return;
 
-    try {
-        await updateMemberRole(projectId, userId, newProjectRoleId);
-        handleSuccess("Member role updated successfully");
-        setIsEditMemberModalOpen(false);
-    } catch (error) {
-        alert("Failed to update member role");
-    }
-    };
-
-    // FUNCTION: useMember hook to delete a member from the project
-    const handleDeleteMember = async (userId: string) => {
-    if (!userId) return;
-
-    try {
-        await deleteMember(projectId, userId);
-        handleSuccess("Member deleted from project successfully");
-        setShowDeleteAlert(false);
-    } catch (error) {
-        alert("Failed to delete member");
-    }
+        try {
+            await updateMemberRole(projectId, userId, newProjectRoleId);
+            handleSuccess("Member role updated successfully");
+            setIsEditMemberModalOpen(false);
+        } catch (error) {
+            alert("Failed to update member role");
+        }
     };
 
     // Handle Edit Modal, select a member and saves it in setSelectedMember and opens EditMemberModal
@@ -89,9 +76,22 @@ const MembersPage: React.FC = () => {
         setIsEditMemberModalOpen(true);
     };
 
-    const handleDeleteMemberClick = async (member: ProjectMember,) => {
+    const handleDeleteMemberClick = (member: ProjectMember) => {
         setMemberToDelete(member);
         setShowDeleteAlert(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!memberToDelete || !projectId) return;
+
+        try {
+            await deleteMember(projectId, memberToDelete.userId);
+            handleSuccess("Member deleted from project successfully");
+            setShowDeleteAlert(false);
+            setMemberToDelete(null);
+        } catch (error) {
+            alert("Failed to delete member");
+        }
     };
 
     const handleAddMember = (member: ProjectMember) => {
@@ -180,7 +180,7 @@ const MembersPage: React.FC = () => {
                 projectId={projectId!}
                 members={members}
                 onEdit={isProductOwner ? handleEditClick : undefined}
-                onDelete={isProductOwner ? handleDeleteMember : undefined}
+                onDelete={isProductOwner ? handleDeleteMemberClick : undefined}
             />
 
             {isProductOwner && (
@@ -201,7 +201,7 @@ const MembersPage: React.FC = () => {
                                 setShowDeleteAlert(false);
                                 setMemberToDelete(null);
                             }}
-                            onDelete={() => handleDeleteMemberClick(memberToDelete)}
+                            onDelete={handleConfirmDelete}
                         />
                     )}
                 </>

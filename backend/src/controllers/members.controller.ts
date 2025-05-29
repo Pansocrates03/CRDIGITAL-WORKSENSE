@@ -194,13 +194,13 @@ export const createMember = async (req: Request, res: Response) => {
 
 export const deleteMember = async (req: Request, res: Response) => {
     try {
-        const { projectId, userId } = req.params;
+        const { projectId, memberId } = req.params;
 
         const memberRef = db
             .collection("projects")
             .doc(projectId)
             .collection("members")
-            .doc(userId);
+            .doc(memberId);
         
         const docSnap = await memberRef.get();
 
@@ -211,7 +211,7 @@ export const deleteMember = async (req: Request, res: Response) => {
 
         await memberRef.delete();
 
-        res.status(200).json({ message: "Member removed from project", id: userId });
+        res.status(200).json({ message: "Member removed from project", id: memberId });
 
     } catch (error: any) {
         res.status(400).json({ message: error.message });
