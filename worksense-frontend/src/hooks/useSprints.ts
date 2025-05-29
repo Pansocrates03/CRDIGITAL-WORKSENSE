@@ -34,6 +34,7 @@ export const useSprints = (projectId:string) => {
             },
             body: JSON.stringify(sprintData)
         })
+        queryClient.invalidateQueries({ queryKey: ["sprints"]})
     }
 
     const deleteSprint = async (projectId:string, sprintId:string) => {

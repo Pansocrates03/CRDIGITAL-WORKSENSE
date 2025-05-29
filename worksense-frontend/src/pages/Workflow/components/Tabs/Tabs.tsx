@@ -18,15 +18,14 @@ interface TabsProps {
   handleCreateColumn: (name: string) => void; // Callback to add column in board
   projectId: string; // Project identifier
   selectedSprintId?: string; // ID of the currently selected sprint
+  createSprint: (projectId: string, sprintData: Omit<Sprint, "id" | "projectId" | "createdAt" | "updatedAt">) => Promise<void>;
 }
 
 /**
  * Tabs component for sprint management navigation
  * Handles tab switching, sprint creation, and column management
  */
-const Tabs: React.FC<TabsProps> = ({ TabItems, activeTabId, onTabClick, handleCreateColumn, projectId, selectedSprintId }) => {
-  const createSprintMutation = useCreateSprint(projectId); // Mutation hook to create a sprint
-
+const Tabs: React.FC<TabsProps> = ({ TabItems, activeTabId, onTabClick, handleCreateColumn, projectId, selectedSprintId, createSprint }) => {
   // --- State for column creation modal ---
   const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
@@ -60,16 +59,17 @@ const Tabs: React.FC<TabsProps> = ({ TabItems, activeTabId, onTabClick, handleCr
     e.preventDefault();
 
     // Data to send to backend
-    const sprintData: Omit<Sprint, "id" | "projectId" | "createdAt" | "updatedAt"> = {
+    const sprintData = {
+      projectId,
       name: sprintName,
       goal: sprintGoal,
       startDate: formatDate(startDate),
       endDate: formatDate(endDate),
-      status: "Planned", // Default status
+      status: "Planned" as const, // Default status
     };
     
     try {
-      await createSprintMutation.mutateAsync(sprintData); // Call backend
+      await createSprint(projectId, sprintData); // Use the createSprint prop
       // Reset modal and fields
       setIsCreateSprintModalOpen(false);
       setSprintName("");

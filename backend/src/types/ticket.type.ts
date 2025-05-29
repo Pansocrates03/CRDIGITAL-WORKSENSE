@@ -1,7 +1,9 @@
 export interface Ticket {
-    assignedTo: number;
+    id: string;
+    assignedTo: string;
     description: string;
     name: string;
+    parentId: string;
     priority: string;
     status: string;
     subtasks: string[]

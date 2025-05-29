@@ -1,24 +1,19 @@
 import React, { useState } from 'react';
 import DraggableTaskCard from '../TaskCard/DraggableTaskCard';
 import './BoardView.css';
-import BacklogItemType from '@/types/BacklogItemType';
+import { Ticket } from '@/types/TicketType';
 
-const BASE_COLUMN_ID = "no_column";
-const BASE_COLUMN_TITLE = "Sin columna";
+const BASE_COLUMN_TITLE = "Sprint Backlog (default)";
 
 interface BoardViewProps {
-  tasks: BacklogItemType[];
-  onTaskUpdate: (taskId: string, newStatus: string) => void;
-  onTaskContentUpdate: (taskkId: string, newTasks: {name: string, isFinished:boolean}[]) => void;
-  columns: {id: string, title: string}[]
+  tickets: Ticket[];
+  onTicketUpdate: (ticket:Ticket) => void
+  columns: string[]
 }
 
-const BoardView: React.FC<BoardViewProps> = ({ tasks, onTaskUpdate, onTaskContentUpdate, columns }) => {
+const BoardView: React.FC<BoardViewProps> = ({ tickets, onTicketUpdate, columns }) => {
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
-  const columnsWithBase = [
-    { id: BASE_COLUMN_ID, title: BASE_COLUMN_TITLE},
-    ...columns
-  ]
+  const columnsWithBase = [BASE_COLUMN_TITLE, ...columns];
 
   const handleDragOver = (e: React.DragEvent, columnId: string) => {
     e.preventDefault();
@@ -35,43 +30,50 @@ const BoardView: React.FC<BoardViewProps> = ({ tasks, onTaskUpdate, onTaskConten
   const handleDrop = (e: React.DragEvent, targetStatus: string) => {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('taskId');
-    onTaskUpdate(taskId, targetStatus);
+    
+    // Find the ticket being moved
+    const ticketToUpdate = tickets.find(ticket => ticket.id === taskId);
+    if (!ticketToUpdate) return;
+
+    // Create updated ticket with new status
+    const updatedTicket = {
+      ...ticketToUpdate,
+      status: targetStatus === BASE_COLUMN_TITLE ? "" : targetStatus
+    };
+
+    // Update the ticket
+    onTicketUpdate(updatedTicket);
     setDragOverColumn(null);
   };
 
-  const handleUpdateItem = (updatedItem: BacklogItemType) => {
-    onTaskContentUpdate(updatedItem.id,updatedItem.tasks);
-  };
-
   const getTasksByStatus = (status: string) => {
-    if (status === BASE_COLUMN_ID) {
-      const columnIds = columns.map(col => col.id);
-      return tasks.filter(task => !columnIds.includes(task.status ? task.status : ""));
+    if (status === BASE_COLUMN_TITLE) {
+      return tickets.filter(ticket => !columns.includes(ticket.status || ""));
     }
-    return tasks.filter(task => task.status === status);
+    return tickets.filter(ticket => ticket.status === status);
   };
 
   return (
     <div className="board-view">
       {columnsWithBase.map(column => (
         <div
-          key={column.id}
+          key={column}
           className="board-column"
-          onDragOver={(e) => handleDragOver(e, column.id)}
+          onDragOver={(e) => handleDragOver(e, column)}
           onDragLeave={handleDragLeave}
-          onDrop={(e) => handleDrop(e, column.id)}
+          onDrop={(e) => handleDrop(e, column)}
         >
-          <h3 className="board-column__title">{column.title}</h3>
+          <h3 className="board-column__title">{column}</h3>
           <div className={`board-column__dropzone ${
-            dragOverColumn === column.id ? 'board-column__dropzone--active' : ''
+            dragOverColumn === column ? 'board-column__dropzone--active' : ''
           }`}>
             <div className="board-column__tasks">
-              {getTasksByStatus(column.id).map((task, index) => (
+              {getTasksByStatus(column).map((task, index) => (
                 <DraggableTaskCard
                   key={task.id}
-                  BacklogItem={task}
+                  ticket={task}
                   index={index}
-                  onUpdate={handleUpdateItem}
+                  onUpdate={onTicketUpdate}
                 />
               ))}
             </div>
