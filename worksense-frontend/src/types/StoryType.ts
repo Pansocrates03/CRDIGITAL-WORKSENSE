@@ -2,7 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 
 export interface Story {
     id: string;
-    assignedTo: number;
+    assignedTo: string;
     createdAt: Timestamp;
     description: string;
     name: string;

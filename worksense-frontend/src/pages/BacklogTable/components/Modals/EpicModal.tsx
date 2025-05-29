@@ -46,12 +46,14 @@ const EpicModal: FC<EpicModalProps> = ({
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!isOpen) {
+        if (isOpen && epic) {
+            setFormData(epic);
+        } else if (!isOpen) {
             setFormData(initialState);
             setIsSubmitting(false);
             setError(null);
         }
-    }, [isOpen]);
+    }, [isOpen, epic]);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>

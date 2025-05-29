@@ -7,6 +7,7 @@ import SelectField from "@/components/BacklogTable/SelectField";
 import styles from "@/components/BacklogTable/CreateItemModal.module.css";
 import { useTickets } from "@/hooks/useTickets";
 import { useStories } from "@/hooks/useStories";
+import { useMembers } from "@/hooks/useMembers";
 
 interface TicketModalProps {
     mode: "create" | "update";
@@ -31,6 +32,12 @@ const TicketModal: FC<TicketModalProps> = ({
 }) => {
     const { addTicket, updateTicket } = useTickets(projectId);
     const { data: stories = [] } = useStories(projectId);
+    const { data: members=[] } = useMembers(projectId);
+
+    let memberOptions : {label:string, value:string}[] = [];
+    members.forEach(member => {
+        memberOptions.push({value: member.userId, label: member.user.firstName || "unknown"})
+    }) 
 
     const initialState: Ticket = {
         id: "",
@@ -49,13 +56,14 @@ const TicketModal: FC<TicketModalProps> = ({
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!isOpen) {
+        if (isOpen && ticket) {
+            setFormData(ticket);
+        } else if (!isOpen) {
             setFormData(initialState);
-            setNewTask("");
             setIsSubmitting(false);
             setError(null);
         }
-    }, [isOpen]);
+    }, [isOpen, ticket]);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -101,8 +109,7 @@ const TicketModal: FC<TicketModalProps> = ({
                 await addTicket(ticketData);
                 onTicketCreated?.();
             } else if (ticket?.id) {
-                const { id, ...ticketData } = formData;
-                await updateTicket(ticket.id, ticketData);
+                await updateTicket({ ...formData, id: ticket.id });
                 onTicketUpdated?.();
             }
             onClose();
@@ -204,6 +211,17 @@ const TicketModal: FC<TicketModalProps> = ({
                         onChange={handleChange}
                         options={selectOptions.story}
                         label="Parent Story"
+                        styleClass="story"
+                        disabled={isSubmitting}
+                    />
+
+                    <SelectField
+                        id="asigneeId"
+                        name="asigneeId"
+                        value={formData.assignedTo}
+                        onChange={handleChange}
+                        options={memberOptions}
+                        label="Asignee"
                         styleClass="story"
                         disabled={isSubmitting}
                     />

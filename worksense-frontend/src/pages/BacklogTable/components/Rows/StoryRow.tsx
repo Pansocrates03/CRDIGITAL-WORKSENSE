@@ -5,21 +5,26 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import TicketRow from "./TicketRow";
 import { FaBookOpen } from "react-icons/fa"
+import { useUsers } from "@/hooks/useUsers";
 
 interface StoryRowProps {
     story: Story,
     storyTickets: Ticket[],
     handleView: (type: "epic" | "story" | "ticket", itemId: string) => void;
+    handleEdit: (type:"epic"|"story"|"ticket", itemId:string) => void;
     handleDelete: (type: "epic" | "story" | "ticket", itemId: string) => void;
 }
 
-const StoryRow: React.FC<StoryRowProps> = ({ story, storyTickets, handleView, handleDelete }) => {
+const StoryRow: React.FC<StoryRowProps> = ({ story, storyTickets, handleView, handleEdit, handleDelete }) => {
+    
+    const { data:users=[] } = useUsers();
     const [isExpanded, setIsExpanded] = useState(false);
     const renderTickets = (tickets:Ticket[]) => tickets.map(ticket => {
         return (
             <TicketRow
                 ticket={ticket}
                 handleView={handleView}
+                handleEdit={handleEdit}
                 handleDelete={handleDelete}/>
         )
     })
@@ -57,22 +62,22 @@ const StoryRow: React.FC<StoryRowProps> = ({ story, storyTickets, handleView, ha
                 </div>
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {story.description || "No description provided"}
-            </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                Assigned User
-            </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {story.status}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {story.sprintId || "No sprintId"}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                { users.find(user => user.id == story.assignedTo)?.firstName  }
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {story.storyPoints}
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 <ActionMenu
-                    onEdit={() => console.log("Edit story")}
+                    onEdit={() => handleEdit("story", story.id)}
                     onDelete={() => handleDelete("story", story.id)}
-                    onViewDetails={() => console.log("View story details")}
+                    onViewDetails={() => handleView("story", story.id)}
                     onGenerateStories={() => console.log("Generate stories for story")}
                 />
             </td>

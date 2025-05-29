@@ -7,6 +7,7 @@ import SelectField from "@/components/BacklogTable/SelectField";
 import styles from "@/components/BacklogTable/CreateItemModal.module.css";
 import { useStories } from "@/hooks/useStories";
 import { useEpics } from "@/hooks/useEpics";
+import { useSprints } from "@/hooks/useSprints";
 
 interface StoryModalProps {
     mode: "create" | "update";
@@ -29,7 +30,8 @@ const StoryModal: FC<StoryModalProps> = ({
     story,
     projectId
 }) => {
-    const { addStory } = useStories(projectId);
+    const { data:sprints=[] } = useSprints(projectId);
+    const { addStory, updateStory } = useStories(projectId);
     const { data: epics = [] } = useEpics(projectId);
 
     const initialState: Story = {
@@ -39,7 +41,7 @@ const StoryModal: FC<StoryModalProps> = ({
         status: "new",
         priority: "medium",
         storyPoints: 0,
-        assignedTo: 0,
+        assignedTo: "",
         parentId: "",
         sprintId: "",
         createdAt: new Date() as any,
@@ -51,12 +53,14 @@ const StoryModal: FC<StoryModalProps> = ({
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!isOpen) {
+        if (isOpen && story) {
+            setFormData(story);
+        } else if (!isOpen) {
             setFormData(initialState);
             setIsSubmitting(false);
             setError(null);
         }
-    }, [isOpen]);
+    }, [isOpen, story]);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -76,7 +80,8 @@ const StoryModal: FC<StoryModalProps> = ({
                 await addStory(projectId, storyData as Story);
                 onStoryCreated?.();
             } else {
-                // TODO: Implement update story functionality
+                const { createdAt, updatedAt, ...storyData } = formData;
+                await updateStory(projectId, storyData as Story)
                 onStoryUpdated?.();
             }
             onClose();
@@ -123,6 +128,13 @@ const StoryModal: FC<StoryModalProps> = ({
             ...epics.map(epic => ({
                 value: epic.id,
                 label: epic.name
+            }))
+        ],
+        sprint: [
+            { value: "", label: "Select Epic (Optional)" },
+            ...sprints.map(sprint => ({
+                value: sprint.id,
+                label: sprint.name
             }))
         ]
     };
@@ -201,6 +213,17 @@ const StoryModal: FC<StoryModalProps> = ({
                         options={selectOptions.epic}
                         label="Epic"
                         styleClass="epic"
+                        disabled={isSubmitting}
+                    />
+
+                    <SelectField
+                        id="sprintId"
+                        name="sprintId"
+                        value={formData.sprintId}
+                        onChange={handleChange}
+                        options={selectOptions.sprint}
+                        label="Sprint"
+                        styleClass="sprint"
                         disabled={isSubmitting}
                     />
 

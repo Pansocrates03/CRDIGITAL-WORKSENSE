@@ -6,12 +6,14 @@ import { FC } from "react";
 interface TicketRowProps {
     ticket: Ticket;
     handleView: (type: "epic" | "story" | "ticket", itemId: string) => void;
+    handleEdit: (type:"epic"|"story"|"ticket", itemId:string) => void;
     handleDelete: (type: "epic" | "story" | "ticket", itemId: string) => void;
 }
 
 const TicketRow: FC<TicketRowProps> = ({
     ticket,
     handleView,
+    handleEdit,
     handleDelete
 }) => {
 
@@ -26,22 +28,22 @@ const TicketRow: FC<TicketRowProps> = ({
                 </div>
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {ticket.description || "No description provided"}
+                {ticket.status || "No status"}
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                Assigned User
+                -
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {ticket.status}
+                {ticket.assignedTo}
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 -
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 <ActionMenu
-                    onEdit={() => console.log("Edit story")}
+                    onEdit={() => handleEdit("ticket", ticket.id)}
                     onDelete={() => handleDelete("ticket", ticket.id)}
-                    onViewDetails={() => console.log("View story details")}
+                    onViewDetails={() => handleView("ticket", ticket.id)}
                     onGenerateStories={() => console.log("Generate stories for story")}
                 />
             </td>

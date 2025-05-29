@@ -29,6 +29,20 @@ export const useStories = (projectId: string) => {
         queryClient.invalidateQueries({ queryKey: ["stories"] });
     };
 
+    const updateStory = async (projectId:string, story:Story) => {
+        const response = await fetch(endpoints.updateStory(projectId, story.id), {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(story)
+        })
+        if (!response.ok) {
+            throw new Error('Failed to update story');
+        }
+        queryClient.invalidateQueries({ queryKey: ["stories"] });
+    }
+
     const deleteStory = async (storyId: string) => {
         const response = await fetch(endpoints.deleteStory(projectId, storyId), {
             method: 'DELETE',
@@ -42,6 +56,7 @@ export const useStories = (projectId: string) => {
     return {
         ...query,
         addStory,
+        updateStory,
         deleteStory
     }
 };

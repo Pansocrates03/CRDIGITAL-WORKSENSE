@@ -1,7 +1,7 @@
 // src/pages/BacklogTable/BacklogTablePage.tsx
 
 // Core Imports
-import React, { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 // Compoent Imports
@@ -33,11 +33,13 @@ import { useStories } from "@/hooks/useStories";
 // TYPES
 import { Story } from "@/types/StoryType";
 import { Epic } from "@/types/EpicType";
+import { Ticket } from "@/types/TicketType";
+
+type BacklogItemType = Epic | Story | Ticket;
 
 import styles from "./BacklogTablePage.module.css";
 import { handleSuccess } from "@/utils/handleSuccessToast"; // This is likely the cause of a conflict if both branches modified it.
 import { useFridaChatPosition } from "@/contexts/FridaChatPositionContext"; // Keep this import from 'geminiFrontIntento2'
-import { Ticket } from "@/types/TicketType";
 import { useTickets } from "@/hooks/useTickets";
 
 
@@ -57,7 +59,6 @@ const BacklogTablePage: FC = () => {
 
     // Estados para el modal de confirmación de eliminación (from both branches)
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [itemToDelete, setItemToDelete] = useState<BacklogItemType | null>(null);
     const [deleteModalName, setDeleteModalName] = useState("");
     const [deleteModalMessage, setDeleteModalMessage] = useState("");
 
@@ -68,7 +69,6 @@ const BacklogTablePage: FC = () => {
 
     // Estado para el modal de detalles (from both branches)
     const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [selectedItem, setSelectedItem] = useState<Epic | Story | null>(null);
 
     // Add state for epic details modal
     const [showEpicDetailsModal, setShowEpicDetailsModal] = useState(false);
@@ -107,6 +107,7 @@ const BacklogTablePage: FC = () => {
     }
 
     let independientStories = stories.filter(s => !s.parentId || s.parentId.length <= 0)
+    let independientTickets = tickets.filter(t => !t.parentId || t.parentId.length <= 0)
 
     // Update getEpicStories to use subItems directly
     const getEpicStories = (epicId: string): Story[] => {
@@ -149,19 +150,30 @@ const BacklogTablePage: FC = () => {
             }
         }
     };
-
-    // Edit Items
-    const handleEditStory = (story:Story) => {}
-    const handleEditEpic =(epic:Epic) => {}
-
-    // View Items
-    const handleViewEpic = (epic: Epic) => {
-        setSelectedEpicForDetails(epic);
-        setShowEpicDetailsModal(true);
+    const handleEditItem = (type: "epic" | "story" | "ticket", itemId: string) => {
+        if (type === "epic") {
+            const epicToEdit = epics.find(e => e.id === itemId);
+            if (epicToEdit) {
+                setItemToEdit(epicToEdit);
+                setShowEpicModal(true);
+            }
+        } else if (type === "story") {
+            
+            const storyToEdit = stories.find(s => s.id === itemId);
+            if (storyToEdit) {
+                setItemToEdit(storyToEdit);
+                setShowStoryModal(true);
+            }
+        } else if (type === "ticket") {
+            const ticketToEdit = tickets.find(t => t.id === itemId);
+            if (ticketToEdit) {
+                setItemToEdit(ticketToEdit);
+                setShowTicketModal(true);
+            }
+        }
     };
-    const handleViewStory = (story:Story) => {
-        console.log("TODO")
-    }
+
+
 
     // Add handler for adding story to epic
     const handleAddStoryToEpic = () => {
@@ -199,9 +211,9 @@ const BacklogTablePage: FC = () => {
             <EpicRow
                 epic={epic}
                 epicStories={getEpicStories(epic.id)}
-                handleView={handleViewItem}
                 getStoryTickets={getStoryTickets}
-                handleViewTicketDetails={() => console.log("TBD")}
+                handleView={handleViewItem}
+                handleEdit={handleEditItem}
                 handleDelete={handleDeleteItem} />
         )
     });
@@ -211,6 +223,7 @@ const BacklogTablePage: FC = () => {
                 story={story}
                 storyTickets={getStoryTickets(story.id)}
                 handleView={handleViewItem}
+                handleEdit={handleEditItem}
                 handleDelete={handleDeleteItem} />
         )
     })
@@ -219,6 +232,7 @@ const BacklogTablePage: FC = () => {
             <TicketRow
                 ticket={ticket}
                 handleView={handleViewItem}
+                handleEdit={handleEditItem}
                 handleDelete={handleDeleteItem} />
         )
     })
@@ -271,22 +285,10 @@ const BacklogTablePage: FC = () => {
                     </BacklogTableSection>
 
                     <BacklogTableSection title="Tickets">
-                        {renderTickets(tickets)}
+                        {renderTickets(independientTickets)}
                     </BacklogTableSection>
 
-                    {/* 
-                    <BacklogTableSection title="Bugs">
-                        {renderRows(categorized.bugs)}
-                    </BacklogTableSection>
-                    
-                    <BacklogTableSection title="Tech Tasks">
-                        {renderRows(categorized.techTasks)}
-                    </BacklogTableSection>
-                    
-                    <BacklogTableSection title="Knowledge Items">
-                        {renderRows(categorized.knowledge)}
-                    </BacklogTableSection>
-                    */}
+                    {/* Tickets already consider BUGS, TECH TASKS and KNOWLEDGE ITEMS*/}
 
                     </tbody>
                 </table>
@@ -295,57 +297,70 @@ const BacklogTablePage: FC = () => {
             {/* EPIC MODAL */}
             {projectId && (
                 <EpicModal
-                    mode="create"
+                    mode={itemToEdit ? "update" : "create"}
                     projectId={projectId}
                     isOpen={showEpicModal}
-                    onClose={() => setShowEpicModal(false)}
+                    onClose={() => {
+                        setShowEpicModal(false);
+                        setItemToEdit(null);
+                    }}
                     onEpicCreated={() => {
                         handleSuccess("Epic created successfully!",
                             "You should now see the epic in the backlog.");
+                        setItemToEdit(null);
+                    }}
+                    onEpicUpdated={() => {
+                        handleSuccess("Epic updated successfully!");
+                        setItemToEdit(null);
                     }}
                     onError={handleError}
+                    epic={itemToEdit as Epic}
                 />
             )}
 
             {/* STORY MODAL */}
             {projectId && (
                 <StoryModal
-                    mode="create"
+                    mode={itemToEdit ? "update" : "create"}
                     projectId={projectId}
                     isOpen={showStoryModal}
-                    onClose={() => setShowStoryModal(false)}
+                    onClose={() => {
+                        setShowStoryModal(false);
+                        setItemToEdit(null);
+                    }}
                     onStoryCreated={() => {
-                        handleSuccess("Story created succesfully");
+                        handleSuccess("Story created successfully");
+                        setItemToEdit(null);
+                    }}
+                    onStoryUpdated={() => {
+                        handleSuccess("Story updated successfully");
+                        setItemToEdit(null);
                     }}
                     onError={handleError}
-                    />
+                    story={itemToEdit as Story}
+                />
             )}
 
             {/* TICKET MODAL */}
             {projectId && (
                 <TicketModal
-                    mode="create"
+                    mode={itemToEdit ? "update" : "create"}
                     projectId={projectId}
                     isOpen={showTicketModal}
-                    onClose={() => setShowTicketModal(false)}
+                    onClose={() => {
+                        setShowTicketModal(false);
+                        setItemToEdit(null);
+                    }}
                     onTicketCreated={() => {
-                        handleSuccess("Ticket created succesfully")
+                        handleSuccess("Ticket created successfully");
+                        setItemToEdit(null);
+                    }}
+                    onTicketUpdated={() => {
+                        handleSuccess("Ticket updated successfully");
+                        setItemToEdit(null);
                     }}
                     onError={handleError}
-                    />
-            )}
-
-            {projectId && (
-                <UpdateItemModal
-                    projectId={projectId}
-                    isOpen={isEditModalOpen}
-                    onClose={() => setIsEditModalOpen(false)}
-                    onItemUpdated={() => {
-                        handleSuccess(`The ${itemToEdit?.type} ${itemToEdit?.name} was updated successfully!`, "You should now see the updated item in the backlog.");
-                        //refetch();
-                    }}
-                    onError={handleError}
-                    item={itemToEdit}
+                    ticket={itemToEdit as Ticket}
                 />
             )}
 
@@ -381,7 +396,8 @@ const BacklogTablePage: FC = () => {
                     stories={getEpicStories(selectedEpicForDetails.id)}
                     onEdit={() => {
                         setShowEpicDetailsModal(false);
-                        // TODO: Implement edit functionality
+                        setItemToEdit(selectedEpicForDetails);
+                        setShowEpicModal(true);
                     }}
                     onDelete={() => {
                         setShowEpicDetailsModal(false);
@@ -403,7 +419,8 @@ const BacklogTablePage: FC = () => {
                     tickets={getStoryTickets(selectedStoryForDetails.id)}
                     onEdit={() => {
                         setShowStoryDetailsModal(false);
-                        // TODO: Implement edit functionality
+                        setItemToEdit(selectedStoryForDetails);
+                        setShowStoryModal(true);
                     }}
                     onDelete={() => {
                         setShowStoryDetailsModal(false);
@@ -424,7 +441,8 @@ const BacklogTablePage: FC = () => {
                     ticket={selectedTicketForDetails}
                     onEdit={() => {
                         setShowTicketDetailsModal(false);
-                        // TODO: Implement edit functionality
+                        setItemToEdit(selectedTicketForDetails);
+                        setShowTicketModal(true);
                     }}
                     onDelete={() => {
                         setShowTicketDetailsModal(false);

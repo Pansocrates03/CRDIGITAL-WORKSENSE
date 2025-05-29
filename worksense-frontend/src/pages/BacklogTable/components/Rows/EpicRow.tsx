@@ -10,20 +10,21 @@ import { Ticket } from "@/types/TicketType";
 interface EpicRowProps {
     epic: Epic,
     epicStories: Story[],
-    handleView: (type:"epic"|"story"|"ticket", itemId:string) => void;
     getStoryTickets: (storyId:string) => Ticket[];
-    handleViewTicketDetails: () => void;
+    handleView: (type:"epic"|"story"|"ticket", itemId:string) => void;
+    handleEdit: (type:"epic"|"story"|"ticket", itemId:string) => void;
     handleDelete: (type:"epic"|"story"|"ticket", itemId:string) => void;
 }
 
-const EpicRow: React.FC<EpicRowProps> = ({ epic, epicStories, handleView, getStoryTickets, handleViewTicketDetails, handleDelete }) => {
+const EpicRow: React.FC<EpicRowProps> = ({ epic, epicStories, getStoryTickets, handleView, handleEdit, handleDelete }) => {
     const [isExpanded, setIsExpanded] = useState(false)
     const renderStories = (stories:Story[]) => stories.map(story => {
         return (
             <StoryRow
                 story={story}
                 storyTickets={getStoryTickets(story.id)}
-                handleViewDetails={handleViewTicketDetails}
+                handleView={handleView}
+                handleEdit={handleEdit}
                 handleDelete={handleDelete}/>
         )
     })
@@ -65,20 +66,20 @@ const EpicRow: React.FC<EpicRowProps> = ({ epic, epicStories, handleView, getSto
 
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {epic.description || "No description provided"}
-            </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                Assigned User
-            </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {epic.status}
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 -
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                -
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {epicStories.reduce((total, story) => total + (story.storyPoints || 0), 0)}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 <ActionMenu
-                    onEdit={() => console.log("Edit story")}
+                    onEdit={() => handleEdit("epic",epic.id)}
                     onDelete={() => handleDelete("epic",epic.id)}
                     onViewDetails={() => handleView("epic", epic.id)}
                     onGenerateStories={() => console.log("Generate stories for story")}

@@ -1,3 +1,5 @@
+import { User } from "./UserType";
+
 export default interface Member {
     joinedAt: {
     _seconds: number;
@@ -9,4 +11,5 @@ export default interface Member {
     _nanoseconds: number;
     };
     userId: string;
+    user: User
 }
