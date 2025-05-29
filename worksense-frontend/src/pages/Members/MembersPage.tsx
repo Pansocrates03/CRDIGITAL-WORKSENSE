@@ -32,7 +32,7 @@ const MembersPage: React.FC = () => {
     // HOOKS
     const {data: user} = useAuth();
     const {data: users, isLoading: isUsersLoading} = useUsers();
-    const {data: members = [], isLoading: isMembersLoading, updateMemberRole } = useMembers(projectId!);
+    const {data: members = [], isLoading: isMembersLoading, updateMemberRole, deleteMember } = useMembers(projectId!);
     
     // SELECTS, MODALS STATE
     const [selectedMember, setSelectedMember] = useState<ProjectMember | null>(null);
@@ -70,13 +70,26 @@ const MembersPage: React.FC = () => {
     }
     };
 
+    // FUNCTION: useMember hook to delete a member from the project
+    const handleDeleteMember = async (userId: string) => {
+    if (!userId) return;
+
+    try {
+        await deleteMember(projectId, userId);
+        handleSuccess("Member deleted from project successfully");
+        setShowDeleteAlert(false);
+    } catch (error) {
+        alert("Failed to delete member");
+    }
+    };
+
     // Handle Edit Modal, select a member and saves it in setSelectedMember and opens EditMemberModal
     const handleEditClick = (member: ProjectMember) => {
         setSelectedMember(member);
         setIsEditMemberModalOpen(true);
     };
 
-    const handleDeleteMember = async (member: ProjectMember) => {
+    const handleDeleteMemberClick = async (member: ProjectMember,) => {
         setMemberToDelete(member);
         setShowDeleteAlert(true);
     };
@@ -183,12 +196,12 @@ const MembersPage: React.FC = () => {
                     {memberToDelete && projectId && (
                         <DeleteMemberAlert
                             showDeleteAlert={showDeleteAlert}
-                            memberName={memberToDelete.user.firstName || "unknown"}
+                            memberName={memberToDelete.user.firstName + ' ' +memberToDelete.user.lastName  || "unknown"}
                             onClose={() => {
                                 setShowDeleteAlert(false);
                                 setMemberToDelete(null);
                             }}
-                            onDelete={() => deleteMember(projectId, memberToDelete.userId)}
+                            onDelete={() => handleDeleteMemberClick(memberToDelete)}
                         />
                     )}
                 </>
