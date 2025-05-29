@@ -9,6 +9,6 @@ export interface User {
     nickName: string;
     pfp: string;
     platformRole: string;
-    updatedAt: Timestamp
-
+    updatedAt: Timestamp;
+    lastLogin: Timestamp;
 }

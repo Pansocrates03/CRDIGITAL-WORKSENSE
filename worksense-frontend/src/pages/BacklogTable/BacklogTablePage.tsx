@@ -119,7 +119,9 @@ const BacklogTablePage: FC = () => {
         setSelectedItem(epic);
         setShowDetailsModal(true)
     }
-    const handleViewStory = (story:Story) => {}
+    const handleViewStory = (story:Story) => {
+        console.log("TODO")
+    }
 
 
 
@@ -135,6 +137,9 @@ const BacklogTablePage: FC = () => {
     const handleError = (msg: string) => {
         toast.error(msg);
     };
+
+    const renderStories = (stories:Story[]) => stories.map(story => <StoryRow story={story}/> )
+    
 
 
 
@@ -210,7 +215,7 @@ const BacklogTablePage: FC = () => {
                     </BacklogTableSection>
 
                     <BacklogTableSection title="User Stories">
-                        {renderRows(stories)}
+                        {renderStories(stories)}
                     </BacklogTableSection>
                     {/* 
                     <BacklogTableSection title="Bugs">
@@ -229,6 +234,7 @@ const BacklogTablePage: FC = () => {
                 </table>
             </div>
 
+            {/* CREATE ITEM MODAL */}
             {projectId && (
                 <CreateItemModal
                     projectId={projectId}

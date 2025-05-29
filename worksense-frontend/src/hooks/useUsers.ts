@@ -20,7 +20,9 @@ export const useUser = (userId: string) => {
     queryKey: ["user", userId],
     queryFn: async () => {
       const response = await fetch(endpoints.getUser(userId));
-      return response.json()
+      const jsonRes =  await response.json();
+      console.log("Use User", jsonRes)
+      return jsonRes
     }
   });
 

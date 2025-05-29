@@ -1,41 +1,28 @@
 import React from 'react';
 import { AvatarDisplay } from '@/components/ui/AvatarDisplay';
-import { projectService } from '@/services/projectService';
 import MemberDetailed from '@/types/MemberDetailedType';
-import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
-import { QueryKeys } from '@/lib/constants/queryKeys';
 import { Ticket } from '@/types/TicketType';
+import { useMembers } from '@/hooks/useMembers';
 
-interface TableViewProps {
-  tickets: Ticket[];
-}
+const renderAsignee = (memmberId:string|null|undefined, members:MemberDetailed[]) => {
 
-const renderAsignee = (memmberId:number|null|undefined) => {
-  const { id: projectId } = useParams<{ id: string }>();
-  if(!projectId) throw new Error("There is no project ID");
-  // Find member
-  const { isLoading, data, error } = useQuery<MemberDetailed[]>({
-    queryKey: [QueryKeys.members, projectId],
-    queryFn: () => projectService.fetchProjectMembersDetailed(projectId)
-  })
-
-  if(isLoading){ return <div>Loading...</div> }
-  if(error){ return <div>An error ocurred</div> }
-
-  console.log("Members Data", data)
-  let assignee = data?.find(member => member.userId == memmberId)
-  if(!assignee) throw new Error("Asignee not found")
+  let assignee = members?.find(member => member.userId == memmberId)
+  if(!assignee) return
 
   return (
     <AvatarDisplay
-      user={assignee}
+      user={assignee.user}
       className="h-6 w-6 rounded-full ring-2 ring-white"
     />
   )
 }
 
-const TableView: React.FC<TableViewProps> = ({ tickets }) => {
+const TableView: React.FC<{ tickets: Ticket[] }> = ({ tickets }) => {
+  const { id: projectId } = useParams<{ id: string }>();
+  if(!projectId) throw new Error("There is no project ID");
+
+  const { data:membersData=[], } = useMembers(projectId)
   return (
     <div className="bg-white rounded-lg shadow overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -107,7 +94,7 @@ const TableView: React.FC<TableViewProps> = ({ tickets }) => {
               {/* Asignee */}
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex -space-x-2">
-                  {ticket.assigneeId && renderAsignee(ticket.assigneeId)}
+                  {ticket.assignedTo && renderAsignee(ticket.assignedTo, membersData )}
                 </div>
               </td>
 

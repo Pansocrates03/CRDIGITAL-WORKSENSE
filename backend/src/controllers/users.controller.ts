@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { db } from "../models/firebase.model.js";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { User } from "../types/user.type.js";
 import bcrypt from "bcryptjs";
 import {platform} from "node:os";
@@ -14,6 +14,8 @@ export const getUsers = async (req: Request, res: Response) => {
             id: doc.id,
             ...doc.data()
         }));
+
+        console.log("Returning", items)
 
         res.status(200).json(items);
     } catch (error: any) {
@@ -97,6 +99,10 @@ export const createUser = async (req: Request, res: Response) => {
             email,
             password: hashedPassword,
             platformRole,
+            lastLogin: Timestamp.now(),
+            nickName: "",
+            pfp: "",
+            updatedAt: Timestamp.now()
         }
 
         const collectionRef = db.collection("users");
