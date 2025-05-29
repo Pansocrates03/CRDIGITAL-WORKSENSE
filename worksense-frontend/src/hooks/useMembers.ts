@@ -59,11 +59,26 @@ export const useMembers = (projectId: string) => {
         queryClient.invalidateQueries({ queryKey: ["members"] })
     }
 
+    const updateMemberRole = async (projectId: string, memberId: string, projectRoleId: string) => {
+    const response = await fetch(endpoints.updateMemberRole(projectId, memberId), {
+        method: "PATCH",
+        headers: {
+        'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ projectRoleId })
+    });
+
+    if (!response.ok) throw new Error('Failed to update member role');
+
+    queryClient.invalidateQueries({ queryKey: ["members"] });
+    };
+
     return {
         ...query,
         addMember,
         updateMember,
-        deleteMember
+        deleteMember,
+        updateMemberRole
     }
 
 };

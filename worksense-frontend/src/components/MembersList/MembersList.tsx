@@ -37,7 +37,7 @@ const MembersList: React.FC<Props> = ({members, onEdit, onDelete}) => {
                             <TableHead>Name</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Role</TableHead>
-                            {/* <TableHead>Last Login</TableHead> */}
+                            <TableHead>Last Login</TableHead>
                             <TableHead>Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -60,7 +60,7 @@ const MembersList: React.FC<Props> = ({members, onEdit, onDelete}) => {
                                         {formatRoleName(member.projectRoleId)}
                                     </span>
                                 </TableCell>
-                                <TableCell>Last Login</TableCell>
+                                <TableCell>{new Date(member.user.lastLogin._seconds * 1000).toLocaleString()}</TableCell>
                                 <TableCell className="py-2"> {/* Add vertical padding to the cell */}
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>

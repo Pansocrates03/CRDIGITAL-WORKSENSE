@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import styles from './EditMemberModal.module.css';
-import MemberDetailed from '@/types/MemberDetailedType';
+import { ProjectMember } from '@/types/ProjectMemberType';
 
 interface Role {
   id: string;
@@ -12,9 +12,9 @@ interface Role {
 interface EditMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
-  member: MemberDetailed | null;
+  member: ProjectMember | null;
   availableRoles: Role[];
-  onSubmit: (userId: number, roleId: string) => void;
+  onSubmit: (userId: string, roleId: string) => void;
 }
 
 const EditMemberModal: React.FC<EditMemberModalProps> = ({
@@ -51,11 +51,11 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         <form onSubmit={handleSubmit} className={styles.modalForm}>
           <div className={styles.formGroup}>
             <label className={styles.label}>Name</label>
-            <input type="text" value={member.name} disabled className={styles.input} />
+            <input type="text" value={member.user.firstName + ' ' + member.user.lastName}  disabled className={styles.input} />
           </div>
           <div className={styles.formGroup}>
             <label className={styles.label}>Email</label>
-            <input type="email" value={member.email} disabled className={styles.input} />
+            <input type="email" value={member.user.email} disabled className={styles.input} />
           </div>
           <div className={styles.formGroup}>
             <label className={styles.label}>Role</label>

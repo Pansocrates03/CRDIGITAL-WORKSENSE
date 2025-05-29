@@ -32,11 +32,11 @@ const MembersPage: React.FC = () => {
     // HOOKS
     const {data: user} = useAuth();
     const {data: users, isLoading: isUsersLoading} = useUsers();
-    const {data: members = [], isLoading: isMembersLoading } = useMembers(projectId!);
+    const {data: members = [], isLoading: isMembersLoading, updateMemberRole } = useMembers(projectId!);
     
-
+    // SELECTS, MODALS STATE
     const [selectedMember, setSelectedMember] = useState<ProjectMember | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
     const [isAddingMembers, setIsAddingMembers] = useState(false);
     const [selectedMembers, setSelectedMembers] = useState<ProjectMember[]>([]);
 
@@ -57,19 +57,31 @@ const MembersPage: React.FC = () => {
     (member) => member.userId === user?.id && member.projectRoleId === 'product-owner'
     );
 
+    // FUNCTION: useMember hook to update members role
+    const handleUpdateMemberRole = async (userId: string, newProjectRoleId: string) => {
+    if (!projectId) return;
 
-    
-    const handleEditClick = (member: Member) => {
-        setSelectedMember(member);
-        setIsModalOpen(true);
+    try {
+        await updateMemberRole(projectId, userId, newProjectRoleId);
+        handleSuccess("Member role updated successfully");
+        setIsEditMemberModalOpen(false);
+    } catch (error) {
+        alert("Failed to update member role");
+    }
     };
 
-    const handleDeleteMember = async (member: Member) => {
+    // Handle Edit Modal, select a member and saves it in setSelectedMember and opens EditMemberModal
+    const handleEditClick = (member: ProjectMember) => {
+        setSelectedMember(member);
+        setIsEditMemberModalOpen(true);
+    };
+
+    const handleDeleteMember = async (member: ProjectMember) => {
         setMemberToDelete(member);
         setShowDeleteAlert(true);
     };
 
-    const handleAddMember = (member: Member) => {
+    const handleAddMember = (member: ProjectMember) => {
         setSelectedMembers((prevMembers) => [...prevMembers, member]);
     };
 
@@ -161,11 +173,11 @@ const MembersPage: React.FC = () => {
             {isProductOwner && (
                 <>
                     <EditMemberModal
-                        isOpen={isModalOpen}
-                        onClose={() => setIsModalOpen(false)}
-                        member={selectedMember}
-                        availableRoles={availableRoles}
-                        onSubmit={() => console.log("TODO")}
+                    isOpen={isEditMemberModalOpen}
+                    onClose={() => setIsEditMemberModalOpen(false)}
+                    member={selectedMember}
+                    availableRoles={availableRoles}
+                    onSubmit={handleUpdateMemberRole}
                     />
 
                     {memberToDelete && projectId && (

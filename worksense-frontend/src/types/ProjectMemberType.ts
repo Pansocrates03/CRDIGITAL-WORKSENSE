@@ -10,7 +10,10 @@ export interface UserInfo {
     _seconds: number;
     _nanoseconds: number;
   };
-}
+  lastLogin: {
+    _seconds: number;
+    _nanoseconds: number;
+  };}
 
 export interface ProjectMember {
   id: string;

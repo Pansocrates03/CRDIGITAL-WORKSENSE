@@ -26,6 +26,7 @@ export const endpoints = {
     updateMember: (projectId:string, memberId:string) => `${API_URL}/project/${projectId}/member/${memberId}`,
     createMember: (projectId:string) => `${API_URL}/project/${projectId}/member`,
     deleteMember: (projectId:string, memberId:string) => `${API_URL}/project/${projectId}/member/${memberId}`,
+    updateMemberRole: (projectId:string, memberId:string) => `${API_URL}/project/${projectId}/member/${memberId}`,
 
     // PROJECTS
     getProjects: () => `${API_URL}/projects`,
