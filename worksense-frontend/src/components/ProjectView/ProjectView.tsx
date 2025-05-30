@@ -6,7 +6,6 @@ import styles from "./ProjectView.module.css";
 import EditTeamModal from "../EditTeamModal/EditTeamModal";
 import MemberInfoPopup from "../MemberInfoPopup/MemberInfoPopup";
 // Type Imports
-import ProjectDetails from "@/types/ProjectType";
 import MemberDetailed from "@/types/MemberDetailedType";
 
 import { AvatarDisplay } from "../ui/AvatarDisplay";
@@ -16,6 +15,7 @@ import RecentBacklogItems from "./RecentBacklogItems";
 // HOOKS
 import { useEpics } from "@/hooks/useEpics";
 import { useStories } from "@/hooks/useStories";
+import ProjectDetails from "@/types/ProjectSummary.ts";
 
 type FullProjectData = {
   project: ProjectDetails;

@@ -13,3 +13,8 @@ export default interface Member {
     userId: string;
     user: User
 }
+
+export class AddMemberInput {
+    userId!: string;
+    projectRoleId!: string;
+}

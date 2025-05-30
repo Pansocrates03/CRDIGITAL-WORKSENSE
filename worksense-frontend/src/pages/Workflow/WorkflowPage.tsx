@@ -77,8 +77,8 @@ const WorkflowPage: React.FC = () => {
 
     let filteredTickets = tickets.filter(ticket => getTicketSprint(ticket,stories) == activeSprint.id)
 
-    if(activeSprint.columns.length <= 0){
-      updateSprint(projectId!, {
+    if(!activeSprint.columns){
+      updateSprint({
         ...activeSprint,
         columns: ["In Progress", "In Review", "Done"]
       })
@@ -89,7 +89,7 @@ const WorkflowPage: React.FC = () => {
      // Handle Delete Sprint
   const handleDeleteSprint = (sprintId: string) => {
     if (projectId && sprintId) {
-      deleteSprint(projectId,sprintId);
+      deleteSprint(sprintId);
       setDeleteModalOpen(false); // Close the modal after deletion
     }
   };
@@ -98,7 +98,7 @@ const WorkflowPage: React.FC = () => {
     if (!activeSprint) return;
     
     const updatedColumns = [...activeSprint.columns, columnName];
-    await updateSprint(projectId!, {
+    await updateSprint({
       ...activeSprint,
       columns: updatedColumns
     });

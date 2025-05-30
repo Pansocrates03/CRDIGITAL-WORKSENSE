@@ -60,7 +60,7 @@ const BacklogTablePage: FC = () => {
     // Estados para el modal de confirmación de eliminación (from both branches)
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteModalName, setDeleteModalName] = useState("");
-    const [deleteModalMessage, setDeleteModalMessage] = useState("");
+    const [itemPendingDeletion, setItemPendingDeletion] = useState<{ type: "epic" | "story" | "ticket", id: string } | null>(null);    const [deleteModalMessage, setDeleteModalMessage] = useState("");
 
     // Estados para el modal de generación de historias con IA (from both branches)
     const [showGenerateStoriesModal, setShowGenerateStoriesModal] = useState(false);
@@ -117,18 +117,49 @@ const BacklogTablePage: FC = () => {
     const getStoryTickets = (storyId:string): Ticket[] => {
         const filteredTickets = tickets.filter(ticket => ticket.parentId == storyId);
         return filteredTickets
-    } 
+    }
 
-    const handleDeleteItem = (type:"epic"|"story"|"ticket", itemId:string) => {
+    const handleDeleteItem = (type: "epic" | "story" | "ticket", itemId: string) => {
+        // Store which item we are about to ask confirmation for
+        setItemPendingDeletion({ type, id: itemId });
 
+        // Set up modal text
         setDeleteModalName(`Delete ${type}`);
         setDeleteModalMessage(`Are you sure you want to delete this ${type}? This action cannot be undone.`);
+
+        // Show the modal
         setShowDeleteModal(true);
 
-        if(type == "epic") deleteEpic(itemId)
-        else if (type == "story") deleteStory(itemId)
-        else if (type == "ticket") deleteTicket(itemId)
-    }
+        // DO NOT CALL deleteEpic/deleteStory/deleteTicket HERE
+    };
+
+    // 2. This function is called when the user clicks "Confirm" IN THE MODAL
+    const handleConfirmDeletion = async () => {
+        if (!itemPendingDeletion) return; // Should not happen if modal is open correctly
+
+        const { type, id } = itemPendingDeletion;
+
+        try {
+            if (type === "epic") {
+                await deleteEpic(id);
+                handleSuccess(`Epic deleted successfully!`);
+            } else if (type === "story") {
+                await deleteStory(id);
+                handleSuccess(`Story deleted successfully!`);
+            } else if (type === "ticket") {
+                await deleteTicket(id);
+                handleSuccess(`Ticket deleted successfully!`);
+            }
+        } catch (error) {
+            console.error(`Failed to delete ${type} with ID ${id}:`, error);
+            toast.error(`Failed to delete ${type}.`); // Use toast for errors too
+        } finally {
+            // Reset state and close modal regardless of success/failure of the delete operation
+            setShowDeleteModal(false);
+            setItemPendingDeletion(null);
+        }
+    };
+
     const handleViewItem = (type: "epic" | "story" | "ticket", itemId: string) => {
         if (type === "epic") {
             const epic = epics.find(e => e.id === itemId);
@@ -378,8 +409,11 @@ const BacklogTablePage: FC = () => {
 
             <DeleteConfirmationModal
                 isOpen={showDeleteModal}
-                onClose={() => setShowDeleteModal(false)}
-                onConfirm={() => console.log("TO-DO")}
+                onClose={() => {
+                    setShowDeleteModal(false);
+                    setItemPendingDeletion(null); // Also reset if closed without confirming
+                }}
+                onConfirm={handleConfirmDeletion} // <--- PASS THE CONFIRM HANDLER HERE
                 title={deleteModalName}
                 message={deleteModalMessage}
             />
