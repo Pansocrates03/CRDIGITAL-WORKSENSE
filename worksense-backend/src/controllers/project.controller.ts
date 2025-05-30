@@ -199,12 +199,20 @@ export const updateProject = async (
         const {projectId} = req.params;
         const {
             name, description, context, status, startDate, endDate, visibility,
-            aiContext, aiTechStack, enableAiSuggestions
+            // AI Settings
+            aiContext, aiTechStack, enableAiSuggestions,
+            // Scrum Settings
+            sprintDuration, workingDays, storyPointScale,
+            // Metrics Settings
+            enableBurndownChart, enableVelocityTracking, enableWorkloadHeatmaps,
+            // Customization Settings
+            workflowStages, tags
         } = req.body;
 
         const projectRef = db.collection("projects").doc(projectId);
         const updateData: { [key: string]: any } = {};
 
+        // Basic project fields
         if (name !== undefined) {
             if (typeof name !== "string" || name.trim() === "") {
                 res.status(400).json({message: "Invalid project name"});
@@ -214,7 +222,7 @@ export const updateProject = async (
         }
 
         if (description !== undefined) {
-            if (description !== null && typeof description !== "string") { // Allow null for description to clear it
+            if (description !== null && typeof description !== "string") {
                 res.status(400).json({message: "Invalid description type"});
                 return;
             }
@@ -222,37 +230,19 @@ export const updateProject = async (
         }
 
         if (context !== undefined) {
-            if (context !== null && typeof context !== "object") { // Allow null for context to clear it
+            if (context !== null && typeof context !== "object") {
                 res.status(400).json({message: "Invalid context type"});
                 return;
             }
             updateData.context = context;
         }
 
-        // Only add to updateData if they are actually provided in the request
-        if (status !== undefined) {
-            // Add validation for status if necessary (e.g., string, enum)
-            // e.g., if (typeof status !== "string" || !["active", "inactive", "completed"].includes(status)) { ... }
-            updateData.status = status;
-        }
+        if (status !== undefined) updateData.status = status;
+        if (startDate !== undefined) updateData.startDate = startDate;
+        if (endDate !== undefined) updateData.endDate = endDate;
+        if (visibility !== undefined) updateData.visibility = visibility;
 
-        if (startDate !== undefined) {
-            // Add validation for startDate if necessary (e.g., valid date string/timestamp)
-            // You might want to convert it to a Firestore Timestamp:
-            // updateData.startDate = new Date(startDate); // or admin.firestore.Timestamp.fromDate(new Date(startDate));
-            updateData.startDate = startDate;
-        }
-
-        if (endDate !== undefined) {
-            // Add validation for endDate
-            updateData.endDate = endDate;
-        }
-
-        if (visibility !== undefined) {
-            // Add validation for visibility (e.g., string, enum like "public", "private")
-            updateData.visibility = visibility;
-        }
-
+        // AI Settings
         if (aiContext !== undefined) {
             if (aiContext !== null && typeof aiContext !== "string") {
                 res.status(400).json({message: "Invalid aiContext type"});
@@ -273,6 +263,68 @@ export const updateProject = async (
                 return;
             }
             updateData.enableAiSuggestions = enableAiSuggestions;
+        }
+
+        // Scrum Settings
+        if (sprintDuration !== undefined) {
+            if (typeof sprintDuration !== "number" || sprintDuration < 1 || sprintDuration > 4) {
+                res.status(400).json({message: "Invalid sprintDuration. Must be a number between 1 and 4"});
+                return;
+            }
+            updateData.sprintDuration = sprintDuration;
+        }
+        if (workingDays !== undefined) {
+            if (!Array.isArray(workingDays) || !workingDays.every(day => typeof day === "string")) {
+                res.status(400).json({message: "Invalid workingDays. Must be an array of strings"});
+                return;
+            }
+            updateData.workingDays = workingDays;
+        }
+        if (storyPointScale !== undefined) {
+            if (!["fibonacci", "linear", "tshirt"].includes(storyPointScale)) {
+                res.status(400).json({message: "Invalid storyPointScale. Must be one of: fibonacci, linear, tshirt"});
+                return;
+            }
+            updateData.storyPointScale = storyPointScale;
+        }
+
+        // Metrics Settings
+        if (enableBurndownChart !== undefined) {
+            if (typeof enableBurndownChart !== "boolean") {
+                res.status(400).json({message: "Invalid enableBurndownChart type"});
+                return;
+            }
+            updateData.enableBurndownChart = enableBurndownChart;
+        }
+        if (enableVelocityTracking !== undefined) {
+            if (typeof enableVelocityTracking !== "boolean") {
+                res.status(400).json({message: "Invalid enableVelocityTracking type"});
+                return;
+            }
+            updateData.enableVelocityTracking = enableVelocityTracking;
+        }
+        if (enableWorkloadHeatmaps !== undefined) {
+            if (typeof enableWorkloadHeatmaps !== "boolean") {
+                res.status(400).json({message: "Invalid enableWorkloadHeatmaps type"});
+                return;
+            }
+            updateData.enableWorkloadHeatmaps = enableWorkloadHeatmaps;
+        }
+
+        // Customization Settings
+        if (workflowStages !== undefined) {
+            if (!Array.isArray(workflowStages) || !workflowStages.every(stage => typeof stage === "string")) {
+                res.status(400).json({message: "Invalid workflowStages. Must be an array of strings"});
+                return;
+            }
+            updateData.workflowStages = workflowStages;
+        }
+        if (tags !== undefined) {
+            if (!Array.isArray(tags) || !tags.every(tag => typeof tag === "string")) {
+                res.status(400).json({message: "Invalid tags. Must be an array of strings"});
+                return;
+            }
+            updateData.tags = tags;
         }
 
         if (Object.keys(updateData).length === 0) {

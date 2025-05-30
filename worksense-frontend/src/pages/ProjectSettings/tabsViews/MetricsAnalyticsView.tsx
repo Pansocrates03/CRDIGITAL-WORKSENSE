@@ -64,7 +64,6 @@ const MetricsAnalyticsView: React.FC = () => {
 
   const handleSave = () => {
     mutation.mutate({
-      ...project,
       enableBurndownChart: burndownChartEnabled,
       enableVelocityTracking: velocityTrackingEnabled,
       enableWorkloadHeatmaps: workloadHeatmapsEnabled,

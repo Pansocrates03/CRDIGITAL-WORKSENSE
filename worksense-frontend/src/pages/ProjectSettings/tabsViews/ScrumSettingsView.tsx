@@ -91,8 +91,7 @@ const ScrumSettingsView: React.FC = () => {
 
   const handleSave = () => {
     mutation.mutate({
-      ...project,
-      sprintDuration,
+      sprintDuration: Number(sprintDuration),
       workingDays,
       storyPointScale,
     });
