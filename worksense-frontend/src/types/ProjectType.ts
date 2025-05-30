@@ -15,3 +15,4 @@ export default interface ProjectDetails {
   enableAiSuggestions?: boolean;
 
 }
+

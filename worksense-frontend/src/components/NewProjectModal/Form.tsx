@@ -19,7 +19,7 @@ type localFormError = {
     members?: string;
 }
 
-const Form: React.FC<{ currentUserId: number, onClose: () => void }> = ({currentUserId, onClose}) => {
+const Form: React.FC<{ currentUserId: string, onClose: () => void }> = ({currentUserId, onClose}) => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
 
@@ -98,11 +98,12 @@ const Form: React.FC<{ currentUserId: number, onClose: () => void }> = ({current
         setAlert(null); // Clear previous alerts
 
         try {
-            const projectData = await projectService.createProejct({ // Renamed 'response' to 'projectData' for clarity
+            const projectData = await projectService.createProject({ // Renamed 'response' to 'projectData' for clarity
                 name: projectName,
                 description: description,
                 context: {}, // Assuming context is meant to be empty or handled elsewhere
                 members: selectedMembers,
+                ownerId: currentUserId,
             });
 
             if (projectData && projectData.id) {

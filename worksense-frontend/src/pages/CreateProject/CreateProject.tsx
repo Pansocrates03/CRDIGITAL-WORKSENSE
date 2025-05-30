@@ -36,11 +36,11 @@ const CreateProject: React.FC = () => {
 
 
     // Use Query to fetch user projects
-    const {isLoading, data, isError, error, isSuccess} = useProjects()
+    const {isLoading, data, isError, error} = useProjects()
 
 
     const processedProjects = useMemo(() => {
-        if (!data) return []; // If no projects data yet, return empty array
+        if (!data) return [];
 
         let currentProjects = [...data]; // Make a mutable copy
 
@@ -221,7 +221,7 @@ const CreateProject: React.FC = () => {
                 <NewProjectModal
                     isOpen={isModalOpen}
                     onClose={handleModalClose}
-                    currentUserId={user?.userId ?? -1}
+                    currentUserId={user?.id ?? -1}
                 />
 
                 {alert && (

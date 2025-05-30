@@ -87,7 +87,7 @@ const MembersPage: React.FC = () => {
         if (!memberToDelete || !projectId) return;
 
         try {
-            await deleteMember(projectId, memberToDelete.userId);
+            await deleteMember(memberToDelete.userId);
             handleSuccess("Member deleted from project successfully");
             setShowDeleteAlert(false);
             setMemberToDelete(null);
@@ -107,7 +107,7 @@ const MembersPage: React.FC = () => {
 
         try {
             for (const member of selectedMembers) {
-                await addMember(projectId, {
+                await addMember({
                     userId: member.userId,
                     projectRoleId: member.projectRoleId
                 });

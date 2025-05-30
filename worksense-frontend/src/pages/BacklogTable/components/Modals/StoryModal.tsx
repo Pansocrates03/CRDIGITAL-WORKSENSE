@@ -77,11 +77,11 @@ const StoryModal: FC<StoryModalProps> = ({
         try {
             if (mode === "create") {
                 const { id, createdAt, updatedAt, ...storyData } = formData;
-                await addStory(projectId, storyData as Story);
+                await addStory(storyData as Story);
                 onStoryCreated?.();
             } else {
                 const { createdAt, updatedAt, ...storyData } = formData;
-                await updateStory(projectId, storyData as Story)
+                await updateStory(storyData as Story)
                 onStoryUpdated?.();
             }
             onClose();
