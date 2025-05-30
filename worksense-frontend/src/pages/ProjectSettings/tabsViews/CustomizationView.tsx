@@ -65,7 +65,6 @@ const CustomizationView: React.FC = () => {
 
   const handleSave = () => {
     mutation.mutate({
-      ...project,
       workflowStages,
       tags,
     });

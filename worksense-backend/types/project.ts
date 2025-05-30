@@ -4,13 +4,16 @@ import { Timestamp } from "firebase-admin/firestore";
 // Define project status type
 export type ProjectStatus = "active" | "archived";
 
+// Define story point scale type
+export type StoryPointScale = "fibonacci" | "linear" | "tshirt";
+
 // Optional context structure (can be expanded)
 export interface ProjectContext {
   techStack?: string[];
   objectives?: string;
 }
 
-// Represents a project document in Firestore /projectss/{projectId}
+// Represents a project document in Firestore /projects/{projectId}
 export interface Project {
   id: string; // Firestore Document ID
   name: string;
@@ -21,6 +24,28 @@ export interface Project {
   createdAt: Timestamp;
   updatedAt?: Timestamp; // Added optional updatedAt
   context: ProjectContext | null;
+  startDate?: string;
+  endDate?: string;
+  visibility?: string;
+
+  // AI Settings
+  aiContext?: string | null;
+  aiTechStack?: string | null;
+  enableAiSuggestions?: boolean;
+
+  // Scrum Settings
+  sprintDuration?: number;
+  workingDays?: string[];
+  storyPointScale?: StoryPointScale;
+
+  // Metrics Settings
+  enableBurndownChart?: boolean;
+  enableVelocityTracking?: boolean;
+  enableWorkloadHeatmaps?: boolean;
+
+  // Customization Settings
+  workflowStages?: string[];
+  tags?: string[];
 }
 
 export interface ProjectMemberData {
