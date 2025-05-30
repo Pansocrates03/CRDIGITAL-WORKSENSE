@@ -4,6 +4,7 @@ import cors from "cors"; // Allows cross-origin requests
 import morgan from "morgan"; // Logs requests to the console
 
 // Import routes
+import AiRoutes from "./routes/ai.routes.js"
 import AuthRoutes from "./routes/auth.routes.js"
 import BugRoutes from "./routes/bugs.routes.js"
 import MemberRoutes from "./routes/members.routes.js"
@@ -30,6 +31,7 @@ app.use(morgan("dev"));
 app.use(express.json({ limit: "10mb" }));
 
 // Routing
+app.use(`${API_PREFIX}/`, AiRoutes)
 app.use(`${API_PREFIX}/`, AuthRoutes)
 app.use(`${API_PREFIX}/`, BugRoutes)
 app.use(`${API_PREFIX}/`, MemberRoutes)
