@@ -29,23 +29,13 @@ console.log("Running");
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth();
 
-  console.log(
-    `[PrivateRoute] Loading: ${loading}, Authenticated: ${isAuthenticated}`
-  );
-
   if (loading) {
-    console.log("[PrivateRoute] Rendering loading indicator.");
     return <div>Loading Authentication...</div>; // Or a better loading spinner
   }
 
   if (!isAuthenticated) {
-    console.log("[PrivateRoute] Not Authenticated. Redirecting to /login.");
     return <Navigate to="/login" replace />;
   }
-
-  console.log(
-    "[PrivateRoute] Authenticated. Rendering children within MainLayout."
-  );
 
   // Wrap the authenticated route's content with the MainLayout
   return <MainLayout>{children}</MainLayout>;

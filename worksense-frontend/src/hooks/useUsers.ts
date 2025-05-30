@@ -31,7 +31,6 @@ export const useUser = (userId: string): UseUserReturn => {
     queryKey: ["user", userId],
     queryFn: async () => {
       const response = await apiClient.get<User>(endpoints.getUser(userId));
-      console.log("useUser fetched data:", response.data);
       return response.data; // Axios response.data is already parsed JSON
     },
   });

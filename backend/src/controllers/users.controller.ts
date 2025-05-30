@@ -15,8 +15,6 @@ export const getUsers = async (req: Request, res: Response) => {
             ...doc.data()
         }));
 
-        console.log("Returning", items)
-
         res.status(200).json(items);
     } catch (error: any) {
         res.status(400).json({ message: error.message });

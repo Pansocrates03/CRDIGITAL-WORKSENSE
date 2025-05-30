@@ -22,14 +22,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log(
-      "%%% [AuthProvider useEffect] MOUNTING / REFRESH CHECK STARTING %%%"
-    );
     try {
       const userFromStorage = authService.getCurrentUser();
       setUser(userFromStorage); // Set to user object or null
-      console.log(
-        "%%% [AuthProvider useEffect] MOUNTING / REFRESH CHECK FINISHED %%%")
     } catch (error) {
       console.error(
         "%%% [AuthProvider useEffect] CRITICAL ERROR during initial auth check:",

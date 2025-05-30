@@ -15,16 +15,16 @@ type NewProjectModalProps = {
     initialDescription?: string;
     title?: string;
     submitButtonText?: string;
-    currentUserId: number;
+    currentUserId: string;
 }
 
 // Componente principal del modal para crear proyecto
 const NewProjectModal: React.FC<NewProjectModalProps> = ({
-                                                             isOpen,
-                                                             onClose,
-                                                             title = "New Project",
-                                                             currentUserId,
-                                                         }) => {
+    isOpen,
+    onClose,
+    title = "New Project",
+    currentUserId,
+}) => {
 
     // Alertas para errores o éxito
     const [alert, setAlert] = useState<{

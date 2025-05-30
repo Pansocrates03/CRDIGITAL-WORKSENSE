@@ -79,7 +79,6 @@ const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick, i
         // Optionally, show a generic error avatar
         avatarComponent = <AvatarDisplay user={{name: "Error"}} className="h-6 w-6 rounded-full ring-2 ring-white"/>;
     } else if (productOwnerDetails) {
-        console.log(productOwnerDetails);
         productOwnerName = productOwnerDetails.fullName || productOwnerDetails.firstName || "N/A"; // Adjust property name
         // Render AvatarDisplay only when productOwnerDetails is available
         avatarComponent = (

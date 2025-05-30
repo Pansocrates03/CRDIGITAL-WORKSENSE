@@ -102,3 +102,13 @@ export const useMembers = (projectId: string): UseMembersReturn => {
         updateMemberRole,
     };
 };
+
+export const createMember = async (projectId:string, memberData:Omit<Member,"user">) => {
+    try {
+        const response = await apiClient.post<Member>(endpoints.createMember(projectId), memberData);
+        return response.data as Member;
+    } catch (error) {
+        console.error('Error adding member:', error);
+        throw error;
+    }
+}

@@ -109,8 +109,7 @@ export const createProject = async (req: Request, res: Response) => {
 
         const collectionRef = db.collection("projects");
         const newItemRef = await collectionRef.add(newProjectData);
-        
-        res.status(201).json({ id: newItemRef.id, ...newProjectData });
+        res.status(200).json({ id: newItemRef.id, ...newProjectData });
 
     } catch (error: any) {
         res.status(400).json({ message: error.message });

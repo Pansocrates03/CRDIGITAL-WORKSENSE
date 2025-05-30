@@ -8,7 +8,7 @@ import {
 
 const router = Router({ mergeParams: true });
 
-router.post("/project/:projectId/generate-epics", generateEpicHandler);
+router.get("/project/:projectId/generate-epics", generateEpicHandler);
 
 router.post("/project/:projectId/confirm-epics", confirmEpicsHandler);
 

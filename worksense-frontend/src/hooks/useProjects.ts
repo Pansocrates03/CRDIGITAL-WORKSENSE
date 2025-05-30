@@ -1,4 +1,6 @@
-import { useQuery, useMutation, useQueryClient, UseMutationOptions, UseQueryResult } from "@tanstack/react-query";
+import {
+    useQuery, useMutation, useQueryClient, UseMutationOptions, UseQueryResult, UseMutateFunction
+} from "@tanstack/react-query";
 import { endpoints } from "@/lib/constants/endpoints";
 // Adjust import based on how ProjectDetails is exported:
 // Assuming ProjectSummary is also in ProjectType.ts or similar
@@ -6,15 +8,42 @@ import apiClient from "@/api/apiClient";
 import ProjectDetails from "@/types/ProjectSummary.ts";
 import ProjectSummary from "@/types/ProjectSummary.ts";
 
+type UseProjectsResult = UseQueryResult<ProjectSummary[], Error> & {
+    createProject: UseMutateFunction<ProjectDetails, Error, Omit<ProjectDetails, "id">, unknown>;
+};
+
 // Hook to fetch all projects (summary view)
-export const useProjects = (): UseQueryResult<ProjectSummary[], Error> => {
-    return useQuery<ProjectSummary[], Error, ProjectSummary[], ["projects"]>({
+export const useProjects = (): UseProjectsResult => {
+    const queryClient = useQueryClient();
+
+    const query = useQuery<ProjectSummary[], Error, ProjectSummary[], ["projects"]>({
         queryKey: ["projects"],
         queryFn: async () => {
             const response = await apiClient.get<ProjectSummary[]>(endpoints.getProjects());
-            return response.data; // Axios handles JSON parsing
+            return response.data;
         },
     });
+    
+    const createProject = async (projectData: Omit<ProjectDetails, "id">): Promise<ProjectDetails> => {
+        const response = await apiClient.post<ProjectDetails>(endpoints.createProject(), projectData);
+        return response.data;
+    }
+
+    const mutation = useMutation<ProjectDetails, Error, Omit<ProjectDetails, "id">>({
+        mutationFn: createProject,
+        onSuccess: (newProject) => {
+            queryClient.invalidateQueries({ queryKey: ["projects"] });
+            queryClient.setQueryData<ProjectDetails[]>(['projects'], (oldProjects) => {
+                if (!oldProjects) return [];
+                return [...oldProjects, newProject as ProjectDetails];
+            });
+        },
+    });
+
+    return {
+        ...query,
+        createProject: mutation.mutateAsync
+    };
 };
 
 // Hook to fetch a single project's details

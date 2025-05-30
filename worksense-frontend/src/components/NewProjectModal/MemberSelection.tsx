@@ -15,8 +15,8 @@ const ROLES = [
 // Component for selecting and adding members
 const MemberSelection: React.FC<{
     users: User[];
-    selectedMembers: Member[];
-    onAddMember: (member: Member) => void;
+    selectedMembers: Omit<Member, "user">[];
+    onAddMember: (member: Omit<Member, "user">) => void;
     onRemoveMember: (userId: string) => void;
     isLoading: boolean;
     error?: string;
@@ -45,7 +45,7 @@ const MemberSelection: React.FC<{
         }
 
         setValidationError("");
-        const newMember: Member = {
+        const newMember: Omit<Member,"user"> = {
             userId: selectedUserId,
             projectRoleId: selectedRoleId,
             joinedAt: {
@@ -62,12 +62,6 @@ const MemberSelection: React.FC<{
         setSelectedUserId("");
         setSelectedRoleId("");
     };
-
-    console.log({
-        users,
-        selectedMembers,
-        availableUsers
-    });
 
     return (
         <div className={styles.formGroup}>
@@ -123,13 +117,7 @@ const MemberSelection: React.FC<{
                     <div className={styles.noMembers}>No members added yet</div>
                 ) : (
                     selectedMembers.map((member) => {
-                        console.log('Looking for user:', member.userId);
-                        console.log('Available users:', users.map(u => ({
-                            id: u.id,
-                            name: `${u.firstName} ${u.lastName}`
-                        })));
                         const user = users.find((u) => u.id === member.userId);
-                        console.log('Found user:', user);
                         return (
                             <div key={member.userId} className={styles.memberRow}>
                                 <span className={styles.username}>

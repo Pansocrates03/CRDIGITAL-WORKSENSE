@@ -73,3 +73,13 @@ export const useEpics = (projectId: string): UseEpicsReturn => {
         deleteEpic
     };
 };
+
+export const createEpic = async (projectId: string, epic: Pick<Epic, 'name' | 'description' | 'priority' | 'status'>) => {
+    try {
+        const response = await apiClient.post<Epic>(endpoints.createEpic(projectId), epic);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to create epic:", error);
+        throw error;
+    }
+}
