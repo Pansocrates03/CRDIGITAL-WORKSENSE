@@ -1,6 +1,6 @@
 import apiClient from "../api/apiClient";
 import Member from "@/types/MemberType";
-import MemberDetailed from "@/types/MemberDetailedType";
+import MemberDetailed from "@/types/MemberType.ts";
 import BacklogItemType from "@/types/BacklogItemType";
 
 import {API_URL, endpoints} from "@/lib/constants/endpoints";
@@ -173,12 +173,8 @@ export const projectService = {
                     userId: member.userId,
                 };
                 console.log(`Adding member to project ${newProjectId}:`, memberPayload);
-
-                // Ensure this endpoint for adding a member is correct.
-                // Example: /project/:projectId/member or /projects/:projectId/members
-                // Based on previous client code, it might be:
                 await apiClient.post(
-                    `${API_URL}/project/${newProjectId}/member`, // Or /projects/${newProjectId}/members
+                    `${API_URL}/project/${newProjectId}/member`,
                     memberPayload
                 );
             }
@@ -187,13 +183,6 @@ export const projectService = {
             return response.data; // Return the created project details
         } catch (error) {
             console.error("Error in projectService.createProject:", error);
-            // For Axios errors, more details can be logged:
-            // if (axios.isAxiosError(error)) {
-            //   console.error("Axios error config:", error.config);
-            //   console.error("Axios error request:", error.request);
-            //   console.error("Axios error response data:", error.response?.data);
-            //   console.error("Axios error response status:", error.response?.status);
-            // }
             throw error;
         }
     },
