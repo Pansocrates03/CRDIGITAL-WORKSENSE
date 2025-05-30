@@ -22,11 +22,11 @@ export function verifyToken(req: Request, res: Response, next: NextFunction) {
   }
 
   try {
-    if (!process.env.TOKEN_SECRET) {
-      throw new Error("TOKEN_SECRET not defined in environment variables");
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET not defined in environment variables");
     }
 
-    const verified = jwt.verify(token, process.env.TOKEN_SECRET);
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
     req.user = verified;
     next();
   }       catch (err: any) { // Catch any type for logging
