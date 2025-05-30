@@ -4,7 +4,6 @@ import {auth} from "../middlewares/projectMiddlewareBundle.js";
 
 const router = express.Router({ mergeParams: true });
 
-router.use(auth)
 
 router.get("/projects/", getProjects)
 router.get("/project/:projectId/", getProject);
