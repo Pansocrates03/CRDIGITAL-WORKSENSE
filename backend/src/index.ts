@@ -14,6 +14,8 @@ import SprintRoutes from "./routes/sprints.routes.js"
 import StoryRoutes from "./routes/stories.routes.js"
 import TicketRoutes from "./routes/tickets.routes.js"
 import UserRoutes from "./routes/users.routes.js"
+import GeminiRoutes from "./routes/gemini.routes.js"
+import SpeechRoutes from "./routes/speech.routes.js";
 
 // Obtain URL
 const PORT = process.env.PORT || 5050;
@@ -38,6 +40,8 @@ app.use(`${API_PREFIX}/`, SprintRoutes)
 app.use(`${API_PREFIX}/`, StoryRoutes)
 app.use(`${API_PREFIX}/`, TicketRoutes)
 app.use(`${API_PREFIX}/`, UserRoutes)
+app.use(`${API_PREFIX}/`, GeminiRoutes)
+app.use(`${API_PREFIX}/`, SpeechRoutes)
 
 // Start Server
 const server = app.listen(PORT, () =>
