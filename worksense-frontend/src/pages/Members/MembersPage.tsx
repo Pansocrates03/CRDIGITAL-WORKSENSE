@@ -21,7 +21,7 @@ import {projectService} from '@/services/projectService';
 import {useDeleteMember, useMembers, useUpdateMemberRole} from '@/hooks/useMembers';
 import {useUsers} from '@/hooks/useUsers';
 import {useAuth} from '@/hooks/useAuth';
-import BacklogAlerts from "@/components/BacklogTable/BacklogAlerts.tsx";
+import {handleError, handleSuccess} from "@/utils/handleSuccessToast.ts";
 
 const MembersPage: React.FC = () => {
     const {id: projectId} = useParams<{ id: string }>();
@@ -57,7 +57,7 @@ const MembersPage: React.FC = () => {
             setIsModalOpen(false);
             handleSuccess('Role updated successfully');
         } catch (error) {
-            console.error('Failed to update role:', error);
+            handleError('Failed to update role');
         }
 
     };
@@ -76,7 +76,7 @@ const MembersPage: React.FC = () => {
             handleSuccess("Member deleted successfully");
 
         } catch (error) {
-            console.error('Failed to delete member:', error);
+            handleError('Failed to delete member');
         }
     };
 
@@ -103,7 +103,7 @@ const MembersPage: React.FC = () => {
             queryClient.invalidateQueries({queryKey: ['members', projectId]});
             handleSuccess('Members added successfully');
         } catch (error) {
-            console.error('Failed to add members:', error);
+            handleError('Failed to add members');
         }
     };
 
