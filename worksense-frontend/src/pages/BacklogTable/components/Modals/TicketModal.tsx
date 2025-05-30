@@ -37,7 +37,8 @@ const TicketModal: FC<TicketModalProps> = ({
     let memberOptions : {label:string, value:string}[] = [];
     members.forEach(member => {
         memberOptions.push({value: member.userId, label: member.user.firstName || "unknown"})
-    }) 
+    })
+    console.log("memberOptions", memberOptions);
 
     const initialState: Ticket = {
         id: "",
@@ -216,8 +217,8 @@ const TicketModal: FC<TicketModalProps> = ({
                     />
 
                     <SelectField
-                        id="asigneeId"
-                        name="asigneeId"
+                        id="assignedTo"
+                        name="assignedTo"
                         value={formData.assignedTo}
                         onChange={handleChange}
                         options={memberOptions}
