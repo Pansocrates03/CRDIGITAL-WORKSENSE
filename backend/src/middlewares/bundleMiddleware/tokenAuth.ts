@@ -38,8 +38,8 @@ export function verifyToken(req: Request, res: Response, next: NextFunction) {
       res.status(401).json({ message: "Invalid token" });
     } else if (err instanceof jwt.TokenExpiredError) {
       res.status(401).json({ message: "Token expired" });
-    } else if (err.message === "TOKEN_SECRET not defined in environment variables") { // Specific check for your custom throw
-      res.status(500).json({ message: "Server configuration error: TOKEN_SECRET missing" });
+    } else if (err.message === "JWT_SECRET not defined in environment variables") { // Updated error message
+      res.status(500).json({ message: "Server configuration error: JWT_SECRET missing" });
     }
     else { // <<<<<<<<<<<<<<<<<<<< THIS IS LIKELY BEING HIT
       res.status(500).json({ message: "Authentication error", detail: err.message });
