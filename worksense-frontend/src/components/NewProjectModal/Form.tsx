@@ -98,11 +98,23 @@ const Form: React.FC<{ currentUserId: number, onClose: () => void }> = ({current
         setAlert(null); // Clear previous alerts
 
         try {
-            const projectData = await projectService.createProejct({ // Renamed 'response' to 'projectData' for clarity
+            const projectData = await projectService.createProejct({
                 name: projectName,
                 description: description,
-                context: {}, // Assuming context is meant to be empty or handled elsewhere
+                context: {},
                 members: selectedMembers,
+                // Default settings fields
+                aiContext: null,
+                aiTechStack: null,
+                enableAiSuggestions: true,
+                sprintDuration: 2,
+                workingDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
+                storyPointScale: "tshirt",
+                enableBurndownChart: true,
+                enableVelocityTracking: true,
+                enableWorkloadHeatmaps: true,
+                workflowStages: ["To Do", "In Progress", "Done"],
+                tags: ["Done", "Sprint_backlog", "In_review", "In_Progress", "New"],
             });
 
             if (projectData && projectData.id) {
@@ -110,7 +122,7 @@ const Form: React.FC<{ currentUserId: number, onClose: () => void }> = ({current
                 setAlert({
                     type: "success",
                     title: "Project created successfully",
-                    message: `The project "${projectName}" has been created.`,
+                    message: `The project \"${projectName}\" has been created.`,
                 });
 
                 queryClient.invalidateQueries({queryKey: ["userProjects"]});
@@ -119,12 +131,10 @@ const Form: React.FC<{ currentUserId: number, onClose: () => void }> = ({current
                     onClose();
                     navigate(`/project/${projectData.id}`);
                 } else {
-                    // Project created and AI backlog generation is requested
                     setIsPopulatingBacklog(true);
-                    setShowGenerateEpicsModal(true); // Directly set state here
+                    setShowGenerateEpicsModal(true);
                 }
             } else {
-                // Handle cases where project creation might seem successful but ID is missing
                 console.error("Project created but ID is missing or creation failed:", projectData);
                 setAlert({
                     type: "error",
