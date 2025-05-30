@@ -74,6 +74,17 @@ export const createProject = async (
             context,
             status = "Active",
             members = [],
+            aiContext = null,
+            aiTechStack = null,
+            enableAiSuggestions = true,
+            sprintDuration = 2,
+            workingDays = ["monday", "tuesday", "wednesday", "thursday", "friday"],
+            storyPointScale = "tshirt",
+            enableBurndownChart = true,
+            enableVelocityTracking = true,
+            enableWorkloadHeatmaps = true,
+            workflowStages = ["To Do", "In Progress", "Done"],
+            tags = ["Done", "Sprint_backlog", "In_review", "In_Progress", "New"],
         } = req.body;
         const ownerId = req.user?.userId;
 
@@ -91,6 +102,17 @@ export const createProject = async (
             ownerId,
             status: status,
             context: context || null,
+            aiContext,
+            aiTechStack,
+            enableAiSuggestions,
+            sprintDuration,
+            workingDays,
+            storyPointScale,
+            enableBurndownChart,
+            enableVelocityTracking,
+            enableWorkloadHeatmaps,
+            workflowStages,
+            tags,
         };
 
         // Create a batch to perform multiple operations atomically
