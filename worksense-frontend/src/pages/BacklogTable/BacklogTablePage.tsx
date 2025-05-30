@@ -3,18 +3,21 @@
 // Core Imports
 import { FC, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import styles from "./BacklogTablePage.module.css";
+import { handleSuccess } from "@/utils/handleSuccessToast"; // This is likely the cause of a conflict if both branches modified it.
+import { useFridaChatPosition } from "@/contexts/FridaChatPositionContext"; // Keep this import from 'geminiFrontIntento2'
 
 // Compoent Imports
-import BacklogHeader from "@/components/BacklogTable/BacklogHeader";
-import BacklogTableSection from "@/components/BacklogTable/BacklogTableSection";
+import BacklogHeader from "./components/BacklogHeader"
+import BacklogTableSection from "./components/BacklogTableSection";
 import SearchFilter from "@/components/BacklogTable/SearchFilter";
 import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal.tsx";
-import UpdateItemModal from "@/components/BacklogTable/UpdateItemModal";
 import GenerateStoriesModal from "@/components/BacklogTable/GenerateStoriesModal";
 import StoryRow from "./components/Rows/StoryRow";
 import EpicRow from "./components/Rows/EpicRow";
-import { toast } from "sonner"
 import TicketRow from "./components/Rows/TicketRow";
+import { toast } from "sonner"
+
 
 import EpicModal from "./components/Modals/EpicModal";
 import StoryModal from "./components/Modals/StoryModal";
@@ -24,11 +27,9 @@ import StoryDetailsModal from "./components/Modals/StoryDetailsModal";
 import TicketDetailsModal from "./components/Modals/TicketDetailsModal";
 
 // HOOKS
-import { useMembers } from "@/hooks/useMembers";
-import { useSprints } from "@/hooks/useSprints";
-import { useProject } from "@/hooks/useProjects";
 import { useEpics } from "@/hooks/useEpics";
 import { useStories } from "@/hooks/useStories";
+import { useTickets } from "@/hooks/useTickets";
 
 // TYPES
 import { Story } from "@/types/StoryType";
@@ -37,10 +38,6 @@ import { Ticket } from "@/types/TicketType";
 
 type BacklogItemType = Epic | Story | Ticket;
 
-import styles from "./BacklogTablePage.module.css";
-import { handleSuccess } from "@/utils/handleSuccessToast"; // This is likely the cause of a conflict if both branches modified it.
-import { useFridaChatPosition } from "@/contexts/FridaChatPositionContext"; // Keep this import from 'geminiFrontIntento2'
-import { useTickets } from "@/hooks/useTickets";
 
 
 const BacklogTablePage: FC = () => {
@@ -92,17 +89,14 @@ const BacklogTablePage: FC = () => {
 
 
     // HOOKS
-    const { data:project, isLoading:isProjectLoading, isError:isProjectError } = useProject(projectId || "");
-    const { data:members = [], isLoading:isMembersLoading, isError:isMembersError } = useMembers(projectId || "");
-    const { data:sprints = [], isLoading:isSprintsLoading, isError:isSprintsError } = useSprints(projectId || "");
     const { data:epics = [], isLoading:isEpicsLoading, isError:isEpicsError, deleteEpic } = useEpics(projectId || "");
-    const { data:stories = [], isLoading:isStoriesLoading, isError:isStoriesError, addStory, deleteStory } = useStories(projectId || "");
+    const { data:stories = [], isLoading:isStoriesLoading, isError:isStoriesError, deleteStory } = useStories(projectId || "");
     const { data:tickets = [], isLoading:isTicketsLoading, isError:isTicketsError, deleteTicket } = useTickets(projectId!) 
 
-    if( isProjectLoading || isMembersLoading || isSprintsLoading || isEpicsLoading || isStoriesLoading){
+    if( isEpicsLoading || isStoriesLoading || isTicketsLoading ){
         return <div>Loading page...</div>
     }
-    if( isProjectError || isMembersError || isSprintsError || isEpicsError || isStoriesError){
+    if( isEpicsError || isStoriesError || isTicketsError ){
         return <div>Error...</div>
     }
 

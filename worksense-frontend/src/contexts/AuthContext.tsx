@@ -32,25 +32,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
       setUser(null); // Ensure user is null on error
     } finally {
-      console.log(
-        "%%% [AuthProvider useEffect] FINALLY block. Setting loading to false."
-      );
       setLoading(false);
     }
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      console.log("[AuthProvider] Calling authService.login...");
       const loginResponse = await authService.login(email, password);
-      console.log("[AuthProvider] authService.login finished.");
 
       if (loginResponse.user && loginResponse.token) {
-
-        console.log(
-          "[AuthProvider] User found in login response. Setting state."
-        );
-
         setUser(loginResponse.user); // Set user directly from login response
         // No need to call getCurrentUser again here
         // No need to set isAuthenticated

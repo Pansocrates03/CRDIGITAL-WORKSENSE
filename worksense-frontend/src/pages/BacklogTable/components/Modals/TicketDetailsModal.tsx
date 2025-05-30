@@ -3,7 +3,7 @@ import { Ticket } from "@/types/TicketType";
 import { Button } from "@/components/ui/button";
 import { X, Edit, Trash2, Check, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import styles from "@/components/BacklogTable/CreateItemModal.module.css";
+import styles from "./CreateItemModal.module.css";
 
 interface TicketDetailsModalProps {
     isOpen: boolean;

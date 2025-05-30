@@ -1,10 +1,10 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Epic } from "@/types/EpicType";
 import { Story } from "@/types/StoryType";
 import { Button } from "@/components/ui/button";
 import { X, Edit, Trash2, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import styles from "@/components/BacklogTable/CreateItemModal.module.css";
+import styles from "./CreateItemModal.module.css";
 
 interface EpicDetailsModalProps {
     isOpen: boolean;

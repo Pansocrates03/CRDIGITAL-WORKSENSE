@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Save, X, RefreshCw } from "lucide-react";
 import SelectField from "@/components/BacklogTable/SelectField";
-import styles from "@/components/BacklogTable/CreateItemModal.module.css";
+import styles from "./CreateItemModal.module.css";
 import { useEpics } from "@/hooks/useEpics";
 
 interface EpicModalProps {
