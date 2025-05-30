@@ -9,6 +9,7 @@ export function useAuth() {
       if (!user) {
         throw new Error('No authenticated user found');
       }
+
       return user;
     },
   });

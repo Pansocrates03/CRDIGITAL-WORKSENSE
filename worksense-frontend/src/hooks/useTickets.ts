@@ -1,58 +1,93 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { endpoints } from "@/lib/constants/endpoints";
-import { Ticket } from "@/types/TicketType";
+import { useQuery, useQueryClient, UseQueryResult } from "@tanstack/react-query";
+import { endpoints } from "@/lib/constants/endpoints"; // Ensure path is correct
+import { Ticket } from "@/types/TicketType";       // Ensure path is correct
+import apiClient from "@/api/apiClient";           // Import your apiClient
 
-export const useTickets = (projectId: string) => {
+// Interface for the hook's return value for better clarity and type safety
+type UseTicketsReturn = UseQueryResult<Ticket[], Error> & {
+    addTicket: (ticketData: Omit<Ticket, "id" | "projectId">) => Promise<Ticket>; // Assuming API returns the created ticket
+    updateTicket: (ticketData: Ticket) => Promise<Ticket>; // Assuming API returns the updated ticket
+    deleteTicket: (ticketId: string) => Promise<void>;
+};
+
+export const useTickets = (projectId: string): UseTicketsReturn => {
     const queryClient = useQueryClient();
 
-    const query = useQuery({
-        queryKey: ["tickets", projectId],
+    // Define the query key consistently
+    const ticketsQueryKey: ["tickets", string] = ["tickets", projectId];
+
+    const query = useQuery<Ticket[], Error, Ticket[], ["tickets", string]>({
+        queryKey: ticketsQueryKey,
         queryFn: async () => {
-            const response = await fetch(endpoints.getTickets(projectId));
-            if (!response.ok) {
-                throw new Error('Failed to fetch tickets');
+            if (!projectId) {
+                // Or throw an error, or return an empty array, depending on desired behavior
+                // This check is mostly covered by 'enabled' but good for explicitness if enabled is removed
+                return [];
             }
-            const data = await response.json();
-            return data as Ticket[];
+            // apiClient.get will throw for non-2xx responses
+            const response = await apiClient.get<Ticket[]>(endpoints.getTickets(projectId));
+            return response.data; // Axios response.data is already parsed JSON
         },
+        enabled: !!projectId, // Only run the query if projectId is a truthy value
     });
 
-    const addTicket = async (ticket:Omit<Ticket, "id">) => {
-        const response = await fetch(endpoints.createTicket(projectId), {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(ticket),
-        });
-        if (!response.ok) {
-            throw new Error('Failed to create ticket');
+    const addTicket = async (ticketData: Omit<Ticket, "id" | "projectId">): Promise<Ticket> => {
+        try {
+            // apiClient.post handles JSON.stringify and Content-Type header
+            const response = await apiClient.post<Ticket>(
+                endpoints.createTicket(projectId),
+                ticketData // Pass the ticket data directly as the body
+            );
+
+            // Invalidate the query for this project's tickets to refetch fresh data
+            // This ensures the list updates with the new ticket
+            queryClient.invalidateQueries({ queryKey: ticketsQueryKey });
+
+            return response.data; // Assuming your API returns the created ticket
+        } catch (error) {
+            console.error("Failed to create ticket:", error);
+            // Re-throw error to be handled by the calling component or React Query's error state
+            throw error;
         }
-        queryClient.invalidateQueries({ queryKey: ["tickets"] });
     };
 
-    const updateTicket = async (ticket:Ticket) => {
-        const response = await fetch(endpoints.updateTicket(projectId,ticket.id), {
-            method: "PUT",
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(ticket),
-        })
-        if (!response.ok) {
-            throw new Error('Failed to update ticket');
-        }
-        queryClient.invalidateQueries({ queryKey: ["tickets"] });
-    }
+    const updateTicket = async (ticketData: Ticket): Promise<Ticket> => {
+        try {
+            // apiClient.put handles JSON.stringify and Content-Type header
+            const response = await apiClient.put<Ticket>(
+                endpoints.updateTicket(projectId, ticketData.id),
+                ticketData // Pass the full ticket data for update
+            );
 
-    const deleteTicket = async (ticketId:string) => {
-        const response = await fetch(endpoints.deleteTicket(projectId, ticketId), {
-            method: 'DELETE',
-        });
-        if (!response.ok) {
-            throw new Error('Failed to delete ticket');
+            // Invalidate the query to refetch.
+            // For a more advanced UX, you could optimistically update the cache here:
+            // queryClient.setQueryData(ticketsQueryKey, (oldData?: Ticket[]) =>
+            //   oldData?.map(t => t.id === ticketData.id ? response.data : t) ?? []
+            // );
+            // And then invalidate if you want to ensure consistency, or only on error.
+            queryClient.invalidateQueries({ queryKey: ticketsQueryKey });
+
+            return response.data; // Assuming your API returns the updated ticket
+        } catch (error) {
+            console.error("Failed to update ticket:", error);
+            throw error;
         }
-        queryClient.invalidateQueries({ queryKey: ["tickets"] });
+    };
+
+    const deleteTicket = async (ticketId: string): Promise<void> => {
+        try {
+            await apiClient.delete(endpoints.deleteTicket(projectId, ticketId));
+
+            // Invalidate the query.
+            // For optimistic updates, you could remove it from cache:
+            // queryClient.setQueryData(ticketsQueryKey, (oldData?: Ticket[]) =>
+            //   oldData?.filter(t => t.id !== ticketId) ?? []
+            // );
+            queryClient.invalidateQueries({ queryKey: ticketsQueryKey });
+        } catch (error) {
+            console.error("Failed to delete ticket:", error);
+            throw error;
+        }
     };
 
     return {

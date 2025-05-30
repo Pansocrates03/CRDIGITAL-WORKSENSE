@@ -6,7 +6,6 @@ import Member from "../../types/MemberType";
 
 // Define available roles
 const ROLES = [
-    {id: "", name: "Select Role"},
     {id: "product-owner", name: "Product Owner"},
     {id: "scrum-master", name: "Scrum Master"},
     {id: "developer", name: "Developer"},
@@ -16,9 +15,9 @@ const ROLES = [
 // Component for selecting and adding members
 const MemberSelection: React.FC<{
     users: User[];
-    selectedMembers: Member[];
-    onAddMember: (member: Member) => void;
-    onRemoveMember: (userId: number) => void;
+    selectedMembers: Omit<Member, "user">[];
+    onAddMember: (member: Omit<Member, "user">) => void;
+    onRemoveMember: (userId: string) => void;
     isLoading: boolean;
     error?: string;
     availableUsers: User[];
@@ -33,33 +32,46 @@ const MemberSelection: React.FC<{
       }) => {
     const [selectedUserId, setSelectedUserId] = useState<string>("");
     const [selectedRoleId, setSelectedRoleId] = useState<string>("");
+    const [validationError, setValidationError] = useState<string>("");
 
     const handleAddMember = () => {
-        if (selectedUserId && selectedRoleId) {
-            const newMember: Member = {
-                userId: Number(selectedUserId),
-                projectRoleId: selectedRoleId,
-                joinedAt: {}
-            };
-
-            onAddMember(newMember);
-            setSelectedUserId("");
-            setSelectedRoleId("");
+        if (!selectedUserId) {
+            setValidationError("Please select a user");
+            return;
         }
-    };
+        if (!selectedRoleId) {
+            setValidationError("Please select a role");
+            return;
+        }
 
-    console.log({
-        users,
-        selectedMembers,
-        availableUsers
-    });
+        setValidationError("");
+        const newMember: Omit<Member,"user"> = {
+            userId: selectedUserId,
+            projectRoleId: selectedRoleId,
+            joinedAt: {
+                _seconds: Math.floor(Date.now() / 1000),
+                _nanoseconds: 0
+            },
+            updatedAt: {
+                _seconds: Math.floor(Date.now() / 1000),
+                _nanoseconds: 0
+            }
+        };
+
+        onAddMember(newMember);
+        setSelectedUserId("");
+        setSelectedRoleId("");
+    };
 
     return (
         <div className={styles.formGroup}>
             <div className={styles.memberControls}>
                 <select
                     value={selectedUserId}
-                    onChange={(e) => setSelectedUserId(e.target.value)}
+                    onChange={(e) => {
+                        setSelectedUserId(e.target.value);
+                        setValidationError("");
+                    }}
                     className={styles.memberSelect}
                     disabled={isLoading}
                 >
@@ -72,10 +84,14 @@ const MemberSelection: React.FC<{
                 </select>
                 <select
                     value={selectedRoleId}
-                    onChange={(e) => setSelectedRoleId(e.target.value)}
+                    onChange={(e) => {
+                        setSelectedRoleId(e.target.value);
+                        setValidationError("");
+                    }}
                     className={styles.roleSelect}
                     disabled={isLoading}
                 >
+                    <option value="">Select a role</option>
                     {ROLES.map((role) => (
                         <option key={role.id} value={role.id}>
                             {role.name}
@@ -86,31 +102,30 @@ const MemberSelection: React.FC<{
                     type="button"
                     className={styles.addButton}
                     onClick={handleAddMember}
-                    disabled={!selectedUserId || !selectedRoleId}
+                    disabled={isLoading}
                 >
                     +
                 </button>
             </div>
+            {(validationError || error) && (
+                <p className={styles.errorMessage} role="alert">
+                    {validationError || error}
+                </p>
+            )}
             <div className={styles.membersContainer}>
                 {selectedMembers.length === 0 ? (
                     <div className={styles.noMembers}>No members added yet</div>
                 ) : (
                     selectedMembers.map((member) => {
-                        console.log('Looking for user:', member.userId);
-                        console.log('Available users:', users.map(u => ({
-                            id: u.id,
-                            name: `${u.firstName} ${u.lastName}`
-                        })));
                         const user = users.find((u) => u.id === member.userId);
-                        console.log('Found user:', user);
                         return (
                             <div key={member.userId} className={styles.memberRow}>
-                <span className={styles.username}>
-                  {user ? `${user.firstName} ${user.lastName}` : "Unknown User"}
-                </span>
+                                <span className={styles.username}>
+                                    {user ? `${user.firstName} ${user.lastName}` : "Unknown User"}
+                                </span>
                                 <span className={styles.memberRole}>
-                  {ROLES.find(role => role.id === member.projectRoleId)?.name || "Unknown Role"}
-                </span>
+                                    {ROLES.find(role => role.id === member.projectRoleId)?.name || "Unknown Role"}
+                                </span>
                                 <button
                                     type="button"
                                     className={styles.removeMember}
@@ -123,11 +138,6 @@ const MemberSelection: React.FC<{
                     })
                 )}
             </div>
-            {error && (
-                <p className={styles.errorMessage} role="alert">
-                    {error}
-                </p>
-            )}
         </div>
     );
 };

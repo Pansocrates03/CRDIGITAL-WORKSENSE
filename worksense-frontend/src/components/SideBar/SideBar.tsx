@@ -93,7 +93,7 @@ export const SideBar: React.FC<{showSidebar:boolean}> = ({showSidebar}) => {
       {
         name: "User Management",
         icon: "/users.svg",
-        path: `/project/${projectId}/users`,
+        path: `/project/${projectId}/members`,
       },
       {
         name: "Settings",

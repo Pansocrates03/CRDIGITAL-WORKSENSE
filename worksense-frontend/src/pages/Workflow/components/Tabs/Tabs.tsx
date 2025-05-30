@@ -18,7 +18,7 @@ interface TabsProps {
   handleCreateColumn: (name: string) => void; // Callback to add column in board
   projectId: string; // Project identifier
   selectedSprintId?: string; // ID of the currently selected sprint
-  createSprint: (projectId: string, sprintData: Omit<Sprint, "id" | "projectId" | "createdAt" | "updatedAt">) => Promise<void>;
+  createSprint: (sprintData: Omit<Sprint, "id" | "projectId" | "createdAt" | "updatedAt">) => Promise<void>;
 }
 
 /**

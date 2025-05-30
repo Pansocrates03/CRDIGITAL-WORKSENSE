@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { db } from "../../models/firebase.js"; // Adjust path
-import { ProjectMemberData } from "../../../types/project.js"; // Import needed type
+import { db } from "../../models/firebase.model.js"; // Adjust path
+import { rawMember } from "../../types/member.type.js"; // Import needed type
 
 // Extend Request type to potentially hold project-specific details
 declare global {
@@ -8,7 +8,6 @@ declare global {
     interface Request {
       projectMembership?: {
         roleId: string;
-        // Add permissions array here later if fetched
       };
     }
   }
@@ -51,7 +50,7 @@ export const checkProjectMembership = async (
     }
 
     // Attach role to request for permission checks
-    const memberData = memberSnap.data() as ProjectMemberData;
+    const memberData = memberSnap.data() as rawMember;
     req.projectMembership = { roleId: memberData.projectRoleId };
 
     next();

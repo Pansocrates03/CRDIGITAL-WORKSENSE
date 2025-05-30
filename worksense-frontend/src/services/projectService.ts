@@ -1,12 +1,13 @@
-import ProjectDetails from "@/types/ProjectType";
 import apiClient from "../api/apiClient";
 import Member from "@/types/MemberType";
 import MemberDetailed from "@/types/MemberDetailedType";
 import BacklogItemType from "@/types/BacklogItemType";
 
 import {API_URL, endpoints} from "@/lib/constants/endpoints";
+import ProjectDetails from "@/types/ProjectSummary.ts";
 
 interface CreateProject {
+    ownerId: string;
     name: string;
     description: string;
     context: object;
@@ -36,19 +37,6 @@ export const projectService = {
             return response.data;
         } catch (error) {
             console.error("Error fetching project members:", error);
-            throw error;
-        }
-    },
-
-    // Gets the list of members in a project with email and name
-    async fetchProjectMembersDetailed(id: string): Promise<MemberDetailed[]> {
-        try {
-            const response = await apiClient.get(
-                `${API_URL}/projects/${id}/members/members-detail`
-            );
-            return response.data;
-        } catch (error) {
-            console.error("Error fetching project members with details:", error);
             throw error;
         }
     },
@@ -137,41 +125,82 @@ export const projectService = {
         }
     },
 
-    async createProejct(receivedData: CreateProject): Promise<ProjectDetails> {
+    async createProject(receivedData: CreateProject): Promise<ProjectDetails> { // Assuming ProjectDetails is the return type
         try {
-            // Primero se debe crear el proyecto
-
-            const response = await apiClient.post(`${API_URL}/projects/`, {
+            // 1. Create the project, sending ownerId
+            const projectCreationPayload = {
                 name: receivedData.name,
                 description: receivedData.description,
-                context: null,
-            });
+                context: receivedData.context || null,
+                ownerId: receivedData.ownerId
+            };
+            console.log("Sending to create project endpoint (/project/):", projectCreationPayload);
 
-            // Luego se deben agregar los miembros al proyecto
-            for (let i = 0; i < receivedData.members.length; i++) {
-                const member = receivedData.members[i];
+            const response = await apiClient.post<ProjectDetails>(`${API_URL}/project/`, projectCreationPayload);
 
+            const newProjectId = response.data.id;
+            if (!newProjectId) {
+                console.error("Project creation response missing ID:", response.data);
+                throw new Error("Project creation successful, but no ID returned from backend.");
+            }
+            console.log(`Project created with ID: ${newProjectId}`);
+
+            // 2. Prepare the list of members to add, ensuring the owner is included
+            let membersToAdd = [...receivedData.members];
+
+            const ownerAlreadyInMembersList = membersToAdd.find(
+                (member) => member.userId === receivedData.ownerId
+            );
+
+            if (!ownerAlreadyInMembersList) {
+                console.log(`Owner (userId: ${receivedData.ownerId}) not in initial members list. Adding them.`);
+                membersToAdd.push({
+                    userId: receivedData.ownerId,
+                    projectRoleId: "product-owner",
+                } as Member);
+            }
+            console.log(`Total members to add to project ${newProjectId}: ${membersToAdd.length}`, membersToAdd);
+
+
+            // 3. Add all members (including the owner now)
+            for (const member of membersToAdd) {
+                if (!member.userId || !member.projectRoleId) {
+                    console.warn("Skipping member due to missing userId or projectRoleId:", member);
+                    continue;
+                }
+                const memberPayload = {
+                    projectRoleId: member.projectRoleId,
+                    userId: member.userId,
+                };
+                console.log(`Adding member to project ${newProjectId}:`, memberPayload);
+
+                // Ensure this endpoint for adding a member is correct.
+                // Example: /project/:projectId/member or /projects/:projectId/members
+                // Based on previous client code, it might be:
                 await apiClient.post(
-                    `${API_URL}/projects/${response.data.id}/members`,
-                    {
-                        projectRoleId: member.projectRoleId,
-                        userId: member.userId, // Asegúrate de que `member` contenga el ID del miembro
-                    }
+                    `${API_URL}/project/${newProjectId}/member`, // Or /projects/${newProjectId}/members
+                    memberPayload
                 );
             }
 
-            // En caso de que se haya seleccionado, se deben crear los EPICs y los SPRINTS
-
-            return response.data;
+            console.log("Finished adding members. Returning project data:", response.data);
+            return response.data; // Return the created project details
         } catch (error) {
-            console.error("Error creating project:", error);
+            console.error("Error in projectService.createProject:", error);
+            // For Axios errors, more details can be logged:
+            // if (axios.isAxiosError(error)) {
+            //   console.error("Axios error config:", error.config);
+            //   console.error("Axios error request:", error.request);
+            //   console.error("Axios error response data:", error.response?.data);
+            //   console.error("Axios error response status:", error.response?.status);
+            // }
             throw error;
         }
     },
 
     updateProject: async (projectId: string, updated: any) => {
         try {
-            await apiClient.put(`${API_URL}/projects/${projectId}`, updated);
+            await apiClient.put(`${API_URL}/project/${projectId}`, updated);
         } catch (error) {
             console.error("Error updating project:", error);
             throw error;

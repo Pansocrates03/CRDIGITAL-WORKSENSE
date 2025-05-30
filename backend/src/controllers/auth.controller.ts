@@ -3,6 +3,7 @@ import { db } from "../models/firebase.model.js"
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { User } from "../types/user.type.js";
+import { Timestamp } from "firebase-admin/firestore";
 
 export const login = async (req: Request, res: Response) => {
     try {
@@ -42,7 +43,8 @@ export const login = async (req: Request, res: Response) => {
             firstName: userData.firstName, lastName: userData.lastName, nickName: userData.nickName, pfp: userData.pfp, platformRole: userData.platformRole, updatedAt: userData.updatedAt,
             id: userDoc.id,
             email: userData.email,
-            password: userData.password
+            password: userData.password,
+            lastLogin: Timestamp.now()
         };
 
         // Remove sensitive data

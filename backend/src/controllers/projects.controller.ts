@@ -8,10 +8,18 @@ export const getProjects = async (req: Request, res: Response) => {
         const collectionRef = db.collection("projects");
         const snapshot = await collectionRef.get();
 
-        const items = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+        const items = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                name: data.name,
+                description: data.description,
+                status: data.status,
+                ownerId: data.ownerId,
+
+            };
+        });
+
 
         res.status(200).json(items);
     } catch (error: any) {
@@ -75,7 +83,7 @@ export const updateProject = async (req: Request, res: Response) => {
 
 export const createProject = async (req: Request, res: Response) => {
     try {
-        const { description, name,ownerId } = req.body;
+        const { description, name, ownerId } = req.body;
 
         if(!name){
             res.status(400).json({ message: "The project needs a name"});
@@ -101,8 +109,7 @@ export const createProject = async (req: Request, res: Response) => {
 
         const collectionRef = db.collection("projects");
         const newItemRef = await collectionRef.add(newProjectData);
-        
-        res.status(201).json({ id: newItemRef.id, ...newProjectData });
+        res.status(200).json({ id: newItemRef.id, ...newProjectData });
 
     } catch (error: any) {
         res.status(400).json({ message: error.message });

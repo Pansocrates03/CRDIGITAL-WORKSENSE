@@ -1,3 +1,5 @@
+import Timestamp from "./FirebaseTimestamp";
+
 // Import the User interface
 export interface User {
   id: string;
@@ -9,4 +11,5 @@ export interface User {
   nickName?: string;
   pfp?: string;
   platformRole?: string;
+  lastLogin: Timestamp;
 }

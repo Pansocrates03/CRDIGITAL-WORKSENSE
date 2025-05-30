@@ -141,6 +141,7 @@ export const createMember = async (req: Request, res: Response) => {
         const { userId, projectRoleId } = req.body;
 
         if (!userId || !projectRoleId) {
+            console.log("User ID and project role ID are required")
             res.status(400).json({ message: "User ID and project role ID are required" });
             return;
         }
@@ -150,6 +151,7 @@ export const createMember = async (req: Request, res: Response) => {
         const userSnap = await userRef.get();
 
         if (!userSnap.exists) {
+            console.log("User not found")
             res.status(404).json({ message: "User not found" });
             return;
         }
@@ -164,6 +166,7 @@ export const createMember = async (req: Request, res: Response) => {
         const existingMember = await memberRef.get();
 
         if (existingMember.exists) {
+            console.log("%%%%%%%%%%%%%\n User is already a member of this project\n %%%%%%%%%%", userId)
             res.status(409).json({ message: "User is already a member of this project" });
             return;
         }
@@ -194,13 +197,13 @@ export const createMember = async (req: Request, res: Response) => {
 
 export const deleteMember = async (req: Request, res: Response) => {
     try {
-        const { projectId, userId } = req.params;
+        const { projectId, memberId } = req.params;
 
         const memberRef = db
             .collection("projects")
             .doc(projectId)
             .collection("members")
-            .doc(userId);
+            .doc(memberId);
         
         const docSnap = await memberRef.get();
 
@@ -211,9 +214,39 @@ export const deleteMember = async (req: Request, res: Response) => {
 
         await memberRef.delete();
 
-        res.status(200).json({ message: "Member removed from project", id: userId });
+        res.status(200).json({ message: "Member removed from project", id: memberId });
 
     } catch (error: any) {
         res.status(400).json({ message: error.message });
+    }
+};
+
+export const updateMemberRole = async (req: Request, res: Response) => {
+    try {
+        const { projectId, memberId } = req.params;
+        const { projectRoleId } = req.body;
+
+        if (!projectRoleId) {
+        return res.status(400).json({ message: "Missing projectRoleId in body" });
+        }
+
+        const memberRef = db
+        .collection("projects")
+        .doc(projectId)
+        .collection("members")
+        .doc(memberId);
+
+        const docSnap = await memberRef.get();
+
+        if (!docSnap.exists) {
+        return res.status(404).json({ message: "Member not found" });
+        }
+
+        await memberRef.update({ projectRoleId: projectRoleId });
+
+        return res.status(200).json({ message: "Member role updated", id: memberId });
+
+    } catch (error: any) {
+        return res.status(400).json({ message: error.message });
     }
 };

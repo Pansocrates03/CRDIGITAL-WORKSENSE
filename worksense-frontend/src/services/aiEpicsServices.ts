@@ -1,5 +1,6 @@
 // src/services/aiEpicsService.ts
 import apiClient from "@/api/apiClient";
+import { endpoints } from "@/lib/constants/endpoints";
 import {
   AiEpicSuggestion,
   GenerateEpicsResponse,
@@ -20,23 +21,9 @@ export const aiEpicsService = {
    */
   async generateEpics(projectId: string): Promise<AiEpicSuggestion[]> {
     try {
-      // Verificar si ya tenemos épicas en caché para este proyecto
-      if (epicsCache.has(projectId)) {
-        return epicsCache.get(projectId) || [];
-      }
-
-      // Si no hay caché, llamar a la API
-      const response = await apiClient.post<GenerateEpicsResponse>(
-        `/projects/${projectId}/ai/generate-epics`
-      );
-
-      // Guardar en caché
-      if (response.data && Array.isArray(response.data.epics)) {
-        epicsCache.set(projectId, response.data.epics);
-        return response.data.epics;
-      }
-
-      return [];
+      const response = await apiClient.get<GenerateEpicsResponse>(endpoints.generateEpics(projectId));
+      console.log("Epics received", response.data)
+      return response.data.epics
     } catch (error) {
       console.error("Error generating epics:", error);
       throw error;

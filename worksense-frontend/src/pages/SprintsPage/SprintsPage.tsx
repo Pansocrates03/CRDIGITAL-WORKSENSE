@@ -40,8 +40,8 @@ const SprintsPage: React.FC = () => {
     
     // Check if user has management permissions
     const canManageSprints = members.some(
-        member => 
-            member.userId === user?.userId && 
+        (member) => 
+            member.userId === user?.id && 
             (member.projectRoleId === 'product-owner' || member.projectRoleId === 'scrum-master')
     );
     
@@ -183,7 +183,7 @@ const SprintsPage: React.FC = () => {
                     endDate: formatDateForAPI(endDate),
                     status: newSprint.status
                 }
-                await updateSprint(projectId, sprintData);
+                await updateSprint(sprintData);
 
                 toast.success("Sprint updated successfully!")
             } else {
@@ -196,7 +196,7 @@ const SprintsPage: React.FC = () => {
                     startDate: formatDateForAPI(startDate),
                     endDate: formatDateForAPI(endDate),
                 }
-                await createSprint(projectId, newSprintData);
+                await createSprint(newSprintData);
 
                 toast.success("Sprint created successfully!")
             }
@@ -218,7 +218,7 @@ const SprintsPage: React.FC = () => {
     const handleConfirmDelete = async () => {
         if (sprintToDelete) {
             try {
-                await deleteSprint(projectId || "", sprintToDelete);
+                await deleteSprint(sprintToDelete);
                 setSprintToDelete(null);
 
                 toast.success("Sprint deleted successfully!")

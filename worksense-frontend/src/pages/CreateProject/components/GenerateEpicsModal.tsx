@@ -6,6 +6,7 @@ import aiEpicsService from "@/services/aiEpicsServices.ts";
 import {AiEpicSuggestion} from "@/types/ai.ts";
 import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal.tsx";
 import {Button} from "@/components/ui/button.tsx";
+import { createEpic } from "@/hooks/useEpics";
 
 interface GenerateEpicsModalProps {
     projectId: string;
@@ -38,11 +39,15 @@ const GenerateEpicsModal: FC<GenerateEpicsModalProps> = ({
             generateSuggestions();
         } else if (!isOpen) {
             // Clear state when this view is conceptually "closed" or replaced
-            setSuggestedEpics([]);
-            setError(null);
-            setHasChanges(false);
+            resetState();
         }
     }, [isOpen, projectId]); // isOpen prop from parent indicates this view is active
+
+    const resetState = () => {
+        setSuggestedEpics([]);
+        setError(null);
+        setHasChanges(false);
+    };
 
     const handleCloseWithConfirmation = () => {
         if (suggestedEpics.length > 0 && hasChanges && !isLoading && !isGenerating) {
@@ -104,7 +109,18 @@ const GenerateEpicsModal: FC<GenerateEpicsModalProps> = ({
         setIsLoading(true);
         setError(null);
         try {
-            await aiEpicsService.confirmEpics(projectId, suggestedEpics);
+            await Promise.all(
+                suggestedEpics.map(epic => {
+                    createEpic(projectId, {
+                        ...epic,
+                        status: "planned",
+                        description: epic.description || "" // Convert null to empty string
+                    })
+                })
+            )
+            console.log("Epics added")
+
+            //await aiEpicsService.confirmEpics(projectId, suggestedEpics);
             onEpicsAdded(); // This will trigger navigation and alert in Form.tsx
             setHasChanges(false);
             // `onClose()` is typically called by `onEpicsAdded`'s handler in the parent

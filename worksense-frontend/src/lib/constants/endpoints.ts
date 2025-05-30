@@ -3,6 +3,11 @@ export const API_URL = SERVER.endsWith("/api/v1") ? SERVER : SERVER + "/api/v2";
 
 export const endpoints = {
 
+    // Artificial Intelligence
+    generateEpics: (projectId:string) => `${API_URL}/project/${projectId}/generate-epics`,
+    generateStories: () => `${API_URL}/generate-stories`,
+    generateTickets: () => `${API_URL}/generate-tickets`,
+
     // AUTH
     login: () => `${API_URL}/login`,
 
@@ -26,6 +31,7 @@ export const endpoints = {
     updateMember: (projectId:string, memberId:string) => `${API_URL}/project/${projectId}/member/${memberId}`,
     createMember: (projectId:string) => `${API_URL}/project/${projectId}/member`,
     deleteMember: (projectId:string, memberId:string) => `${API_URL}/project/${projectId}/member/${memberId}`,
+    updateMemberRole: (projectId:string, memberId:string) => `${API_URL}/project/${projectId}/member/${memberId}`,
 
     // PROJECTS
     getProjects: () => `${API_URL}/projects`,

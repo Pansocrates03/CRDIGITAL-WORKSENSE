@@ -82,25 +82,13 @@ export const authService = {
   },
 
   getCurrentUser(): User | null {
-    //console.log("%%% [getCurrentUser] CALLED (Refresh Check) %%%"); // Add a unique identifier
     const token = localStorage.getItem("token");
     const userStr = localStorage.getItem("user");
-    /*
-    console.log(
-      `%%% [getCurrentUser] Raw token: ${token ? "Exists" : "MISSING"}`
-    );
-    console.log(`%%% [getCurrentUser] Raw user string: ${userStr}`);
-    */
 
     if (token && userStr && userStr !== "undefined" && userStr !== "null") {
       try {
         const parsedUser = JSON.parse(userStr);
-        /*
-        console.log(
-          "%%% [getCurrentUser] Parse attempt successful. Parsed data:",
-          parsedUser
-        );
-        */
+
         // TIGHTEN VALIDATION: Check for essential properties
         if (
           parsedUser &&
@@ -111,11 +99,6 @@ export const authService = {
           if (parsedUser.firstName && parsedUser.lastName) {
             parsedUser.fullName = `${parsedUser.firstName} ${parsedUser.lastName}`;
           }
-
-
-          console.log(
-            "%%% [getCurrentUser] VALIDATED as user object. Returning object."
-          );
           return parsedUser as User;
         } else {
           console.warn(
@@ -181,7 +164,6 @@ export const authService = {
   },
 
   getToken(): string | null {
-    console.log("Getting token from localStorage");
     return localStorage.getItem("token");
   },
 

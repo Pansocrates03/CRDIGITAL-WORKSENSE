@@ -1,11 +1,11 @@
 import React from 'react';
 import styles from "../CreateProject.module.css";
 import {ArrowLeft, ArrowRight} from "lucide-react";
-import ProjectDetails from '@/types/ProjectType';
 import {useMembers} from "@/hooks/useMembers.ts";
 import { useUser } from "@/hooks/useUsers.ts"
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 import MemberDetailed from "@/types/MemberDetailedType.ts";
+import ProjectDetails from "@/types/ProjectSummary.ts";
 
 type ProjectCardProps = {
     project: ProjectDetails;
@@ -79,8 +79,7 @@ const projectCard: React.FC<ProjectCardProps> = ({project, handleProjectClick, i
         // Optionally, show a generic error avatar
         avatarComponent = <AvatarDisplay user={{name: "Error"}} className="h-6 w-6 rounded-full ring-2 ring-white"/>;
     } else if (productOwnerDetails) {
-        console.log(productOwnerDetails);
-        productOwnerName = productOwnerDetails.fullName || productOwnerDetails.name || "N/A"; // Adjust property name
+        productOwnerName = productOwnerDetails.fullName || productOwnerDetails.firstName || "N/A"; // Adjust property name
         // Render AvatarDisplay only when productOwnerDetails is available
         avatarComponent = (
             <AvatarDisplay

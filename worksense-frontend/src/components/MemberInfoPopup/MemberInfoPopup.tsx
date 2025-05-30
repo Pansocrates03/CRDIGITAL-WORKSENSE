@@ -1,16 +1,15 @@
 import React from 'react';
 import styles from './MemberInfoPopup.module.css';
-import MemberDetailed from '@/types/MemberDetailedType';
 import { AvatarDisplay } from '@/components/ui/AvatarDisplay';
+import Member from '@/types/MemberType';
 
 interface MemberInfoPopupProps {
-  member: MemberDetailed
+  member: Member
   onClose: () => void;
 }
 
 const MemberInfoPopup: React.FC<MemberInfoPopupProps> = ({ member, onClose }) => {
   // Extract first and last name for generating a consistent avatar
-  const [firstName = '', lastName = ''] = member.name.split(' ');
 
   // Format date if available
   const formatDate = (dateString?: string) => {
@@ -58,16 +57,11 @@ const MemberInfoPopup: React.FC<MemberInfoPopupProps> = ({ member, onClose }) =>
         
         <div className={styles.memberHeader}>
           <AvatarDisplay
-            user = {{
-              firstName,
-              lastName,
-              name: member.name,
-              profilePicture: member.profilePicture
-            }}
+            user = {member.user}
             size="xl"
           />
           <div className={styles.memberInfo}>
-            <h3>{member.name}</h3>
+            <h3>{(member.user.firstName || "") + (member.user.lastName || "") }</h3>
             <span className={styles.role}>{formatRoleDisplay(member.projectRoleId)}</span>
           </div>
         </div>
@@ -75,7 +69,7 @@ const MemberInfoPopup: React.FC<MemberInfoPopupProps> = ({ member, onClose }) =>
         <div className={styles.memberDetails}>
           <div className={styles.detailRow}>
             <span className={styles.label}>Email</span>
-            <span className={styles.value}>{member.email || 'No email available'}</span>
+            <span className={styles.value}>{member.user.email || 'No email available'}</span>
           </div>
           <div className={styles.detailRow}>
             <span className={styles.label}>User ID</span>

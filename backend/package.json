@@ -4,38 +4,37 @@
     "main": "index.ts",
     "type": "module",
     "scripts": {
-      "dev": "nodemon"
+        "dev": "nodemon"
     },
     "author": "",
     "license": "ISC",
     "description": "",
     "dependencies": {
-      "axios": "^1.8.4",
-      "bcryptjs": "^3.0.2",
-      "cors": "^2.8.5",
-      "dotenv": "^16.4.7",
-      "express": "^4.21.2",
-      "firebase": "^11.6.0",
-      "firebase-admin": "^13.2.0",
-      "microsoft-cognitiveservices-speech-sdk": "^1.44.0",
-      "morgan": "^1.10.0",
-      "mssql": "^11.0.1",
-      "swagger-jsdoc": "^6.2.8",
-      "swagger-ui-express": "^5.0.1",
-      "tsx": "^4.19.3"
+        "axios": "^1.8.4",
+        "bcryptjs": "^3.0.2",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
+        "express": "^4.21.2",
+        "firebase": "^11.6.0",
+        "firebase-admin": "^13.2.0",
+        "microsoft-cognitiveservices-speech-sdk": "^1.44.0",
+        "morgan": "^1.10.0",
+        "mssql": "^11.0.1",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.1",
+        "tsx": "^4.19.4"
     },
     "devDependencies": {
-      "@types/cors": "^2.8.17",
-      "@types/dotenv": "^6.1.1",
-      "@types/express": "^5.0.1",
-      "@types/morgan": "^1.9.9",
-      "@types/mssql": "^9.1.7",
-      "@types/node": "^22.13.14",
-      "@types/swagger-jsdoc": "^6.0.4",
-      "@types/swagger-ui-express": "^4.1.8",
-      "nodemon": "^3.1.9",
-      "ts-node": "^10.9.2",
-      "typescript": "^5.8.2"
+        "@types/cors": "^2.8.17",
+        "@types/dotenv": "^6.1.1",
+        "@types/express": "^5.0.1",
+        "@types/morgan": "^1.9.9",
+        "@types/mssql": "^9.1.7",
+        "@types/node": "^22.13.14",
+        "@types/swagger-jsdoc": "^6.0.4",
+        "@types/swagger-ui-express": "^4.1.8",
+        "nodemon": "^3.1.9",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.8.2"
     }
-  }
-  
+}

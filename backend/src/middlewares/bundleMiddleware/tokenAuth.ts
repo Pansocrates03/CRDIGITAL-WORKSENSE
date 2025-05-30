@@ -22,20 +22,27 @@ export function verifyToken(req: Request, res: Response, next: NextFunction) {
   }
 
   try {
-    if (!process.env.TOKEN_SECRET) {
-      throw new Error("TOKEN_SECRET not defined in environment variables");
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET not defined in environment variables");
     }
 
-    const verified = jwt.verify(token, process.env.TOKEN_SECRET);
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
     req.user = verified;
     next();
-  } catch (err) {
+  }       catch (err: any) { // Catch any type for logging
+    console.error("Error in verifyToken:", err); // Log the full error object
+    console.error("Error message:", err.message);
+    console.error("Error name:", err.name);
+
     if (err instanceof jwt.JsonWebTokenError) {
       res.status(401).json({ message: "Invalid token" });
     } else if (err instanceof jwt.TokenExpiredError) {
       res.status(401).json({ message: "Token expired" });
-    } else {
-      res.status(500).json({ message: "Authentication error" });
+    } else if (err.message === "JWT_SECRET not defined in environment variables") { // Updated error message
+      res.status(500).json({ message: "Server configuration error: JWT_SECRET missing" });
+    }
+    else { // <<<<<<<<<<<<<<<<<<<< THIS IS LIKELY BEING HIT
+      res.status(500).json({ message: "Authentication error", detail: err.message });
     }
   }
 }
