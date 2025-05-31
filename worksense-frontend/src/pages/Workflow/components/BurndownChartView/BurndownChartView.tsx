@@ -50,6 +50,22 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
   startDate.setMonth(today.getMonth() - 4); // 3 months before today
   const endDate = today; // today is the last day
 
+  // Sample data for Burn Up Chart
+  const burnUpData = [
+    { date: '4/3/2023', planned: 22, completed: 0 },
+    { date: '4/4/2023', planned: 22, completed: 0 },
+    { date: '4/5/2023', planned: 22, completed: 2 },
+    { date: '4/6/2023', planned: 22, completed: 8 },
+    { date: '4/7/2023', planned: 22, completed: 12 },
+    { date: '4/8/2023', planned: 22, completed: 12 },
+    { date: '4/9/2023', planned: 22, completed: 12 },
+    { date: '4/10/2023', planned: 22, completed: 12 },
+    { date: '4/11/2023', planned: 22, completed: 12 },
+    { date: '4/12/2023', planned: 22, completed: 11 },
+    { date: '4/13/2023', planned: 24, completed: 15 },
+    { date: '4/14/2023', planned: 25, completed: 22 },
+  ];
+
   return (
     <Box sx={{ width: '100%' }}>
       {/* Top: Burndown Chart (full width) */}
@@ -112,11 +128,11 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
                   startDate={startDate}
                   endDate={endDate}
                   panelColors={{
-                    0: '#f3f4f6',
-                    1: '#c7d2fe',
-                    2: '#818cf8',
-                    3: '#6366f1',
-                    4: '#4338ca',
+                    0: '#FBE8F0',
+                    1: '#F3A8C7',
+                    2: '#E74C8B',
+                    3: '#DD1E6C',
+                    4: '#AC1754',
                   }}
                   rectProps={{
                     rx: 4, // rounded corners
@@ -137,11 +153,22 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
           </Box>
         </Paper>
         {/* Right: Velocity Tracking */}
-        <Paper sx={{ flex: 1, height: 'auto', minHeight: 350, ml: 2, p: 3, display: 'flex' }}>
+        <Paper sx={{ flex: 1, height: 'auto', minHeight: 350, ml: 2, p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' }}>
           <Typography variant="h6" gutterBottom>
-            Velocity Chart
+            Burn Up Chart
           </Typography>
-          {/* Velocity Tracking */}
+          {/* Burn Up Chart */}
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={burnUpData} margin={{ top: 30, right: 30, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend verticalAlign="top" height={36} />
+              <Line type="monotone" dataKey="planned" stroke="#ac1754" strokeWidth={3} dot={false} name="Planned Points" strokeDasharray="5 5" />
+              <Line type="monotone" dataKey="completed" stroke="#F3A8C7" strokeWidth={3} dot={true} name="Completed Points" />
+            </LineChart>
+          </ResponsiveContainer>
         </Paper>
       </Box>
     </Box>
