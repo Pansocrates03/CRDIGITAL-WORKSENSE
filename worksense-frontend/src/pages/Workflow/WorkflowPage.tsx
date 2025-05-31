@@ -237,7 +237,7 @@ const WorkflowPage: React.FC = () => {
     console.log('doneItemsPerDay for heatmap:', doneItemsPerDay);
 
     return (
-    <div className="sprint-page">
+    <div className="sprint-page" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
       <div className="sprint-page__header">
         <div className="sprint-page__header-content">
           <h1 className="sprint-page__title">Workflow ({activeSprint.name})</h1>

@@ -51,7 +51,8 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
   const endDate = today; // today is the last day
 
   return (
-    <>
+    <Box sx={{ width: '100%' }}>
+      {/* Top: Burndown Chart (full width) */}
       <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
         <Typography variant="h6" gutterBottom>
           {title}
@@ -90,49 +91,60 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
           </ResponsiveContainer>
         </Box>
       </Paper>
-      {/* Heatmap in its own container below the burndown chart */}
-      <Paper elevation={2} sx={{ p: 3, mt: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Done Items Heatmap
-        </Typography>
-        <Box sx={{ width: '100%', maxHeight: 400, overflowY: 'auto', overflowX: 'auto' }}>
-          <Box sx={{ display: 'inline-block' }}>
-            {heatmapData.length === 0 ? (
-              <Box sx={{ textAlign: 'center', color: '#888', py: 4, border: '1px dashed #ccc', borderRadius: 2 }}>
-                Heatmap of "Done" items per day will appear here (GitHub-style)
-              </Box>
-            ) : (
-              <HeatMap
-                value={heatmapData}
-                weekLabels={['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']}
-                startDate={startDate}
-                endDate={endDate}
-                panelColors={{
-                  0: '#f3f4f6',
-                  1: '#c7d2fe',
-                  2: '#818cf8',
-                  3: '#6366f1',
-                  4: '#4338ca',
-                }}
-                rectProps={{
-                  rx: 4, // rounded corners
-                }}
-                rectSize={32}
-                legendCellSize={32}
-                width={1500}
-                height={300}
-                style={{ margin: '0 auto' }}
-                rectRender={(props, data) => (
-                  <HeatmapTooltip placement="top" content={`Date: ${data.date} | Done: ${data.count || 0}`}>
-                    <rect {...props} />
-                  </HeatmapTooltip>
-                )}
-              />
-            )}
+
+      {/* Bottom: Two side-by-side containers */}
+      <Box sx={{ display: 'flex', width: '100%', mt: 4 }}>
+        {/* Left: Heatmap */}
+        <Paper sx={{ flex: 1, height: 'auto', minHeight: 350, mr: 2, p: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Done Items Heatmap
+          </Typography>
+          <Box sx={{ width: '100%', overflowX: 'auto', minHeight: 350 }}>
+            <Box sx={{ display: 'inline-block' }}>
+              {heatmapData.length === 0 ? (
+                <Box sx={{ textAlign: 'center', color: '#888', py: 4, border: '1px dashed #ccc', borderRadius: 2 }}>
+                  Heatmap of "Done" items per day will appear here (GitHub-style)
+                </Box>
+              ) : (
+                <HeatMap
+                  value={heatmapData}
+                  weekLabels={['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']}
+                  startDate={startDate}
+                  endDate={endDate}
+                  panelColors={{
+                    0: '#f3f4f6',
+                    1: '#c7d2fe',
+                    2: '#818cf8',
+                    3: '#6366f1',
+                    4: '#4338ca',
+                  }}
+                  rectProps={{
+                    rx: 4, // rounded corners
+                  }}
+                  rectSize={32}
+                  legendCellSize={32}
+                  width={750}
+                  height={300}
+                  style={{ margin: '0 auto' }}
+                  rectRender={(props, data) => (
+                    <HeatmapTooltip placement="top" content={`Date: ${data.date} | Done: ${data.count || 0}`}>
+                      <rect {...props} />
+                    </HeatmapTooltip>
+                  )}
+                />
+              )}
+            </Box>
           </Box>
-        </Box>
-      </Paper>
-    </>
+        </Paper>
+        {/* Right: Velocity Tracking */}
+        <Paper sx={{ flex: 1, height: 'auto', minHeight: 350, ml: 2, p: 3, display: 'flex' }}>
+          <Typography variant="h6" gutterBottom>
+            Velocity Chart
+          </Typography>
+          {/* Velocity Tracking */}
+        </Paper>
+      </Box>
+    </Box>
   );
 };
 
