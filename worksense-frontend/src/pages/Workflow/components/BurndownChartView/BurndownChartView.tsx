@@ -47,7 +47,7 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
 
   const today = new Date();
   const startDate = new Date();
-  startDate.setMonth(today.getMonth() - 4); // 3 months before today
+  startDate.setMonth(today.getMonth() - 3); // 3 months before today
   const endDate = today; // today is the last day
 
   // Sample data for Burn Up Chart
@@ -111,14 +111,47 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
       {/* Bottom: Two side-by-side containers */}
       <Box sx={{ display: 'flex', width: '100%', mt: 4 }}>
         {/* Left: Heatmap */}
-        <Paper sx={{ flex: 1, height: 'auto', minHeight: 350, mr: 2, p: 3 }}>
-          <Typography variant="h6" gutterBottom>
+        <Paper sx={{ 
+          flex: 1, 
+          height: 'auto', 
+          minHeight: 350, 
+          mr: 2, 
+          p: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}>
+          <Typography variant="h6" gutterBottom sx={{ textAlign: 'center', width: '100%' }}>
             Done Items Heatmap
           </Typography>
-          <Box sx={{ width: '100%', overflowX: 'auto', minHeight: 350 }}>
-            <Box sx={{ display: 'inline-block' }}>
+          <Box sx={{ 
+            width: '100%', 
+            overflowX: 'auto', 
+            minHeight: 350,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            <Box sx={{ 
+              width: '100%',
+              maxWidth: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              '& .react-calendar-heatmap': {
+                width: '100% !important',
+                maxWidth: '100%'
+              }
+            }}>
               {heatmapData.length === 0 ? (
-                <Box sx={{ textAlign: 'center', color: '#888', py: 4, border: '1px dashed #ccc', borderRadius: 2 }}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  color: '#888', 
+                  py: 4, 
+                  border: '1px dashed #ccc', 
+                  borderRadius: 2,
+                  width: '100%'
+                }}>
                   Heatmap of "Done" items per day will appear here (GitHub-style)
                 </Box>
               ) : (
@@ -135,13 +168,15 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
                     4: '#AC1754',
                   }}
                   rectProps={{
-                    rx: 4, // rounded corners
+                    rx: 4,
                   }}
                   rectSize={32}
                   legendCellSize={32}
-                  width={750}
                   height={300}
-                  style={{ margin: '0 auto' }}
+                  style={{ 
+                    margin: '0 auto',
+                    width: '100%'
+                  }}
                   rectRender={(props, data) => (
                     <HeatmapTooltip placement="top" content={`Date: ${data.date} | Done: ${data.count || 0}`}>
                       <rect {...props} />
