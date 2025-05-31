@@ -45,6 +45,11 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
     '#4338ca', // darkest (brand primary)
   ];
 
+  const today = new Date();
+  const startDate = new Date();
+  startDate.setMonth(today.getMonth() - 4); // 3 months before today
+  const endDate = today; // today is the last day
+
   return (
     <>
       <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
@@ -100,7 +105,8 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
               <HeatMap
                 value={heatmapData}
                 weekLabels={['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']}
-                startDate={heatmapData[0] ? new Date(heatmapData[0].date) : undefined}
+                startDate={startDate}
+                endDate={endDate}
                 panelColors={{
                   0: '#f3f4f6',
                   1: '#c7d2fe',
@@ -111,9 +117,10 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
                 rectProps={{
                   rx: 4, // rounded corners
                 }}
-                rectSize={16}
-                legendCellSize={18}
-                width={1200}
+                rectSize={32}
+                legendCellSize={32}
+                width={1500}
+                height={300}
                 style={{ margin: '0 auto' }}
                 rectRender={(props, data) => (
                   <HeatmapTooltip placement="top" content={`Date: ${data.date} | Done: ${data.count || 0}`}>
