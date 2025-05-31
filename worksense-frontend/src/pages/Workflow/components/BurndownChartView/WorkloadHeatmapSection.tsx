@@ -11,8 +11,8 @@ interface WorkloadHeatmapSectionProps {
 }
 
 const WorkloadHeatmapSection: React.FC<WorkloadHeatmapSectionProps> = ({ heatmapData, isEnabled, startDate, endDate }) => (
-  <Paper sx={{ flex: 1, height: 'auto', minHeight: 350, mr: 2, p: 3 }}>
-    <Typography variant="h6" gutterBottom>
+  <Paper sx={{ flex: 1, height: 'auto', minHeight: 350, mr: 2, p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <Typography variant="h6" gutterBottom sx={{ textAlign: 'center', width: '100%' }}>
       Done Items Heatmap
     </Typography>
     {!isEnabled ? (
