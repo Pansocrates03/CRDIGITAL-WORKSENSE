@@ -115,7 +115,7 @@ const SprintsPage: React.FC = () => {
             const newStartDate = new Date(value);
             const endDate = new Date(newSprint.endDate);
             if (newStartDate > endDate) {
-                alert("Start date cannot be after end date");
+                toast.error("Start date cannot be after end date");
                 return;
             }
         }
@@ -125,7 +125,7 @@ const SprintsPage: React.FC = () => {
             const startDate = new Date(newSprint.startDate);
             const newEndDate = new Date(value);
             if (newEndDate < startDate) {
-                alert("End date cannot be before start date");
+                toast.error("End date cannot be before start date");
                 return;
             }
         }
