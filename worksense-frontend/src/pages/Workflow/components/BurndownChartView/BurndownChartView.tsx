@@ -1,4 +1,7 @@
 import React from 'react';
+import { useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { projectService } from '@/services/projectService';
 import {
   LineChart,
   Line,
@@ -9,9 +12,12 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import { Box, Typography, Paper } from '@mui/material';
+import { Box, Typography, Paper, Alert } from '@mui/material';
 import HeatMap from '@uiw/react-heat-map';
 import HeatmapTooltip from '@uiw/react-tooltip';
+import BurndownChartSection from './BurndownChartSection';
+import WorkloadHeatmapSection from './WorkloadHeatmapSection';
+import BurnUpChartSection from './BurnUpChartSection';
 
 interface BurndownData {
   date: string;
@@ -26,6 +32,20 @@ interface BurndownChartViewProps {
 }
 
 const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Burndown Chart', doneItemsPerDay = [] }) => {
+  const { id: projectId } = useParams<{ id: string }>();
+  
+  // Fetch project data to check visibility settings
+  const { data: project } = useQuery({
+    queryKey: ['project', projectId],
+    queryFn: () => projectService.fetchProjectDetails(projectId!),
+    enabled: !!projectId,
+  });
+
+  // Check if features are enabled
+  const isBurndownEnabled = project?.enableBurndownChart ?? true;
+  const isVelocityEnabled = project?.enableVelocityTracking ?? true;
+  const isHeatmapEnabled = project?.enableWorkloadHeatmaps ?? true;
+
   // Data format check and debug
   console.log('doneItemsPerDay for heatmap:', doneItemsPerDay);
 
@@ -69,142 +89,25 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
   return (
     <Box sx={{ width: '100%' }}>
       {/* Top: Burndown Chart (full width) */}
-      <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
-        <Typography variant="h6" gutterBottom>
-          {title}
-        </Typography>
-        <Box sx={{ width: '100%', height: 400 }}>
-          <ResponsiveContainer>
-            <LineChart
-              data={data}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="remainingWork"
-                stroke="#8884d8"
-                name="Remaining Work"
-                activeDot={{ r: 8 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="idealBurndown"
-                stroke="#82ca9d"
-                name="Ideal Burndown"
-                strokeDasharray="5 5"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
-      </Paper>
-
+      <BurndownChartSection
+        data={data}
+        title={title}
+        isEnabled={isBurndownEnabled}
+      />
       {/* Bottom: Two side-by-side containers */}
       <Box sx={{ display: 'flex', width: '100%', mt: 4 }}>
         {/* Left: Heatmap */}
-        <Paper sx={{ 
-          flex: 1, 
-          height: 'auto', 
-          minHeight: 350, 
-          mr: 2, 
-          p: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center'
-        }}>
-          <Typography variant="h6" gutterBottom sx={{ textAlign: 'center', width: '100%' }}>
-            Done Items Heatmap
-          </Typography>
-          <Box sx={{ 
-            width: '100%', 
-            overflowX: 'auto', 
-            minHeight: 350,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-            <Box sx={{ 
-              width: '100%',
-              maxWidth: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              '& .react-calendar-heatmap': {
-                width: '100% !important',
-                maxWidth: '100%'
-              }
-            }}>
-              {heatmapData.length === 0 ? (
-                <Box sx={{ 
-                  textAlign: 'center', 
-                  color: '#888', 
-                  py: 4, 
-                  border: '1px dashed #ccc', 
-                  borderRadius: 2,
-                  width: '100%'
-                }}>
-                  Heatmap of "Done" items per day will appear here (GitHub-style)
-                </Box>
-              ) : (
-                <HeatMap
-                  value={heatmapData}
-                  weekLabels={['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']}
-                  startDate={startDate}
-                  endDate={endDate}
-                  panelColors={{
-                    0: '#FBE8F0',
-                    1: '#F3A8C7',
-                    2: '#E74C8B',
-                    3: '#DD1E6C',
-                    4: '#AC1754',
-                  }}
-                  rectProps={{
-                    rx: 4,
-                  }}
-                  rectSize={32}
-                  legendCellSize={32}
-                  height={300}
-                  style={{ 
-                    margin: '0 auto',
-                    width: '100%'
-                  }}
-                  rectRender={(props, data) => (
-                    <HeatmapTooltip placement="top" content={`Date: ${data.date} | Done: ${data.count || 0}`}>
-                      <rect {...props} />
-                    </HeatmapTooltip>
-                  )}
-                />
-              )}
-            </Box>
-          </Box>
-        </Paper>
-        {/* Right: Velocity Tracking */}
-        <Paper sx={{ flex: 1, height: 'auto', minHeight: 350, ml: 2, p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' }}>
-          <Typography variant="h6" gutterBottom>
-            Burn Up Chart
-          </Typography>
-          {/* Burn Up Chart */}
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={burnUpData} margin={{ top: 30, right: 30, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend verticalAlign="top" height={36} />
-              <Line type="monotone" dataKey="planned" stroke="#ac1754" strokeWidth={3} dot={false} name="Planned Points" strokeDasharray="5 5" />
-              <Line type="monotone" dataKey="completed" stroke="#F3A8C7" strokeWidth={3} dot={true} name="Completed Points" />
-            </LineChart>
-          </ResponsiveContainer>
-        </Paper>
+        <WorkloadHeatmapSection
+          heatmapData={heatmapData}
+          isEnabled={isHeatmapEnabled}
+          startDate={startDate}
+          endDate={endDate}
+        />
+        {/* Right: Burn Up Chart */}
+        <BurnUpChartSection
+          burnUpData={burnUpData}
+          isEnabled={isVelocityEnabled}
+        />
       </Box>
     </Box>
   );
