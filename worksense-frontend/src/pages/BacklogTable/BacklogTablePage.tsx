@@ -383,6 +383,7 @@ const BacklogTablePage: FC = () => {
                     }}
                     onError={handleError}
                     storyPointScale={project?.storyPointScale || 'tshirt'}
+                    statusOptions={project?.tags && project.tags.length > 0 ? project.tags : ["New", "To Do", "In Progress", "In Review", "Done"]}
                 />
             )}
 
@@ -398,6 +399,7 @@ const BacklogTablePage: FC = () => {
                     onError={handleError}
                     item={itemToEdit}
                     storyPointScale={project?.storyPointScale || 'tshirt'}
+                    statusOptions={project?.tags && project.tags.length > 0 ? project.tags : ["New", "To Do", "In Progress", "In Review", "Done"]}
                 />
             )}
 

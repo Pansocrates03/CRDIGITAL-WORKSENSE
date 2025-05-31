@@ -38,6 +38,7 @@ interface ItemModalFormProps {
     sprints: any[];
     disableTypeChange?: boolean;
     storyPointScale?: "fibonacci" | "linear" | "tshirt";
+    statusOptions?: string[];
 }
 
 const getSizeOptions = (scale: string = "tshirt") => {
@@ -73,6 +74,14 @@ const getSizeOptions = (scale: string = "tshirt") => {
     }
 };
 
+const getDefaultStatusOptions = () => [
+    "New",
+    "To Do",
+    "In Progress",
+    "In Review",
+    "Done"
+];
+
 const ItemModalForm: React.FC<ItemModalFormProps> = ({
                                                          mode,
                                                          formData,
@@ -87,6 +96,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                                                          sprints,
                                                          disableTypeChange = false,
                                                          storyPointScale,
+                                                         statusOptions: statusOptionsProp,
                                                      }) => {
     const handleChange = (
         e: React.ChangeEvent<
@@ -109,6 +119,8 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
         label: v,
     }));
 
+    const statusOptions = statusOptionsProp && statusOptionsProp.length > 0 ? statusOptionsProp : getDefaultStatusOptions();
+
     const selectOptions = {
         type: [
             {value: "epic", label: "Epic"},
@@ -117,13 +129,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             {value: "techTask", label: "Tech Task"},
             {value: "knowledge", label: "Knowledge"},
         ],
-        status: [
-            {value: "new", label: "New"},
-            {value: "toDo", label: "To Do"},
-            {value: "inProgress", label: "In Progress"},
-            {value: "inReview", label: "In Review"},
-            {value: "done", label: "Done"},
-        ],
+        status: statusOptions.map((status) => ({ value: status, label: status })),
         priority: [
             {value: "low", label: "Low"},
             {value: "medium", label: "Medium"},
@@ -196,10 +202,11 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                     <SelectField
                         id="status"
                         name="status"
-                        value={formData.status || "new"}
+                        value={formData.status || statusOptions[0]}
                         onChange={handleChange}
                         options={selectOptions.status}
                         label="Status"
+                        required
                         styleClass="status"
                         disabled={loading}
                     />

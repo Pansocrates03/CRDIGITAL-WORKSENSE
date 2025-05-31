@@ -149,18 +149,17 @@ export const projectService = {
 
     async createProejct(receivedData: CreateProject): Promise<ProjectDetails> {
         try {
-            // Primero se debe crear el proyecto
-
+            // Primero se debe crear el proyecto, con un valor por defecto para project tags (por ejemplo, ["New", "To Do", "In Progress", "In Review", "Done"])
             const response = await apiClient.post(`${API_URL}/projects/`, {
                 name: receivedData.name,
                 description: receivedData.description,
                 context: null,
+                tags: ["New", "To Do", "In Progress", "In Review", "Done"]
             });
 
             // Luego se deben agregar los miembros al proyecto
             for (let i = 0; i < receivedData.members.length; i++) {
                 const member = receivedData.members[i];
-
                 await apiClient.post(
                     `${API_URL}/projects/${response.data.id}/members`,
                     {

@@ -11,6 +11,7 @@ interface UpdateItemModalProps {
   onError?: (message: string) => void;
   item: BacklogItemType | null;
   storyPointScale?: "fibonacci" | "linear" | "tshirt";
+  statusOptions?: string[];
 }
 
 interface Epic {
@@ -26,6 +27,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
   item,
   onError,
   storyPointScale,
+  statusOptions,
 }) => {
   const [formData, setFormData] = useState<BacklogItemFormData>({
     name: "",
@@ -204,6 +206,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
       epics={epics}
       sprints={sprints}
       storyPointScale={storyPointScale}
+      statusOptions={statusOptions}
     />
   );
 };
