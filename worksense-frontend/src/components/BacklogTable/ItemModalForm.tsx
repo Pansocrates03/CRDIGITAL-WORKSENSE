@@ -37,7 +37,41 @@ interface ItemModalFormProps {
     epics: Epic[];
     sprints: any[];
     disableTypeChange?: boolean;
+    storyPointScale?: "fibonacci" | "linear" | "tshirt";
 }
+
+const getSizeOptions = (scale: string = "tshirt") => {
+    if (scale === "fibonacci") {
+        return [
+            { value: "1", label: "1" },
+            { value: "2", label: "2" },
+            { value: "3", label: "3" },
+            { value: "5", label: "5" },
+            { value: "8", label: "8" },
+            { value: "13", label: "13" },
+            { value: "21", label: "21" },
+        ];
+    } else if (scale === "linear") {
+        return [
+            { value: "1", label: "1" },
+            { value: "2", label: "2" },
+            { value: "3", label: "3" },
+            { value: "4", label: "4" },
+            { value: "5", label: "5" },
+            { value: "6", label: "6" },
+            { value: "7", label: "7" },
+            { value: "8", label: "8" },
+        ];
+    } else {
+        return [
+            { value: "XS", label: "XS" },
+            { value: "S", label: "S" },
+            { value: "M", label: "M" },
+            { value: "L", label: "L" },
+            { value: "XL", label: "XL" },
+        ];
+    }
+};
 
 const ItemModalForm: React.FC<ItemModalFormProps> = ({
                                                          mode,
@@ -52,6 +86,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                                                          epics,
                                                          sprints,
                                                          disableTypeChange = false,
+                                                         storyPointScale,
                                                      }) => {
     const handleChange = (
         e: React.ChangeEvent<
@@ -94,13 +129,7 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             {value: "medium", label: "Medium"},
             {value: "high", label: "High"},
         ],
-        size: [
-            {value: "XS", label: "XS"},
-            {value: "S", label: "S"},
-            {value: "M", label: "M"},
-            {value: "L", label: "L"},
-            {value: "XL", label: "XL"},
-        ],
+        size: getSizeOptions(storyPointScale),
         sprint: [
             { value: "", label: "Select Sprint (Optional)" },
             ...sprints.map((s) => ({ value: s.id, label: s.name })),

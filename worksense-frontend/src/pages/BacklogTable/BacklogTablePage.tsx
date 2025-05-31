@@ -377,12 +377,12 @@ const BacklogTablePage: FC = () => {
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onItemCreated={() => {
-
                         handleSuccess("Item  created successfully!",
                             "You should now see the item in the backlog.");
                         refetch();
                     }}
                     onError={handleError}
+                    storyPointScale={project?.storyPointScale || 'tshirt'}
                 />
             )}
 
@@ -397,6 +397,7 @@ const BacklogTablePage: FC = () => {
                     }}
                     onError={handleError}
                     item={itemToEdit}
+                    storyPointScale={project?.storyPointScale || 'tshirt'}
                 />
             )}
 
