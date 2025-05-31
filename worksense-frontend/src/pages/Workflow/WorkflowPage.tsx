@@ -20,6 +20,7 @@ import DeleteConfirmationModal from '@/components/ui/deleteConfirmationModal/del
 import BacklogItemType from "@/types/BacklogItemType.ts";
 import { Sprint } from '@/types/SprintType';
 import { IconType } from 'react-icons/lib';
+import ProjectDetails from '@/types/ProjectType';
 
 import { createBurndownChartData } from './utils/CreateBurndownChartData';
 
@@ -61,6 +62,12 @@ const WorkflowPage: React.FC = () => {
     // Fetch sprints data using custom hook
     const { data: sprints, isLoading: sprintsLoading, error: sprintsError } = useSprints(projectId ?? "");
     
+    const { data: project } = useQuery<ProjectDetails>({
+        queryKey: ["project", projectId],
+        queryFn: () => projectService.fetchProjectDetails(projectId!),
+        enabled: !!projectId,
+    });
+    
     // STATES
     const [tasks, setTasks] = useState<BacklogItemType[]>([]);
     const [activeTab, setActiveTab] = useState('sprints');
@@ -68,6 +75,18 @@ const WorkflowPage: React.FC = () => {
     const [selectedSprint, setSelectedSprint] = useState<string>('');
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [sprintToDelete, setSprintToDelete] = useState<Sprint | null>(null);
+
+    // Update columns when project.workflowStages changes
+    React.useEffect(() => {
+        if (project && Array.isArray(project.workflowStages) && project.workflowStages.length > 0) {
+            setColumns(project.workflowStages.map(stage => ({
+                id: stage.toLowerCase().replace(/\s+/g, '_'),
+                title: stage
+            })));
+        } else {
+            setColumns(DEFAULT_COLUMNS);
+        }
+    }, [project?.workflowStages]);
 
     // get active sprint
     if(!sprints && !sprintsLoading) {
