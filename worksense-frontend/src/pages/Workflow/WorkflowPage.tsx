@@ -46,7 +46,7 @@ const navigationTabs: TabItem[] = [
   { id: "overview", label: "Overview", icon: null },
   { id: "board", label: "Board", icon:FiLayout },
   { id: "table", label: "Table", icon:FiGrid },
-  { id: "burndown_chart", label: "Burndown Chart", icon:FiBarChart}
+  { id: "burndown_chart", label: "Charts", icon:FiBarChart}
 ]
 
 const WorkflowPage: React.FC = () => {
