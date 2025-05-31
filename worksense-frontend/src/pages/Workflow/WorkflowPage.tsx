@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 import QueryKeys from '@/utils/QueryKeys';
 import { projectService } from '@/services/projectService';
 import { useDeleteSprint, useSprints } from '@/hooks/useSprintData';
+import { format } from 'date-fns';
 
 // Views
 import Tabs from './components/Tabs/Tabs';
@@ -189,6 +190,30 @@ const WorkflowPage: React.FC = () => {
     // use instead:
     // const brundown_chart_data = createBurndownChartData(tasks)
 
+    // Prepare heatmap data: count of 'Done' items per day (use all items in data, not just tasks)
+    const doneItemsPerDay = React.useMemo(() => {
+        if (!data) return [];
+        const counts: Record<string, number> = {};
+        data.forEach(item => {
+            let updatedAt = item.updatedAt;
+            if (typeof updatedAt === 'object' && updatedAt !== null) {
+                if ('seconds' in updatedAt && typeof (updatedAt as any).seconds === 'number') {
+                    updatedAt = new Date((updatedAt as any).seconds * 1000).toISOString();
+                } else if ('_seconds' in updatedAt && typeof (updatedAt as any)._seconds === 'number') {
+                    updatedAt = new Date((updatedAt as any)._seconds * 1000).toISOString();
+                }
+            }
+            if (item.status === 'done' && updatedAt) {
+                const dateObj = new Date(updatedAt);
+                if (!isNaN(dateObj.getTime())) {
+                    const date = format(dateObj, 'yyyy-MM-dd');
+                    counts[date] = (counts[date] || 0) + 1;
+                }
+            }
+        });
+        return Object.entries(counts).map(([date, count]) => ({ date, count }));
+    }, [data]);
+
     const renderView = () => {
         switch (activeTab) {
             case 'board':
@@ -198,7 +223,7 @@ const WorkflowPage: React.FC = () => {
             case 'table':
                 return <TableView tasks={tasks} />;
             case 'burndown_chart':
-                return <BurndownChartView data={burndown_chart_data} />
+                return <BurndownChartView data={burndown_chart_data} doneItemsPerDay={doneItemsPerDay} />;
             default:
                 return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} columns={columns} onTaskContentUpdate={onTaskContentUpdate} />;
         }
@@ -207,6 +232,9 @@ const WorkflowPage: React.FC = () => {
     if (error) { throw new Error("An error has occurred on SprintPage.tsx"); }
     if (isLoading) { return <div>Loading...</div> }
     if (!data) { throw new Error("Nothing received") }
+
+    console.log('All backlog items:', data);
+    console.log('doneItemsPerDay for heatmap:', doneItemsPerDay);
 
     return (
     <div className="sprint-page">
