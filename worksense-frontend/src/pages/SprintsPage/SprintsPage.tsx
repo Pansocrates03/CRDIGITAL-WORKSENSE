@@ -14,14 +14,6 @@ import { Sprint } from "@/types/SprintType";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/Modal/Modal";
 import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal";
-import {
-    Table,
-    TableHeader,
-    TableBody,
-    TableHead,
-    TableRow,
-    TableCell,
-} from "@/components/ui/table";
 import { toast } from "sonner";
 
 /* Icons */
@@ -69,9 +61,6 @@ const SprintsPage: React.FC = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editingSprint, setEditingSprint] = useState<Sprint | null>(null);
 
-    // State to 
-    const [isFormValid, setIsFormValid] = useState(true);
-
     // State for delete confirmation modal
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [sprintToDelete, setSprintToDelete] = useState<string | null>(null);
@@ -87,7 +76,6 @@ const SprintsPage: React.FC = () => {
         });
         setIsEditing(false);
         setEditingSprint(null);
-        setIsFormValid(true);
     };
 
     // Function to handle modal closing and form reset
@@ -126,14 +114,20 @@ const SprintsPage: React.FC = () => {
         if (name === 'startDate' && newSprint.endDate) {
             const newStartDate = new Date(value);
             const endDate = new Date(newSprint.endDate);
-            setIsFormValid(newStartDate <= endDate);
+            if (newStartDate > endDate) {
+                alert("Start date cannot be after end date");
+                return;
+            }
         }
         
         // If changing end date, validate against start date
         if (name === 'endDate' && newSprint.startDate) {
             const startDate = new Date(newSprint.startDate);
             const newEndDate = new Date(value);
-            setIsFormValid(newEndDate >= startDate);
+            if (newEndDate < startDate) {
+                alert("End date cannot be before start date");
+                return;
+            }
         }
 
         setNewSprint(prev => ({
@@ -165,6 +159,7 @@ const SprintsPage: React.FC = () => {
         const endDate = new Date(newSprint.endDate);
         
         if (endDate < startDate) {
+            alert("End date cannot be before start date");
             return;
         }
 
@@ -206,7 +201,6 @@ const SprintsPage: React.FC = () => {
             handleCloseModal();
         } catch (error) {
             console.error("Failed to save sprint:", error);
-
             toast.error("Error saving sprint!")
         }
     };
@@ -223,7 +217,6 @@ const SprintsPage: React.FC = () => {
             try {
                 await deleteSprintMutation.mutateAsync(sprintToDelete);
                 setSprintToDelete(null);
-
                 toast.success("Sprint deleted successfully!")
             } catch (error) {
                 console.error("Failed to delete sprint:", error);
@@ -256,10 +249,9 @@ const SprintsPage: React.FC = () => {
     }
 
     return (
-        <div className={"p-4 pt-3"}>
-
+        <div className="p-4 pt-3">
             <div className="sprints-page">
-                {/* Header section with title and create button */}
+                {/* Header section */}
                 <div className="flex items-baseline justify-between w-full">
                     <div className="sprints-page__header">
                         <h1>Sprints</h1>
@@ -277,76 +269,84 @@ const SprintsPage: React.FC = () => {
                     )}
                 </div>
 
-            {/* Divider line */}
-            <div className="sprints-page__divider"></div>
+                <div className="sprints-page__divider" />
 
-            {/* Main content section */}
-            <div className="sprints-page__content">
-                {sprints && sprints.length > 0 ? (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Sprint Name</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Goal</TableHead>
-                                <TableHead>Start Date</TableHead>
-                                <TableHead>End Date</TableHead>
-                                {canManageSprints && <TableHead>Actions</TableHead>}
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                {/* Main content section */}
+                <div className="sprints-list">
+                    {sprints && sprints.length > 0 ? (
+                        <div className="space-y-2">
                             {sprints.map((sprint: Sprint) => (
-                                <TableRow key={sprint.id}>
-                                    <TableCell>
-                                        <h3 className="sprint-name">{sprint.name}</h3>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className={`status-badge status-badge--${sprint.status?.toLowerCase()}`}>
-                                            {sprint.status}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        {sprint.goal || 'No goal defined'}
-                                    </TableCell>
-                                    <TableCell>
-                                        {formatDate(sprint.startDate)}
-                                    </TableCell>
-                                    <TableCell>
-                                        {formatDate(sprint.endDate)}
-                                    </TableCell>
-                                    {canManageSprints && (
-                                        <TableCell>
-                                            <div className="flex gap-2">
+                                <div key={sprint.id} className="sprint-item">
+                                    <div 
+                                        className="sprint-header"
+                                        onClick={() => {
+                                            const element = document.getElementById(`sprint-${sprint.id}`);
+                                            if (element) {
+                                                element.classList.toggle('hidden');
+                                            }
+                                        }}
+                                    >
+                                        <div className="sprint-header__content">
+                                            <h3 className="sprint-header__title">{sprint.name}</h3>
+                                            <span className={`status-badge status-badge--${sprint.status?.toLowerCase()}`}>
+                                                {sprint.status}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div 
+                                        id={`sprint-${sprint.id}`}
+                                        className="sprint-details hidden"
+                                    >
+                                        <div className="sprint-details__content">
+                                            <div className="sprint-details__section">
+                                                <h4>Goal</h4>
+                                                <p>{sprint.goal || 'No goal defined'}</p>
+                                            </div>
+                                            <div className="sprint-details__section">
+                                                <h4>Dates</h4>
+                                                <p>
+                                                    {formatDate(sprint.startDate)} - {formatDate(sprint.endDate)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {canManageSprints && (
+                                            <div className="sprint-details__actions">
                                                 <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleEditSprint(sprint)}
-                                                    className="h-8 w-8"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEditSprint(sprint);
+                                                    }}
+                                                    className="flex items-center space-x-2"
                                                 >
                                                     <Pencil className="h-4 w-4" />
+                                                    <span>Edit Sprint</span>
                                                 </Button>
                                                 <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleDeleteSprint(sprint.id)}
-                                                    className="h-8 w-8 text-red-500 hover:text-red-700"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteSprint(sprint.id);
+                                                    }}
+                                                    className="flex items-center space-x-2 text-red-500 hover:text-red-700 hover:bg-red-50"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
+                                                    <span>Delete Sprint</span>
                                                 </Button>
                                             </div>
-                                        </TableCell>
-                                    )}
-                                </TableRow>
+                                        )}
+                                    </div>
+                                </div>
                             ))}
-                        </TableBody>
-                    </Table>
-                ) : (
-                    // Empty state message
-                    <div className="sprints-page__empty">
-                        <p>No sprints found. {canManageSprints ? "Create your first sprint to get started!" : "No sprints have been created yet."}</p>
-                    </div>
-                )}
-            </div>
+                        </div>
+                    ) : (
+                        <div className="sprints-page__empty">
+                            <p>No sprints found. {canManageSprints ? "Create your first sprint to get started!" : "No sprints have been created yet."}</p>
+                        </div>
+                    )}
+                </div>
 
                 {/* Create/Edit Sprint Modal */}
                 <Modal
@@ -355,11 +355,10 @@ const SprintsPage: React.FC = () => {
                     title={isEditing ? "Edit Sprint" : "Create New Sprint"}
                     size="m"
                 >
-                    <form onSubmit={handleSubmit} className="p-4">
+                    <form onSubmit={handleSubmit} className="sprint-form">
                         <div className="space-y-4">
-                            {/* Sprint Name Input */}
-                            <div>
-                                <label htmlFor="name" className="block text-sm font-medium mb-1">
+                            <div className="sprint-form__section">
+                                <label htmlFor="name" className="sprint-form__label">
                                     Sprint Name
                                 </label>
                                 <input
@@ -368,14 +367,13 @@ const SprintsPage: React.FC = () => {
                                     name="name"
                                     value={newSprint.name}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
+                                    className="sprint-form__input"
                                     placeholder="Enter sprint name"
                                     required
                                 />
                             </div>
-                            {/* Sprint Goal Input */}
-                            <div>
-                                <label htmlFor="goal" className="block text-sm font-medium mb-1">
+                            <div className="sprint-form__section">
+                                <label htmlFor="goal" className="sprint-form__label">
                                     Sprint Goal
                                 </label>
                                 <textarea
@@ -383,15 +381,14 @@ const SprintsPage: React.FC = () => {
                                     name="goal"
                                     value={newSprint.goal}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
+                                    className="sprint-form__textarea"
                                     placeholder="Enter sprint goal"
                                     rows={3}
                                 />
                             </div>
-                            {/* Status Dropdown - Only show when editing */}
                             {isEditing && (
-                                <div>
-                                    <label htmlFor="status" className="block text-sm font-medium mb-1">
+                                <div className="sprint-form__section">
+                                    <label htmlFor="status" className="sprint-form__label">
                                         Status
                                     </label>
                                     <select
@@ -399,7 +396,7 @@ const SprintsPage: React.FC = () => {
                                         name="status"
                                         value={newSprint.status}
                                         onChange={handleInputChange}
-                                        className="w-full p-2 border rounded"
+                                        className="sprint-form__input"
                                     >
                                         <option value="Planned">Planned</option>
                                         <option
@@ -412,9 +409,8 @@ const SprintsPage: React.FC = () => {
                                     </select>
                                 </div>
                             )}
-                            {/* Start Date Input */}
-                            <div>
-                                <label htmlFor="startDate" className="block text-sm font-medium mb-1">
+                            <div className="sprint-form__section">
+                                <label htmlFor="startDate" className="sprint-form__label">
                                     Start Date
                                 </label>
                                 <input
@@ -423,13 +419,12 @@ const SprintsPage: React.FC = () => {
                                     name="startDate"
                                     value={newSprint.startDate}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
+                                    className="sprint-form__input"
                                     required
                                 />
                             </div>
-                            {/* End Date Input */}
-                            <div>
-                                <label htmlFor="endDate" className="block text-sm font-medium mb-1">
+                            <div className="sprint-form__section">
+                                <label htmlFor="endDate" className="sprint-form__label">
                                     End Date
                                 </label>
                                 <input
@@ -438,13 +433,12 @@ const SprintsPage: React.FC = () => {
                                     name="endDate"
                                     value={newSprint.endDate}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
+                                    className="sprint-form__input"
                                     required
                                 />
                             </div>
                         </div>
-                        {/* Modal Action Buttons */}
-                        <div className="flex justify-end gap-2 mt-4">
+                        <div className="sprint-form__actions">
                             <Button
                                 variant="secondary"
                                 onClick={() => {
@@ -456,7 +450,6 @@ const SprintsPage: React.FC = () => {
                             </Button>
                             <Button
                                 type="submit"
-                                disabled={!isFormValid}
                             >
                                 {isEditing ? 'Update Sprint' : 'Create Sprint'}
                             </Button>
