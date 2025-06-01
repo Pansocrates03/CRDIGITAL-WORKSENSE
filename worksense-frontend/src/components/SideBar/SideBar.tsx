@@ -130,6 +130,11 @@ export const SideBar: React.FC<{showSidebar:boolean}> = ({showSidebar}) => {
         path: `/project/${projectId}/users`,
       },
       {
+        name: "Meetings",
+        icon: "/meeting.svg",
+        path: `/project/${projectId}/meetings`,
+      },
+      {
         name: "Settings",
         icon: settingsIcon,
         path: `/project/${projectId}/settings`,
