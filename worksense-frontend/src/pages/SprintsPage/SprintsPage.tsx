@@ -4,7 +4,8 @@ import { useParams } from "react-router-dom";
 
 /* Custom hooks for sprint data management */
 import { useSprints, useCreateSprint, useDeleteSprint, useUpdateSprint } from "@/hooks/useSprintData";
-
+import { useAuth } from "@/hooks/useAuth";
+import { useMembers } from "@/hooks/useMembers";
 
 /* Types */
 import { Sprint } from "@/types/SprintType";
@@ -13,14 +14,6 @@ import { Sprint } from "@/types/SprintType";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/Modal/Modal";
 import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal";
-import {
-    Table,
-    TableHeader,
-    TableBody,
-    TableHead,
-    TableRow,
-    TableCell,
-} from "@/components/ui/table";
 import { toast } from "sonner";
 
 /* Icons */
@@ -33,11 +26,16 @@ const SprintsPage: React.FC = () => {
     // Get project ID from URL parameters
     const { id: projectId } = useParams<{ id: string }>();
     
-
-    const hasPermissions = localStorage.getItem("projectRole")?.includes("scrum-master") || localStorage.getItem("projectRole")?.includes("product-owner");
-
-
+    // Get current user and members data
+    const { data: user } = useAuth();
+    const { data: members = [] } = useMembers(projectId ?? "");
+    
     // Check if user has management permissions
+    const canManageSprints = members.some(
+        member => 
+            member.userId === user?.userId && 
+            (member.projectRoleId === 'product-owner' || member.projectRoleId === 'scrum-master')
+    );
     
     // Fetch sprints data using custom hook
     const { data: sprints, isLoading, error } = useSprints(projectId ?? "");
@@ -63,14 +61,13 @@ const SprintsPage: React.FC = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editingSprint, setEditingSprint] = useState<Sprint | null>(null);
 
-    // State to 
-    const [isFormValid, setIsFormValid] = useState(true);
-
     // State for delete confirmation modal
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [sprintToDelete, setSprintToDelete] = useState<string | null>(null);
 
-    // Function to reset form fields to empty values
+    /* ===== Form Management Functions ===== */
+
+    // Resets the form fields to their initial empty values and clears the editing state
     const resetForm = () => {
         setNewSprint({
             name: "",
@@ -81,23 +78,24 @@ const SprintsPage: React.FC = () => {
         });
         setIsEditing(false);
         setEditingSprint(null);
-        setIsFormValid(true);
     };
 
-    // Function to handle modal closing and form reset
+    // Handles closing the modal and resetting the form
     const handleCloseModal = () => {
         setIsModalOpen(false);
         resetForm();
     };
 
-    // Format date for display in the table (converts Firestore timestamp to readable date)
+    /* ===== Date Formatting Functions ===== */
+
+    // Formats a Firestore timestamp into a readable date string
     const formatDate = (timestamp: any) => {
         if (!timestamp || !timestamp._seconds) return "N/A";
         const date = new Date(timestamp._seconds * 1000);
         return date.toLocaleDateString();
     };
 
-    // Format date for API in YYYY-MM-DD format
+    // Formats a date for API submission in YYYY-MM-DD format
     const formatDateForAPI = (date: string | Date) => {
         if (!date) return "";
         if (typeof date === 'string') {
@@ -106,13 +104,15 @@ const SprintsPage: React.FC = () => {
         return date.toISOString().split("T")[0];
     };
 
-    // Convert Firestore timestamp to Date object
+    // Converts a Firestore timestamp to a JavaScript Date object
     const convertTimestampToDate = (timestamp: any): Date | null => {
         if (!timestamp || !timestamp._seconds) return null;
         return new Date(timestamp._seconds * 1000);
     };
 
-    // Handle form input changes
+    /* ===== Event Handler Functions ===== */
+
+    // Handles changes to form input fields and validates date fields
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         
@@ -120,14 +120,20 @@ const SprintsPage: React.FC = () => {
         if (name === 'startDate' && newSprint.endDate) {
             const newStartDate = new Date(value);
             const endDate = new Date(newSprint.endDate);
-            setIsFormValid(newStartDate <= endDate);
+            if (newStartDate > endDate) {
+                toast.error("Start date cannot be after end date");
+                return;
+            }
         }
         
         // If changing end date, validate against start date
         if (name === 'endDate' && newSprint.startDate) {
             const startDate = new Date(newSprint.startDate);
             const newEndDate = new Date(value);
-            setIsFormValid(newEndDate >= startDate);
+            if (newEndDate < startDate) {
+                toast.error("End date cannot be before start date");
+                return;
+            }
         }
 
         setNewSprint(prev => ({
@@ -136,7 +142,7 @@ const SprintsPage: React.FC = () => {
         }));
     };
 
-    // Handle sprint edit
+    // Sets up the form with the sprint's current data for editing
     const handleEditSprint = (sprint: Sprint) => {
         setEditingSprint(sprint);
         setNewSprint({
@@ -150,7 +156,7 @@ const SprintsPage: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    // Handle form submission (create or edit)
+    // Handles form submission for creating or updating a sprint with validation
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -159,6 +165,7 @@ const SprintsPage: React.FC = () => {
         const endDate = new Date(newSprint.endDate);
         
         if (endDate < startDate) {
+            toast.error("End date cannot be before start date");
             return;
         }
 
@@ -169,7 +176,7 @@ const SprintsPage: React.FC = () => {
             );
             
             if (hasActiveSprint) {
-                alert("There can only be one active sprint at a time. Please complete or cancel the current active sprint first.");
+                toast.error("There can only be one active sprint at a time. Please complete or cancel the current active sprint first.");
                 return;
             }
         }
@@ -185,7 +192,7 @@ const SprintsPage: React.FC = () => {
                     status: newSprint.status
                 });
 
-                toast.success("Sprint updated successfully!")
+                toast.success("Sprint updated successfully!");
             } else {
                 await createSprintMutation.mutateAsync({
                     name: newSprint.name,
@@ -195,33 +202,31 @@ const SprintsPage: React.FC = () => {
                     endDate: formatDateForAPI(endDate),
                 });
 
-                toast.success("Sprint created successfully!")
+                toast.success("Sprint created successfully!");
             }
             handleCloseModal();
         } catch (error) {
             console.error("Failed to save sprint:", error);
-
-            toast.error("Error saving sprint!")
+            toast.error("Error saving sprint!");
         }
     };
 
-    // Handle sprint delete
+    // Opens the confirmation modal for sprint deletion
     const handleDeleteSprint = async (sprintId: string) => {
         setSprintToDelete(sprintId);
         setIsDeleteModalOpen(true);
     };
 
-    // Handle delete confirmation
+    // Executes the sprint deletion after confirmation
     const handleConfirmDelete = async () => {
         if (sprintToDelete) {
             try {
                 await deleteSprintMutation.mutateAsync(sprintToDelete);
                 setSprintToDelete(null);
-
-                toast.success("Sprint deleted successfully!")
+                toast.success("Sprint deleted successfully!");
             } catch (error) {
                 console.error("Failed to delete sprint:", error);
-                toast.error("Failed to delete sprint!")
+                toast.error("Failed to delete sprint!");
             }
         }
     };
@@ -250,16 +255,15 @@ const SprintsPage: React.FC = () => {
     }
 
     return (
-        <div className={"p-4 pt-3"}>
-
+        <div className="p-4 pt-3">
             <div className="sprints-page">
-                {/* Header section with title and create button */}
+                {/* Header section */}
                 <div className="flex items-baseline justify-between w-full">
                     <div className="sprints-page__header">
                         <h1>Sprints</h1>
                         <p>Manage your project sprints</p>
                     </div>
-                    {hasPermissions && (
+                    {canManageSprints && (
                         <Button
                             variant="default"
                             size="default"
@@ -271,76 +275,84 @@ const SprintsPage: React.FC = () => {
                     )}
                 </div>
 
-            {/* Divider line */}
-            <div className="sprints-page__divider"></div>
+                <div className="sprints-page__divider" />
 
-            {/* Main content section */}
-            <div className="sprints-page__content">
-                {sprints && sprints.length > 0 ? (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Sprint Name</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Goal</TableHead>
-                                <TableHead>Start Date</TableHead>
-                                <TableHead>End Date</TableHead>
-                                {hasPermissions && <TableHead>Actions</TableHead>}
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                {/* Main content section */}
+                <div className="sprints-list">
+                    {sprints && sprints.length > 0 ? (
+                        <div className="space-y-2">
                             {sprints.map((sprint: Sprint) => (
-                                <TableRow key={sprint.id}>
-                                    <TableCell>
-                                        <h3 className="sprint-name">{sprint.name}</h3>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className={`status-badge status-badge--${sprint.status?.toLowerCase()}`}>
-                                            {sprint.status}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        {sprint.goal || 'No goal defined'}
-                                    </TableCell>
-                                    <TableCell>
-                                        {formatDate(sprint.startDate)}
-                                    </TableCell>
-                                    <TableCell>
-                                        {formatDate(sprint.endDate)}
-                                    </TableCell>
-                                    {hasPermissions && (
-                                        <TableCell>
-                                            <div className="flex gap-2">
+                                <div key={sprint.id} className="sprint-item">
+                                    <div 
+                                        className="sprint-header"
+                                        onClick={() => {
+                                            const element = document.getElementById(`sprint-${sprint.id}`);
+                                            if (element) {
+                                                element.classList.toggle('hidden');
+                                            }
+                                        }}
+                                    >
+                                        <div className="sprint-header__content">
+                                            <h3 className="sprint-header__title">{sprint.name}</h3>
+                                            <span className={`status-badge status-badge--${sprint.status?.toLowerCase()}`}>
+                                                {sprint.status}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div 
+                                        id={`sprint-${sprint.id}`}
+                                        className="sprint-details hidden"
+                                    >
+                                        <div className="sprint-details__content">
+                                            <div className="sprint-details__section">
+                                                <h4>Goal</h4>
+                                                <p>{sprint.goal || 'No goal defined'}</p>
+                                            </div>
+                                            <div className="sprint-details__section">
+                                                <h4>Dates</h4>
+                                                <p>
+                                                    {formatDate(sprint.startDate)} - {formatDate(sprint.endDate)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {canManageSprints && (
+                                            <div className="sprint-details__actions">
                                                 <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleEditSprint(sprint)}
-                                                    className="h-8 w-8"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEditSprint(sprint);
+                                                    }}
+                                                    className="flex items-center space-x-2"
                                                 >
                                                     <Pencil className="h-4 w-4" />
+                                                    <span>Edit Sprint</span>
                                                 </Button>
                                                 <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleDeleteSprint(sprint.id)}
-                                                    className="h-8 w-8 text-red-500 hover:text-red-700"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteSprint(sprint.id);
+                                                    }}
+                                                    className="flex items-center space-x-2 text-red-500 hover:text-red-700 hover:bg-red-50"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
+                                                    <span>Delete Sprint</span>
                                                 </Button>
                                             </div>
-                                        </TableCell>
-                                    )}
-                                </TableRow>
+                                        )}
+                                    </div>
+                                </div>
                             ))}
-                        </TableBody>
-                    </Table>
-                ) : (
-                    // Empty state message
-                    <div className="sprints-page__empty">
-                        <p>No sprints found. {hasPermissions ? "Create your first sprint to get started!" : "No sprints have been created yet."}</p>
-                    </div>
-                )}
-            </div>
+                        </div>
+                    ) : (
+                        <div className="sprints-page__empty">
+                            <p>No sprints found. {canManageSprints ? "Create your first sprint to get started!" : "No sprints have been created yet."}</p>
+                        </div>
+                    )}
+                </div>
 
                 {/* Create/Edit Sprint Modal */}
                 <Modal
@@ -349,11 +361,10 @@ const SprintsPage: React.FC = () => {
                     title={isEditing ? "Edit Sprint" : "Create New Sprint"}
                     size="m"
                 >
-                    <form onSubmit={handleSubmit} className="p-4">
+                    <form onSubmit={handleSubmit} className="sprint-form">
                         <div className="space-y-4">
-                            {/* Sprint Name Input */}
-                            <div>
-                                <label htmlFor="name" className="block text-sm font-medium mb-1">
+                            <div className="sprint-form__section">
+                                <label htmlFor="name" className="sprint-form__label">
                                     Sprint Name
                                 </label>
                                 <input
@@ -362,14 +373,13 @@ const SprintsPage: React.FC = () => {
                                     name="name"
                                     value={newSprint.name}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
+                                    className="sprint-form__input"
                                     placeholder="Enter sprint name"
                                     required
                                 />
                             </div>
-                            {/* Sprint Goal Input */}
-                            <div>
-                                <label htmlFor="goal" className="block text-sm font-medium mb-1">
+                            <div className="sprint-form__section">
+                                <label htmlFor="goal" className="sprint-form__label">
                                     Sprint Goal
                                 </label>
                                 <textarea
@@ -377,15 +387,14 @@ const SprintsPage: React.FC = () => {
                                     name="goal"
                                     value={newSprint.goal}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
+                                    className="sprint-form__textarea"
                                     placeholder="Enter sprint goal"
                                     rows={3}
                                 />
                             </div>
-                            {/* Status Dropdown - Only show when editing */}
                             {isEditing && (
-                                <div>
-                                    <label htmlFor="status" className="block text-sm font-medium mb-1">
+                                <div className="sprint-form__section">
+                                    <label htmlFor="status" className="sprint-form__label">
                                         Status
                                     </label>
                                     <select
@@ -393,7 +402,7 @@ const SprintsPage: React.FC = () => {
                                         name="status"
                                         value={newSprint.status}
                                         onChange={handleInputChange}
-                                        className="w-full p-2 border rounded"
+                                        className="sprint-form__input"
                                     >
                                         <option value="Planned">Planned</option>
                                         <option
@@ -406,9 +415,8 @@ const SprintsPage: React.FC = () => {
                                     </select>
                                 </div>
                             )}
-                            {/* Start Date Input */}
-                            <div>
-                                <label htmlFor="startDate" className="block text-sm font-medium mb-1">
+                            <div className="sprint-form__section">
+                                <label htmlFor="startDate" className="sprint-form__label">
                                     Start Date
                                 </label>
                                 <input
@@ -417,13 +425,12 @@ const SprintsPage: React.FC = () => {
                                     name="startDate"
                                     value={newSprint.startDate}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
+                                    className="sprint-form__input"
                                     required
                                 />
                             </div>
-                            {/* End Date Input */}
-                            <div>
-                                <label htmlFor="endDate" className="block text-sm font-medium mb-1">
+                            <div className="sprint-form__section">
+                                <label htmlFor="endDate" className="sprint-form__label">
                                     End Date
                                 </label>
                                 <input
@@ -432,13 +439,12 @@ const SprintsPage: React.FC = () => {
                                     name="endDate"
                                     value={newSprint.endDate}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
+                                    className="sprint-form__input"
                                     required
                                 />
                             </div>
                         </div>
-                        {/* Modal Action Buttons */}
-                        <div className="flex justify-end gap-2 mt-4">
+                        <div className="sprint-form__actions">
                             <Button
                                 variant="secondary"
                                 onClick={() => {
@@ -448,10 +454,7 @@ const SprintsPage: React.FC = () => {
                             >
                                 Cancel
                             </Button>
-                            <Button
-                                type="submit"
-                                disabled={!isFormValid}
-                            >
+                            <Button type="submit">
                                 {isEditing ? 'Update Sprint' : 'Create Sprint'}
                             </Button>
                         </div>
