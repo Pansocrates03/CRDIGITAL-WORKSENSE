@@ -381,12 +381,13 @@ const BacklogTablePage: FC = () => {
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onItemCreated={() => {
-
                         handleSuccess("Item  created successfully!",
                             "You should now see the item in the backlog.");
                         refetch();
                     }}
                     onError={handleError}
+                    storyPointScale={project?.storyPointScale || 'tshirt'}
+                    statusOptions={project?.tags && project.tags.length > 0 ? project.tags : ["New", "To Do", "In Progress", "In Review", "Done"]}
                 />
             )}
 
@@ -401,6 +402,8 @@ const BacklogTablePage: FC = () => {
                     }}
                     onError={handleError}
                     item={itemToEdit}
+                    storyPointScale={project?.storyPointScale || 'tshirt'}
+                    statusOptions={project?.tags && project.tags.length > 0 ? project.tags : ["New", "To Do", "In Progress", "In Review", "Done"]}
                 />
             )}
 

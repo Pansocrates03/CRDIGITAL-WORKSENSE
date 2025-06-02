@@ -252,10 +252,14 @@ export const updateBacklogItem = async (
     const newStatus = updateData.status;
 
     // Prepare update data
-    const dataToUpdate = {
+    let dataToUpdate = {
       ...updateData,
       updatedAt: FieldValue.serverTimestamp(),
     };
+    // If status is being set to 'done', always update updatedAt
+    if (updateData.status && updateData.status.toLowerCase() === 'done') {
+      dataToUpdate.updatedAt = FieldValue.serverTimestamp();
+    }
 
     // Prevent changing immutable fields
     delete dataToUpdate.projectId;

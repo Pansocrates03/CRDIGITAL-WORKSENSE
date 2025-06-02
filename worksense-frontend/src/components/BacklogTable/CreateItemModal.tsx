@@ -11,6 +11,8 @@ interface CreateItemModalProps {
   onClose: () => void;
   onItemCreated: () => void;
   onError?: (message: string) => void;
+  storyPointScale?: "fibonacci" | "linear" | "tshirt";
+  statusOptions?: string[];
 }
 
 const CreateItemModal: FC<CreateItemModalProps> = ({
@@ -19,6 +21,8 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
   onClose,
   onItemCreated,
   onError,
+  storyPointScale,
+  statusOptions,
 }) => {
   const initialState: BacklogItemFormData = {
     name: "",
@@ -160,6 +164,8 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
       users={users}
       epics={epics}
       sprints = {sprints}
+      storyPointScale={storyPointScale}
+      statusOptions={statusOptions}
     />
   );
 };

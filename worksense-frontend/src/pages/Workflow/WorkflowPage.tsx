@@ -6,7 +6,9 @@ import { useParams } from "react-router-dom";
 import QueryKeys from '@/utils/QueryKeys';
 import { projectService } from '@/services/projectService';
 import { useDeleteSprint, useSprints } from '@/hooks/useSprintData';
+
 import { useBacklogItemUpdate } from '@/hooks/useBacklogItemUpdate';
+import { format } from 'date-fns';
 
 // Views
 import Tabs from './components/Tabs/Tabs';
@@ -21,6 +23,7 @@ import DeleteConfirmationModal from '@/components/ui/deleteConfirmationModal/del
 import BacklogItemType from "@/types/BacklogItemType.ts";
 import { Sprint } from '@/types/SprintType';
 import { IconType } from 'react-icons/lib';
+import ProjectDetails from '@/types/ProjectType';
 
 import { createBurndownChartData } from './utils/CreateBurndownChartData';
 
@@ -45,7 +48,7 @@ const navigationTabs: TabItem[] = [
   { id: "overview", label: "Overview", icon: null },
   { id: "board", label: "Board", icon:FiLayout },
   { id: "table", label: "Table", icon:FiGrid },
-  { id: "burndown_chart", label: "Burndown Chart", icon:FiBarChart}
+  { id: "burndown_chart", label: "Charts", icon:FiBarChart}
 ]
 
 const WorkflowPage: React.FC = () => {
@@ -63,6 +66,12 @@ const WorkflowPage: React.FC = () => {
     // Fetch sprints data using custom hook
     const { data: sprints, isLoading: sprintsLoading, error: sprintsError } = useSprints(projectId ?? "");
     
+    const { data: project } = useQuery<ProjectDetails>({
+        queryKey: ["project", projectId],
+        queryFn: () => projectService.fetchProjectDetails(projectId!),
+        enabled: !!projectId,
+    });
+    
     // STATES
     const [tasks, setTasks] = useState<BacklogItemType[]>([]);
     const [activeTab, setActiveTab] = useState('sprints');
@@ -70,6 +79,18 @@ const WorkflowPage: React.FC = () => {
     const [selectedSprint, setSelectedSprint] = useState<string>('');
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [sprintToDelete, setSprintToDelete] = useState<Sprint | null>(null);
+
+    // Update columns when project.workflowStages changes
+    React.useEffect(() => {
+        if (project && Array.isArray(project.workflowStages) && project.workflowStages.length > 0) {
+            setColumns(project.workflowStages.map(stage => ({
+                id: stage.toLowerCase().replace(/\s+/g, '_'),
+                title: stage
+            })));
+        } else {
+            setColumns(DEFAULT_COLUMNS);
+        }
+    }, [project?.workflowStages]);
 
     // get active sprint
     if(!sprints && !sprintsLoading) {
@@ -177,6 +198,30 @@ const WorkflowPage: React.FC = () => {
     // use instead:
     // const brundown_chart_data = createBurndownChartData(tasks)
 
+    // Prepare heatmap data: count of 'Done' items per day (use all items in data, not just tasks)
+    const doneItemsPerDay = React.useMemo(() => {
+        if (!data) return [];
+        const counts: Record<string, number> = {};
+        data.forEach(item => {
+            let updatedAt = item.updatedAt;
+            if (typeof updatedAt === 'object' && updatedAt !== null) {
+                if ('seconds' in updatedAt && typeof (updatedAt as any).seconds === 'number') {
+                    updatedAt = new Date((updatedAt as any).seconds * 1000).toISOString();
+                } else if ('_seconds' in updatedAt && typeof (updatedAt as any)._seconds === 'number') {
+                    updatedAt = new Date((updatedAt as any)._seconds * 1000).toISOString();
+                }
+            }
+            if (item.status === 'done' && updatedAt) {
+                const dateObj = new Date(updatedAt);
+                if (!isNaN(dateObj.getTime())) {
+                    const date = format(dateObj, 'yyyy-MM-dd');
+                    counts[date] = (counts[date] || 0) + 1;
+                }
+            }
+        });
+        return Object.entries(counts).map(([date, count]) => ({ date, count }));
+    }, [data]);
+
     const renderView = () => {
         switch (activeTab) {
             case 'board':
@@ -186,7 +231,7 @@ const WorkflowPage: React.FC = () => {
             case 'table':
                 return <TableView tasks={tasks} />;
             case 'burndown_chart':
-                return <BurndownChartView data={burndown_chart_data} />
+                return <BurndownChartView data={burndown_chart_data} doneItemsPerDay={doneItemsPerDay} />;
             default:
                 return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} columns={columns} onTaskContentUpdate={onTaskContentUpdate} />;
         }
@@ -196,8 +241,11 @@ const WorkflowPage: React.FC = () => {
     if (isLoading) { return <div>Loading...</div> }
     if (!data) { throw new Error("Nothing received") }
 
+    console.log('All backlog items:', data);
+    console.log('doneItemsPerDay for heatmap:', doneItemsPerDay);
+
     return (
-    <div className="sprint-page">
+    <div className="sprint-page" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
       <div className="sprint-page__header">
         <div className="sprint-page__header-content">
           <h1 className="sprint-page__title">Workflow ({activeSprint.name})</h1>

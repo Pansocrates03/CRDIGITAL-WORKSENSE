@@ -156,12 +156,12 @@ export const projectService = {
                 name: receivedData.name,
                 description: receivedData.description,
                 context: null,
+                tags: ["New", "To Do", "In Progress", "In Review", "Done"]
             });
 
             // Luego se deben agregar los miembros al proyecto
             for (let i = 0; i < receivedData.members.length; i++) {
                 const member = receivedData.members[i];
-
                 await apiClient.post(
                     `${API_URL}/projects/${response.data.id}/members`,
                     {

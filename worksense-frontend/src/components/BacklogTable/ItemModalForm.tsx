@@ -37,31 +37,89 @@ interface ItemModalFormProps {
   epics: Epic[];
   sprints: any[];
   disableTypeChange?: boolean;
+
+    mode: "create" | "update";
+    formData: BacklogItemFormData;
+    onChange: (data: BacklogItemFormData) => void;
+    onSubmit: (e: React.FormEvent) => void;
+    onClose: () => void;
+    onClearOrReset: () => void;
+    loading: boolean;
+    error?: string;
+    users: User[];
+    epics: Epic[];
+    sprints: any[];
+    disableTypeChange?: boolean;
+    storyPointScale?: "fibonacci" | "linear" | "tshirt";
+    statusOptions?: string[];
 }
 
-const ItemModalForm: React.FC<ItemModalFormProps> = ({
-  mode,
-  formData,
-  onChange,
-  onSubmit,
-  onClose,
-  onClearOrReset,
-  loading,
-  error,
-  users,
-  epics,
-  sprints,
-  disableTypeChange = false,
-}) => {
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    onChange({ ...formData, [name]: value });
-  };
+const getSizeOptions = (scale: string = "tshirt") => {
+    if (scale === "fibonacci") {
+        return [
+            { value: "1", label: "1" },
+            { value: "2", label: "2" },
+            { value: "3", label: "3" },
+            { value: "5", label: "5" },
+            { value: "8", label: "8" },
+            { value: "13", label: "13" },
+            { value: "21", label: "21" },
+        ];
+    } else if (scale === "linear") {
+        return [
+            { value: "1", label: "1" },
+            { value: "2", label: "2" },
+            { value: "3", label: "3" },
+            { value: "4", label: "4" },
+            { value: "5", label: "5" },
+            { value: "6", label: "6" },
+            { value: "7", label: "7" },
+            { value: "8", label: "8" },
+        ];
+    } else {
+        return [
+            { value: "XS", label: "XS" },
+            { value: "S", label: "S" },
+            { value: "M", label: "M" },
+            { value: "L", label: "L" },
+            { value: "XL", label: "XL" },
+        ];
+    }
+};
 
+const getDefaultStatusOptions = () => [
+    "New",
+    "To Do",
+    "In Progress",
+    "In Review",
+    "Done"
+];
+
+const ItemModalForm: React.FC<ItemModalFormProps> = ({
+
+                                                         mode,
+                                                         formData,
+                                                         onChange,
+                                                         onSubmit,
+                                                         onClose,
+                                                         onClearOrReset,
+                                                         loading,
+                                                         error,
+                                                         users,
+                                                         epics,
+                                                         sprints,
+                                                         disableTypeChange = false,
+                                                         storyPointScale,
+                                                         statusOptions: statusOptionsProp,
+                                                     }) => {
+    const handleChange = (
+        e: React.ChangeEvent<
+            HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+        >
+    ) => {
+        const {name, value} = e.target;
+        onChange({...formData, [name]: value});
+    };
   // Clear acceptance criteria when type changes to non-story
   useEffect(() => {
     if (formData.type !== "story" && formData.acceptanceCriteria?.length) {
@@ -74,72 +132,98 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
     label: v,
   }));
 
-  const selectOptions = {
-    type: [
-      { value: "epic", label: "Epic" },
-      { value: "story", label: "Story" },
-      { value: "bug", label: "Bug" },
-      { value: "techTask", label: "Tech Task" },
-      { value: "knowledge", label: "Knowledge" },
-    ],
-    status: [
-      { value: "new", label: "New" },
-      { value: "toDo", label: "To Do" },
-      { value: "inProgress", label: "In Progress" },
-      { value: "inReview", label: "In Review" },
-      { value: "done", label: "Done" },
-    ],
-    priority: [
-      { value: "low", label: "Low" },
-      { value: "medium", label: "Medium" },
-      { value: "high", label: "High" },
-    ],
-    size: [
-      { value: "1", label: "1" },
-      { value: "2", label: "2" },
-      { value: "3", label: "3" },
-      { value: "5", label: "5" },
-      { value: "8", label: "8" },
-      { value: "13", label: "13" },
-      { value: "21", label: "21" },
-    ],
-    sprint: [
-      { value: "", label: "Select Sprint (Optional)" },
-      ...sprints.map((s) => ({ value: s.id, label: s.name })),
-    ],
-    assignee: [
-      { value: "", label: "Select Assignee (Optional)" },
-      ...users.map((u) => ({
-        value: u.userId.toString(),
-        label: u.name || `User ${u.userId}`,
-      })),
-    ],
-  };
 
-  return (
-    <div
-      className={styles.modalOverlay}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalHeader}>
-          <h2>
-            {mode === "create"
-              ? `Create New ${
-                  formData.type.charAt(0).toUpperCase() + formData.type.slice(1)
-                }`
-              : `Update ${formData.type}`}
-          </h2>
-          <Button
-            variant={"outline"}
-            className={styles.closeButton}
-            onClick={onClose}
-            aria-label="Close"
-            disabled={loading}
-          >
-            <X size={18} />
-          </Button>
-        </div>
+    const statusOptions = statusOptionsProp && statusOptionsProp.length > 0 ? statusOptionsProp : getDefaultStatusOptions();
+
+    const selectOptions = {
+        type: [
+            {value: "epic", label: "Epic"},
+            {value: "story", label: "Story"},
+            {value: "bug", label: "Bug"},
+            {value: "techTask", label: "Tech Task"},
+            {value: "knowledge", label: "Knowledge"},
+        ],
+        status: statusOptions.map((status) => ({ value: status, label: status })),
+        priority: [
+            {value: "low", label: "Low"},
+            {value: "medium", label: "Medium"},
+            {value: "high", label: "High"},
+        ],
+        size: getSizeOptions(storyPointScale),
+        sprint: [
+            { value: "", label: "Select Sprint (Optional)" },
+            ...sprints.map((s) => ({ value: s.id, label: s.name })),
+        ],
+        assignee: [
+            {value: "", label: "Select Assignee (Optional)"},
+            ...users.map((u) => ({
+                value: u.userId.toString(),
+                label: u.name || `User ${u.userId}`,
+            })),
+        ],
+    };
+
+    return (
+        <div
+            className={styles.modalOverlay}
+            onClick={(e) => e.target === e.currentTarget && onClose()}
+        >
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.modalHeader}>
+                    <h2>
+                        {mode === "create" ? `Create New ${formData.type.charAt(0).toUpperCase() + formData.type.slice(1)}` : `Update ${formData.type}`}
+                    </h2>
+                    <Button
+                        variant={"outline"}
+                        className={styles.closeButton}
+                        onClick={onClose}
+                        aria-label="Close"
+                        disabled={loading}
+                    >
+                        <X size={18}/>
+                    </Button>
+                </div>
+
+                {error && <div className={styles.errorMessage}>{error}</div>}
+
+                <form onSubmit={onSubmit}>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="name">Name*</label>
+                        <input
+                            id="name"
+                            name="name"
+                            type="text"
+                            value={formData.name || ""}
+                            onChange={handleChange}
+                            required
+                            placeholder="Enter name"
+                            disabled={loading}
+                        />
+                    </div>
+
+                    <SelectField
+                        id="type"
+                        name="type"
+                        value={formData.type || ""}
+                        onChange={handleChange}
+                        options={selectOptions.type}
+                        label="Type"
+                        required
+                        styleClass="type"
+                        disabled={disableTypeChange || loading}
+                    />
+
+                    <SelectField
+                        id="status"
+                        name="status"
+                        value={formData.status || statusOptions[0]}
+                        onChange={handleChange}
+                        options={selectOptions.status}
+                        label="Status"
+                        required
+                        styleClass="status"
+                        disabled={loading}
+                    />
 
         {error && <div className={styles.errorMessage}>{error}</div>}
 
