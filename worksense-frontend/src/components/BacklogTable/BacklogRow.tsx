@@ -3,86 +3,74 @@ import React from "react";
 import styles from "./BacklogRow.module.css";
 import StatusBadge from "./StatusBadge";
 import ActionMenu from "./ActionMenu";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-
-//import Member from "@/types/MemberType.ts";
-import BacklogItemType from "@/types/BacklogItemType";
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
+import BacklogItemType from "@/types/BacklogItemType";
 
 interface Member {
-    userId: number;
-    profilePicture?: string;
-    nickname?: string;
-    name?: string;
+  userId: number;
+  profilePicture?: string;
+  nickname?: string;
+  name?: string;
 }
 
 interface BacklogRowProps {
-    item: BacklogItemType,
-    indent?: boolean,
-    memberMap: Map<number, Member>,
-    onEdit: () => void,
-    onDelete: () => void,
-    onViewDetails: () => void,
-    enableAiSuggestions: boolean,
-    sprints: { id: string; name: string }[],
-    hasPermissions?: undefined | boolean
+  item: BacklogItemType;
+  indent?: boolean;
+  memberMap: Map<number, Member>;
+  onEdit: () => void;
+  onDelete: () => void;
+  onViewDetails: () => void;
+  enableAiSuggestions: boolean;
+  sprints: { id: string; name: string }[];
+  hasPermissions?: boolean;
 }
 
 const BacklogRow: React.FC<BacklogRowProps> = ({
-                                                   item,
-                                                   indent = false,
-                                                   memberMap,
-                                                   onEdit,
-                                                   onDelete,
-                                                   onViewDetails,
-                                                   enableAiSuggestions,
-                                                   sprints,
-                                                   hasPermissions
-                                               }) => {
-    let extraInfo = "-";
-    if (item.type === "story") {
-        extraInfo =
-            item.size !== undefined && item.size !== null
-                ? item.size.toString()
-                : "-";
-    } else if (item.type === "bug") {
-        extraInfo = item.size || "-";
-    }
+  item,
+  indent = false,
+  memberMap,
+  onEdit,
+  onDelete,
+  onViewDetails,
+  enableAiSuggestions,
+  sprints,
+  hasPermissions,
+}) => {
+  const [isHovered, setIsHovered] = React.useState(false);
 
-    // Handle assigneeId conversion
-    const assigneeId =
-        item.assigneeId !== undefined && item.assigneeId !== null
-            ? typeof item.assigneeId === "string"
-                ? parseInt(item.assigneeId)
-                : Number(item.assigneeId)
-            : null;
+  // Handle assigneeId conversion
+  const assigneeId =
+    item.assigneeId !== undefined && item.assigneeId !== null
+      ? typeof item.assigneeId === "string"
+        ? parseInt(item.assigneeId, 10)
+        : Number(item.assigneeId)
+      : null;
 
-    // Handle authorId conversion
-    const authorId =
-        item.authorId !== undefined && item.authorId !== null
-            ? typeof item.authorId === "string"
-                ? parseInt(item.authorId)
-                : Number(item.authorId)
-            : null;
-    // Get member info
-    const memberInfo = assigneeId !== null ? memberMap.get(assigneeId) : null;
-    const authorInfo = authorId !== null ? memberMap.get(authorId) : null;
+  // Handle authorId conversion
+  const authorId =
+    item.authorId !== undefined && item.authorId !== null
+      ? typeof item.authorId === "string"
+        ? parseInt(item.authorId, 10)
+        : Number(item.authorId)
+      : null;
 
-    // Inline styles for the title instead of using a separate CSS module
-    const titleStyle = {
-        cursor: "pointer",
-        transition: "color 0.2s ease",
-        fontWeight: item.type === "epic" ? 500 : "normal",
-        position: "relative",
-        display: "inline-block",
-    } as React.CSSProperties;
+  // Get member info
+  const memberInfo = assigneeId !== null ? memberMap.get(assigneeId) : null;
+  const authorInfo = authorId !== null ? memberMap.get(authorId) : null;
 
-    const titleHoverStyle = {
-        ...titleStyle,
-        color: "var(--primary-color, #ac1754)",
-    } as React.CSSProperties;
+  // Inline styles for the title
+  const titleStyle: React.CSSProperties = {
+    cursor: "pointer",
+    transition: "color 0.2s ease",
+    fontWeight: item.type === "epic" ? 500 : "normal",
+    position: "relative",
+    display: "inline-block",
+  };
 
-    const [isHovered, setIsHovered] = React.useState(false);
+  const titleHoverStyle: React.CSSProperties = {
+    ...titleStyle,
+    color: "var(--primary-color, #ac1754)",
+  };
 
     return (
         <tr key={item.id} className={indent ? styles.indentedRow : ""}>
