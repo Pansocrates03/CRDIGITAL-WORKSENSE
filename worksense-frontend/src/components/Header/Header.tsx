@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 import worksenseLogo from "@/assets/images/worksenseLogo.svg";
+import GamificationBadge from '@/components/ui/GamificationBadge';
+
 
 interface HeaderProps {
   /** Current section/page name */
@@ -159,6 +161,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* User Menu */}
       <div className={styles.headerActions}>
+        <GamificationBadge />
         <div className={styles.avatarContainer}>
           <button
             className={styles.avatar}

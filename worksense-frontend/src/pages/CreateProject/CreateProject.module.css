@@ -353,20 +353,8 @@
     box-shadow: var(--shadow-lg);
 }
 
-.featuredCard {
-    grid-column: span 2;
-    grid-row: span 2;
 
-}
 
-.featuredDetailsSection {
-    margin-top: 1rem; /* Space above the details section */
-    padding-top: 1rem; /* Space within the section, above first item */
-    border-top: 1px solid var(--neutral-200, #e5e7eb); /* Subtle separator line */
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem; /* Space between detail items */
-}
 
 .detailItem {
     display: flex;
@@ -519,35 +507,9 @@
 }
 
 
-.memberAvatars {
-    display: flex;
-    align-items: center;
-    padding-top: 1rem; /* Small space above the avatar stack */
-}
 
 
-.memberAvatars .memberAvatar:first-child {
-    margin-left: 0;
-}
 
-
-/* The "+N" More Members Bubble */
-.moreMembers {
-    /* Tailwind h-8 w-8 */
-    height: 2.1rem; /* 32px - match member avatar size */
-    width: 2.1rem; /* 32px */
-    border-radius: var(--border-radius-full, 9999px);
-    background-color: var(--neutral-200, #e5e7eb); /* Background of the bubble */
-
-    display: flex; /* Tailwind: flex */
-    align-items: center; /* Tailwind: items-center */
-    justify-content: center; /* Tailwind: justify-center */
-
-    font-size: 0.8rem; /* text-xs or text-sm, adjust for readability */
-    font-weight: 600; /* font-semibold */
-    margin-left: -0.325rem; /* -10px; Overlap like other avatars */
-    box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
-}
 
 
 .statusOnHold {
