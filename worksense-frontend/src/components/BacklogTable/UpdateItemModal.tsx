@@ -10,6 +10,8 @@ interface UpdateItemModalProps {
   onItemUpdated: () => void;
   onError?: (message: string) => void;
   item: BacklogItemType | null;
+  storyPointScale?: "fibonacci" | "linear" | "tshirt";
+  statusOptions?: string[];
 }
 
 interface Epic {
@@ -24,6 +26,8 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
   onItemUpdated,
   item,
   onError,
+  storyPointScale,
+  statusOptions,
 }) => {
   const [formData, setFormData] = useState<BacklogItemFormData>({
     name: "",
@@ -150,7 +154,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
           projectId,
           parentId,
           subItemId: item.id,
-          sprintId: formData.sprint
+          sprintId: formData.sprint,
         });
         if (formData.sprint !== item.sprint) {
           await apiClient.put(
@@ -201,7 +205,8 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
       users={users}
       epics={epics}
       sprints={sprints}
-      disableTypeChange
+      storyPointScale={storyPointScale}
+      statusOptions={statusOptions}
     />
   );
 };

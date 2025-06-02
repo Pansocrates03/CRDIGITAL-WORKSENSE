@@ -14,7 +14,6 @@ interface CreateProject {
 }
 
 export const projectService = {
-    // Gets the project details
 
     async fetchUserById(userId: number): Promise<MemberDetailed> { // Assuming MemberDetailed covers user details
         try {
@@ -36,7 +35,6 @@ export const projectService = {
         }
     },
 
-    // Gets the list of members in a project
     async fetchProjectMembers(id: string): Promise<Member[]> {
         try {
             const response = await apiClient.get(
@@ -50,7 +48,6 @@ export const projectService = {
         }
     },
 
-    // Gets the list of members in a project with email and name
     async fetchProjectMembersDetailed(id: string): Promise<MemberDetailed[]> {
         try {
             const response = await apiClient.get(
@@ -62,8 +59,18 @@ export const projectService = {
             throw error;
         }
     },
+    async fetchProjectMembership(userId: number, projectId: string): Promise<any> {
+        try {
+            const response = await apiClient.get(
+                `${API_URL}/projects/${projectId}/members/${userId}`
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching project memberships:", error);
+            throw error;
+        }
+    },
 
-    // Gets the list of the projects a member has access to
     async fetchUserProjects(): Promise<ProjectDetails[]> {
         try {
             const response = await apiClient.get(`${API_URL}/projects/`);
@@ -74,7 +81,6 @@ export const projectService = {
         }
     },
 
-    // Gets backlog Items
     async fetchProjectItems(projectId: string): Promise<BacklogItemType[]> {
         try {
             const response = await apiClient.get(`/projects/${projectId}/backlog/items`);
@@ -96,7 +102,6 @@ export const projectService = {
         }
     },
 
-    // Update a member's role inside a project
     async updateMemberRole(
         projectId: string,
         userId: number,
@@ -115,7 +120,6 @@ export const projectService = {
         }
     },
 
-    // Add a member to a project with a role
     async addMemberToProject(
         projectId: string,
         userId: number,
@@ -132,7 +136,6 @@ export const projectService = {
         }
     },
 
-    // Remove a member from a project
     async removeMemberFromProject(
         projectId: string,
         userId: number
@@ -147,20 +150,18 @@ export const projectService = {
         }
     },
 
-    async createProejct(receivedData: CreateProject): Promise<ProjectDetails> {
+    async createProject(receivedData: CreateProject): Promise<ProjectDetails> {
         try {
-            // Primero se debe crear el proyecto
-
             const response = await apiClient.post(`${API_URL}/projects/`, {
                 name: receivedData.name,
                 description: receivedData.description,
                 context: null,
+                tags: ["New", "To Do", "In Progress", "In Review", "Done"]
             });
 
             // Luego se deben agregar los miembros al proyecto
             for (let i = 0; i < receivedData.members.length; i++) {
                 const member = receivedData.members[i];
-
                 await apiClient.post(
                     `${API_URL}/projects/${response.data.id}/members`,
                     {

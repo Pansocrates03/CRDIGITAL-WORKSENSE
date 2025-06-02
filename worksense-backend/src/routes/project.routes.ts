@@ -11,6 +11,8 @@ import membersRouter from "./members.routes.js";
 import sprintsRouter from "./sprints.routes.js";
 import taskRoutes from "./task.routes.js";
 import aiRoutes from "./ai.routes.js";
+import gamificationRoutes from "./gamification.routes.js";
+import {getProjectActivity} from "../controllers/gamification.controller.js";
 
 const router = express.Router();
 
@@ -309,11 +311,13 @@ router.delete(
   projectController.deleteProject
 );
 
+
 // Mount the sub-routers
 router.use("/:projectId/backlog", backlogRouter);
 router.use("/:projectId/members", membersRouter);
 router.use("/:projectId/sprints", sprintsRouter);
 router.use("/:projectId/tasks", taskRoutes);
 router.use("/:projectId/ai", aiRoutes);
+router.use("/:projectId/gamification", gamificationRoutes)
 
 export default router;

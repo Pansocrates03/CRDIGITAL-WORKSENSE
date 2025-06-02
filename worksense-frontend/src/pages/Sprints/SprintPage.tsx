@@ -45,15 +45,13 @@ const navigationTabs = [
 const SprintPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { id: projectId } = useParams<{ id: string }>();
-
   // TODOS LOS HOOKS VAN AQUÍ
   const { isLoading, data, error } = useQuery<BacklogItemType[], Error>({
     queryKey: [QueryKeys.backlog, projectId],
     queryFn: () => projectService.fetchProjectItems(projectId ? projectId : "")
   });
 
-  // Get all sprints hook
-  // Fetch sprints
+
   const { data: sprints, error: sprintsError, isLoading: sprintsLoading } = useSprints(projectId ?? "");
 
   const [tasks, setTasks] = useState<BacklogItemType[]>([]);

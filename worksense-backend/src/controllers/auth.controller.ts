@@ -2,6 +2,7 @@ import { sqlConnect, sql } from "../models/sqlModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
+import { db } from "../models/firebase.js";
 
 declare global {
   namespace Express {
@@ -67,17 +68,49 @@ export const getProfile = async (
       return;
     }
 
-    const result = await pool
+    // Get user profile
+    const userResult = await pool
       .request()
       .input("userId", sql.Int, req.user.userId)
       .execute("spGetUserById");
 
-    if (result.recordset.length === 0) {
+    if (userResult.recordset.length === 0) {
       res.status(404).json({ message: "User not found" });
       return;
     }
 
-    const user = result.recordset[0];
+    const user = userResult.recordset[0];
+
+    // Get global gamification data
+    const gamificationResult = await pool
+      .request()
+      .input("UserId", sql.Int, req.user.userId)
+      .query(
+        "SELECT total_points, level FROM user_gamification WHERE user_id = @UserId"
+      );
+
+    const gamificationData = gamificationResult.recordset[0] || {
+      total_points: 0,
+      level: 1,
+    };
+
+    // Get project-specific data if projectId is provided
+    let projectPoints = 0;
+    let projectBadges = [];
+    if (req.query.projectId) {
+      const leaderboardSnap = await db
+        .collection("projects")
+        .doc(req.query.projectId as string)
+        .collection("gamification")
+        .doc("leaderboard")
+        .get();
+
+      const leaderboardData = leaderboardSnap.data() || {};
+      const userData = leaderboardData[req.user.userId] || {};
+      projectPoints = userData.points || 0;
+      projectBadges = userData.badges || [];
+    }
+
     res.json({
       userId: user.userId,
       email: user.email,
@@ -90,6 +123,15 @@ export const getProfile = async (
       nickName: user.nickName,
       pfp: user.pfp,
       platformRole: user.platformRole,
+
+      // Gamification data
+      gamification: {
+        totalPoints: gamificationData.total_points,
+        globalPoints: gamificationData.total_points,
+        projectPoints: projectPoints,
+        level: gamificationData.level,
+        badges: projectBadges,
+      },
     });
   } catch (error) {
     console.error(error);
@@ -225,7 +267,8 @@ export const deleteUser = async (req: Request, res: Response) => {
       return;
     }
     // Try to use a stored procedure if you have one, otherwise use direct SQL
-    await pool.request()
+    await pool
+      .request()
       .input("userId", sql.Int, id)
       .query("DELETE FROM Users WHERE id = @userId");
     res.status(200).json({ message: "User deleted successfully" });

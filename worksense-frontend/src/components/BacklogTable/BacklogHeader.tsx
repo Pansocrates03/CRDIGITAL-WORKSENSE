@@ -5,9 +5,10 @@ import {Button} from "@/components/ui/button";
 
 interface BacklogHeaderProps {
     onAddItem: () => void;
+    hasPermissions: boolean;
 }
 
-const BacklogHeader: FC<BacklogHeaderProps> = ({onAddItem}) => (
+const BacklogHeader: FC<BacklogHeaderProps> = ({onAddItem, hasPermissions}) => (
     <div className="flex items-baseline justify-between w-full">
         <div>
             <h2 className="text-3xl font-bold tracking-tight text-foreground mb-4 ">
@@ -17,14 +18,14 @@ const BacklogHeader: FC<BacklogHeaderProps> = ({onAddItem}) => (
                 Track and manage epics, stories, bugs, tech tasks, and knowledge.
             </p>
         </div>
-        <Button
+        {hasPermissions && <Button
             variant="default"
             size="default"
             onClick={onAddItem}
         >
             <PlusIcon className="mr-1 h-4 w-4"/>
             Add Item
-        </Button>
+        </Button>}
     </div>
 );
 

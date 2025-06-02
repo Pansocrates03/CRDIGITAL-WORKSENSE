@@ -49,6 +49,7 @@ export const EpicRow: FC<EpicRowProps> = ({
                                               memberMap,
                                               enableAiSuggestions,
                                               sprints,
+    hasPermissions,
                                           }) => {
     const [isHovered, setIsHovered] = useState(false);
 
@@ -168,6 +169,7 @@ export const EpicRow: FC<EpicRowProps> = ({
                     isEpic={true}
                     itemType="epic"
                     enableAiSuggestions={enableAiSuggestions}
+                    hasPermissions={hasPermissions}
                 />
             </td>
         </tr>

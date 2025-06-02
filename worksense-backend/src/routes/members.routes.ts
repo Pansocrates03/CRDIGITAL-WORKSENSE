@@ -380,4 +380,7 @@ router.delete(
   memberController.removeMember
 );
 
+router.get("/:userId",
+    memberAuth,memberController.getMembership)
+
 export default router;
