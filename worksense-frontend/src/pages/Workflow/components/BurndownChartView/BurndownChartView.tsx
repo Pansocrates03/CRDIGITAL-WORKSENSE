@@ -34,9 +34,11 @@ interface BurndownChartViewProps {
   title?: string;
   doneItemsPerDay?: { date: string; count: number }[];
   tasks: Task[];
+  sprintStart?: Date;
+  sprintEnd?: Date;
 }
 
-const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Burndown Chart', doneItemsPerDay = [], tasks = [] }) => {
+const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Burndown Chart', doneItemsPerDay = [], tasks = [], sprintStart, sprintEnd }) => {
   console.log("BurndownChartView props - tasks:", tasks);
   console.log("BurndownChartView props - data (burndownChartData):", data);
   const { id: projectId } = useParams<{ id: string }>();
@@ -114,6 +116,8 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
         <BurnUpChartSection
           tasks={tasks}
           isEnabled={isVelocityEnabled}
+          sprintStart={sprintStart}
+          sprintEnd={sprintEnd}
         />
       </Box>
     </Box>

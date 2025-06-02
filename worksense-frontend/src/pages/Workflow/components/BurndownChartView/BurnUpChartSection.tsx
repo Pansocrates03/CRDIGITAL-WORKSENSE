@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Paper, Typography, Alert } from '@mui/material';
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line } from 'recharts';
 import BacklogItemType from '@/types/BacklogItemType';
+import { addDays, format, isAfter } from 'date-fns';
 
 // Helper to convert Firestore timestamp or string/Date to JS Date
 function toDate(val: any): Date | undefined {
@@ -27,6 +28,17 @@ const getStoryPoints = (size: string): number => {
   }
 };
 
+// Helper to generate all dates between start and end (inclusive)
+function getDateRange(start: Date, end: Date): Date[] {
+    const dates = [];
+    let current = new Date(start);
+    while (current <= end) {
+        dates.push(new Date(current));
+        current = addDays(current, 1);
+    }
+    return dates;
+}
+
 // Update Task interface to match BacklogItemType
 type Task = Pick<BacklogItemType, 'id' | 'status' | 'size' | 'createdAt' | 'updatedAt'>;
 
@@ -39,37 +51,24 @@ interface BurnUpDataPoint {
 interface BurnUpChartSectionProps {
   tasks: Task[];
   isEnabled: boolean;
+  sprintStart?: Date;
+  sprintEnd?: Date;
 }
 
-const BurnUpChartSection: React.FC<BurnUpChartSectionProps> = ({ tasks, isEnabled }) => {
+const BurnUpChartSection: React.FC<BurnUpChartSectionProps> = ({ tasks, isEnabled, sprintStart, sprintEnd }) => {
   // Process tasks into burn up data
   const burnUpData = useMemo(() => {
-    if (!tasks || tasks.length === 0) return [];
+    if (!tasks || tasks.length === 0 || !sprintStart || !sprintEnd) return [];
 
-    // Get all unique dates from task creation and updates
-    const dates = new Set<string>();
-    tasks.forEach(task => {
-      // Use createdAt, or fallback to updatedAt
-      const created = toDate(task.createdAt) || toDate(task.updatedAt);
-      if (created) {
-        dates.add(created.toISOString().split('T')[0]);
-      }
-      const updated = toDate(task.updatedAt);
-      if (updated) {
-        dates.add(updated.toISOString().split('T')[0]);
-      }
-    });
+    // Generate all dates in the sprint
+    const dateRange = getDateRange(sprintStart, sprintEnd);
 
-    // Sort dates
-    const sortedDates = Array.from(dates).sort();
-
-    // Calculate cumulative points for each date
-    return sortedDates.map(date => {
+    return dateRange.map((currentDate) => {
       // Planned points: all tasks created (or updated) on or before this date
       const plannedPoints = tasks
         .filter(task => {
           const taskDate = toDate(task.createdAt) || toDate(task.updatedAt);
-          return taskDate && taskDate.toISOString().split('T')[0] <= date;
+          return taskDate && taskDate <= currentDate;
         })
         .reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size) : 0), 0);
 
@@ -77,17 +76,17 @@ const BurnUpChartSection: React.FC<BurnUpChartSectionProps> = ({ tasks, isEnable
       const completedPoints = tasks
         .filter(task => {
           const taskDate = toDate(task.updatedAt) || toDate(task.createdAt);
-          return task.status === 'done' && taskDate && taskDate.toISOString().split('T')[0] <= date;
+          return task.status === 'done' && taskDate && !isAfter(taskDate, currentDate);
         })
         .reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size) : 0), 0);
 
       return {
-        date: new Date(date).toLocaleDateString(),
+        date: format(currentDate, 'yyyy-MM-dd'),
         planned: plannedPoints,
         completed: completedPoints
       };
     });
-  }, [tasks]);
+  }, [tasks, sprintStart, sprintEnd]);
 
   return (
     <Paper sx={{ 

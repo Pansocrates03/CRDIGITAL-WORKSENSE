@@ -248,6 +248,8 @@ const WorkflowPage: React.FC = () => {
                     data={burndownChartData} 
                     doneItemsPerDay={doneItemsPerDay} 
                     tasks={tasks}
+                    sprintStart={sprintStart}
+                    sprintEnd={sprintEnd}
                 />;
             default:
                 return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} columns={columns} onTaskContentUpdate={onTaskContentUpdate} />;
