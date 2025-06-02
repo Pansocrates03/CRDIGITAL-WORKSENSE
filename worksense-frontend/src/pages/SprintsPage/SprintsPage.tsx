@@ -4,8 +4,7 @@ import { useParams } from "react-router-dom";
 
 /* Custom hooks for sprint data management */
 import { useSprints, useCreateSprint, useDeleteSprint, useUpdateSprint } from "@/hooks/useSprintData";
-import { useAuth } from "@/hooks/useAuth";
-import { useMembers } from "@/hooks/useMembers";
+
 
 /* Types */
 import { Sprint } from "@/types/SprintType";
@@ -34,16 +33,11 @@ const SprintsPage: React.FC = () => {
     // Get project ID from URL parameters
     const { id: projectId } = useParams<{ id: string }>();
     
-    // Get current user and members data
-    const { data: user } = useAuth();
-    const { data: members = [] } = useMembers(projectId ?? "");
-    
+
+    const hasPermissions = localStorage.getItem("projectRole")?.includes("scrum-master") || localStorage.getItem("projectRole")?.includes("product-owner");
+
+
     // Check if user has management permissions
-    const canManageSprints = members.some(
-        member => 
-            member.userId === user?.userId && 
-            (member.projectRoleId === 'product-owner' || member.projectRoleId === 'scrum-master')
-    );
     
     // Fetch sprints data using custom hook
     const { data: sprints, isLoading, error } = useSprints(projectId ?? "");
@@ -265,7 +259,7 @@ const SprintsPage: React.FC = () => {
                         <h1>Sprints</h1>
                         <p>Manage your project sprints</p>
                     </div>
-                    {canManageSprints && (
+                    {hasPermissions && (
                         <Button
                             variant="default"
                             size="default"
@@ -291,7 +285,7 @@ const SprintsPage: React.FC = () => {
                                 <TableHead>Goal</TableHead>
                                 <TableHead>Start Date</TableHead>
                                 <TableHead>End Date</TableHead>
-                                {canManageSprints && <TableHead>Actions</TableHead>}
+                                {hasPermissions && <TableHead>Actions</TableHead>}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -314,7 +308,7 @@ const SprintsPage: React.FC = () => {
                                     <TableCell>
                                         {formatDate(sprint.endDate)}
                                     </TableCell>
-                                    {canManageSprints && (
+                                    {hasPermissions && (
                                         <TableCell>
                                             <div className="flex gap-2">
                                                 <Button
@@ -343,7 +337,7 @@ const SprintsPage: React.FC = () => {
                 ) : (
                     // Empty state message
                     <div className="sprints-page__empty">
-                        <p>No sprints found. {canManageSprints ? "Create your first sprint to get started!" : "No sprints have been created yet."}</p>
+                        <p>No sprints found. {hasPermissions ? "Create your first sprint to get started!" : "No sprints have been created yet."}</p>
                     </div>
                 )}
             </div>

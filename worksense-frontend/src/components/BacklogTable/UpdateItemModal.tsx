@@ -154,7 +154,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
           projectId,
           parentId,
           subItemId: item.id,
-          sprintId: formData.sprint
+          sprintId: formData.sprint,
         });
         if (formData.sprint !== item.sprint) {
           await apiClient.put(

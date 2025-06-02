@@ -12,6 +12,7 @@ interface ActionMenuProps {
   isEpic?: boolean;
   itemType?: string;
   enableAiSuggestions?: boolean;
+  hasPermissions?: boolean;
 }
 
 const ActionMenu: FC<ActionMenuProps> = ({ 
@@ -22,6 +23,7 @@ const ActionMenu: FC<ActionMenuProps> = ({
   isEpic = false,
   itemType,
   enableAiSuggestions = true,
+    hasPermissions
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -103,7 +105,7 @@ const ActionMenu: FC<ActionMenuProps> = ({
               <span>View Details</span>
             </button>
           )}
-          {canGenerateStories && onGenerateStories && (
+          {canGenerateStories && onGenerateStories && hasPermissions && (
             <button
               onClick={handleGenerateStories}
               className={`${styles.menuItem} ${styles.aiItem}`}
@@ -117,11 +119,15 @@ const ActionMenu: FC<ActionMenuProps> = ({
           <button onClick={handleEdit} className={styles.menuItem}>
             <Pencil size={16} className={styles.menuIcon} />
             <span>Edit</span>
+            <>{console.log("action menu has permissions ",hasPermissions)}</>
+
           </button>
-          <button onClick={handleDelete} className={`${styles.menuItem} ${styles.deleteItem}`}>
+
+          {hasPermissions && <button onClick={handleDelete} className={`${styles.menuItem} ${styles.deleteItem}`}>
             <Trash2 size={16} className={styles.menuIcon} />
             <span>Delete</span>
-          </button>
+            <>{console.log(hasPermissions)}</>
+          </button>}
         </div>
       )}
     </div>

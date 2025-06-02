@@ -6,6 +6,8 @@ import { useParams } from "react-router-dom";
 import QueryKeys from '@/utils/QueryKeys';
 import { projectService } from '@/services/projectService';
 import { useDeleteSprint, useSprints } from '@/hooks/useSprintData';
+
+import { useBacklogItemUpdate } from '@/hooks/useBacklogItemUpdate';
 import { format } from 'date-fns';
 
 // Views
@@ -71,7 +73,8 @@ const WorkflowPage: React.FC = () => {
         queryFn: () => projectService.fetchProjectItems(projectId ? projectId : "")
     })
     const { mutate: deleteSprintMutation } = useDeleteSprint(projectId ?? "");
-    
+    const updateBacklogItemMutation = useBacklogItemUpdate();
+
     // Fetch sprints data using custom hook
     const { data: sprints, isLoading: sprintsLoading, error: sprintsError } = useSprints(projectId ?? "");
     
@@ -164,16 +167,21 @@ const WorkflowPage: React.FC = () => {
         taskId: string,
         newStatus: BacklogItemType["status"]
     ) => {
+        // Optimistic update for UI
         setTasks(prevTasks =>
             prevTasks.map(task => task.id === taskId ? { ...task, status: newStatus } : task )
         );
-        let task = tasks.find(t => t.id === taskId); // Find task
-        if(!task) throw new Error("Task not found"); // Error handling
-        task.status = newStatus
-        await projectService.updateBacklogItem(projectId ? projectId : "", task); // Wait for update
 
-        // Invalidate Query Client
-        queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] });
+        let task = tasks.find(t => t.id === taskId);
+        if (!task) throw new Error("Task not found");
+
+        // Use the new mutation hook
+        updateBacklogItemMutation.mutate({
+            projectId: projectId || "",
+            itemId: taskId,
+            itemType: task.type,
+            updateData: { status: newStatus }
+        });
     };
 
     const onTaskContentUpdate = async (

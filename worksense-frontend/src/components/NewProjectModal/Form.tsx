@@ -98,7 +98,7 @@ const Form: React.FC<{ currentUserId: number, onClose: () => void }> = ({current
         setAlert(null); // Clear previous alerts
 
         try {
-            const projectData = await projectService.createProejct({
+            const projectData = await projectService.createProject({
                 name: projectName,
                 description: description,
                 context: {},
