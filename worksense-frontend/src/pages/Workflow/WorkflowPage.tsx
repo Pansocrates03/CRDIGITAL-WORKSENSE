@@ -49,6 +49,18 @@ const navigationTabs: TabItem[] = [
   { id: "burndown_chart", label: "Charts", icon:FiBarChart}
 ]
 
+// Helper to convert Firestore timestamp or string/Date to JS Date
+function toDate(val: any): Date | undefined {
+    if (!val) return undefined;
+    if (typeof val === 'object' && (val.seconds || val._seconds)) {
+        // Firestore timestamp
+        const seconds = val.seconds ?? val._seconds;
+        return new Date(seconds * 1000);
+    }
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? undefined : d;
+}
+
 const WorkflowPage: React.FC = () => {
     const queryClient = useQueryClient();
     const { id: projectId } = useParams<{ id: string }>();
@@ -179,11 +191,15 @@ const WorkflowPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] });
     }
 
-    // Generate burndown chart data from tasks
-    console.log("Tasks with size for burndown:", tasks.map(t => ({id: t.id, name: t.name, size: t.size, status: t.status, type: t.type})));
+    // Get active sprint's start and end dates
+    const sprintStart = activeSprint ? toDate(activeSprint.startDate) : undefined;
+    const sprintEnd = activeSprint ? toDate(activeSprint.endDate) : undefined;
+
+    // Generate burndown chart data from tasks and sprint range
     const burndownChartData = React.useMemo(() => {
-        return createBurndownChartData(tasks);
-    }, [tasks]);
+        if (!sprintStart || !sprintEnd) return [];
+        return createBurndownChartData(tasks, sprintStart, sprintEnd);
+    }, [tasks, sprintStart, sprintEnd]);
 
     // Prepare heatmap data: count of 'Done' items per day (use all items in data, not just tasks)
     const doneItemsPerDay = React.useMemo(() => {
@@ -225,7 +241,9 @@ const WorkflowPage: React.FC = () => {
             case 'table':
                 return <TableView tasks={tasks} />;
             case 'burndown_chart':
-                console.log('Tasks passed to BurndownChartView:', tasks);
+                if (!sprintStart || !sprintEnd) {
+                    return <div>No sprint date range available.</div>;
+                }
                 return <BurndownChartView 
                     data={burndownChartData} 
                     doneItemsPerDay={doneItemsPerDay} 

@@ -1,5 +1,5 @@
 import BacklogItemType from "@/types/BacklogItemType";
-import { format } from "date-fns";
+import { format, addDays, isAfter } from "date-fns";
 
 interface BurndownDataPoint {
     date: string;
@@ -19,66 +19,52 @@ function toDate(val: any): Date | undefined {
     return isNaN(d.getTime()) ? undefined : d;
 }
 
-export const createBurndownChartData = (tasks: BacklogItemType[]): BurndownDataPoint[] => {
+// Helper to generate all dates between start and end (inclusive)
+function getDateRange(start: Date, end: Date): Date[] {
+    const dates = [];
+    let current = new Date(start);
+    while (current <= end) {
+        dates.push(new Date(current));
+        current = addDays(current, 1);
+    }
+    return dates;
+}
+
+export const createBurndownChartData = (
+    tasks: BacklogItemType[],
+    sprintStart: Date,
+    sprintEnd: Date
+): BurndownDataPoint[] => {
     if (!tasks || tasks.length === 0) return [];
 
-    console.log("Tasks with fechas:", tasks.map(t => ({
-        id: t.id,
-        name: t.name,
-        size: t.size,
-        status: t.status,
-        type: t.type,
-        createdAt: t.createdAt,
-        updatedAt: t.updatedAt
-    })));
-
-    // Get all unique dates from task creation and updates
-    const dates = new Set<string>();
-    tasks.forEach(task => {
-        // Use createdAt, or fallback to updatedAt
-        const created = toDate(task.createdAt) || toDate(task.updatedAt);
-        if (created) {
-            dates.add(created.toISOString().split('T')[0]);
-        }
-        const updated = toDate(task.updatedAt);
-        if (updated) {
-            dates.add(updated.toISOString().split('T')[0]);
-        }
-    });
-
-    // Sort dates
-    const sortedDates = Array.from(dates).sort();
-    if (sortedDates.length === 0) return [];
-
-    // Calculate total story points
+    // Total story points in the sprint
     const totalPoints = tasks.reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size) : 0), 0);
 
-    // Calculate ideal burndown line
-    const startDate = new Date(sortedDates[0]);
-    const endDate = new Date(sortedDates[sortedDates.length - 1]);
-    const totalDays = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
-    const pointsPerDay = totalPoints / totalDays;
+    // Generate all dates in the sprint
+    const dateRange = getDateRange(sprintStart, sprintEnd);
 
-    // Calculate actual burndown
-    return sortedDates.map((date, index) => {
-        const currentDate = new Date(date);
-        const daysElapsed = Math.ceil((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-        
-        // Calculate remaining work (total points minus completed points)
-        const remainingWork = totalPoints - tasks
+    // Calculate ideal burndown line
+    const totalDays = dateRange.length - 1;
+    const pointsPerDay = totalPoints / (totalDays > 0 ? totalDays : 1);
+
+    // For each day, calculate remaining work
+    return dateRange.map((currentDate, idx) => {
+        // Sum points of tasks completed (status 'done') up to and including this day
+        const completedPoints = tasks
             .filter(task => {
-                const taskDate = toDate(task.updatedAt) || toDate(task.createdAt);
-                return task.status === 'done' && taskDate && taskDate <= currentDate;
+                if (task.status !== 'done') return false;
+                const doneDate = toDate(task.updatedAt) || toDate(task.createdAt);
+                return doneDate && !isAfter(doneDate, currentDate);
             })
             .reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size) : 0), 0);
 
-        // Calculate ideal burndown
-        const idealBurndown = Math.max(0, totalPoints - (pointsPerDay * daysElapsed));
+        const remainingWork = Math.max(0, totalPoints - completedPoints);
+        const idealBurndown = Math.max(0, totalPoints - pointsPerDay * idx);
 
         return {
             date: format(currentDate, 'yyyy-MM-dd'),
-            remainingWork: Math.max(0, remainingWork),
-            idealBurndown: Math.max(0, idealBurndown)
+            remainingWork,
+            idealBurndown
         };
     });
 };
