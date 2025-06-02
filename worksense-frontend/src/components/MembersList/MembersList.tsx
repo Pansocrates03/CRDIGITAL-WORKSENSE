@@ -52,9 +52,10 @@ interface Props {
     members: MemberDetailed[];
     onEdit?: (member: MemberDetailed) => void;
     onDelete?: (member: MemberDetailed) => void;
+    isProductOwner?: boolean;
 }
 
-const MembersList: React.FC<Props> = ({members, onEdit, onDelete}) => {
+const MembersList: React.FC<Props> = ({members, onEdit, onDelete, isProductOwner}) => {
     return (
         <div className={styles.membersListContainer}>
             <div className={styles.tableContainer}>
@@ -66,7 +67,7 @@ const MembersList: React.FC<Props> = ({members, onEdit, onDelete}) => {
                             <TableHead>Email</TableHead>
                             <TableHead>Role</TableHead>
                             <TableHead>Last Login</TableHead>
-                            <TableHead>Actions</TableHead>
+                            {isProductOwner && <TableHead>Actions</TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -93,7 +94,7 @@ const MembersList: React.FC<Props> = ({members, onEdit, onDelete}) => {
                     {formatLastLogin(member.lastLogin)}
                   </span>
                                 </TableCell>
-                                <TableCell className="py-2"> {/* Add vertical padding to the cell */}
+                                {isProductOwner && <TableCell className="py-2"> {/* Add vertical padding to the cell */}
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <button
@@ -126,7 +127,7 @@ const MembersList: React.FC<Props> = ({members, onEdit, onDelete}) => {
                                             )}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                </TableCell>
+                                </TableCell>}
                             </TableRow>
                         ))}
                     </TableBody>

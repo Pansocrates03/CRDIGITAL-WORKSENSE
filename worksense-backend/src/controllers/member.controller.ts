@@ -327,3 +327,49 @@ export const removeMember = async (
     next(error);
   }
 };
+
+export const getMembership = async (req: Request,
+                                    res: Response,
+                                    next: NextFunction
+): Promise<void> => {
+  try {
+    const { projectId, userId: userIdString } = req.params;
+    const memberUserId = parseInt(userIdString, 10);
+
+    if (isNaN(memberUserId)) {
+      res.status(400).json({ message: "Invalid User ID" });
+      return;
+    }
+
+    // Check if project exists and member is not owner
+    const projectSnap = await db.collection("projects").doc(projectId).get();
+    if (!projectSnap.exists) {
+      res.status(404).json({ message: "Project not found" });
+      return;
+    }
+
+
+    const memberRef = db
+        .collection("projects")
+        .doc(projectId)
+        .collection("members")
+        .doc(String(memberUserId));
+
+    const memberSnap = await memberRef.get();
+    if (!memberSnap.exists) {
+      res.status(404).json({ message: "Member not found" });
+      return;
+
+    }else if (memberSnap.exists){
+      res.status(200).json({
+        membership: {
+          roleId: memberSnap.data()?.projectRoleId || null,}
+      })
+      return;
+    }
+
+
+  } catch (error) {
+    next(error);
+  }
+};

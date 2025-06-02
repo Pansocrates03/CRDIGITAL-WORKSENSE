@@ -48,7 +48,7 @@ const MembersPage: React.FC = () => {
         { id: 'developer', name: 'Developer' },
         { id: 'viewer', name: 'Viewer' }
     ];
-    const isProductOwner = members.some(member => member.userId === user?.userId && member.projectRoleId === 'product-owner');
+    const isProductOwner = localStorage.getItem('projectRole') === 'product-owner' ;
 
     const deleteMemberMutation = useDeleteMember(projectId!);
     const updateMemberRoleMutation = useUpdateMemberRole(projectId!);
@@ -107,7 +107,6 @@ const MembersPage: React.FC = () => {
             }
             setSelectedMembers([]);
             setIsAddingMembers(false);
-            // Invalidate the members query to refresh the list
             queryClient.invalidateQueries({queryKey: ['members', projectId]});
             handleSuccess('Members added successfully', "collaborate with the project team!" );
         } catch (error) {
@@ -196,6 +195,7 @@ const MembersPage: React.FC = () => {
                 members={members}
                 onEdit={isProductOwner ? handleEditClick : undefined}
                 onDelete={isProductOwner ? handleDeleteMember : undefined}
+                isProductOwner={isProductOwner}
             />
 
             {isProductOwner && (

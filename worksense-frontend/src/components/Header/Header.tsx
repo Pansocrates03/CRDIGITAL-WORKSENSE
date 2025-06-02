@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 import worksenseLogo from "@/assets/images/worksenseLogo.svg";
+import GamificationBadge from "@/components/ui/GamificationBadge";
 
 interface HeaderProps {
   /** Current section/page name */
@@ -41,7 +42,6 @@ export const Header: React.FC<HeaderProps> = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile } = useUserProfile();
-
 
   // Handler for user logout
   const handleLogout = () => {
@@ -145,20 +145,24 @@ export const Header: React.FC<HeaderProps> = ({
               {title}
             </span>
           </nav>
+        ) : // Page Title
+        title === "LOGO" ? (
+          <img
+            src={worksenseLogo}
+            alt="WorkSense Logo"
+            style={{ height: 36 }}
+            data-testid="worksense-logo"
+          />
         ) : (
-          // Page Title
-          title === "LOGO" ? (
-            <img src={worksenseLogo} alt="WorkSense Logo" style={{ height: 36 }} data-testid="worksense-logo" />
-          ) : (
-            <h2 className={styles.headerTitle} data-testid="page-title">
-              {title}
-            </h2>
-          )
+          <h2 className={styles.headerTitle} data-testid="page-title">
+            {title}
+          </h2>
         )}
       </div>
 
       {/* User Menu */}
       <div className={styles.headerActions}>
+        <GamificationBadge projectId={projectId} />
         <div className={styles.avatarContainer}>
           <button
             className={styles.avatar}
@@ -168,11 +172,11 @@ export const Header: React.FC<HeaderProps> = ({
             aria-haspopup="true"
             data-testid="user-menu-button"
           >
-            <AvatarDisplay 
+            <AvatarDisplay
               user={{
                 firstName: user?.firstName,
                 lastName: user?.lastName,
-                profilePicture: profile?.avatar
+                profilePicture: profile?.avatar,
               }}
               size="sm"
             />
@@ -197,8 +201,10 @@ export const Header: React.FC<HeaderProps> = ({
                 role="menuitem"
                 onClick={() => navigate("/settings")}
                 data-testid="settings-button"
-              >Settings</button>
-              
+              >
+                Settings
+              </button>
+
               <button
                 className={styles.menuItem}
                 role="menuitem"
