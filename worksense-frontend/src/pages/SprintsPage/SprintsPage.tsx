@@ -192,7 +192,7 @@ const SprintsPage: React.FC = () => {
                     status: newSprint.status
                 });
 
-                toast.success("Sprint updated successfully!")
+                toast.success("Sprint updated successfully!");
             } else {
                 await createSprintMutation.mutateAsync({
                     name: newSprint.name,
@@ -202,12 +202,12 @@ const SprintsPage: React.FC = () => {
                     endDate: formatDateForAPI(endDate),
                 });
 
-                toast.success("Sprint created successfully!")
+                toast.success("Sprint created successfully!");
             }
             handleCloseModal();
         } catch (error) {
             console.error("Failed to save sprint:", error);
-            toast.error("Error saving sprint!")
+            toast.error("Error saving sprint!");
         }
     };
 
@@ -223,10 +223,10 @@ const SprintsPage: React.FC = () => {
             try {
                 await deleteSprintMutation.mutateAsync(sprintToDelete);
                 setSprintToDelete(null);
-                toast.success("Sprint deleted successfully!")
+                toast.success("Sprint deleted successfully!");
             } catch (error) {
                 console.error("Failed to delete sprint:", error);
-                toast.error("Failed to delete sprint!")
+                toast.error("Failed to delete sprint!");
             }
         }
     };
@@ -454,9 +454,7 @@ const SprintsPage: React.FC = () => {
                             >
                                 Cancel
                             </Button>
-                            <Button
-                                type="submit"
-                            >
+                            <Button type="submit">
                                 {isEditing ? 'Update Sprint' : 'Create Sprint'}
                             </Button>
                         </div>
