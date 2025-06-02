@@ -2,6 +2,11 @@
 import { Request, Response, NextFunction } from "express";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "../models/firebase.js";
+import { sqlConnect, sql } from "../models/sqlModel.js";
+import {
+  awardPoints,
+  calculateTaskPoints,
+} from "../service/gamificationService.js";
 
 interface BacklogItem {
   acceptanceCriteria?: string[] | null;
@@ -207,6 +212,8 @@ export const getBacklogItem = async (
 /**
  * Update a backlog item
  */
+// Add these imports at the top
+// Modify your existing updateBacklogItem function
 export const updateBacklogItem = async (
   req: Request,
   res: Response,
@@ -239,6 +246,11 @@ export const updateBacklogItem = async (
       return;
     }
 
+    // Get the current item data to check status change
+    const currentItemData = docSnap.data();
+    const oldStatus = currentItemData?.status;
+    const newStatus = updateData.status;
+
     // Prepare update data
     const dataToUpdate = {
       ...updateData,
@@ -253,6 +265,82 @@ export const updateBacklogItem = async (
 
     await itemRef.update(dataToUpdate);
 
+    // In your backlogController.ts, update the gamification section:
+
+    // *** GAMIFICATION LOGIC WITH TOAST DATA ***
+    if (oldStatus !== "done" && newStatus === "done") {
+      try {
+        // Get the assignee's ID from the current item data
+        const assigneeId = currentItemData?.assigneeId;
+
+        if (assigneeId) {
+          // Get user info for leaderboard
+          const pool = await sqlConnect();
+          let userName = "Unknown User";
+
+          if (pool) {
+            const userResult = await pool
+              .request()
+              .input("UserId", sql.Int, assigneeId)
+              .execute("spGetUserById");
+
+            if (userResult.recordset.length > 0) {
+              const user = userResult.recordset[0];
+              userName = `${user.firstName} ${user.lastName}`;
+
+              // Store assignee info in the item for future activity queries
+              await itemRef.update({
+                assigneeId: assigneeId,
+                assigneeName: userName,
+                completedAt: FieldValue.serverTimestamp(),
+              });
+            }
+          }
+
+          // Calculate and award points
+          const pointsToAward = calculateTaskPoints({
+            type: currentItemData?.type,
+            size: currentItemData?.size,
+          });
+
+          const gamificationResult = await awardPoints({
+            userId: assigneeId,
+            projectId,
+            action: "item_completion",
+            taskType: currentItemData?.type,
+            points: pointsToAward,
+            userName,
+          });
+
+          console.log(
+            `🎉 Awarded ${pointsToAward} points to assignee ${assigneeId} for completing ${itemType} ${itemId}`
+          );
+
+          // Return toast data in response
+          const updatedDoc = await itemRef.get();
+          return res.status(200).json({
+            id: updatedDoc.id,
+            ...updatedDoc.data(),
+            // Toast notification data
+            toast: {
+              type: "success",
+              points: pointsToAward,
+              newBadges: gamificationResult.newBadges || [],
+              totalPoints: gamificationResult.totalPoints,
+              level: gamificationResult.level,
+              assigneeId: assigneeId,
+            },
+          });
+        }
+      } catch (gamificationError) {
+        console.error(
+          "⚠️ Gamification error (item status still updated):",
+          gamificationError
+        );
+      }
+    }
+
+    // Regular response if no gamification
     const updatedDoc = await itemRef.get();
     res.status(200).json({ id: updatedDoc.id, ...updatedDoc.data() });
   } catch (error: any) {
@@ -263,7 +351,6 @@ export const updateBacklogItem = async (
     next(error);
   }
 };
-
 /**
  * Delete a backlog item
  */
@@ -446,15 +533,14 @@ export const changeItemSprint = async (
     // Update only the sprint field
     await itemRef.update({
       sprint: sprintId,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
 
-    res.status(200).json({ 
+    res.status(200).json({
       message: "Sprint updated successfully",
-      sprintId: sprintId
+      sprintId: sprintId,
     });
-
-  } catch(error) {
+  } catch (error) {
     next(error);
   }
 };

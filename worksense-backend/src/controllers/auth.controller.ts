@@ -57,8 +57,8 @@ export const createUser = async (req: Request, res: Response) => {
  * Get the current user's profile
  */
 export const getProfile = async (
-  req: Request,
-  res: Response
+    req: Request,
+    res: Response
 ): Promise<void> => {
   try {
     const pool = await sqlConnect();
@@ -67,29 +67,50 @@ export const getProfile = async (
       return;
     }
 
-    const result = await pool
-      .request()
-      .input("userId", sql.Int, req.user.userId)
-      .execute("spGetUserById");
+    // Get user profile
+    const userResult = await pool
+        .request()
+        .input("userId", sql.Int, req.user.userId)
+        .execute("spGetUserById");
 
-    if (result.recordset.length === 0) {
+    if (userResult.recordset.length === 0) {
       res.status(404).json({ message: "User not found" });
       return;
     }
 
-    const user = result.recordset[0];
+    const user = userResult.recordset[0];
+
+    // Get gamification data
+    const gamificationResult = await pool
+        .request()
+        .input("UserId", sql.Int, req.user.userId)
+        .query("SELECT total_points, level, badges FROM user_gamification WHERE user_id = @UserId");
+
+    const gamificationData = gamificationResult.recordset[0] || {
+      total_points: 0,
+      level: 1,
+      badges: '[]'
+    };
+
     res.json({
       userId: user.userId,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
       fullName:
-        user.firstName && user.lastName
-          ? `${user.firstName} ${user.lastName}`
-          : undefined,
+          user.firstName && user.lastName
+              ? `${user.firstName} ${user.lastName}`
+              : undefined,
       nickName: user.nickName,
       pfp: user.pfp,
       platformRole: user.platformRole,
+
+      // Gamification data
+      gamification: {
+        totalPoints: gamificationData.total_points,
+        level: gamificationData.level,
+        badges: JSON.parse(gamificationData.badges || '[]')
+      }
     });
   } catch (error) {
     console.error(error);
