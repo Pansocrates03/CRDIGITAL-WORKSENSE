@@ -42,6 +42,22 @@ export interface CompletedTask {
   };
 }
 
+export interface Badge {
+  earnedAt: string;
+  icon: string;
+  name: string;
+  points: number;
+  projectId: string;
+}
+
+export interface PersonalGamificationInfo {
+  points: number;
+  name: string;
+  personalPhrase: string | null;
+  profilePicture: string | null;
+  badges: Badge[];
+}
+
 class ForYouService {
   async getAssignedItems(userId: string, projectId: string): Promise<AssignedItem[]> {
     const response = await apiClient.get(`/for-you/assigned-items?userId=${userId}&projectId=${projectId}`);
@@ -55,6 +71,16 @@ class ForYouService {
 
   async updateItemStatus(itemId: string, newStatus: string): Promise<void> {
     await apiClient.put(`/for-you/items/${itemId}/status`, { status: newStatus });
+  }
+
+  async getPersonalGamificationInfo(userId: string, projectId: string): Promise<PersonalGamificationInfo> {
+    const res = await apiClient.get(`/for-you-gamification/projects/${projectId}/gamification/leaderboard/${userId}`);
+    return res.data;
+  }
+
+  async updatePersonalGamificationInfo(userId: string, projectId: string, data: { personalPhrase: string; profilePicture: string }) {
+    const res = await apiClient.put(`/for-you-gamification/projects/${projectId}/gamification/leaderboard/${userId}`, data);
+    return res.data;
   }
 }
 
