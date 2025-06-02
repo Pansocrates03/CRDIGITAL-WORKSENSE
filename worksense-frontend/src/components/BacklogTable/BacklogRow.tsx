@@ -88,26 +88,27 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
         <tr key={item.id} className={indent ? styles.indentedRow : ""}>
             <td>
                 <div className="flex items-center gap-2">
-          <span
-              style={isHovered ? titleHoverStyle : titleStyle}
-              onClick={onViewDetails}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-          >
-            {item.name || "-"}
-              {isHovered && (
-                  <span
-                      style={{
-                          position: "absolute",
-                          width: "100%",
-                          height: "1px",
-                          bottom: "0",
-                          left: "0",
-                          backgroundColor: "var(--primary-color, #ac1754)",
-                      }}
-                  />
-              )}
-          </span>
+                    <span
+                        style={isHovered ? titleHoverStyle : titleStyle}
+                        onClick={onViewDetails}
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                    >
+                        {item.name || "-"}
+                        {isHovered && (
+                            <span
+                                style={{
+                                    position: "absolute",
+                                    width: "100%",
+                                    height: "1px",
+                                    bottom: "0",
+                                    left: "0",
+                                    backgroundColor: "var(--primary-color, #ac1754)",
+                                }}
+                            />
+                        )}
+                    </span>
+                </div>
             </td>
             <td>
                 {item.status ? <StatusBadge type="status" value={item.status}/> : "-"}
@@ -129,36 +130,36 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
                             size="sm"
                         />
                         <span className="text-sm">
-              {memberInfo.nickname ||
-                  (memberInfo.name
-                      ? memberInfo.name.split(" ")[0]
-                      : `User ${assigneeId}`)}
-            </span>
-          </div>
-        ) : (
-          "-"
-        )}
-      </td>
-      <td>
-        {item.size ? item.size.toString() : "-"}
-      </td>
-      <td className={styles.actionButtons}>
-        <ActionMenu
-          onEdit={(e) => {
-            e.stopPropagation();
-            onEdit();
-          }}
-          onDelete={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          onViewDetails={onViewDetails}
-          itemType={item.type || undefined}
-          enableAiSuggestions={enableAiSuggestions}
-        />
-      </td>
-    </tr>
-  );
+                            {memberInfo.nickname ||
+                                (memberInfo.name
+                                    ? memberInfo.name.split(" ")[0]
+                                    : `User ${assigneeId}`)}
+                        </span>
+                    </div>
+                ) : (
+                    "-"
+                )}
+            </td>
+            <td>
+                {item.size ? item.size.toString() : "-"}
+            </td>
+            <td className={styles.actionButtons}>
+                <ActionMenu
+                    onEdit={(e) => {
+                        e.stopPropagation();
+                        onEdit();
+                    }}
+                    onDelete={(e) => {
+                        e.stopPropagation();
+                        onDelete();
+                    }}
+                    onViewDetails={onViewDetails}
+                    itemType={item.type || undefined}
+                    enableAiSuggestions={enableAiSuggestions}
+                />
+            </td>
+        </tr>
+    );
 };
 
 export default BacklogRow;
