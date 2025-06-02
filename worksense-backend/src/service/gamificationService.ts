@@ -17,6 +17,7 @@ interface Badge {
   points: number;
   icon: string;
   earnedAt?: Date;
+  projectId: string;
 }
 
 export const awardPoints = async (params: AwardPointsParams) => {
@@ -26,7 +27,7 @@ export const awardPoints = async (params: AwardPointsParams) => {
     const pool = await sqlConnect();
     if (!pool) throw new Error("Database connection failed");
 
-    // Update user's total points and level in SQL
+    // Update user's total points and level in SQL (global points)
     const updateResult = await pool
       .request()
       .input("UserId", sql.Int, userId)
@@ -42,7 +43,7 @@ export const awardPoints = async (params: AwardPointsParams) => {
 
     const updatedData = updateResult.recordset[0];
 
-    // Update project leaderboard in Firebase
+    // Update project leaderboard in Firebase (project-specific points)
     await updateProjectLeaderboard(
       projectId,
       userId,
@@ -51,8 +52,20 @@ export const awardPoints = async (params: AwardPointsParams) => {
       userRole
     );
 
+    // Get current project points and badges
+    const leaderboardSnap = await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("gamification")
+      .doc("leaderboard")
+      .get();
+
+    const leaderboardData = leaderboardSnap.data() || {};
+    const projectPoints = leaderboardData[userId]?.points || 0;
+    const projectBadges = leaderboardData[userId]?.badges || [];
+
     // Check for new badges
-    const newBadges = await checkForNewBadges(userId, updatedData.total_points);
+    const newBadges = await checkForNewBadges(userId, projectPoints, projectId);
 
     console.log(`Awarded ${points} points to user ${userId} for ${action}`);
 
@@ -60,7 +73,10 @@ export const awardPoints = async (params: AwardPointsParams) => {
       success: true,
       pointsAwarded: points,
       totalPoints: updatedData.total_points,
+      globalPoints: updatedData.total_points,
+      projectPoints: projectPoints,
       level: updatedData.level,
+      badges: projectBadges,
       newBadges,
     };
   } catch (error) {
@@ -83,11 +99,16 @@ const updateProjectLeaderboard = async (
       .collection("gamification")
       .doc("leaderboard");
 
-    // FIXED: Proper nested object structure
+    // Get current user data to preserve badges
+    const currentData = await leaderboardRef.get();
+    const currentUserData = currentData.data()?.[userId] || {};
+
+    // Update user data in Firebase
     const userDataUpdate: any = {};
     userDataUpdate[userId] = {
       points: FieldValue.increment(points),
       lastUpdate: FieldValue.serverTimestamp(),
+      badges: currentUserData.badges || [], // Preserve existing badges
     };
 
     if (userName) userDataUpdate[userId].name = userName;
@@ -101,26 +122,24 @@ const updateProjectLeaderboard = async (
 
 const checkForNewBadges = async (
   userId: number,
-  totalPoints: number
+  projectPoints: number,
+  projectId: string
 ): Promise<Badge[]> => {
   try {
-    const pool = await sqlConnect();
-    if (!pool) return [];
+    // Get current badges from Firebase
+    const leaderboardRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("gamification")
+      .doc("leaderboard");
 
-    const result = await pool
-      .request()
-      .input("UserId", sql.Int, userId)
-      .query("SELECT badges FROM user_gamification WHERE user_id = @UserId");
-
-    if (result.recordset.length === 0) return [];
-
-    const currentBadges: Badge[] = JSON.parse(
-      result.recordset[0].badges || "[]"
-    );
+    const leaderboardSnap = await leaderboardRef.get();
+    const leaderboardData = leaderboardSnap.data() || {};
+    const currentBadges: Badge[] = leaderboardData[userId]?.badges || [];
     const newBadges: Badge[] = [];
 
     // Define badge thresholds with Lucide icon names
-    const badgeThresholds: Omit<Badge, "earnedAt">[] = [
+    const badgeThresholds: Omit<Badge, "earnedAt" | "projectId">[] = [
       { name: "First Steps", points: 10, icon: "Rocket" },
       { name: "Getting Started", points: 50, icon: "Star" },
       { name: "Rising Star", points: 100, icon: "TrendingUp" },
@@ -131,27 +150,30 @@ const checkForNewBadges = async (
 
     for (const badge of badgeThresholds) {
       if (
-        totalPoints >= badge.points &&
-        !currentBadges.some((b) => b.name === badge.name)
+        projectPoints >= badge.points &&
+        !currentBadges.some(
+          (b) => b.name === badge.name && b.projectId === projectId
+        )
       ) {
         const newBadge: Badge = {
           ...badge,
           earnedAt: new Date(),
+          projectId: projectId,
         };
         newBadges.push(newBadge);
         currentBadges.push(newBadge);
       }
     }
 
-    // Update badges in database if new ones were earned
+    // Update badges in Firebase if new ones were earned
     if (newBadges.length > 0) {
-      await pool
-        .request()
-        .input("UserId", sql.Int, userId)
-        .input("Badges", sql.NVarChar(sql.MAX), JSON.stringify(currentBadges))
-        .query(
-          "UPDATE user_gamification SET badges = @Badges WHERE user_id = @UserId"
-        );
+      const userDataUpdate: any = {};
+      userDataUpdate[userId] = {
+        badges: currentBadges,
+        lastUpdate: FieldValue.serverTimestamp(),
+      };
+
+      await leaderboardRef.set(userDataUpdate, { merge: true });
     }
 
     return newBadges;

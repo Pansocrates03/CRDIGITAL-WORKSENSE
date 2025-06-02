@@ -22,6 +22,14 @@ export const useBacklogItemUpdate = () => {
       itemType,
       updateData,
     }: UpdateBacklogItemParams) => {
+      console.log("Updating backlog item:", {
+        projectId,
+        itemId,
+        itemType,
+        updateData,
+        currentUser: user?.userId,
+      });
+
       const response = await apiClient.put(
         `/projects/${projectId}/backlog/items/${itemId}/?type=${itemType}`,
         updateData
@@ -29,16 +37,54 @@ export const useBacklogItemUpdate = () => {
       return response.data;
     },
     onSuccess: (data, variables) => {
+      console.log("Backlog item update response:", {
+        hasToast: !!data.toast,
+        toastData: data.toast,
+        status: variables.updateData.status,
+        points: data.toast?.points,
+        assigneeId: data.assigneeId,
+        currentUserId: user?.userId,
+        projectId: variables.projectId,
+      });
+
       // Show gamification toasts if user completed the task and got points
       if (
         data.toast &&
         variables.updateData.status === "done" &&
         data.toast.points > 0
       ) {
+        // Convert both to numbers for comparison
+        const assigneeId = Number(data.assigneeId);
+        const currentUserId = Number(user?.userId);
+
+        console.log("Comparing user IDs:", {
+          assigneeId,
+          currentUserId,
+          originalAssigneeId: data.assigneeId,
+          originalCurrentUserId: user?.userId,
+        });
+
         // Only show toast if current user is the assignee
-        if (data.assigneeId === user?.userId) {
+        if (assigneeId === currentUserId) {
+          console.log("Showing gamification toast for:", {
+            projectId: variables.projectId,
+            points: data.toast.points,
+            assigneeId,
+            currentUserId,
+          });
           showGamificationToast(data.toast);
+        } else {
+          console.log("Toast not shown - user mismatch:", {
+            assigneeId,
+            currentUserId,
+          });
         }
+      } else {
+        console.log("Toast conditions not met:", {
+          hasToast: !!data.toast,
+          status: variables.updateData.status,
+          points: data.toast?.points,
+        });
       }
 
       // Invalidate relevant queries to refresh data
