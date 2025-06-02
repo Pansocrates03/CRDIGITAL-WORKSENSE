@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Paper, Typography, Alert, Box, Tooltip } from '@mui/material';
-import { format, addDays, startOfWeek, endOfWeek, getMonth } from 'date-fns';
+import { format, addDays, startOfWeek, endOfWeek, getMonth, subMonths, startOfMonth, isBefore, isAfter } from 'date-fns';
 
 interface WorkloadHeatmapSectionProps {
   heatmapData: { date: string; count: number }[];
@@ -76,8 +76,13 @@ const WorkloadHeatmapSection: React.FC<WorkloadHeatmapSectionProps> = ({ heatmap
     return map;
   }, [heatmapData]);
 
-  // Adjust range to always show full weeks (GitHub style)
-  const heatmapStart = useMemo(() => startOfWeek(startDate, { weekStartsOn: 0 }), [startDate]);
+  // Adjust range to always show full weeks (GitHub style), but at most one month before sprint start
+  const heatmapStart = useMemo(() => {
+    const sundayBefore = startOfWeek(startDate, { weekStartsOn: 0 });
+    const oneMonthBefore = startOfMonth(subMonths(startDate, 1));
+    // If the sundayBefore is before oneMonthBefore, use oneMonthBefore
+    return isBefore(sundayBefore, oneMonthBefore) ? oneMonthBefore : sundayBefore;
+  }, [startDate]);
   const heatmapEnd = useMemo(() => endOfWeek(endDate, { weekStartsOn: 0 }), [endDate]);
 
   // Generate all days in the adjusted range
@@ -107,16 +112,32 @@ const WorkloadHeatmapSection: React.FC<WorkloadHeatmapSectionProps> = ({ heatmap
     return positions;
   }, [weeks, startDate, endDate]);
 
-  // Sizing
-  const cellSize = 28;
-  const cellGap = 6;
-  const labelWidth = 40;
+  // Slightly larger sizing
+  const cellSize = 22;
+  const cellGap = 4;
+  const labelWidth = 28;
+  const cellSizeSm = 16;
+  const cellGapSm = 3;
+  const labelWidthSm = 18;
 
   // Tooltip state
   const [tooltip, setTooltip] = useState<{ x: number; y: number; label: string } | null>(null);
 
   return (
-    <Paper sx={{ flex: 1, height: 'auto', minHeight: 400, mr: 2, p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <Paper sx={{
+      flex: 1,
+      minWidth: { xs: 220, sm: 320, md: 420 },
+      maxWidth: { xs: 320, sm: 480, md: 600 },
+      width: '100%',
+      height: 'auto',
+      minHeight: { xs: 120, sm: 180, md: 220 },
+      mr: 2,
+      p: 2,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      overflowX: 'auto',
+    }}>
       <Typography variant="h6" gutterBottom sx={{ textAlign: 'center', width: '100%' }}>
         Done Items Heatmap
       </Typography>
@@ -133,10 +154,10 @@ const WorkloadHeatmapSection: React.FC<WorkloadHeatmapSectionProps> = ({ heatmap
           Workload Heatmap is currently disabled for this project.
         </Alert>
       ) : (
-        <Box sx={{ width: '100%', overflowX: 'auto', minHeight: 400, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box sx={{ width: '100%', overflowX: 'auto', minHeight: { xs: 180, sm: 260, md: 320 }, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {/* Month labels */}
-          <Box sx={{ display: 'flex', flexDirection: 'row', ml: labelWidth, mb: 1 }}>
-            <Box sx={{ width: labelWidth }} />
+          <Box sx={{ display: 'flex', flexDirection: 'row', ml: { xs: labelWidthSm, sm: labelWidth, md: labelWidth }, mb: 1 }}>
+            <Box sx={{ width: { xs: labelWidthSm, sm: labelWidth, md: labelWidth } }} />
             {weeks.map((week, colIdx) => {
               // Only show month label if the first day in the column is in the sprint and is the first of the month in the grid
               const firstDayInSprint = week.find(day => day && day >= startDate && day <= endDate);
@@ -145,9 +166,9 @@ const WorkloadHeatmapSection: React.FC<WorkloadHeatmapSectionProps> = ({ heatmap
                 <Box
                   key={colIdx}
                   sx={{
-                    width: cellSize,
+                    width: { xs: cellSizeSm, sm: cellSize, md: cellSize },
                     textAlign: 'center',
-                    fontSize: 14,
+                    fontSize: { xs: 8, sm: 10, md: 12 },
                     color: '#888',
                     fontWeight: 600,
                     lineHeight: 1.2,
@@ -158,32 +179,32 @@ const WorkloadHeatmapSection: React.FC<WorkloadHeatmapSectionProps> = ({ heatmap
               );
             })}
           </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'row', gap: `${cellGap}px` }}>
+          <Box sx={{ display: 'flex', flexDirection: 'row', gap: { xs: `${cellGapSm}px`, sm: `${cellGap}px`, md: `${cellGap}px` } }}>
             {/* Day labels */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: `${cellGap}px`, mr: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: `${cellGapSm}px`, sm: `${cellGap}px`, md: `${cellGap}px` }, mr: 1 }}>
               {dayLabels.map((label, i) => (
-                <Box key={label} sx={{ height: cellSize, width: labelWidth, textAlign: 'right', fontSize: 14, color: '#888', fontWeight: 600, pr: 1, lineHeight: `${cellSize}px` }}>{label}</Box>
+                <Box key={label} sx={{ height: { xs: cellSizeSm, sm: cellSize, md: cellSize }, width: { xs: labelWidthSm, sm: labelWidth, md: labelWidth }, textAlign: 'right', fontSize: { xs: 8, sm: 10, md: 12 }, color: '#888', fontWeight: 600, pr: 1, lineHeight: { xs: `${cellSizeSm}px`, sm: `${cellSize}px`, md: `${cellSize}px` } }}>{label}</Box>
               ))}
             </Box>
             {/* Heatmap grid */}
             {weeks.map((week, wIdx) => (
-              <Box key={wIdx} sx={{ display: 'flex', flexDirection: 'column', gap: `${cellGap}px` }}>
+              <Box key={wIdx} sx={{ display: 'flex', flexDirection: 'column', gap: { xs: `${cellGapSm}px`, sm: `${cellGap}px`, md: `${cellGap}px` } }}>
                 {week.map((day, dIdx) => {
-                  if (!day) return <Box key={dIdx} sx={{ width: cellSize, height: cellSize, background: 'transparent', borderRadius: cellSize / 2 }} />;
+                  if (!day) return <Box key={dIdx} sx={{ width: { xs: cellSizeSm, sm: cellSize, md: cellSize }, height: { xs: cellSizeSm, sm: cellSize, md: cellSize }, background: 'transparent', borderRadius: { xs: cellSizeSm / 2, sm: cellSize / 2, md: cellSize / 2 } }} />;
                   const dateStr = format(day, 'yyyy-MM-dd');
                   const isInSprint = day >= startDate && day <= endDate;
                   const count = isInSprint ? (countMap[dateStr] || 0) : 0;
                   if (!isInSprint) {
-                    return <Box key={dIdx} sx={{ width: cellSize, height: cellSize, background: 'transparent', borderRadius: cellSize / 2 }} />;
+                    return <Box key={dIdx} sx={{ width: { xs: cellSizeSm, sm: cellSize, md: cellSize }, height: { xs: cellSizeSm, sm: cellSize, md: cellSize }, background: 'transparent', borderRadius: { xs: cellSizeSm / 2, sm: cellSize / 2, md: cellSize / 2 } }} />;
                   }
                   return (
                     <Tooltip key={dIdx} title={<span>{dateStr}<br/>Done: {count}</span>} arrow>
                       <Box
                         sx={{
-                          width: cellSize,
-                          height: cellSize,
+                          width: { xs: cellSizeSm, sm: cellSize, md: cellSize },
+                          height: { xs: cellSizeSm, sm: cellSize, md: cellSize },
                           background: getColor(count),
-                          borderRadius: cellSize / 2,
+                          borderRadius: { xs: cellSizeSm / 2, sm: cellSize / 2, md: cellSize / 2 },
                           border: '1px solid #f3f4f6',
                           cursor: 'pointer',
                           transition: 'background 0.2s',
@@ -196,14 +217,14 @@ const WorkloadHeatmapSection: React.FC<WorkloadHeatmapSectionProps> = ({ heatmap
             ))}
           </Box>
           {/* Color legend */}
-          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 3, gap: 2 }}>
-            <Typography variant="body2" sx={{ color: '#888', mr: 1 }}>Less</Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 2, gap: 1 }}>
+            <Typography variant="body2" sx={{ color: '#888', mr: 1, fontSize: { xs: 8, sm: 10, md: 12 } }}>Less</Typography>
             {[0, 1, 2, 3, 4].map((count, idx) => (
-              <Box key={count} sx={{ width: 28, height: 28, background: colorArray[idx], borderRadius: 14, border: '1px solid #f3f4f6', mx: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#212020' }}>
+              <Box key={count} sx={{ width: { xs: cellSizeSm, sm: cellSize, md: cellSize }, height: { xs: cellSizeSm, sm: cellSize, md: cellSize }, background: colorArray[idx], borderRadius: { xs: cellSizeSm / 2, sm: cellSize / 2, md: cellSize / 2 }, border: '1px solid #f3f4f6', mx: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: { xs: 8, sm: 10, md: 12 }, color: '#888' }}>
                 {count < 4 ? count : '4+'}
               </Box>
             ))}
-            <Typography variant="body2" sx={{ color: '#888', ml: 1 }}>More</Typography>
+            <Typography variant="body2" sx={{ color: '#888', ml: 1, fontSize: { xs: 8, sm: 10, md: 12 } }}>More</Typography>
           </Box>
         </Box>
       )}
