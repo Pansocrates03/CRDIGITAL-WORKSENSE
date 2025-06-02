@@ -199,7 +199,7 @@ const WorkloadHeatmapSection: React.FC<WorkloadHeatmapSectionProps> = ({ heatmap
           <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 3, gap: 2 }}>
             <Typography variant="body2" sx={{ color: '#888', mr: 1 }}>Less</Typography>
             {[0, 1, 2, 3, 4].map((count, idx) => (
-              <Box key={count} sx={{ width: 28, height: 28, background: colorArray[idx], borderRadius: 14, border: '1px solid #f3f4f6', mx: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#888' }}>
+              <Box key={count} sx={{ width: 28, height: 28, background: colorArray[idx], borderRadius: 14, border: '1px solid #f3f4f6', mx: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#212020' }}>
                 {count < 4 ? count : '4+'}
               </Box>
             ))}
