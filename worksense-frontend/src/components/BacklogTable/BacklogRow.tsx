@@ -5,9 +5,9 @@ import StatusBadge from "./StatusBadge";
 import ActionMenu from "./ActionMenu";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 
-import BacklogItemType, {BacklogItemType} from "@/types/BacklogItemType";
-import {AvatarDisplay} from "@/components/ui/AvatarDisplay";
-import Member from "@/types/MemberType.ts";
+//import Member from "@/types/MemberType.ts";
+import BacklogItemType from "@/types/BacklogItemType";
+import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
 
 interface Member {
     userId: number;
@@ -108,7 +108,6 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
                   />
               )}
           </span>
-                    <>{console.log("hasPermissions in BacklogRow: ", hasPermissions)}</>                </div>
             </td>
             <td>
                 {item.status ? <StatusBadge type="status" value={item.status}/> : "-"}
@@ -135,36 +134,31 @@ const BacklogRow: React.FC<BacklogRowProps> = ({
                       ? memberInfo.name.split(" ")[0]
                       : `User ${assigneeId}`)}
             </span>
-                    </div>
-                ) : (
-                    "-"
-                )}
-            </td>
-            <td>
-                {item.type === "bug" && item.size
-                    ? item.size.toString()
-                    : item.type === "story" && item.size
-                        ? item.size.toString()
-                        : "-"}
-            </td>
-            <td className={styles.actionButtons}>
-                <ActionMenu
-                    onEdit={(e) => {
-                        e.stopPropagation();
-                        onEdit();
-                    }}
-                    onDelete={(e) => {
-                        e.stopPropagation();
-                        onDelete();
-                    }}
-                    onViewDetails={onViewDetails}
-                    itemType={item.type}
-                    enableAiSuggestions={enableAiSuggestions}
-                    hasPermissions={hasPermissions}
-                />
-            </td>
-        </tr>
-    );
+          </div>
+        ) : (
+          "-"
+        )}
+      </td>
+      <td>
+        {item.size ? item.size.toString() : "-"}
+      </td>
+      <td className={styles.actionButtons}>
+        <ActionMenu
+          onEdit={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
+          onDelete={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          onViewDetails={onViewDetails}
+          itemType={item.type || undefined}
+          enableAiSuggestions={enableAiSuggestions}
+        />
+      </td>
+    </tr>
+  );
 };
 
 export default BacklogRow;
