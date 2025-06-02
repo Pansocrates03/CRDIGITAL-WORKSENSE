@@ -26,7 +26,7 @@ import ProjectDetails from '@/types/ProjectType';
 import { createBurndownChartData } from './utils/CreateBurndownChartData';
 
 import {
-  FiLayout, FiGrid, FiClock, FiBarChart // Icons for tab navigation
+  FiLayout, FiGrid, FiBarChart // Icons for tab navigation
 } from "react-icons/fi";
 
 
@@ -71,7 +71,7 @@ const WorkflowPage: React.FC = () => {
     
     // STATES
     const [tasks, setTasks] = useState<BacklogItemType[]>([]);
-    const [activeTab, setActiveTab] = useState('sprints');
+    const [activeTab, setActiveTab] = useState('board');
     const [columns, setColumns] = useState(DEFAULT_COLUMNS);
     const [selectedSprint, setSelectedSprint] = useState<string>('');
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
