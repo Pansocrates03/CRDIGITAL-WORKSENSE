@@ -18,6 +18,7 @@ import HeatmapTooltip from '@uiw/react-tooltip';
 import BurndownChartSection from './BurndownChartSection';
 import WorkloadHeatmapSection from './WorkloadHeatmapSection';
 import BurnUpChartSection from './BurnUpChartSection';
+import BacklogItemType from '@/types/BacklogItemType';
 
 interface BurndownData {
   date: string;
@@ -25,13 +26,19 @@ interface BurndownData {
   idealBurndown: number;
 }
 
+// Update Task interface to match BacklogItemType
+type Task = Pick<BacklogItemType, 'id' | 'status' | 'size' | 'createdAt' | 'updatedAt'>;
+
 interface BurndownChartViewProps {
   data: BurndownData[];
   title?: string;
   doneItemsPerDay?: { date: string; count: number }[];
+  tasks: Task[];
 }
 
-const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Burndown Chart', doneItemsPerDay = [] }) => {
+const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Burndown Chart', doneItemsPerDay = [], tasks = [] }) => {
+  console.log("BurndownChartView props - tasks:", tasks);
+  console.log("BurndownChartView props - data (burndownChartData):", data);
   const { id: projectId } = useParams<{ id: string }>();
   
   // Fetch project data to check visibility settings
@@ -105,7 +112,7 @@ const BurndownChartView: React.FC<BurndownChartViewProps> = ({ data, title = 'Bu
         />
         {/* Right: Burn Up Chart */}
         <BurnUpChartSection
-          burnUpData={burnUpData}
+          tasks={tasks}
           isEnabled={isVelocityEnabled}
         />
       </Box>
