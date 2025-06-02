@@ -32,13 +32,19 @@ const getBadgeIcon = (badgeName: string, isLatest: boolean = false) => {
   return <IconComponent className={iconClass} />;
 };
 
-const GamificationBadge: React.FC = () => {
+interface GamificationBadgeProps {
+  projectId?: string;
+}
+
+const GamificationBadge: React.FC<GamificationBadgeProps> = ({ projectId }) => {
   const { user } = useAuth();
 
   const { data: profileData, isLoading } = useQuery({
-    queryKey: ["user-profile-with-gamification"],
+    queryKey: ["user-profile-with-gamification", projectId],
     queryFn: async () => {
-      const response = await apiClient.get("/me");
+      const response = await apiClient.get("/me", {
+        params: { projectId },
+      });
       return response.data;
     },
     enabled: !!user,
@@ -67,9 +73,11 @@ const GamificationBadge: React.FC = () => {
     return null;
   }
 
-  const { totalPoints, level, badges } = profileData.gamification;
+  const { totalPoints, projectPoints, level, badges } =
+    profileData.gamification;
+  const displayPoints = projectId ? projectPoints : totalPoints;
   const latestBadge = badges[badges.length - 1];
-  const nextBadgePoints = getNextBadgePoints(totalPoints);
+  const nextBadgePoints = getNextBadgePoints(displayPoints);
 
   return (
     <TooltipProvider>
@@ -107,7 +115,7 @@ const GamificationBadge: React.FC = () => {
                 className="text-sm font-semibold"
                 style={{ color: "var(--text-primary)" }}
               >
-                {totalPoints}
+                {displayPoints}
               </span>
             </div>
 
@@ -159,7 +167,15 @@ const GamificationBadge: React.FC = () => {
                   Level {level}
                 </p>
                 <p className="text-sm" style={{ color: "var(--neutral-600)" }}>
-                  {totalPoints} total points
+                  {projectId ? (
+                    <>
+                      <span>{projectPoints} project points</span>
+                      <br />
+                      <span>{totalPoints} total points</span>
+                    </>
+                  ) : (
+                    `${totalPoints} total points`
+                  )}
                 </p>
               </div>
             </div>
