@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import Modal from "@/components/Modal/Modal";
 import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal";
 import { toast } from "sonner";
+import { AnimatedCircularProgressBar } from "@/components/magicui/animated-circular-progress-bar";
 
 /* Icons */
 import { PlusIcon, Pencil, Trash2 } from "lucide-react";
@@ -314,6 +315,15 @@ const SprintsPage: React.FC = () => {
                                                     {formatDate(sprint.startDate)} - {formatDate(sprint.endDate)}
                                                 </p>
                                             </div>
+                                            <div className="sprint-details__section">
+                                                <h4>Sprint Progress</h4>
+                                                <AnimatedCircularProgressBar
+                                                max={100}
+                                                min={0}
+                                                value={55}
+                                                gaugePrimaryColor="rgb(79 70 229)"
+                                                gaugeSecondaryColor="rgba(0, 0, 0, 0.1)"
+                                                />                                            </div>
                                         </div>
                                         {canManageSprints && (
                                             <div className="sprint-details__actions">
