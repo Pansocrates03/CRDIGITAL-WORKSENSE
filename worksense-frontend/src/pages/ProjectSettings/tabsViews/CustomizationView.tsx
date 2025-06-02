@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { X, Plus } from "lucide-react";
+import { X, Plus, GripVertical } from "lucide-react";
 
 const CustomizationView: React.FC = () => {
   const { id: projectId } = useParams<{ id: string }>();
@@ -142,7 +142,32 @@ const CustomizationView: React.FC = () => {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 {workflowStages.map((stage, index) => (
-                  <div key={index} className="flex items-center gap-2">
+                  <div
+                    key={index}
+                    className="flex items-center gap-2"
+                    draggable={isProductOwner && editMode}
+                    onDragStart={e => {
+                      e.dataTransfer.effectAllowed = "move";
+                      e.dataTransfer.setData("text/plain", index.toString());
+                    }}
+                    onDragOver={e => {
+                      if (isProductOwner && editMode) e.preventDefault();
+                    }}
+                    onDrop={e => {
+                      if (!(isProductOwner && editMode)) return;
+                      e.preventDefault();
+                      const from = Number(e.dataTransfer.getData("text/plain"));
+                      if (from === index) return;
+                      const updated = [...workflowStages];
+                      const [removed] = updated.splice(from, 1);
+                      updated.splice(index, 0, removed);
+                      setWorkflowStages(updated);
+                    }}
+                    style={{ cursor: isProductOwner && editMode ? "grab" : undefined }}
+                  >
+                    {isProductOwner && editMode && (
+                      <GripVertical className="h-5 w-5 text-muted-foreground mr-1" />
+                    )}
                     <div className="flex-1 p-2 bg-[var(--neutral-100)] rounded border">
                       {stage}
                     </div>

@@ -37,7 +37,50 @@ interface ItemModalFormProps {
     epics: Epic[];
     sprints: any[];
     disableTypeChange?: boolean;
+    storyPointScale?: "fibonacci" | "linear" | "tshirt";
+    statusOptions?: string[];
 }
+
+const getSizeOptions = (scale: string = "tshirt") => {
+    if (scale === "fibonacci") {
+        return [
+            { value: "1", label: "1" },
+            { value: "2", label: "2" },
+            { value: "3", label: "3" },
+            { value: "5", label: "5" },
+            { value: "8", label: "8" },
+            { value: "13", label: "13" },
+            { value: "21", label: "21" },
+        ];
+    } else if (scale === "linear") {
+        return [
+            { value: "1", label: "1" },
+            { value: "2", label: "2" },
+            { value: "3", label: "3" },
+            { value: "4", label: "4" },
+            { value: "5", label: "5" },
+            { value: "6", label: "6" },
+            { value: "7", label: "7" },
+            { value: "8", label: "8" },
+        ];
+    } else {
+        return [
+            { value: "XS", label: "XS" },
+            { value: "S", label: "S" },
+            { value: "M", label: "M" },
+            { value: "L", label: "L" },
+            { value: "XL", label: "XL" },
+        ];
+    }
+};
+
+const getDefaultStatusOptions = () => [
+    "New",
+    "To Do",
+    "In Progress",
+    "In Review",
+    "Done"
+];
 
 const ItemModalForm: React.FC<ItemModalFormProps> = ({
                                                          mode,
@@ -52,6 +95,8 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                                                          epics,
                                                          sprints,
                                                          disableTypeChange = false,
+                                                         storyPointScale,
+                                                         statusOptions: statusOptionsProp,
                                                      }) => {
     const handleChange = (
         e: React.ChangeEvent<
@@ -74,6 +119,8 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
         label: v,
     }));
 
+    const statusOptions = statusOptionsProp && statusOptionsProp.length > 0 ? statusOptionsProp : getDefaultStatusOptions();
+
     const selectOptions = {
         type: [
             {value: "epic", label: "Epic"},
@@ -82,25 +129,13 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             {value: "techTask", label: "Tech Task"},
             {value: "knowledge", label: "Knowledge"},
         ],
-        status: [
-            {value: "new", label: "New"},
-            {value: "toDo", label: "To Do"},
-            {value: "inProgress", label: "In Progress"},
-            {value: "inReview", label: "In Review"},
-            {value: "done", label: "Done"},
-        ],
+        status: statusOptions.map((status) => ({ value: status, label: status })),
         priority: [
             {value: "low", label: "Low"},
             {value: "medium", label: "Medium"},
             {value: "high", label: "High"},
         ],
-        size: [
-            {value: "XS", label: "XS"},
-            {value: "S", label: "S"},
-            {value: "M", label: "M"},
-            {value: "L", label: "L"},
-            {value: "XL", label: "XL"},
-        ],
+        size: getSizeOptions(storyPointScale),
         sprint: [
             { value: "", label: "Select Sprint (Optional)" },
             ...sprints.map((s) => ({ value: s.id, label: s.name })),
@@ -167,10 +202,11 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
                     <SelectField
                         id="status"
                         name="status"
-                        value={formData.status || "new"}
+                        value={formData.status || statusOptions[0]}
                         onChange={handleChange}
                         options={selectOptions.status}
                         label="Status"
+                        required
                         styleClass="status"
                         disabled={loading}
                     />
