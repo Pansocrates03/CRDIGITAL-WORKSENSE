@@ -28,7 +28,7 @@ import ProjectDetails from '@/types/ProjectType';
 import { createBurndownChartData } from './utils/CreateBurndownChartData';
 
 import {
-  FiLayout, FiGrid, FiClock, FiBarChart // Icons for tab navigation
+  FiLayout, FiGrid, FiBarChart // Icons for tab navigation
 } from "react-icons/fi";
 
 
@@ -50,6 +50,18 @@ const navigationTabs: TabItem[] = [
   { id: "table", label: "Table", icon:FiGrid },
   { id: "burndown_chart", label: "Charts", icon:FiBarChart}
 ]
+
+// Helper to convert Firestore timestamp or string/Date to JS Date
+function toDate(val: any): Date | undefined {
+    if (!val) return undefined;
+    if (typeof val === 'object' && (val.seconds || val._seconds)) {
+        // Firestore timestamp
+        const seconds = val.seconds ?? val._seconds;
+        return new Date(seconds * 1000);
+    }
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? undefined : d;
+}
 
 const WorkflowPage: React.FC = () => {
     const queryClient = useQueryClient();
@@ -74,7 +86,7 @@ const WorkflowPage: React.FC = () => {
     
     // STATES
     const [tasks, setTasks] = useState<BacklogItemType[]>([]);
-    const [activeTab, setActiveTab] = useState('sprints');
+    const [activeTab, setActiveTab] = useState('board');
     const [columns, setColumns] = useState(DEFAULT_COLUMNS);
     const [selectedSprint, setSelectedSprint] = useState<string>('');
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -139,16 +151,16 @@ const WorkflowPage: React.FC = () => {
       };
   // Update tasks when data changes
   React.useEffect(() => {
-    if (filteredStories) {
-      console.log("Filtered Stories", filteredStories);
-      // Flatten all subitems
-      let flattenedData = filteredStories.flatMap(getItemChildren);
+    if (data) {
+        console.log("DATA", data);
+        // Flatten all subitems
+        let flattenedData = data.flatMap(getItemChildren);
 
-      // Filter out EPIC items
-      let filteredData = flattenedData.filter(item => item.type !== "epic");
+        // Filter out EPIC items
+        let filteredData = flattenedData.filter(item => item.type !== "epic");
 
-      // Set tasks state
-      setTasks(filteredData);
+        // Set tasks state
+        setTasks(filteredData);
     }
   }, [data]);
     const handleTaskUpdate = async (
@@ -187,16 +199,15 @@ const WorkflowPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] });
     }
 
-    const burndown_chart_data = [
-      { date: '2024-03-01', remainingWork: 100, idealBurndown: 100 },
-      { date: '2024-03-02', remainingWork: 80, idealBurndown: 80 },
-      { date: '2024-03-03', remainingWork: 65, idealBurndown: 60 },
-      { date: '2024-03-04', remainingWork: 50, idealBurndown: 40 },
-      { date: '2024-03-05', remainingWork: 30, idealBurndown: 20 },
-      { date: '2024-03-06', remainingWork: 10, idealBurndown: 0 },
-    ];
-    // use instead:
-    // const brundown_chart_data = createBurndownChartData(tasks)
+    // Get active sprint's start and end dates
+    const sprintStart = activeSprint ? toDate(activeSprint.startDate) : undefined;
+    const sprintEnd = activeSprint ? toDate(activeSprint.endDate) : undefined;
+
+    // Generate burndown chart data from tasks and sprint range
+    const burndownChartData = React.useMemo(() => {
+        if (!sprintStart || !sprintEnd) return [];
+        return createBurndownChartData(tasks, sprintStart, sprintEnd);
+    }, [tasks, sprintStart, sprintEnd]);
 
     // Prepare heatmap data: count of 'Done' items per day (use all items in data, not just tasks)
     const doneItemsPerDay = React.useMemo(() => {
@@ -222,6 +233,13 @@ const WorkflowPage: React.FC = () => {
         return Object.entries(counts).map(([date, count]) => ({ date, count }));
     }, [data]);
 
+    if (error) { throw new Error("An error has occurred on SprintPage.tsx"); }
+    if (isLoading) { return <div>Loading...</div> }
+    if (!data) { throw new Error("Nothing received") }
+
+    console.log('Raw backlog data from backend:', data);
+    console.log('Tasks state in WorkflowPage:', tasks);
+
     const renderView = () => {
         switch (activeTab) {
             case 'board':
@@ -231,18 +249,20 @@ const WorkflowPage: React.FC = () => {
             case 'table':
                 return <TableView tasks={tasks} />;
             case 'burndown_chart':
-                return <BurndownChartView data={burndown_chart_data} doneItemsPerDay={doneItemsPerDay} />;
+                if (!sprintStart || !sprintEnd) {
+                    return <div>No sprint date range available.</div>;
+                }
+                return <BurndownChartView 
+                    data={burndownChartData} 
+                    doneItemsPerDay={doneItemsPerDay} 
+                    tasks={tasks}
+                    sprintStart={sprintStart}
+                    sprintEnd={sprintEnd}
+                />;
             default:
                 return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} columns={columns} onTaskContentUpdate={onTaskContentUpdate} />;
         }
     };
-
-    if (error) { throw new Error("An error has occurred on SprintPage.tsx"); }
-    if (isLoading) { return <div>Loading...</div> }
-    if (!data) { throw new Error("Nothing received") }
-
-    console.log('All backlog items:', data);
-    console.log('doneItemsPerDay for heatmap:', doneItemsPerDay);
 
     return (
     <div className="sprint-page" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>

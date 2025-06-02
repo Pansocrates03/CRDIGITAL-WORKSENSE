@@ -1,63 +1,82 @@
 import BacklogItemType from "@/types/BacklogItemType";
+import { format, addDays, isAfter } from "date-fns";
 
-interface burndown_chart_data {
-  date: string;
-  remainingWork: number;
-  idealBurndown: number;
+interface BurndownDataPoint {
+    date: string;
+    remainingWork: number;
+    idealBurndown: number;
 }
 
-const size2Number = {
-  "1": 1,
-  "2": 2,
-  "3": 3,
-  "5": 5,
-  "8": 8,
-  "13": 13,
-  "21": 21,
-};
+// Helper to convert Firestore timestamp or string/Date to JS Date
+function toDate(val: any): Date | undefined {
+    if (!val) return undefined;
+    if (typeof val === 'object' && (val.seconds || val._seconds)) {
+        // Firestore timestamp
+        const seconds = val.seconds ?? val._seconds;
+        return new Date(seconds * 1000);
+    }
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? undefined : d;
+}
+
+// Helper to generate all dates between start and end (inclusive)
+function getDateRange(start: Date, end: Date): Date[] {
+    const dates = [];
+    let current = new Date(start);
+    while (current <= end) {
+        dates.push(new Date(current));
+        current = addDays(current, 1);
+    }
+    return dates;
+}
 
 export const createBurndownChartData = (
-  userStories: BacklogItemType[]
-): burndown_chart_data[] => {
-  let data: burndown_chart_data[] = [];
+    tasks: BacklogItemType[],
+    sprintStart: Date,
+    sprintEnd: Date
+): BurndownDataPoint[] => {
+    if (!tasks || tasks.length === 0) return [];
 
-  // Get the total work for all the stories
-  const totalWork = userStories.reduce(
-    (sum, story) => sum + (size2Number[story.size || "3"] || 0),
-    0
-  );
+    // Total story points in the sprint
+    const totalPoints = tasks.reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size) : 0), 0);
 
-  // Calculate ideal burndown rate per day
-  const sprintDuration = 14; // Assuming 2-week sprints
-  const idealBurndownRate = totalWork / sprintDuration;
+    // Generate all dates in the sprint
+    const dateRange = getDateRange(sprintStart, sprintEnd);
 
-  // Create the data points
-  let remainingWork = totalWork;
-  const today = new Date();
+    // Calculate ideal burndown line
+    const totalDays = dateRange.length - 1;
+    const pointsPerDay = totalPoints / (totalDays > 0 ? totalDays : 1);
 
-  for (let i = 0; i <= sprintDuration; i++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() + i);
+    // For each day, calculate remaining work
+    return dateRange.map((currentDate, idx) => {
+        // Sum points of tasks completed (status 'done') up to and including this day
+        const completedPoints = tasks
+            .filter(task => {
+                if (task.status !== 'done') return false;
+                const doneDate = toDate(task.updatedAt) || toDate(task.createdAt);
+                return doneDate && !isAfter(doneDate, currentDate);
+            })
+            .reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size) : 0), 0);
 
-    data.push({
-      date: date.toISOString().split("T")[0],
-      remainingWork: remainingWork,
-      idealBurndown: Math.max(0, totalWork - idealBurndownRate * i),
+        const remainingWork = Math.max(0, totalPoints - completedPoints);
+        const idealBurndown = Math.max(0, totalPoints - pointsPerDay * idx);
+
+        return {
+            date: format(currentDate, 'yyyy-MM-dd'),
+            remainingWork,
+            idealBurndown
+        };
     });
+};
 
-    // Update remaining work based on completed stories
-    const completedStories = userStories.filter(
-      (story) =>
-        story.status === "done" && new Date(story.updatedAt || "") <= date
-    );
-
-    remainingWork =
-      totalWork -
-      completedStories.reduce(
-        (sum, story) => sum + (size2Number[story.size || "3"] || 0),
-        0
-      );
-  }
-
-  return data;
+// Helper function to convert size to story points
+const getStoryPoints = (size: string): number => {
+    switch (size.toUpperCase()) {
+        case 'XS': return 1;
+        case 'S': return 2;
+        case 'M': return 3;
+        case 'L': return 5;
+        case 'XL': return 8;
+        default: return 0;
+    }
 };

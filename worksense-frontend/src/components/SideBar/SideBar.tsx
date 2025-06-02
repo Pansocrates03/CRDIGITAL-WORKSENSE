@@ -124,7 +124,7 @@ export const SideBar: React.FC<{showSidebar:boolean}> = ({showSidebar}) => {
         path: `/project/${projectId}/sprint`,
       },
       {
-        name: "Workflow (S1)",
+        name: "Workflow",
         icon: "/workflow.svg",
         path: `/project/${projectId}/workflow`,
       },
