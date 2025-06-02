@@ -65,7 +65,9 @@ const SprintsPage: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [sprintToDelete, setSprintToDelete] = useState<string | null>(null);
 
-    // Function to reset form fields to empty values
+    /* ===== Form Management Functions ===== */
+
+    // Resets the form fields to their initial empty values and clears the editing state
     const resetForm = () => {
         setNewSprint({
             name: "",
@@ -78,20 +80,22 @@ const SprintsPage: React.FC = () => {
         setEditingSprint(null);
     };
 
-    // Function to handle modal closing and form reset
+    // Handles closing the modal and resetting the form
     const handleCloseModal = () => {
         setIsModalOpen(false);
         resetForm();
     };
 
-    // Format date for display in the table (converts Firestore timestamp to readable date)
+    /* ===== Date Formatting Functions ===== */
+
+    // Formats a Firestore timestamp into a readable date string
     const formatDate = (timestamp: any) => {
         if (!timestamp || !timestamp._seconds) return "N/A";
         const date = new Date(timestamp._seconds * 1000);
         return date.toLocaleDateString();
     };
 
-    // Format date for API in YYYY-MM-DD format
+    // Formats a date for API submission in YYYY-MM-DD format
     const formatDateForAPI = (date: string | Date) => {
         if (!date) return "";
         if (typeof date === 'string') {
@@ -100,13 +104,15 @@ const SprintsPage: React.FC = () => {
         return date.toISOString().split("T")[0];
     };
 
-    // Convert Firestore timestamp to Date object
+    // Converts a Firestore timestamp to a JavaScript Date object
     const convertTimestampToDate = (timestamp: any): Date | null => {
         if (!timestamp || !timestamp._seconds) return null;
         return new Date(timestamp._seconds * 1000);
     };
 
-    // Handle form input changes
+    /* ===== Event Handler Functions ===== */
+
+    // Handles changes to form input fields and validates date fields
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         
@@ -136,7 +142,7 @@ const SprintsPage: React.FC = () => {
         }));
     };
 
-    // Handle sprint edit
+    // Sets up the form with the sprint's current data for editing
     const handleEditSprint = (sprint: Sprint) => {
         setEditingSprint(sprint);
         setNewSprint({
@@ -150,7 +156,7 @@ const SprintsPage: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    // Handle form submission (create or edit)
+    // Handles form submission for creating or updating a sprint with validation
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -159,7 +165,7 @@ const SprintsPage: React.FC = () => {
         const endDate = new Date(newSprint.endDate);
         
         if (endDate < startDate) {
-            alert("End date cannot be before start date");
+            toast.error("End date cannot be before start date");
             return;
         }
 
@@ -170,7 +176,7 @@ const SprintsPage: React.FC = () => {
             );
             
             if (hasActiveSprint) {
-                alert("There can only be one active sprint at a time. Please complete or cancel the current active sprint first.");
+                toast.error("There can only be one active sprint at a time. Please complete or cancel the current active sprint first.");
                 return;
             }
         }
@@ -205,13 +211,13 @@ const SprintsPage: React.FC = () => {
         }
     };
 
-    // Handle sprint delete
+    // Opens the confirmation modal for sprint deletion
     const handleDeleteSprint = async (sprintId: string) => {
         setSprintToDelete(sprintId);
         setIsDeleteModalOpen(true);
     };
 
-    // Handle delete confirmation
+    // Executes the sprint deletion after confirmation
     const handleConfirmDelete = async () => {
         if (sprintToDelete) {
             try {
