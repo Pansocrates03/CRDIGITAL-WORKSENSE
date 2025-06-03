@@ -174,6 +174,7 @@ const ForYouPage = () => {
       <ForYouGamificationOnboarding
         open={showOnboarding}
         onComplete={(data) => updateMutation.mutate(data)}
+        onClose={() => setShowOnboarding(false)}
       />
 
       {/* Dropdown section */}

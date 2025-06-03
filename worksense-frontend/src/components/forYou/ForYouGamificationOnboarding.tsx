@@ -14,9 +14,10 @@ const AVATAR_CHOICES = [
 interface ForYouGamificationOnboardingProps {
   open: boolean;
   onComplete: (data: { profilePicture: string; personalPhrase: string }) => void;
+  onClose: () => void;
 }
 
-const ForYouGamificationOnboarding: React.FC<ForYouGamificationOnboardingProps> = ({ open, onComplete }) => {
+const ForYouGamificationOnboarding: React.FC<ForYouGamificationOnboardingProps> = ({ open, onComplete, onClose }) => {
   const [selectedAvatar, setSelectedAvatar] = useState<string>('');
   const [personalPhrase, setPersonalPhrase] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -44,8 +45,8 @@ const ForYouGamificationOnboarding: React.FC<ForYouGamificationOnboardingProps> 
   };
 
   return (
-    <Dialog open={open}>
-      <DialogContent className="max-w-md">
+    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
+      <DialogContent className="max-w-md" showCloseButton={true}>
         <DialogHeader>
           <DialogTitle>Welcome! Set up your profile</DialogTitle>
         </DialogHeader>
