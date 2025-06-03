@@ -12,6 +12,115 @@ import {
 // Keep track of active subscriptions
 const activeSubscriptions = new Map<string, () => void>();
 
+/**
+ * Helper function to check if a question is project-related
+ */
+const isProjectRelatedQuestion = (prompt: string): boolean => {
+  const projectKeywords = [
+    // Project management terms
+    "project",
+    "task",
+    "sprint",
+    "backlog",
+    "epic",
+    "story",
+    "bug",
+    "team",
+    "member",
+    "assignee",
+    "progress",
+    "status",
+    "deadline",
+    "milestone",
+    "deliverable",
+    "requirement",
+    "feature",
+
+    // Spanish equivalents
+    "proyecto",
+    "tarea",
+    "equipo",
+    "miembro",
+    "progreso",
+    "estado",
+    "entrega",
+    "requisito",
+    "funcionalidad",
+    "historia",
+
+    // Action words related to project management
+    "assign",
+    "complete",
+    "review",
+    "plan",
+    "estimate",
+    "develop",
+    "asignar",
+    "completar",
+    "revisar",
+    "planear",
+    "estimar",
+    "desarrollar",
+
+    // Questions about work
+    "who is working",
+    "what is pending",
+    "when is due",
+    "how many",
+    "quién está trabajando",
+    "qué está pendiente",
+    "cuándo vence",
+    "cuántos",
+  ];
+
+  const lowerPrompt = prompt.toLowerCase();
+
+  // Check if the prompt contains project-related keywords
+  const hasProjectKeywords = projectKeywords.some((keyword) =>
+    lowerPrompt.includes(keyword.toLowerCase())
+  );
+
+  // Check for obvious non-project questions
+  const nonProjectIndicators = [
+    "weather",
+    "recipe",
+    "movie",
+    "music",
+    "sports",
+    "news",
+    "celebrity",
+    "clima",
+    "receta",
+    "película",
+    "música",
+    "deportes",
+    "noticias",
+    "what is the capital of",
+    "how to cook",
+    "tell me a joke",
+    "cuál es la capital de",
+    "cómo cocinar",
+    "cuéntame un chiste",
+  ];
+
+  const hasNonProjectIndicators = nonProjectIndicators.some((indicator) =>
+    lowerPrompt.includes(indicator.toLowerCase())
+  );
+
+  // If it clearly has non-project indicators and no project keywords, it's off-topic
+  if (hasNonProjectIndicators && !hasProjectKeywords) {
+    return false;
+  }
+
+  // If it has project keywords, it's likely project-related
+  if (hasProjectKeywords) {
+    return true;
+  }
+
+  // For ambiguous cases, allow them but the AI will be instructed to redirect
+  return true;
+};
+
 export const handleGeminiPrompt = async (
   req: Request,
   res: Response
@@ -27,6 +136,25 @@ export const handleGeminiPrompt = async (
   }
 
   try {
+    // Check if the question is project-related
+    if (!isProjectRelatedQuestion(prompt)) {
+      const userPreferences = await getOrCreateConversation(userId, projectId);
+      const preferredLanguage =
+        userPreferences.metadata?.userPreferences?.preferredLanguage || "en";
+
+      const offTopicResponse =
+        preferredLanguage === "es"
+          ? "Lo siento, pero solo puedo ayudarte con preguntas relacionadas con tu proyecto. ¿Hay algo específico sobre el proyecto en lo que pueda asistirte?"
+          : "I'm sorry, but I can only help you with questions related to your project. Is there something specific about the project I can assist you with?";
+
+      res.json({
+        reply: offTopicResponse,
+        timestamp: new Date().toISOString(),
+        isOffTopic: true,
+      });
+      return;
+    }
+
     // Set up real-time subscription if not already active
     if (!activeSubscriptions.has(projectId)) {
       const unsubscribe =
@@ -57,7 +185,7 @@ export const handleGeminiPrompt = async (
     );
 
     // Get conversation history
-    const recentMessages = await getConversationHistory(conversation.id!, 10);
+    const recentMessages = await getConversationHistory(conversation.id!, 8); // Reduced for more concise context
     console.log(`📝 Recuperado historial: ${recentMessages.length} mensajes`);
 
     // Get cached project data
@@ -85,7 +213,7 @@ export const handleGeminiPrompt = async (
         projectData.aiTechStack ||
         projectData.context?.techStack?.join(", ") ||
         "",
-      enableAiSuggestions: projectData.enableAiSuggestions !== false, // Default to true
+      enableAiSuggestions: projectData.enableAiSuggestions !== false,
     };
 
     // Enrich members with SQL data if needed
@@ -188,7 +316,7 @@ export const handleGeminiPrompt = async (
     const userNickname = userPreferences.nickname;
     const preferredLanguage = userPreferences.preferredLanguage || "en";
     const verbosityLevel =
-      conversation.metadata?.assistantSettings?.verbosityLevel || "normal";
+      conversation.metadata?.assistantSettings?.verbosityLevel || "concise"; // Changed default to concise
 
     // Build conversation history
     const conversationHistory = recentMessages
@@ -201,325 +329,112 @@ export const handleGeminiPrompt = async (
     const messageLanguage = detectLanguage(prompt);
     console.log(`Idioma detectado en el mensaje: ${messageLanguage}`);
 
-    // Build context prompt with AI configuration
+    // Build context prompt with improved instructions
     const contextPrompt = `
-        You are Frida, a smart assistant helping with project management.
-        
-        ${
-          aiConfig.enableAiSuggestions
-            ? `### AI Configuration
-        ${aiConfig.aiContext ? `Project Context: ${aiConfig.aiContext}` : ""}
-        ${
-          aiConfig.aiTechStack
-            ? `Tech Stack Focus: ${aiConfig.aiTechStack}`
-            : ""
-        }
-        You should provide proactive suggestions and insights based on this context.
-        `
-            : "AI suggestions are disabled for this project. Provide answers but avoid proactive suggestions."
-        }
+You are Frida, a concise and focused project management assistant. You ONLY answer questions related to project management, team members, tasks, sprints, and project-related activities.
 
-        ### Current User Context
-        ${
-          currentMember
-            ? `- You are talking to: ${
-                currentMember.fullName || currentMember.name || `User ${userId}`
-              }`
-            : "- Unknown user"
-        }
-        ${
-          currentMember
-            ? `- Their role is: ${currentMember.roleName || "Unknown"}`
-            : ""
-        }
-        ${userNickname ? `- They prefer to be called: "${userNickname}"` : ""}
-        ${
-          verbosityLevel !== "normal"
-            ? `- They prefer ${verbosityLevel} responses`
-            : ""
-        }
-        ${
-          preferredLanguage
-            ? `- Their preferred language is: ${
-                preferredLanguage === "es" ? "Spanish" : "English"
-              }`
-            : ""
-        }
+### STRICT GUIDELINES:
+- ONLY answer questions related to this project and its management
+- If asked about topics unrelated to project management (weather, cooking, general knowledge, etc.), politely redirect to project-related topics
+- Keep responses concise and to the point unless specifically asked for details
+- Use markdown formatting for better readability (lists, headers, bold text, etc.)
+- Focus on actionable information and current project status
 
-        ### Recent Conversation History
-        ${
-          conversationHistory
-            ? conversationHistory
-            : "This is the start of your conversation."
-        }
+${
+  aiConfig.enableAiSuggestions
+    ? `### AI Configuration
+${aiConfig.aiContext ? `Project Context: ${aiConfig.aiContext}` : ""}
+${aiConfig.aiTechStack ? `Tech Stack: ${aiConfig.aiTechStack}` : ""}
+Provide proactive suggestions when relevant.`
+    : "AI suggestions are disabled. Provide direct answers only."
+}
 
-        Use the following project context to answer the user's question.
+### Current User
+${
+  currentMember
+    ? `- **User**: ${
+        currentMember.fullName || currentMember.name || `User ${userId}`
+      }`
+    : "- **User**: Unknown"
+}
+${currentMember ? `- **Role**: ${currentMember.roleName || "Unknown"}` : ""}
+${userNickname ? `- **Preferred Name**: "${userNickname}"` : ""}
 
-        ---
+### Recent Context
+${conversationHistory || "First interaction in this session."}
 
-        ### Project Info
-        - Name: ${projectData.name || "N/A"}
-        - Description: ${projectData.description || "No description provided."}
-        - Owner ID: ${projectData.ownerId || "Unknown"}
-        ${
-          projectData.context?.techStack
-            ? `- Tech Stack: ${projectData.context.techStack.join(", ")}`
-            : ""
-        }
-        ${
-          projectData.context?.objectives
-            ? `- Objectives: ${projectData.context.objectives}`
-            : ""
-        }
-        - Status: ${projectData.status || "active"}
+### Project Overview
+**${projectData.name || "Project"}** | Status: ${projectData.status || "active"}
+${projectData.description ? `${projectData.description}` : ""}
 
-        ### Team Members and Roles (${enrichedMembers.length} members)
-        ${
-          enrichedMembers.length > 0
-            ? enrichedMembers
-                .map((m) => {
-                  const memberName = m.fullName || m.name || `User ${m.userId}`;
-                  const roleName =
-                    m.roleName || m.projectRoleId || "Unknown Role";
-                  const email = m.email ? ` (${m.email})` : "";
+### Current Sprint Status
+${
+  activeSprint
+    ? `**🏃 Active Sprint**: ${activeSprint.name}
+- **Goal**: ${activeSprint.goal || "No goal set"}
+- **Timeline**: ${
+        activeSprint.startDate?.toDate?.()?.toLocaleDateString() || "N/A"
+      } → ${activeSprint.endDate?.toDate?.()?.toLocaleDateString() || "N/A"}
+- **Tasks**: ${activeSprintTasks.length} total (${
+        activeSprintTasks.filter((t) => t.status === "done").length
+      } done, ${
+        activeSprintTasks.filter(
+          (t) => t.status === "in-progress" || t.status === "inProgress"
+        ).length
+      } in progress)`
+    : "**No active sprint currently running**"
+}
 
-                  let memberInfo = `- ${memberName}: ${roleName}${email}`;
+### Team Summary
+${enrichedMembers.length} team members:
+${enrichedMembers
+  .slice(0, 5)
+  .map((m) => {
+    const memberName = m.fullName || m.name || `User ${m.userId}`;
+    const roleName = m.roleName || "Unknown Role";
+    return `- **${memberName}**: ${roleName}`;
+  })
+  .join("\n")}
+${
+  enrichedMembers.length > 5
+    ? `... and ${enrichedMembers.length - 5} more members`
+    : ""
+}
 
-                  // Add permissions if available
-                  if (
-                    m.projectRoleId &&
-                    rolePermissionDescriptions[m.projectRoleId]
-                  ) {
-                    const permissions =
-                      rolePermissionDescriptions[m.projectRoleId];
-                    if (permissions.length > 0) {
-                      memberInfo += `\n  Permissions: ${permissions
-                        .slice(0, 3)
-                        .join(", ")}${
-                        permissions.length > 3
-                          ? ` and ${permissions.length - 3} more`
-                          : ""
-                      }`;
-                    }
-                  }
+### Quick Stats
+- **📋 Backlog**: ${stories.length} stories, ${bugs.length} bugs, ${
+      techTasks.length
+    } tech tasks
+- **🎯 Epics**: ${epics.length} total
+- **📊 All Tasks**: ${tasksByStatus.todo.length} todo, ${
+      tasksByStatus.inProgress.length
+    } in progress, ${tasksByStatus.review.length} in review, ${
+      tasksByStatus.done.length
+    } done
 
-                  return memberInfo;
-                })
-                .join("\n")
-            : "No team members found."
-        }
+### User Question
+"${prompt}"
 
-        ### Backlog Summary
-        - ${epics.length} Epics
-        - ${stories.length} Stories
-        - ${bugs.length} Bugs
-        - ${techTasks.length} Tech Tasks
-        - ${knowledgeItems.length} Knowledge Items
+### Response Instructions
+${preferredLanguage === "es" ? "Responde en español." : "Respond in English."}
+${userNickname ? `Address the user as "${userNickname}" occasionally.` : ""}
 
-        ### Sprint Information
-        ${
-          activeSprint
-            ? `
-        **Active Sprint: ${activeSprint.name}**
-        - Goal: ${activeSprint.goal || "No goal set"}
-        - Period: ${
-          activeSprint.startDate?.toDate?.()?.toLocaleDateString() || "N/A"
-        } to ${activeSprint.endDate?.toDate?.()?.toLocaleDateString() || "N/A"}
-        - Tasks: ${activeSprintTasks.length} total
-          - To Do: ${
-            activeSprintTasks.filter((t) => t.status === "todo").length
-          }
-          - In Progress: ${
-            activeSprintTasks.filter(
-              (t) => t.status === "in-progress" || t.status === "inProgress"
-            ).length
-          }
-          - In Review: ${
-            activeSprintTasks.filter((t) => t.status === "review").length
-          }
-          - Done: ${activeSprintTasks.filter((t) => t.status === "done").length}
-        `
-            : "No active sprint currently."
-        }
-        
-        ${
-          plannedSprints.length > 0
-            ? `\n**Planned Sprints:** ${plannedSprints
-                .map((s) => s.name)
-                .join(", ")}`
-            : ""
-        }
-        ${
-          completedSprints.length > 0
-            ? `\n**Recent Completed Sprints:** ${completedSprints
-                .slice(0, 3)
-                .map((s) => s.name)
-                .join(", ")}`
-            : ""
-        }
+**Keep your response concise and focused**. Use markdown formatting for clarity:
+- Use **bold** for important items
+- Use bullet points for lists
+- Use headers (##) for sections when needed
+- Use \`code\` for technical terms
 
-        ### Current Tasks Overview
-        - Total tasks in progress: ${tasks.length}
-        - To Do: ${tasksByStatus.todo.length}
-        - In Progress: ${tasksByStatus.inProgress.length}
-        - In Review: ${tasksByStatus.review.length}
-        - Done: ${tasksByStatus.done.length}
+If the question is not project-related, politely redirect: "${
+      preferredLanguage === "es"
+        ? "Solo puedo ayudarte con temas relacionados al proyecto. ¿Hay algo específico del proyecto que quieras saber?"
+        : "I can only help with project-related topics. Is there something specific about the project you'd like to know?"
+    }"
+`.trim();
 
-        ${
-          activeSprint && activeSprintTasks.length > 0
-            ? `
-        ### Active Sprint Tasks
-        ${activeSprintTasks
-          .slice(0, 10)
-          .map((t) => {
-            const assigneeNames =
-              t.assignees
-                ?.map(
-                  (a: any) =>
-                    enrichedMembers.find((m) => m.userId === a.id)?.fullName ||
-                    a.name ||
-                    `User ${a.id}`
-                )
-                .join(", ") || "Unassigned";
+    console.log("🧠 Prompt contextual construido con mejoras de concisión");
 
-            return `- [${t.status}] ${t.title} (${t.type})${
-              assigneeNames !== "Unassigned"
-                ? ` - Assigned to: ${assigneeNames}`
-                : ""
-            }`;
-          })
-          .join("\n")}
-        ${
-          activeSprintTasks.length > 10
-            ? `\n... and ${
-                activeSprintTasks.length - 10
-              } more tasks in the sprint`
-            : ""
-        }
-        `
-            : ""
-        }
-
-        ${
-          epics.length > 0
-            ? `### Epics\n${epics
-                .map(
-                  (e) =>
-                    `- ${e.name} (${e.status || "unknown"})${
-                      e.assigneeId
-                        ? ` [Assigned to: ${
-                            enrichedMembers.find(
-                              (m) => m.userId === e.assigneeId
-                            )?.fullName || `User ${e.assigneeId}`
-                          }]`
-                        : ""
-                    }`
-                )
-                .join("\n")}`
-            : ""
-        }
-
-        ${
-          stories.length > 0
-            ? `### Stories\n${stories
-                .slice(0, 10)
-                .map(
-                  (s) =>
-                    `- ${s.name} (${s.size || "?"} pts)${
-                      s.assigneeId
-                        ? ` [Assigned to: ${
-                            enrichedMembers.find(
-                              (m) => m.userId === s.assigneeId
-                            )?.fullName || `User ${s.assigneeId}`
-                          }]`
-                        : ""
-                    }`
-                )
-                .join("\n")}${
-                stories.length > 10
-                  ? `\n... and ${stories.length - 10} more stories`
-                  : ""
-              }`
-            : ""
-        }
-
-        ${
-          bugs.length > 0
-            ? `### Bugs\n${bugs
-                .slice(0, 5)
-                .map(
-                  (b) =>
-                    `- ${b.name} [${b.size || "medium"}]${
-                      b.assigneeId
-                        ? ` [Assigned to: ${
-                            enrichedMembers.find(
-                              (m) => m.userId === b.assigneeId
-                            )?.fullName || `User ${b.assigneeId}`
-                          }]`
-                        : ""
-                    }`
-                )
-                .join("\n")}${
-                bugs.length > 5 ? `\n... and ${bugs.length - 5} more bugs` : ""
-              }`
-            : ""
-        }
-
-        ---
-
-        ### User's Question
-        "${prompt}"
-
-        Provide a helpful and prioritized answer based on the context.
-        ${
-          preferredLanguage === "es"
-            ? "Responde siempre en español."
-            : "Always respond in English."
-        }
-        ${
-          userNickname
-            ? `${
-                preferredLanguage === "es"
-                  ? "Dirígete al usuario como"
-                  : "Address the user as"
-              } "${userNickname}" ${
-                preferredLanguage === "es"
-                  ? "de vez en cuando."
-                  : "occasionally."
-              }`
-            : ""
-        }
-        ${
-          verbosityLevel === "concise"
-            ? preferredLanguage === "es"
-              ? "Sé conciso y directo en tu respuesta, evita detalles innecesarios."
-              : "Be concise and direct in your response, avoid unnecessary details."
-            : verbosityLevel === "detailed"
-            ? preferredLanguage === "es"
-              ? "Proporciona respuestas detalladas con toda la información disponible."
-              : "Provide detailed responses with all available information."
-            : preferredLanguage === "es"
-            ? "Proporciona una respuesta equilibrada con información relevante."
-            : "Provide a balanced response with relevant information."
-        }
-        When discussing team members, acknowledge their roles and permissions.
-        When discussing backlog items, mention who they're assigned to if applicable.
-        When discussing sprints, provide information about sprint progress, dates, and task distribution.
-        When discussing tasks, include their status, assignees, and which sprint they belong to.
-        If the user asks about sprint progress, workload, or task status, provide detailed information based on the sprint and task data.
-        If the user asks about team responsibilities, who is working on what, or who has permission to do something, provide that information based on the roles and permissions.
-        ${
-          aiConfig.enableAiSuggestions
-            ? preferredLanguage === "es"
-              ? "Cuando sea apropiado, ofrece sugerencias proactivas basadas en el contexto del proyecto."
-              : "When appropriate, offer proactive suggestions based on the project context."
-            : ""
-        }
-        `.trim();
-
-    console.log("🧠 Prompt contextual construido con caché");
-
-    // Call Gemini API
+    // Call Gemini API with updated configuration for conciseness
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
     const body = {
@@ -529,10 +444,10 @@ export const handleGeminiPrompt = async (
         },
       ],
       generationConfig: {
-        temperature: aiConfig.enableAiSuggestions ? 0.3 : 0.2, // Temperatura mas alta para sugerencias
-        topP: 0.8,
-        topK: 40,
-        maxOutputTokens: 2048,
+        temperature: 0.2, // Lower temperature for more focused responses
+        topP: 0.7, // Reduced for more concise responses
+        topK: 30, // Reduced for more focused responses
+        maxOutputTokens: 1024, // Reduced from 2048 for more concise responses
       },
       safetySettings: [
         {
@@ -573,11 +488,14 @@ export const handleGeminiPrompt = async (
       }
 
       const data = await response.json();
-      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
       console.log("✅ Respuesta recibida de Gemini");
 
       if (reply) {
-        // Agregar respuesta a la conversación
+        // Clean up the reply to ensure proper markdown formatting
+        reply = reply.trim();
+
+        // Add assistant message to conversation
         const assistantMessage = {
           role: "assistant" as const,
           content: reply,
@@ -601,10 +519,15 @@ export const handleGeminiPrompt = async (
             id: conversation.id,
             metadata: conversation.metadata,
           },
-          cacheHit: cachedData.lastUpdated > Date.now() - 300000, // Checar si el caché fue usado
+          cacheHit: cachedData.lastUpdated > Date.now() - 300000,
+          hasMarkdown:
+            reply.includes("**") ||
+            reply.includes("##") ||
+            reply.includes("`") ||
+            reply.includes("-"),
         });
       } else {
-        // Respeusta de emergencia
+        // Fallback response
         console.warn("⚠️ No se recibió respuesta de Gemini");
 
         const fallbackReply =
