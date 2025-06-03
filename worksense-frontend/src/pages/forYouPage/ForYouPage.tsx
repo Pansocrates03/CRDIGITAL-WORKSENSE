@@ -48,6 +48,7 @@ const ForYouPage = () => {
   const [editItem, setEditItem] = useState<AssignedItem | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Fetch assigned items
@@ -175,14 +176,24 @@ const ForYouPage = () => {
         open={showOnboarding}
         onComplete={(data) => updateMutation.mutate(data)}
         onClose={() => setShowOnboarding(false)}
+        initialPhrase={''}
       />
-
+      {/* Edit Profile Modal */}
+      <ForYouGamificationOnboarding
+        open={showEditProfile}
+        onComplete={(data) => {
+          updateMutation.mutate(data);
+          setShowEditProfile(false);
+        }}
+        onClose={() => setShowEditProfile(false)}
+        initialPhrase={gamification?.personalPhrase || ''}
+      />
       {/* Dropdown section */}
       {gamification && dropdownOpen && (
         <ForYouGamificationDetails
           gamification={gamification}
           userProfile={userProfile || undefined}
-          onEdit={() => setShowOnboarding(true)}
+          onEdit={() => setShowEditProfile(true)}
           projectId={projectId || ''}
         />
       )}

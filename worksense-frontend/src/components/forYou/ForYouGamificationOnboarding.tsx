@@ -3,24 +3,31 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { AvatarPicker } from '@/components/Account/AvatarPicker';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
-const AVATAR_CHOICES = [
-  '/avatars/avatar1.png',
-  '/avatars/avatar2.png',
-  '/avatars/avatar3.png',
-  '/avatars/avatar4.png',
-];
 
 interface ForYouGamificationOnboardingProps {
   open: boolean;
   onComplete: (data: { profilePicture: string; personalPhrase: string }) => void;
   onClose: () => void;
+  initialPhrase?: string;
 }
 
-const ForYouGamificationOnboarding: React.FC<ForYouGamificationOnboardingProps> = ({ open, onComplete, onClose }) => {
+const ForYouGamificationOnboarding: React.FC<ForYouGamificationOnboardingProps> = ({ open, onComplete, onClose, initialPhrase }) => {
   const [selectedAvatar, setSelectedAvatar] = useState<string>('');
   const [personalPhrase, setPersonalPhrase] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const { save } = useUserProfile();
+
+  // Reset fields when popup is opened
+  React.useEffect(() => {
+    if (open) {
+      setPersonalPhrase(initialPhrase || '');
+      setSelectedAvatar('');
+    }
+  }, [open, initialPhrase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +45,11 @@ const ForYouGamificationOnboarding: React.FC<ForYouGamificationOnboardingProps> 
     }
     setSubmitting(true);
     try {
+      await save({ pfp: selectedAvatar });
       onComplete({ profilePicture: selectedAvatar, personalPhrase });
+      toast.success('Profile updated!');
+    } catch (err) {
+      toast.error('Failed to update profile.');
     } finally {
       setSubmitting(false);
     }
@@ -53,19 +64,15 @@ const ForYouGamificationOnboarding: React.FC<ForYouGamificationOnboardingProps> 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6 mt-2">
           <div>
             <div className="mb-2 font-medium">Choose your avatar:</div>
-            <div className="flex gap-4">
-              {AVATAR_CHOICES.map((avatar) => (
-                <button
-                  type="button"
-                  key={avatar}
-                  className={`rounded-full border-2 p-1 transition-all ${selectedAvatar === avatar ? 'border-[var(--accent-pink)] scale-110' : 'border-transparent'}`}
-                  onClick={() => setSelectedAvatar(avatar)}
-                  aria-label="Select avatar"
-                >
-                  <img src={avatar} alt="Avatar" className="w-16 h-16 rounded-full object-cover" />
-                </button>
-              ))}
-            </div>
+            {selectedAvatar && (
+              <div className="flex flex-col items-center mb-4">
+                <Avatar className="size-20 mb-2">
+                  <AvatarImage src={selectedAvatar} alt="Selected Avatar" />
+                </Avatar>
+                <span className="text-xs text-muted-foreground">Currently selected</span>
+              </div>
+            )}
+            <AvatarPicker onSelect={setSelectedAvatar} />
           </div>
           <div>
             <div className="mb-2 font-medium">Personal phrase:</div>
