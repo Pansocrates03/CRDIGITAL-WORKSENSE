@@ -5,6 +5,7 @@ import Modal from '@/components/Modal/Modal';
 import UpdateItemModal from '@/components/BacklogTable/UpdateItemModal';
 import { MoreVertical } from 'lucide-react';
 import { toast } from 'sonner';
+import StatusBadge from '@/components/BacklogTable/StatusBadge';
 
 interface AssignedItem {
   id: string;
@@ -41,7 +42,7 @@ const AssignedItemsList: React.FC<AssignedItemsListProps> = ({ assignedItems, pr
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-semibold text-[var(--accent-pink)]">{item.type}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs px-2 py-1 rounded bg-neutral-100 text-neutral-700">{item.status}</span>
+                      <StatusBadge type="status" value={item.status} />
                       <button
                         style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                         onClick={() => setEditItem(item)}
@@ -80,7 +81,7 @@ const AssignedItemsList: React.FC<AssignedItemsListProps> = ({ assignedItems, pr
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-semibold text-[var(--accent-pink)]">{item.type}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs px-2 py-1 rounded bg-neutral-100 text-neutral-700">{item.status}</span>
+                    <StatusBadge type="status" value={item.status} />
                     <button
                       style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                       onClick={() => setEditItem(item)}

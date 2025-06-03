@@ -5,6 +5,7 @@ import Modal from '@/components/Modal/Modal';
 import UpdateItemModal from '@/components/BacklogTable/UpdateItemModal';
 import { MoreVertical } from 'lucide-react';
 import { toast } from 'sonner';
+import StatusBadge from '@/components/BacklogTable/StatusBadge';
 
 interface CompletedTask {
   id: string;
@@ -43,7 +44,7 @@ const CompletedItemsList: React.FC<CompletedItemsListProps> = ({ completedTasks,
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-semibold text-[var(--accent-pink)]">{item.type}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700">Done</span>
+                        <StatusBadge type="status" value={item.status} />
                         <button
                           style={{ background: 'none', border: 'none', cursor: canEdit ? 'pointer' : 'not-allowed' }}
                           onClick={() => canEdit && setEditItem(item)}
@@ -84,7 +85,7 @@ const CompletedItemsList: React.FC<CompletedItemsListProps> = ({ completedTasks,
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-semibold text-[var(--accent-pink)]">{item.type}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700">Done</span>
+                    <StatusBadge type="status" value={item.status} />
                     <button
                       style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                       onClick={() => setEditItem(item)}
