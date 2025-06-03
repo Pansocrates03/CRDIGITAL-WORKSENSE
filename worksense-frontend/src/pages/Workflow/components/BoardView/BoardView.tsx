@@ -3,7 +3,8 @@ import DraggableTaskCard from '../TaskCard/DraggableTaskCard';
 import './BoardView.css';
 import BacklogItemType from '@/types/BacklogItemType';
 
-const BASE_COLUMN_ID = "no_status";
+
+const BASE_COLUMN_ID = "New";
 const BASE_COLUMN_TITLE = "No Status";
 
 interface BoardViewProps {

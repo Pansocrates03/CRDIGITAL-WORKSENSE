@@ -44,24 +44,17 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [epics, setEpics] = useState<Epic[]>([]);
   const [users, setUsers] = useState<{ userId: number; name?: string }[]>([]);
-  const [originalItem, setOriginalItem] = useState<BacklogItemType | null>(
-    null
-  );
+  const [originalItem, setOriginalItem] = useState<BacklogItemType | null>(null);
   const [sprints, setSprints] = useState<{ id: string; name: string }[]>([]);
   const updateMutation = useBacklogItemUpdate();
 
-  // Initialize form data when modal opens with an item
   useEffect(() => {
     if (isOpen && item) {
-      // Create a copy of the item data for the form
       setFormData({
         ...item,
-        // Ensure these properties are correctly set in the form data
         isSubItem: !!item.isSubItem,
         parentId: item.parentId || undefined,
       });
-
-      // Store the original item for comparison
       setOriginalItem(item);
       fetchOptionsData();
       fetchSprints();
@@ -85,9 +78,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
 
   const fetchOptionsData = async () => {
     try {
-      const epicsRes = await apiClient.get(
-        `/projects/${projectId}/backlog/items`
-      );
+      const epicsRes = await apiClient.get(`/projects/${projectId}/backlog/items`);
       setEpics(
         Array.isArray(epicsRes.data)
           ? epicsRes.data
@@ -98,17 +89,10 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
               }))
           : []
       );
-
-      const usersRes = await apiClient.get(
-        `/projects/${projectId}/members/members-detail`
-      );
+      const usersRes = await apiClient.get(`/projects/${projectId}/members/members-detail`);
       setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
-
-      console.log("Epics for edit:", epicsRes.data);
-      console.log("Users for edit:", usersRes.data);
     } catch (err) {
       const msg = "Failed to load dropdown options";
-      console.error(msg, err);
       setError(msg);
       onError?.(msg);
     }
@@ -123,7 +107,6 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
           : []
       );
     } catch (err) {
-      console.error("Failed to fetch sprints", err);
       setSprints([]);
     }
   };
@@ -135,7 +118,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
     setIsSubmitting(true);
     setError(null);
 
-    // Create the payload with necessary type conversions
+    // Payload: status se guarda como texto normal
     const payload = {
       ...formData,
       epicId: formData.epicId || null,
@@ -143,7 +126,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
       isSubItem: item.isSubItem || formData.isSubItem || false,
     };
 
-    // Helper to update sprint after main update
+    // Helper para actualizar sprint después del update principal
     const updateSprintIfNeeded = async () => {
       if (formData.sprint !== item.sprint) {
         if (item.parentId || formData.parentId) {
@@ -159,7 +142,6 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
       }
     };
 
-    // Use the mutation for both regular items and subitems
     updateMutation.mutate(
       {
         projectId,

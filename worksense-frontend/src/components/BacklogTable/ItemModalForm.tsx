@@ -217,7 +217,17 @@ const ItemModalForm: React.FC<ItemModalFormProps> = ({
             required
             styleClass="status"
             disabled={loading}
-          />
+          >
+            {statusOptions && statusOptions.length > 0 ? (
+              statusOptions.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))
+            ) : (
+              ["New", "In Progress", "Done"].map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))
+            )}
+          </SelectField>
 
           <SelectField
             id="priority"
