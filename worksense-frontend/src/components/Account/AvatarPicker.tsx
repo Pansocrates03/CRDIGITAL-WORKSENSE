@@ -96,6 +96,7 @@ export const AvatarPicker: React.FC<Props> = ({ onSelect }) => {
           return (
             <button
               key={animal}
+              type="button"
               onClick={() => onSelect(url)}
               className="focus:outline-none transition-transform duration-200 hover:scale-105 rounded-full flex items-center justify-center"
             >

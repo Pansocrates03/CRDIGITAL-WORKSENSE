@@ -16,7 +16,42 @@ interface GenerateStoriesModalProps {
     onClose: () => void;
     onStoriesAdded: () => void;
     onError?: (message: string) => void;
+    storyPointScale?: "fibonacci" | "linear" | "tshirt";
 }
+
+// Helper para las opciones de size
+const getSizeOptions = (scale: string = "tshirt") => {
+    if (scale === "fibonacci") {
+        return [
+            { value: "1", label: "1" },
+            { value: "2", label: "2" },
+            { value: "3", label: "3" },
+            { value: "5", label: "5" },
+            { value: "8", label: "8" },
+            { value: "13", label: "13" },
+            { value: "21", label: "21" },
+        ];
+    } else if (scale === "linear") {
+        return [
+            { value: "1", label: "1" },
+            { value: "2", label: "2" },
+            { value: "3", label: "3" },
+            { value: "4", label: "4" },
+            { value: "5", label: "5" },
+            { value: "6", label: "6" },
+            { value: "7", label: "7" },
+            { value: "8", label: "8" },
+        ];
+    } else {
+        return [
+            { value: "XS", label: "XS" },
+            { value: "S", label: "S" },
+            { value: "M", label: "M" },
+            { value: "L", label: "L" },
+            { value: "XL", label: "XL" },
+        ];
+    }
+};
 
 const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                                                                  projectId,
@@ -26,6 +61,7 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                                                                  onClose,
                                                                  onStoriesAdded,
                                                                  onError,
+                                                                 storyPointScale = "tshirt",
                                                              }) => {
     const [suggestedStories, setSuggestedStories] = useState<AiStorySuggestion[]>(
         []
@@ -273,7 +309,7 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                                             </div>
 
                                             <div className={`${styles.formGroup} ${styles.epic}`}>
-                                                <label htmlFor={`size-${index}`}>Epic</label>
+                                                <label htmlFor={`size-${index}`}>Size</label>
                                                 <select
                                                     id={`size-${index}`}
                                                     value={story.size || ""}
@@ -282,11 +318,9 @@ const GenerateStoriesModal: FC<GenerateStoriesModalProps> = ({
                                                     }
                                                 >
                                                     <option value="">Select Size</option>
-                                                    <option value="XS">XS</option>
-                                                    <option value="S">S</option>
-                                                    <option value="M">M</option>
-                                                    <option value="L">L</option>
-                                                    <option value="XL">XL</option>
+                                                    {getSizeOptions(storyPointScale).map(opt => (
+                                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                    ))}
                                                 </select>
                                             </div>
                                         </div>

@@ -1,51 +1,91 @@
 import BacklogItemType from "@/types/BacklogItemType";
+import { format, addDays, isAfter } from "date-fns";
 
-interface burndown_chart_data {
-    date: string,
-    remainingWork: number,
-    idealBurndown: number
+interface BurndownDataPoint {
+    date: string;
+    remainingWork: number;
+    idealBurndown: number;
 }
 
-const size2Number = {
-    "XS": 1,
-    "S": 2,
-    "M": 3,
-    "L": 5,
-    "XL": 8
-} 
-
-export const createBurndownChartData = (userStories: BacklogItemType[]): burndown_chart_data[] => {
-    let data: burndown_chart_data[] = [];
-
-    // Get the total work for all the stories
-    const totalWork = userStories.reduce((sum, story) => sum + (size2Number[story.size || "M"] || 0), 0);
-    
-    // Calculate ideal burndown rate per day
-    const sprintDuration = 14; // Assuming 2-week sprints
-    const idealBurndownRate = totalWork / sprintDuration;
-
-    // Create the data points
-    let remainingWork = totalWork;
-    const today = new Date();
-    
-    for (let i = 0; i <= sprintDuration; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-        
-        data.push({
-            date: date.toISOString().split('T')[0],
-            remainingWork: remainingWork,
-            idealBurndown: Math.max(0, totalWork - (idealBurndownRate * i))
-        });
-        
-        // Update remaining work based on completed stories
-        const completedStories = userStories.filter(story => 
-            story.status === 'done' && 
-            new Date(story.updatedAt || '') <= date
-        );
-        
-        remainingWork = totalWork - completedStories.reduce((sum, story) => sum + (size2Number[story.size || "M"]  || 0), 0);
+// Helper to convert Firestore timestamp or string/Date to JS Date
+function toDate(val: any): Date | undefined {
+    if (!val) return undefined;
+    if (typeof val === 'object' && (val.seconds || val._seconds)) {
+        // Firestore timestamp
+        const seconds = val.seconds ?? val._seconds;
+        return new Date(seconds * 1000);
     }
-    
-    return data;
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? undefined : d;
 }
+
+// Helper to generate all dates between start and end (inclusive)
+function getDateRange(start: Date, end: Date): Date[] {
+    const dates = [];
+    let current = new Date(start);
+    while (current <= end) {
+        dates.push(new Date(current));
+        current = addDays(current, 1);
+    }
+    return dates;
+}
+
+export const createBurndownChartData = (
+    tasks: BacklogItemType[],
+    sprintStart: Date,
+    sprintEnd: Date,
+    storyPointScale: "fibonacci" | "linear" | "tshirt" = "tshirt"
+): BurndownDataPoint[] => {
+    if (!tasks || tasks.length === 0) return [];
+
+    // Total story points in the sprint
+    const totalPoints = tasks.reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size, storyPointScale) : 0), 0);
+
+    // Generate all dates in the sprint
+    const dateRange = getDateRange(sprintStart, sprintEnd);
+
+    // Calculate ideal burndown line
+    const totalDays = dateRange.length - 1;
+    const pointsPerDay = totalPoints / (totalDays > 0 ? totalDays : 1);
+
+    // For each day, calculate remaining work
+    return dateRange.map((currentDate, idx) => {
+        // Sum points of tasks completed (status 'Done') up to and including this day
+        const completedPoints = tasks
+            .filter(task => {
+                if (task.status !== 'Done') return false;
+                const doneDate = toDate(task.updatedAt) || toDate(task.createdAt);
+                return doneDate && !isAfter(doneDate, currentDate);
+            })
+            .reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size, storyPointScale) : 0), 0);
+
+        const remainingWork = Math.max(0, totalPoints - completedPoints);
+        const idealBurndown = Math.max(0, totalPoints - pointsPerDay * idx);
+
+        return {
+            date: format(currentDate, 'yyyy-MM-dd'),
+            remainingWork,
+            idealBurndown
+        };
+    });
+};
+
+// Helper function to convert size to story points
+const getStoryPoints = (size: string, scale: "fibonacci" | "linear" | "tshirt" = "tshirt"): number => {
+    if (scale === "fibonacci") {
+        const points = parseInt(size);
+        return isNaN(points) ? 0 : points;
+    } else if (scale === "linear") {
+        const points = parseInt(size);
+        return isNaN(points) ? 0 : points;
+    } else {
+        switch (size.toUpperCase()) {
+            case 'XS': return 1;
+            case 'S': return 2;
+            case 'M': return 3;
+            case 'L': return 5;
+            case 'XL': return 8;
+            default: return 0;
+        }
+    }
+};

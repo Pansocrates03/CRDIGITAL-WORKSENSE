@@ -66,6 +66,7 @@ export const SideBar: React.FC<{showSidebar:boolean}> = ({showSidebar}) => {
         if (isMounted) {
           setProjectName(projectData.name || "Untitled Project");
         }
+
       } catch (error) {
         console.error("Error fetching project name:", error);
         if (isMounted) {
@@ -96,7 +97,10 @@ export const SideBar: React.FC<{showSidebar:boolean}> = ({showSidebar}) => {
     return false;
   };
 
-  // Define project navigation items with useMemo
+  const projectRole = localStorage.getItem("projectRole");
+  let hasPermissionForSettings = projectRole === "scrum-master" || projectRole === "product-owner";
+
+    // Define project navigation items with useMemo
   const projectNavItems = useMemo<NavItem[]>(
     () => [
       {
@@ -120,7 +124,7 @@ export const SideBar: React.FC<{showSidebar:boolean}> = ({showSidebar}) => {
         path: `/project/${projectId}/sprint`,
       },
       {
-        name: "Workflow (S1)",
+        name: "Workflow",
         icon: "/workflow.svg",
         path: `/project/${projectId}/workflow`,
       },
@@ -225,16 +229,20 @@ export const SideBar: React.FC<{showSidebar:boolean}> = ({showSidebar}) => {
             <div className={styles.sectionTitle} id="project-nav-title">
               Project Navigation
             </div>
-            <ul className={styles.navList} aria-labelledby="project-nav-title">
-              {projectNavItems.map((item) => (
-                <NavItemComponent
-                  key={item.path}
-                  item={item}
-                  isActive={isPathActive(item.path)}
-                  onClick={() => handleNavigation(item.path)}
-                />
-              ))}
-            </ul>
+              <ul className={styles.navList} aria-labelledby="project-nav-title">
+                  {projectNavItems.map((item) => (
+                      // Render NavItemComponent ONLY if it's NOT the Settings item OR if it is Settings AND hasPermissionForSettings is true
+                      // Inverted logic: We DON'T render if it's Settings AND hasPermissionForSettings is false
+                      (item.name !== "Settings" || hasPermissionForSettings) && (
+                          <NavItemComponent
+                              key={item.path}
+                              item={item}
+                              isActive={isPathActive(item.path)}
+                              onClick={() => handleNavigation(item.path)}
+                          />
+                      )
+                  ))}
+              </ul>
           </>
         ) : (
           <>

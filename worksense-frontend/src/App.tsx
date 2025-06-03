@@ -21,7 +21,7 @@ import SprintPage from "./pages/SprintsPage/SprintsPage";
 import WorkflowPage from "./pages/Workflow/WorkflowPage";
 import ProjectSettingsPage from "./pages/ProjectSettings/ProjectSettingsPage";
 import { Toaster } from "sonner";
-import ForYouPage from "./pages/ForYouPage.tsx";
+import ForYouPage from "./pages/forYouPage/ForYouPage.tsx";
 const queryClient = new QueryClient();
 
 console.log("Running");

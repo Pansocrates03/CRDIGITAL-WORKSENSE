@@ -7,6 +7,9 @@ import QueryKeys from '@/utils/QueryKeys';
 import { projectService } from '@/services/projectService';
 import { useDeleteSprint, useSprints } from '@/hooks/useSprintData';
 
+import { useBacklogItemUpdate } from '@/hooks/useBacklogItemUpdate';
+import { format } from 'date-fns';
+
 // Views
 import Tabs from './components/Tabs/Tabs';
 import BoardView from './components/BoardView/BoardView';
@@ -15,18 +18,24 @@ import TableView from './components/TableView/TableView';
 import BurndownChartView from './components/BurndownChartView/BurndownChartView';
 
 import DeleteConfirmationModal from '@/components/ui/deleteConfirmationModal/deleteConfirmationModal';
+import CreateItemModal from '@/components/BacklogTable/CreateItemModal';
+import UpdateItemModal from '@/components/BacklogTable/UpdateItemModal';
+import { toast } from 'sonner';
 
 // Types
 import BacklogItemType from "@/types/BacklogItemType.ts";
 import { Sprint } from '@/types/SprintType';
 import { IconType } from 'react-icons/lib';
+import ProjectDetails from '@/types/ProjectType';
 
 import { createBurndownChartData } from './utils/CreateBurndownChartData';
 
 import {
-  FiLayout, FiGrid, FiClock, FiBarChart // Icons for tab navigation
+  FiLayout, FiGrid, FiBarChart // Icons for tab navigation
 } from "react-icons/fi";
 
+// Add type for story point scale
+type StoryPointScale = "fibonacci" | "linear" | "tshirt";
 
 const DEFAULT_COLUMNS = [
   { id: 'sprint_backlog', title: 'Sprint Backlog' },
@@ -44,8 +53,20 @@ const navigationTabs: TabItem[] = [
   { id: "overview", label: "Overview", icon: null },
   { id: "board", label: "Board", icon:FiLayout },
   { id: "table", label: "Table", icon:FiGrid },
-  { id: "burndown_chart", label: "Burndown Chart", icon:FiBarChart}
+  { id: "burndown_chart", label: "Charts", icon:FiBarChart}
 ]
+
+// Helper to convert Firestore timestamp or string/Date to JS Date
+function toDate(val: any): Date | undefined {
+    if (!val) return undefined;
+    if (typeof val === 'object' && (val.seconds || val._seconds)) {
+        // Firestore timestamp
+        const seconds = val.seconds ?? val._seconds;
+        return new Date(seconds * 1000);
+    }
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? undefined : d;
+}
 
 const WorkflowPage: React.FC = () => {
     const queryClient = useQueryClient();
@@ -57,17 +78,45 @@ const WorkflowPage: React.FC = () => {
         queryFn: () => projectService.fetchProjectItems(projectId ? projectId : "")
     })
     const { mutate: deleteSprintMutation } = useDeleteSprint(projectId ?? "");
-    
+    const updateBacklogItemMutation = useBacklogItemUpdate();
+
     // Fetch sprints data using custom hook
     const { data: sprints, isLoading: sprintsLoading, error: sprintsError } = useSprints(projectId ?? "");
     
+    const { data: project } = useQuery<ProjectDetails>({
+        queryKey: ["project", projectId],
+        queryFn: () => projectService.fetchProjectDetails(projectId!),
+        enabled: !!projectId,
+    });
+    
     // STATES
     const [tasks, setTasks] = useState<BacklogItemType[]>([]);
-    const [activeTab, setActiveTab] = useState('sprints');
+    const [activeTab, setActiveTab] = useState('board');
     const [columns, setColumns] = useState(DEFAULT_COLUMNS);
     const [selectedSprint, setSelectedSprint] = useState<string>('');
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [sprintToDelete, setSprintToDelete] = useState<Sprint | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [itemToEdit, setItemToEdit] = useState<BacklogItemType | null>(null);
+
+    // Obtener función refetch del useQuery de backlog
+    const { refetch } = useQuery<BacklogItemType[], Error>({
+        queryKey: [QueryKeys.backlog, projectId],
+        queryFn: () => projectService.fetchProjectItems(projectId ? projectId : "")
+    });
+
+    // Update columns when project.workflowStages changes
+    React.useEffect(() => {
+        if (project && Array.isArray(project.workflowStages) && project.workflowStages.length > 0) {
+            setColumns(project.workflowStages.map(stage => ({
+                id: stage,
+                title: stage
+            })));
+        } else {
+            setColumns(DEFAULT_COLUMNS);
+        }
+    }, [project?.workflowStages]);
 
     // get active sprint
     if(!sprints && !sprintsLoading) {
@@ -116,32 +165,55 @@ const WorkflowPage: React.FC = () => {
       };
   // Update tasks when data changes
   React.useEffect(() => {
-    if (filteredStories) {
-      console.log("Filtered Stories", filteredStories);
-      // Flatten all subitems
-      let flattenedData = filteredStories.flatMap(getItemChildren);
+    if (data) {
+        console.log("DATA", data);
+        // Flatten all subitems
+        let flattenedData = data.flatMap(getItemChildren);
 
-      // Filter out EPIC items
-      let filteredData = flattenedData.filter(item => item.type !== "epic");
+        // Filter out EPIC items
+        let filteredData = flattenedData.filter(item => item.type !== "epic");
 
-      // Set tasks state
-      setTasks(filteredData);
+        // Set tasks state
+        setTasks(filteredData);
     }
   }, [data]);
     const handleTaskUpdate = async (
         taskId: string,
         newStatus: BacklogItemType["status"]
     ) => {
+        // Optimistic update for UI
         setTasks(prevTasks =>
             prevTasks.map(task => task.id === taskId ? { ...task, status: newStatus } : task )
         );
-        let task = tasks.find(t => t.id === taskId); // Find task
-        if(!task) throw new Error("Task not found"); // Error handling
-        task.status = newStatus
-        await projectService.updateBacklogItem(projectId ? projectId : "", task); // Wait for update
 
-        // Invalidate Query Client
-        queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] });
+        let task = tasks.find(t => t.id === taskId);
+        if (!task) throw new Error("Task not found");
+
+        // Si es subitem (tiene parentId), actualizar usando la ruta de subitems
+        if (task.parentId) {
+            try {
+                await projectService.updateBacklogItem(
+                    projectId || "",
+                    {
+                        ...task,
+                        status: newStatus
+                    },
+                    task.parentId // pasar parentId para que el service use la ruta correcta
+                );
+                // Opcional: invalidar queries si es necesario
+                queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] });
+            } catch (err) {
+                console.error("Error updating subitem status:", err);
+            }
+        } else {
+            // Use the new mutation hook para items normales
+            updateBacklogItemMutation.mutate({
+                projectId: projectId ? projectId : "",
+                itemId: taskId,
+                itemType: task.type || "story", // fallback a "story" si no hay tipo
+                updateData: { status: newStatus }
+            });
+        }
     };
 
     const onTaskContentUpdate = async (
@@ -159,16 +231,63 @@ const WorkflowPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] });
     }
 
-    const burndown_chart_data = [
-      { date: '2024-03-01', remainingWork: 100, idealBurndown: 100 },
-      { date: '2024-03-02', remainingWork: 80, idealBurndown: 80 },
-      { date: '2024-03-03', remainingWork: 65, idealBurndown: 60 },
-      { date: '2024-03-04', remainingWork: 50, idealBurndown: 40 },
-      { date: '2024-03-05', remainingWork: 30, idealBurndown: 20 },
-      { date: '2024-03-06', remainingWork: 10, idealBurndown: 0 },
-    ];
-    // use instead:
-    // const brundown_chart_data = createBurndownChartData(tasks)
+    // Get active sprint's start and end dates
+    const sprintStart = activeSprint ? toDate(activeSprint.startDate) : undefined;
+    const sprintEnd = activeSprint ? toDate(activeSprint.endDate) : undefined;
+
+    // Ensure storyPointScale is one of the allowed values
+    const projectScale = project?.storyPointScale;
+    const storyPointScale: StoryPointScale = 
+        (projectScale === 'fibonacci' || projectScale === 'linear' || projectScale === 'tshirt')
+            ? projectScale
+            : 'tshirt';
+
+    // Generate burndown chart data from tasks and sprint range
+    const burndownChartData = React.useMemo(() => {
+        if (!sprintStart || !sprintEnd) return [];
+        return createBurndownChartData(tasks, sprintStart, sprintEnd, storyPointScale);
+    }, [tasks, sprintStart, sprintEnd, storyPointScale]);
+
+    // Prepare heatmap data: count of 'Done' items per day (use all items in data, not just tasks)
+    const doneItemsPerDay = React.useMemo(() => {
+        if (!data) return [];
+        const counts: Record<string, number> = {};
+        // Aplana todos los items y subitems
+        const allItems = data.flatMap(getItemChildren);
+        allItems.forEach(item => {
+            let updatedAt = item.updatedAt;
+            if (typeof updatedAt === 'object' && updatedAt !== null) {
+                if ('seconds' in updatedAt && typeof (updatedAt as any).seconds === 'number') {
+                    updatedAt = new Date((updatedAt as any).seconds * 1000).toISOString();
+                } else if ('_seconds' in updatedAt && typeof (updatedAt as any)._seconds === 'number') {
+                    updatedAt = new Date((updatedAt as any)._seconds * 1000).toISOString();
+                }
+            }
+            if (item.status === 'Done' && updatedAt) {
+                const dateObj = new Date(updatedAt);
+                if (!isNaN(dateObj.getTime())) {
+                    const date = format(dateObj, 'yyyy-MM-dd');
+                    counts[date] = (counts[date] || 0) + 1;
+                }
+            }
+        });
+        return Object.entries(counts).map(([date, count]) => ({ date, count }));
+    }, [data]);
+
+    const handleSuccess = (title: string, message: string) => {
+      toast.success(title + (message ? `: ${message}` : ''));
+    };
+
+    const handleError = (error: any) => {
+      toast.error(typeof error === 'string' ? error : (error?.message || 'An error occurred'));
+    };
+
+    if (error) { throw new Error("An error has occurred on SprintPage.tsx"); }
+    if (isLoading) { return <div>Loading...</div> }
+    if (!data) { throw new Error("Nothing received") }
+
+    console.log('Raw backlog data from backend:', data);
+    console.log('Tasks state in WorkflowPage:', tasks);
 
     const renderView = () => {
         switch (activeTab) {
@@ -179,18 +298,24 @@ const WorkflowPage: React.FC = () => {
             case 'table':
                 return <TableView tasks={tasks} />;
             case 'burndown_chart':
-                return <BurndownChartView data={burndown_chart_data} />
+                if (!sprintStart || !sprintEnd) {
+                    return <div>No sprint date range available.</div>;
+                }
+                return <BurndownChartView 
+                    data={burndownChartData} 
+                    doneItemsPerDay={doneItemsPerDay} 
+                    tasks={tasks}
+                    sprintStart={sprintStart}
+                    sprintEnd={sprintEnd}
+                    storyPointScale={storyPointScale}
+                />;
             default:
                 return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} columns={columns} onTaskContentUpdate={onTaskContentUpdate} />;
         }
     };
 
-    if (error) { throw new Error("An error has occurred on SprintPage.tsx"); }
-    if (isLoading) { return <div>Loading...</div> }
-    if (!data) { throw new Error("Nothing received") }
-
     return (
-    <div className="sprint-page">
+    <div className="sprint-page" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
       <div className="sprint-page__header">
         <div className="sprint-page__header-content">
           <h1 className="sprint-page__title">Workflow ({activeSprint.name})</h1>
@@ -226,6 +351,38 @@ const WorkflowPage: React.FC = () => {
         title="Delete Sprint"
         message={`Are you sure you want to delete the sprint "${sprintToDelete?.name}"? This action cannot be undone.`}
       />
+
+      {projectId && (
+        <CreateItemModal
+            projectId={projectId}
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onItemCreated={() => {
+                handleSuccess("Item  created successfully!",
+                    "You should now see the item in the backlog.");
+                refetch();
+            }}
+            onError={handleError}
+            storyPointScale={project?.storyPointScale || 'tshirt'}
+            statusOptions={project?.workflowStages || ["To Do", "In Progress", "Done"]}
+        />
+      )}
+
+      {projectId && (
+        <UpdateItemModal
+            projectId={projectId}
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            onItemUpdated={() => {
+                handleSuccess(`The ${itemToEdit?.type} ${itemToEdit?.name} was updated successfully!`, "You should now see the updated item in the backlog.");
+                refetch();
+            }}
+            onError={handleError}
+            item={itemToEdit}
+            storyPointScale={project?.storyPointScale || 'tshirt'}
+            statusOptions={project?.workflowStages || ["To Do", "In Progress", "Done"]}
+        />
+      )}
     </div>
   );
 };

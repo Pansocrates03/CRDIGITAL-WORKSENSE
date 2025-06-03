@@ -138,10 +138,14 @@ const CreateProject: React.FC = () => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handleProjectClick = (projectId: string) => {
-        localStorage.setItem('lastViewedProjectId', projectId); // Store the ID
-        navigate(`/project/${projectId}`); // Navigate as before
-    };
+     const  handleProjectClick = async (projectId: string) => {
+         const projectRoleId = await projectService.fetchProjectMembership(user?.userId ?? -1, projectId).then(me=> {
+             return me.membership.roleId
+         })
+         localStorage.setItem('projectRole', projectRoleId); // Store the ID
+         navigate(`/project/${projectId}`);
+
+     };
 
     useEffect(() => {
         if (location.state?.toast) {
@@ -150,17 +154,14 @@ const CreateProject: React.FC = () => {
         }
     }, [location.state]);
 
-    // Renderizado condicional dentro del return en lugar de retornos tempranos
     if (isLoading || loading || !user) {
         return <div className={styles.loadingContainer}>Loading...</div>;
     }
 
     return (
         <>
-            {/* <Toaster /> */}
             <main className={styles.mainContent}>
                 <section className={styles.projectsSection}>
-                    {/* Header Section */}
                     <SectionHeader
                         loading={loading}
                         user={user}

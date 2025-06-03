@@ -124,7 +124,7 @@ const MetricsAnalyticsView: React.FC = () => {
               id="velocity-tracking"
             />
             <label htmlFor="velocity-tracking" className="text-base font-medium">
-              Velocity Tracking
+              Burn Up Chart
             </label>
           </div>
 

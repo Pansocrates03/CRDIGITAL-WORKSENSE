@@ -2,6 +2,12 @@
 import { Request, Response, NextFunction } from "express";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "../models/firebase.js";
+import { sqlConnect, sql } from "../models/sqlModel.js";
+import {
+  awardPoints,
+  calculateTaskPoints,
+  deductPoints,
+} from "../service/gamificationService.js";
 
 interface BacklogItem {
   acceptanceCriteria?: string[] | null;
@@ -207,6 +213,8 @@ export const getBacklogItem = async (
 /**
  * Update a backlog item
  */
+// Add these imports at the top
+// Modify your existing updateBacklogItem function
 export const updateBacklogItem = async (
   req: Request,
   res: Response,
@@ -239,11 +247,24 @@ export const updateBacklogItem = async (
       return;
     }
 
+    // Get the current item data to check status change
+    const currentItemData = docSnap.data();
+    const oldStatus = currentItemData?.status;
+    const newStatus = updateData.status;
+
+    // Normalize status values for case-insensitive comparison
+    const oldStatusNorm = (oldStatus || '').toLowerCase().trim();
+    const newStatusNorm = (newStatus || '').toLowerCase().trim();
+
     // Prepare update data
-    const dataToUpdate = {
+    let dataToUpdate = {
       ...updateData,
       updatedAt: FieldValue.serverTimestamp(),
     };
+    // If status is being set to 'done', always update updatedAt
+    if (newStatusNorm === 'done') {
+      dataToUpdate.updatedAt = FieldValue.serverTimestamp();
+    }
 
     // Prevent changing immutable fields
     delete dataToUpdate.projectId;
@@ -253,6 +274,149 @@ export const updateBacklogItem = async (
 
     await itemRef.update(dataToUpdate);
 
+    // In your backlogController.ts, update the gamification section:
+    console.log('Backlog update:', { oldStatus, newStatus, assigneeId: currentItemData?.assigneeId });
+
+    // *** GAMIFICATION LOGIC WITH TOAST DATA ***
+    if (oldStatusNorm !== "done" && newStatusNorm === "done") {
+      console.log('AWARD block hit');
+      try {
+        // Get the assignee's ID from the current item data
+        const assigneeId = currentItemData?.assigneeId;
+
+        if (assigneeId) {
+          // Get user info for leaderboard
+          const pool = await sqlConnect();
+          let userName = "Unknown User";
+
+          if (pool) {
+            const userResult = await pool
+              .request()
+              .input("UserId", sql.Int, assigneeId)
+              .execute("spGetUserById");
+
+            if (userResult.recordset.length > 0) {
+              const user = userResult.recordset[0];
+              userName = `${user.firstName} ${user.lastName}`;
+
+              // Store assignee info in the item for future activity queries
+              await itemRef.update({
+                assigneeId: assigneeId,
+                assigneeName: userName,
+                completedAt: FieldValue.serverTimestamp(),
+              });
+            }
+          }
+
+          // Calculate and award points
+          const pointsToAward = calculateTaskPoints({
+            type: currentItemData?.type,
+            size: currentItemData?.size,
+          });
+
+          const gamificationResult = await awardPoints({
+            userId: assigneeId,
+            projectId,
+            action: "item_completion",
+            taskType: currentItemData?.type,
+            points: pointsToAward,
+            userName,
+          });
+
+          console.log(
+            `🎉 Awarded ${pointsToAward} points to assignee ${assigneeId} for completing ${itemType} ${itemId}`
+          );
+
+          // Return toast data in response
+          const updatedDoc = await itemRef.get();
+          return res.status(200).json({
+            id: updatedDoc.id,
+            ...updatedDoc.data(),
+            // Toast notification data
+            toast: {
+              type: "success",
+              points: pointsToAward,
+              newBadges: gamificationResult.newBadges || [],
+              totalPoints: gamificationResult.totalPoints,
+              level: gamificationResult.level,
+              assigneeId: assigneeId,
+            },
+          });
+        }
+      } catch (gamificationError) {
+        console.error(
+          "⚠️ Gamification error (item status still updated):",
+          gamificationError
+        );
+      }
+    } else if (oldStatusNorm === "done" && newStatusNorm !== "done") {
+     
+      try {
+        // Get the assignee's ID from the current item data
+        const assigneeId = currentItemData?.assigneeId;
+
+        if (assigneeId) {
+          // Get user info for leaderboard
+          const pool = await sqlConnect();
+          let userName = "Unknown User";
+
+          if (pool) {
+            const userResult = await pool
+              .request()
+              .input("UserId", sql.Int, assigneeId)
+              .execute("spGetUserById");
+
+            if (userResult.recordset.length > 0) {
+              const user = userResult.recordset[0];
+              userName = `${user.firstName} ${user.lastName}`;
+            }
+          }
+
+          // Calculate and deduct points
+          const pointsToDeduct = calculateTaskPoints({
+            type: currentItemData?.type,
+            size: currentItemData?.size,
+          });
+
+          const gamificationResult = await deductPoints({
+            userId: assigneeId,
+            projectId,
+            action: "item_uncompletion",
+            taskType: currentItemData?.type,
+            points: -pointsToDeduct,
+            userName,
+          });
+
+          console.log(
+            `📉 Deducted ${pointsToDeduct} points from assignee ${assigneeId} for uncompleting ${itemType} ${itemId}`
+          );
+
+          // Return toast data in response
+          const updatedDoc = await itemRef.get();
+          return res.status(200).json({
+            id: updatedDoc.id,
+            ...updatedDoc.data(),
+            // Toast notification data
+            toast: {
+              type: "warning",
+              points: -pointsToDeduct,
+              totalPoints: gamificationResult.totalPoints,
+              level: gamificationResult.level,
+              assigneeId: assigneeId,
+            },
+          });
+        }
+      } catch (gamificationError) {
+        console.error(
+          "⚠️ Gamification error (item status still updated):",
+          gamificationError
+        );
+      }
+    } else {
+      console.log('NO block hit');
+    }
+
+    // Regular response if no gamification
     const updatedDoc = await itemRef.get();
     res.status(200).json({ id: updatedDoc.id, ...updatedDoc.data() });
   } catch (error: any) {
@@ -263,7 +427,6 @@ export const updateBacklogItem = async (
     next(error);
   }
 };
-
 /**
  * Delete a backlog item
  */
@@ -415,8 +578,154 @@ export const updateSubItem = async (
       return;
     }
 
-    await itemRef.update(updateData);
-    res.status(200).json({ message: "Subitem updated", id: subItemId });
+    // Get the current subitem data to check status change
+    const currentItemData = docSnap.data();
+    const oldStatus = currentItemData?.status;
+    const newStatus = updateData.status;
+
+    // Normalize status values for case-insensitive comparison
+    const oldStatusNorm = (oldStatus || '').toLowerCase().trim();
+    const newStatusNorm = (newStatus || '').toLowerCase().trim();
+
+    // Prepare update data
+    let dataToUpdate = {
+      ...updateData,
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+    if (newStatusNorm === 'done') {
+      dataToUpdate.updatedAt = FieldValue.serverTimestamp();
+    }
+
+    // Prevent changing immutable fields
+    delete dataToUpdate.projectId;
+    delete dataToUpdate.type;
+    delete dataToUpdate.reporterId;
+    delete dataToUpdate.createdAt;
+
+    await itemRef.update(dataToUpdate);
+
+    // Gamification logic for subitems
+    console.log('Subitem update:', { oldStatus, newStatus, assigneeId: currentItemData?.assigneeId });
+
+    if (oldStatusNorm !== "done" && newStatusNorm === "done") {
+      console.log('SUBITEM AWARD block hit');
+      try {
+        const assigneeId = currentItemData?.assigneeId;
+        if (assigneeId) {
+          // Get user info for leaderboard
+          const pool = await sqlConnect();
+          let userName = "Unknown User";
+          if (pool) {
+            const userResult = await pool
+              .request()
+              .input("UserId", sql.Int, assigneeId)
+              .execute("spGetUserById");
+            if (userResult.recordset.length > 0) {
+              const user = userResult.recordset[0];
+              userName = `${user.firstName} ${user.lastName}`;
+              await itemRef.update({
+                assigneeId: assigneeId,
+                assigneeName: userName,
+                completedAt: FieldValue.serverTimestamp(),
+              });
+            }
+          }
+          // Calculate and award points
+          const pointsToAward = calculateTaskPoints({
+            type: currentItemData?.type,
+            size: currentItemData?.size,
+          });
+          const gamificationResult = await awardPoints({
+            userId: assigneeId,
+            projectId,
+            action: "subitem_completion",
+            taskType: currentItemData?.type,
+            points: pointsToAward,
+            userName,
+          });
+          console.log(
+            `🎉 Awarded ${pointsToAward} points to assignee ${assigneeId} for completing subitem ${subItemId}`
+          );
+          const updatedDoc = await itemRef.get();
+          return res.status(200).json({
+            id: updatedDoc.id,
+            ...updatedDoc.data(),
+            toast: {
+              type: "success",
+              points: pointsToAward,
+              newBadges: gamificationResult.newBadges || [],
+              totalPoints: gamificationResult.totalPoints,
+              level: gamificationResult.level,
+              assigneeId: assigneeId,
+            },
+          });
+        }
+      } catch (gamificationError) {
+        console.error(
+          "⚠️ Subitem gamification error (status still updated):",
+          gamificationError
+        );
+      }
+    } else if (oldStatusNorm === "done" && newStatusNorm !== "done") {
+      console.log('SUBITEM DEDUCT block hit');
+      try {
+        const assigneeId = currentItemData?.assigneeId;
+        if (assigneeId) {
+          // Get user info for leaderboard
+          const pool = await sqlConnect();
+          let userName = "Unknown User";
+          if (pool) {
+            const userResult = await pool
+              .request()
+              .input("UserId", sql.Int, assigneeId)
+              .execute("spGetUserById");
+            if (userResult.recordset.length > 0) {
+              const user = userResult.recordset[0];
+              userName = `${user.firstName} ${user.lastName}`;
+            }
+          }
+          // Calculate and deduct points
+          const pointsToDeduct = calculateTaskPoints({
+            type: currentItemData?.type,
+            size: currentItemData?.size,
+          });
+          const gamificationResult = await deductPoints({
+            userId: assigneeId,
+            projectId,
+            action: "subitem_uncompletion",
+            taskType: currentItemData?.type,
+            points: -pointsToDeduct,
+            userName,
+          });
+          console.log(
+            `📉 Deducted ${pointsToDeduct} points from assignee ${assigneeId} for uncompleting subitem ${subItemId}`
+          );
+          const updatedDoc = await itemRef.get();
+          return res.status(200).json({
+            id: updatedDoc.id,
+            ...updatedDoc.data(),
+            toast: {
+              type: "warning",
+              points: -pointsToDeduct,
+              totalPoints: gamificationResult.totalPoints,
+              level: gamificationResult.level,
+              assigneeId: assigneeId,
+            },
+          });
+        }
+      } catch (gamificationError) {
+        console.error(
+          "⚠️ Subitem gamification error (status still updated):",
+          gamificationError
+        );
+      }
+    } else {
+      console.log('SUBITEM NO block hit');
+    }
+
+    // Regular response if no gamification
+    const updatedDoc = await itemRef.get();
+    res.status(200).json({ id: updatedDoc.id, ...updatedDoc.data() });
   } catch (error) {
     next(error);
   }
@@ -446,15 +755,14 @@ export const changeItemSprint = async (
     // Update only the sprint field
     await itemRef.update({
       sprint: sprintId,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
 
-    res.status(200).json({ 
+    res.status(200).json({
       message: "Sprint updated successfully",
-      sprintId: sprintId
+      sprintId: sprintId,
     });
-
-  } catch(error) {
+  } catch (error) {
     next(error);
   }
 };

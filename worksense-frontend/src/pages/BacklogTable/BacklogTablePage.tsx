@@ -85,6 +85,8 @@ const BacklogTablePage: FC = () => {
 
     const { data: sprints = [] } = useSprints(projectId || "");
 
+    const hasPermissions = localStorage.getItem("projectRole")?.includes("product-owner") || localStorage.getItem("projectRole")?.includes("scrum-master");
+
     const memberMap = useMemo(() => {
         const map = new Map<number, MemberDetailed>();
         members.forEach((m) => m.userId && map.set(m.userId, m));
@@ -277,6 +279,7 @@ const BacklogTablePage: FC = () => {
                     onDelete={() => handleDelete(item)}
                     onViewDetails={() => handleViewDetails(item)}
                     enableAiSuggestions={project?.enableAiSuggestions ?? true}
+                    hasPermissions={hasPermissions}
 
                     sprints={sprints}
                 />
@@ -301,14 +304,14 @@ const BacklogTablePage: FC = () => {
 
     return (
         <div className={"p-4"}>
-            <BacklogHeader onAddItem={() => setIsModalOpen(true)}/>
+            <BacklogHeader onAddItem={() => setIsModalOpen(true)} hasPermissions={hasPermissions}/>
             <div className="border-b border-border my-4"></div>
             <SearchFilter
                 value={searchTerm}
                 onChange={setSearchTerm}
                 placeholder="Search backlog items..."
             />
-
+            <>{console.log("hasPermissions in BacklogTablePage: ", hasPermissions)}</>
             <div className={styles.tableContainer}>
                 <table className={styles.table}>
                     <thead>
@@ -346,6 +349,7 @@ const BacklogTablePage: FC = () => {
                                         onGenerateStories={handleGenerateStories}
                                         memberMap={memberMap}
                                         enableAiSuggestions={project?.enableAiSuggestions ?? true}
+                                        hasPermissions={hasPermissions}
 
                                         sprints={sprints}
                                     />
@@ -377,12 +381,13 @@ const BacklogTablePage: FC = () => {
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onItemCreated={() => {
-
                         handleSuccess("Item  created successfully!",
                             "You should now see the item in the backlog.");
                         refetch();
                     }}
                     onError={handleError}
+                    storyPointScale={project?.storyPointScale || 'tshirt'}
+                    statusOptions={project?.tags && project.tags.length > 0 ? project.tags : ["New", "To Do", "In Progress", "In Review", "Done"]}
                 />
             )}
 
@@ -397,6 +402,8 @@ const BacklogTablePage: FC = () => {
                     }}
                     onError={handleError}
                     item={itemToEdit}
+                    storyPointScale={project?.storyPointScale || 'tshirt'}
+                    statusOptions={project?.tags && project.tags.length > 0 ? project.tags : ["New", "To Do", "In Progress", "In Review", "Done"]}
                 />
             )}
 
@@ -409,6 +416,7 @@ const BacklogTablePage: FC = () => {
                     onClose={() => setShowGenerateStoriesModal(false)}
                     onStoriesAdded={() => handleStoriesAdded(selectedEpicId)}
                     onError={handleError}
+                    storyPointScale={project?.storyPointScale || 'tshirt'}
                 />
             )}
 

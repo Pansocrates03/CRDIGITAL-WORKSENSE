@@ -73,6 +73,11 @@
     flex-shrink: 0; /* Prevent shrinking */
 }
 
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Add gap between gamification badge and avatar */
+}
 /* Avatar container */
 .avatarContainer {
     position: relative;
