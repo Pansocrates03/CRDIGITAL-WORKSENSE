@@ -15,6 +15,15 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ BacklogItem, inde
   const [currentItem, setCurrentItem] = useState<BacklogItemType>(BacklogItem);
   const formRef = useRef<HTMLFormElement>(null);
 
+  // Mapeo de colores para los stages
+  const stageColors: Record<string, string> = {
+    'To Do': '#FBE8F0',
+    'In Progress': '#F3A8C7',
+    'In Review': '#E74C8B',
+    'Testing': '#DD1E6C',
+    'Done': '#ac1754',
+  };
+
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('taskId', currentItem.id);
     e.dataTransfer.setData('sourceIndex', index.toString());
@@ -106,7 +115,10 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ BacklogItem, inde
       <h3 className="task-card__title">{currentItem.name}</h3>
       
       <div className="task-card__meta">
-        <span className={`task-card__status ${getStatusClass(currentItem.status ? currentItem.status : "")}`}>
+        <span
+          className="task-card__status"
+          style={{ backgroundColor: stageColors[currentItem.status || ''] || '#F3F4F6', color: currentItem.status === 'Done' ? '#fff' : '#22223b' }}
+        >
           {currentItem.status}
         </span>
         {currentItem.priority && (

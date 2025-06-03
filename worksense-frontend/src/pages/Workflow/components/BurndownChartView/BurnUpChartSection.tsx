@@ -16,15 +16,26 @@ function toDate(val: any): Date | undefined {
     return isNaN(d.getTime()) ? undefined : d;
 }
 
-// Helper function to convert size to story points
-const getStoryPoints = (size: string): number => {
-  switch (size.toUpperCase()) {
-    case 'XS': return 1;
-    case 'S': return 2;
-    case 'M': return 3;
-    case 'L': return 5;
-    case 'XL': return 8;
-    default: return 0;
+// Helper function to convert size to story points based on scale
+const getStoryPoints = (size: string, scale: "fibonacci" | "linear" | "tshirt" = "tshirt"): number => {
+  if (scale === "fibonacci") {
+    // For fibonacci scale, the size is already a number
+    const points = parseInt(size);
+    return isNaN(points) ? 0 : points;
+  } else if (scale === "linear") {
+    // For linear scale, the size is already a number
+    const points = parseInt(size);
+    return isNaN(points) ? 0 : points;
+  } else {
+    // Default to t-shirt sizes
+    switch (size.toUpperCase()) {
+      case 'XS': return 1;
+      case 'S': return 2;
+      case 'M': return 3;
+      case 'L': return 5;
+      case 'XL': return 8;
+      default: return 0;
+    }
   }
 };
 
@@ -53,9 +64,16 @@ interface BurnUpChartSectionProps {
   isEnabled: boolean;
   sprintStart?: Date;
   sprintEnd?: Date;
+  storyPointScale?: "fibonacci" | "linear" | "tshirt";
 }
 
-const BurnUpChartSection: React.FC<BurnUpChartSectionProps> = ({ tasks, isEnabled, sprintStart, sprintEnd }) => {
+const BurnUpChartSection: React.FC<BurnUpChartSectionProps> = ({ 
+  tasks, 
+  isEnabled, 
+  sprintStart, 
+  sprintEnd,
+  storyPointScale = "tshirt" 
+}) => {
   // Process tasks into burn up data
   const burnUpData = useMemo(() => {
     if (!tasks || tasks.length === 0 || !sprintStart || !sprintEnd) return [];
@@ -70,15 +88,15 @@ const BurnUpChartSection: React.FC<BurnUpChartSectionProps> = ({ tasks, isEnable
           const taskDate = toDate(task.createdAt) || toDate(task.updatedAt);
           return taskDate && taskDate <= currentDate;
         })
-        .reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size) : 0), 0);
+        .reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size, storyPointScale) : 0), 0);
 
-      // Completed points: all tasks with status done and updated (or created) on or before this date
+      // Completed points: all tasks with status Done and updated (or created) on or before this date
       const completedPoints = tasks
         .filter(task => {
           const taskDate = toDate(task.updatedAt) || toDate(task.createdAt);
-          return task.status === 'done' && taskDate && !isAfter(taskDate, currentDate);
+          return task.status === 'Done' && taskDate && !isAfter(taskDate, currentDate);
         })
-        .reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size) : 0), 0);
+        .reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size, storyPointScale) : 0), 0);
 
       return {
         date: format(currentDate, 'yyyy-MM-dd'),
@@ -86,7 +104,7 @@ const BurnUpChartSection: React.FC<BurnUpChartSectionProps> = ({ tasks, isEnable
         completed: completedPoints
       };
     });
-  }, [tasks, sprintStart, sprintEnd]);
+  }, [tasks, sprintStart, sprintEnd, storyPointScale]);
 
   return (
     <Paper sx={{ 

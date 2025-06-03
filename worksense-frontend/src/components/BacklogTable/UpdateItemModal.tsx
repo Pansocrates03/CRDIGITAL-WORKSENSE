@@ -19,6 +19,10 @@ interface Epic {
   name: string;
 }
 
+function toSnakeCase(str: string) {
+  return str.toLowerCase().replace(/\s+/g, '_');
+}
+
 const UpdateItemModal: FC<UpdateItemModalProps> = ({
   projectId,
   isOpen,
@@ -140,6 +144,8 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
       parentId: item.parentId || formData.parentId || null,
       isSubItem: item.isSubItem || formData.isSubItem || false,
     };
+
+    const statusToSave = toSnakeCase(payload.status || '');
 
     try {
       // Update item fields (except sprint)
