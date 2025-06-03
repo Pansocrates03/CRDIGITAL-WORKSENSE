@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 import { useSprints, useCreateSprint, useDeleteSprint, useUpdateSprint } from "@/hooks/useSprintData";
 import { useAuth } from "@/hooks/useAuth";
 import { useMembers } from "@/hooks/useMembers";
+import { useSprintTasks } from "@/hooks/useSprintTasks";
 
 /* Types */
 import { Sprint } from "@/types/SprintType";
@@ -317,13 +318,35 @@ const SprintsPage: React.FC = () => {
                                             </div>
                                             <div className="sprint-details__section">
                                                 <h4>Sprint Progress</h4>
-                                                <AnimatedCircularProgressBar
-                                                max={100}
-                                                min={0}
-                                                value={55}
-                                                gaugePrimaryColor="rgb(79 70 229)"
-                                                gaugeSecondaryColor="rgba(0, 0, 0, 0.1)"
-                                                />                                            </div>
+                                                {(() => {
+                                                    const { stats, isLoading: taskStatsLoading } = useSprintTasks({
+                                                        projectId: projectId ?? "",
+                                                        sprintId: sprint.id,
+                                                    });
+                                                    return (
+                                                        <>
+                                                            <AnimatedCircularProgressBar
+                                                                max={100}
+                                                                min={0}
+                                                                value={taskStatsLoading ? 0 : stats.completionPercentage}
+                                                                gaugePrimaryColor="var(--accent-pink)"
+                                                                gaugeSecondaryColor="rgba(0, 0, 0, 0.1)"
+                                                            />
+                                                            {!taskStatsLoading && (
+                                                                <div className="text-sm text-gray-600 mt-2">
+                                                                    {stats.completedTasks} of {stats.totalTasks} tasks completed
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    );
+                                                })()}
+                                            </div>
+                                            <div className="sprint-details__section">
+                                                <h4>Task Status</h4>
+                                                <p>
+                                                    {formatDate(sprint.startDate)} - {formatDate(sprint.endDate)}
+                                                </p>
+                                            </div>
                                         </div>
                                         {canManageSprints && (
                                             <div className="sprint-details__actions">
@@ -334,22 +357,20 @@ const SprintsPage: React.FC = () => {
                                                         e.stopPropagation();
                                                         handleEditSprint(sprint);
                                                     }}
-                                                    className="flex items-center space-x-2"
                                                 >
                                                     <Pencil className="h-4 w-4" />
-                                                    <span>Edit Sprint</span>
+                                                    Edit Sprint
                                                 </Button>
                                                 <Button
-                                                    variant="outline"
+                                                    variant="destructive"
                                                     size="sm"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleDeleteSprint(sprint.id);
                                                     }}
-                                                    className="flex items-center space-x-2 text-red-500 hover:text-red-700 hover:bg-red-50"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
-                                                    <span>Delete Sprint</span>
+                                                    Delete Sprint
                                                 </Button>
                                             </div>
                                         )}
