@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import Modal from '@/components/Modal/Modal';
 import UpdateItemModal from '@/components/BacklogTable/UpdateItemModal';
 import { MoreVertical } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface AssignedItem {
   id: string;
@@ -106,6 +107,10 @@ const AssignedItemsList: React.FC<AssignedItemsListProps> = ({ assignedItems, pr
           console.log("AssignedItemsList: Invalidating both assigned and completed queries after update");
           queryClient.invalidateQueries({ queryKey: ['assignedItems'] });
           queryClient.invalidateQueries({ queryKey: ['completedTasks'] });
+          toast.success('Item updated successfully!');
+        }}
+        onError={(msg) => {
+          toast.error(msg || 'Failed to update item.');
         }}
         item={editItem as any}
       />
