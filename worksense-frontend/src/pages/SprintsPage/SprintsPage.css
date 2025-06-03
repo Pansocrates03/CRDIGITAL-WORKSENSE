@@ -91,9 +91,23 @@
 
 .sprint-details__content {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
     margin-bottom: 1rem;
+    position: relative;
+}
+
+.sprint-details__section {
+    grid-column: 1;
+}
+
+.sprint-details__section:last-child {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .sprint-details__section h4 {
