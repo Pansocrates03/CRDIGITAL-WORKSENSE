@@ -18,6 +18,9 @@ import TableView from './components/TableView/TableView';
 import BurndownChartView from './components/BurndownChartView/BurndownChartView';
 
 import DeleteConfirmationModal from '@/components/ui/deleteConfirmationModal/deleteConfirmationModal';
+import CreateItemModal from '@/components/BacklogTable/CreateItemModal';
+import UpdateItemModal from '@/components/BacklogTable/UpdateItemModal';
+import { toast } from 'sonner';
 
 // Types
 import BacklogItemType from "@/types/BacklogItemType.ts";
@@ -93,12 +96,21 @@ const WorkflowPage: React.FC = () => {
     const [selectedSprint, setSelectedSprint] = useState<string>('');
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [sprintToDelete, setSprintToDelete] = useState<Sprint | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [itemToEdit, setItemToEdit] = useState<BacklogItemType | null>(null);
+
+    // Obtener función refetch del useQuery de backlog
+    const { refetch } = useQuery<BacklogItemType[], Error>({
+        queryKey: [QueryKeys.backlog, projectId],
+        queryFn: () => projectService.fetchProjectItems(projectId ? projectId : "")
+    });
 
     // Update columns when project.workflowStages changes
     React.useEffect(() => {
         if (project && Array.isArray(project.workflowStages) && project.workflowStages.length > 0) {
             setColumns(project.workflowStages.map(stage => ({
-                id: stage.toLowerCase().replace(/\s+/g, '_'),
+                id: stage,
                 title: stage
             })));
         } else {
@@ -196,9 +208,9 @@ const WorkflowPage: React.FC = () => {
         } else {
             // Use the new mutation hook para items normales
             updateBacklogItemMutation.mutate({
-                projectId: projectId || "",
+                projectId: projectId ? projectId : "",
                 itemId: taskId,
-                itemType: task.type,
+                itemType: task.type || "story", // fallback a "story" si no hay tipo
                 updateData: { status: newStatus }
             });
         }
@@ -251,7 +263,7 @@ const WorkflowPage: React.FC = () => {
                     updatedAt = new Date((updatedAt as any)._seconds * 1000).toISOString();
                 }
             }
-            if (item.status === 'done' && updatedAt) {
+            if (item.status === 'Done' && updatedAt) {
                 const dateObj = new Date(updatedAt);
                 if (!isNaN(dateObj.getTime())) {
                     const date = format(dateObj, 'yyyy-MM-dd');
@@ -261,6 +273,14 @@ const WorkflowPage: React.FC = () => {
         });
         return Object.entries(counts).map(([date, count]) => ({ date, count }));
     }, [data]);
+
+    const handleSuccess = (title: string, message: string) => {
+      toast.success(title + (message ? `: ${message}` : ''));
+    };
+
+    const handleError = (error: any) => {
+      toast.error(typeof error === 'string' ? error : (error?.message || 'An error occurred'));
+    };
 
     if (error) { throw new Error("An error has occurred on SprintPage.tsx"); }
     if (isLoading) { return <div>Loading...</div> }
@@ -331,6 +351,38 @@ const WorkflowPage: React.FC = () => {
         title="Delete Sprint"
         message={`Are you sure you want to delete the sprint "${sprintToDelete?.name}"? This action cannot be undone.`}
       />
+
+      {projectId && (
+        <CreateItemModal
+            projectId={projectId}
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onItemCreated={() => {
+                handleSuccess("Item  created successfully!",
+                    "You should now see the item in the backlog.");
+                refetch();
+            }}
+            onError={handleError}
+            storyPointScale={project?.storyPointScale || 'tshirt'}
+            statusOptions={project?.workflowStages || ["To Do", "In Progress", "Done"]}
+        />
+      )}
+
+      {projectId && (
+        <UpdateItemModal
+            projectId={projectId}
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            onItemUpdated={() => {
+                handleSuccess(`The ${itemToEdit?.type} ${itemToEdit?.name} was updated successfully!`, "You should now see the updated item in the backlog.");
+                refetch();
+            }}
+            onError={handleError}
+            item={itemToEdit}
+            storyPointScale={project?.storyPointScale || 'tshirt'}
+            statusOptions={project?.workflowStages || ["To Do", "In Progress", "Done"]}
+        />
+      )}
     </div>
   );
 };

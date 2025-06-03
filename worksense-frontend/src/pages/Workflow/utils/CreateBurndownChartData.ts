@@ -50,10 +50,10 @@ export const createBurndownChartData = (
 
     // For each day, calculate remaining work
     return dateRange.map((currentDate, idx) => {
-        // Sum points of tasks completed (status 'done') up to and including this day
+        // Sum points of tasks completed (status 'Done') up to and including this day
         const completedPoints = tasks
             .filter(task => {
-                if (task.status !== 'done') return false;
+                if (task.status !== 'Done') return false;
                 const doneDate = toDate(task.updatedAt) || toDate(task.createdAt);
                 return doneDate && !isAfter(doneDate, currentDate);
             })

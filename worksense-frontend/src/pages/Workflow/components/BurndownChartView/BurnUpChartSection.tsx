@@ -90,11 +90,11 @@ const BurnUpChartSection: React.FC<BurnUpChartSectionProps> = ({
         })
         .reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size, storyPointScale) : 0), 0);
 
-      // Completed points: all tasks with status done and updated (or created) on or before this date
+      // Completed points: all tasks with status Done and updated (or created) on or before this date
       const completedPoints = tasks
         .filter(task => {
           const taskDate = toDate(task.updatedAt) || toDate(task.createdAt);
-          return task.status === 'done' && taskDate && !isAfter(taskDate, currentDate);
+          return task.status === 'Done' && taskDate && !isAfter(taskDate, currentDate);
         })
         .reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size, storyPointScale) : 0), 0);
 

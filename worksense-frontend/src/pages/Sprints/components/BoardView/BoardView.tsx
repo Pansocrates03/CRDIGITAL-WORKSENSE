@@ -3,9 +3,6 @@ import DraggableTaskCard from '../TaskCard/DraggableTaskCard';
 import '../styles/BoardView.css';
 import BacklogItemType from '@/types/BacklogItemType';
 
-const BASE_COLUMN_ID = "no_column";
-const BASE_COLUMN_TITLE = "Sin columna";
-
 interface BoardViewProps {
   tasks: BacklogItemType[];
   onTaskUpdate: (taskId: string, newStatus: string) => void;
@@ -14,13 +11,6 @@ interface BoardViewProps {
 
 const BoardView: React.FC<BoardViewProps> = ({ tasks, onTaskUpdate, columns }) => {
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
-  const columnsWithBase = [
-    { id: BASE_COLUMN_ID, title: BASE_COLUMN_TITLE},
-    ...columns
-  ]
-
-  
-   
 
   const handleDragOver = (e: React.DragEvent, columnId: string) => {
     e.preventDefault();
@@ -42,17 +32,12 @@ const BoardView: React.FC<BoardViewProps> = ({ tasks, onTaskUpdate, columns }) =
   };
 
   const getTasksByStatus = (status: string) => {
-  if (status === BASE_COLUMN_ID) {
-    // Devuelve los tasks cuyo status no coincide con ningún column.id
-    const columnIds = columns.map(col => col.id);
-    return tasks.filter(task => !columnIds.includes(task.status ? task.status : ""));
-  }
-  return tasks.filter(task => task.status === status);
-};
+    return tasks.filter(task => task.status === status);
+  };
 
   return (
     <div className="board-view">
-      {columnsWithBase.map(column => (
+      {columns.map(column => (
         <div
           key={column.id}
           className="board-column"

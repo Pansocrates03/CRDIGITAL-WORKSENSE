@@ -89,6 +89,9 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
 
   const { data: sprints, error: sprintsError, isLoading: sprintsLoading } = useSprints(projectId ?? "");
 
+  function toSnakeCase(str: string) {
+    return str.toLowerCase().replace(/\s+/g, '_');
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,13 +127,12 @@ const CreateItemModal: FC<CreateItemModalProps> = ({
           isSubItem: false,
         };
         console.log("Regular item payload:", regularPayload);
+        const statusToSave = toSnakeCase(regularPayload.status || '');
         await apiClient.post(
           `/projects/${projectId}/backlog/items`,
-          regularPayload
+          { ...regularPayload, status: statusToSave }
         );
       }
-
-
 
       setFormData(initialState);
       onItemCreated();
