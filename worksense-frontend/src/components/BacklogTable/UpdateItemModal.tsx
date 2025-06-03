@@ -2,6 +2,7 @@ import React, { FC, useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import ItemModalForm, { BacklogItemFormData } from "./ItemModalForm";
 import BacklogItemType from "@/types/BacklogItemType";
+import { useBacklogItemUpdate } from '@/hooks/useBacklogItemUpdate';
 
 interface UpdateItemModalProps {
   projectId: string;
@@ -47,6 +48,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
     null
   );
   const [sprints, setSprints] = useState<{ id: string; name: string }[]>([]);
+  const updateMutation = useBacklogItemUpdate();
 
   // Initialize form data when modal opens with an item
   useEffect(() => {
@@ -141,50 +143,47 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
       isSubItem: item.isSubItem || formData.isSubItem || false,
     };
 
-    try {
-      // Update item fields (except sprint)
-      console.log("Submitting update for item:", payload);
-      if (item.parentId || formData.parentId) {
-        const parentId = item.parentId || formData.parentId;
-        const response = await apiClient.put(
-          `/projects/${projectId}/backlog/items/${parentId}/subitems/${item.id}`,
-          payload
-        );
-        console.log("Update response:", response);
-        // Debug log for subitem sprint update
-        console.log("DEBUG subitem sprint update:", {
-          projectId,
-          parentId,
-          subItemId: item.id,
-          sprintId: formData.sprint,
-        });
-        if (formData.sprint !== item.sprint) {
+    // Helper to update sprint after main update
+    const updateSprintIfNeeded = async () => {
+      if (formData.sprint !== item.sprint) {
+        if (item.parentId || formData.parentId) {
+          const parentId = item.parentId || formData.parentId;
           await apiClient.put(
             `/projects/${projectId}/backlog/items/${parentId}/subitems/${item.id}/sprints/${formData.sprint}`
           );
-        }
-      } else {
-        const response = await apiClient.put(
-          `/projects/${projectId}/backlog/items/${item.id}?type=${item.type}`,
-          payload
-        );
-        console.log("Update response:", response);
-        // Sprint assignment for regular items/epics
-        if (formData.sprint !== item.sprint) {
+        } else {
           await apiClient.put(
             `/projects/${projectId}/backlog/items/${item.id}/sprints/${formData.sprint}`
           );
         }
       }
-      onItemUpdated();
-      onClose();
-    } catch (err: any) {
-      const msg = err.response?.data?.message || "Failed to update item";
-      setError(msg);
-      onError?.(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
+    };
+
+    // Use the mutation for both regular items and subitems
+    updateMutation.mutate(
+      {
+        projectId,
+        itemId: item.id,
+        itemType: item.type || '',
+        updateData: payload,
+        parentId: item.parentId || formData.parentId || undefined,
+      },
+      {
+        onSuccess: async () => {
+          await updateSprintIfNeeded();
+          onItemUpdated();
+          onClose();
+        },
+        onError: (err: any) => {
+          const msg = err.response?.data?.message || 'Failed to update item';
+          setError(msg);
+          onError?.(msg);
+        },
+        onSettled: () => {
+          setIsSubmitting(false);
+        },
+      }
+    );
   };
 
   const handleReset = () => {

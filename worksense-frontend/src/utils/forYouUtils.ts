@@ -13,4 +13,4 @@ export function getStandingMessage (rank: number) {
     if (rank === 3) return "Nice work! You're in 3rd place—aim higher!";
     return "Keep going! Every contribution counts.";
   };
-  
+ 

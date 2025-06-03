@@ -58,6 +58,20 @@ export interface PersonalGamificationInfo {
   badges: Badge[];
 }
 
+export interface UpdateItemStatusResponse {
+  id: string;
+  status: string;
+  toast?: {
+    type: string;
+    points: number;
+    newBadges?: any[];
+    totalPoints?: number;
+    level?: number;
+    assigneeId?: string | number;
+  };
+  [key: string]: any;
+}
+
 class ForYouService {
   async getAssignedItems(userId: string, projectId: string): Promise<AssignedItem[]> {
     const response = await apiClient.get(`/for-you/assigned-items?userId=${userId}&projectId=${projectId}`);
@@ -69,8 +83,9 @@ class ForYouService {
     return response.data;
   }
 
-  async updateItemStatus(itemId: string, newStatus: string): Promise<void> {
-    await apiClient.put(`/for-you/items/${itemId}/status`, { status: newStatus });
+  async updateItemStatus(itemId: string, newStatus: string): Promise<UpdateItemStatusResponse> {
+    const response = await apiClient.put(`/for-you/items/${itemId}/status`, { status: newStatus });
+    return response.data;
   }
 
   async getPersonalGamificationInfo(userId: string, projectId: string): Promise<PersonalGamificationInfo> {

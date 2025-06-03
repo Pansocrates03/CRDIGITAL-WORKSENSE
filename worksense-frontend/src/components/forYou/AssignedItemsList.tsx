@@ -108,7 +108,6 @@ const AssignedItemsList: React.FC<AssignedItemsListProps> = ({ assignedItems, pr
           console.log("AssignedItemsList: Invalidating both assigned and completed queries after update");
           queryClient.invalidateQueries({ queryKey: ['assignedItems'] });
           queryClient.invalidateQueries({ queryKey: ['completedTasks'] });
-          toast.success('Item updated successfully!');
         }}
         onError={(msg) => {
           toast.error(msg || 'Failed to update item.');
