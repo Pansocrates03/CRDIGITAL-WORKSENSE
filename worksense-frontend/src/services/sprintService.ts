@@ -20,7 +20,7 @@ export const sprintService = {
     try {
       // *** Verify this endpoint path with your backend implementation ***
       const response = await apiClient.get(
-        `${API_URL}/projects/${projectId}/sprints/${sprintId}/tasks`
+        `${API_URL}/projects/${projectId}/tasks/sprints/${sprintId}/tasks`
       );
       // Ensure the backend response data is an array of tasks matching ApiResponseTask
       return response.data as ApiResponseTask[];
