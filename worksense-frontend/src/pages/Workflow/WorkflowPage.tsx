@@ -165,18 +165,23 @@ const WorkflowPage: React.FC = () => {
       };
   // Update tasks when data changes
   React.useEffect(() => {
-    if (data) {
-        console.log("DATA", data);
-        // Flatten all subitems
-        let flattenedData = data.flatMap(getItemChildren);
+    if (data && activeSprint) {
+      console.log("DATA", data);
+      // Flatten all subitems
+      let flattenedData = data.flatMap(getItemChildren);
 
-        // Filter out EPIC items
-        let filteredData = flattenedData.filter(item => item.type !== "epic");
+      // Filter out EPIC items and only include items from active sprint
+      let filteredData = flattenedData.filter(item => 
+        item.type !== "epic" && item.sprint === activeSprint.id
+      );
 
-        // Set tasks state
-        setTasks(filteredData);
+      // Set tasks state
+      setTasks(filteredData);
+    } else {
+      // If no active sprint, set empty tasks array
+      setTasks([]);
     }
-  }, [data]);
+  }, [data, activeSprint]);
     const handleTaskUpdate = async (
         taskId: string,
         newStatus: BacklogItemType["status"]
