@@ -197,10 +197,12 @@ export const getSprintTasks: RequestHandler = async (req, res, next) => {
 
     // Query tasks collection instead of backlog
     const tasksSnap = await db
-      .collection("tasks")  // Changed from projects/{projectId}/backlog to tasks
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
       .where("projectId", "==", projectId)
-      .where("sprintId", "==", sprintId)
-      .orderBy("order", "asc")
+      .where("sprint", "==", sprintId)
+      .where("type", "==", "story")
       .get();
 
     console.log('Query results:', {
