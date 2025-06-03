@@ -177,13 +177,31 @@ const WorkflowPage: React.FC = () => {
         let task = tasks.find(t => t.id === taskId);
         if (!task) throw new Error("Task not found");
 
-        // Use the new mutation hook
-        updateBacklogItemMutation.mutate({
-            projectId: projectId || "",
-            itemId: taskId,
-            itemType: task.type,
-            updateData: { status: newStatus }
-        });
+        // Si es subitem (tiene parentId), actualizar usando la ruta de subitems
+        if (task.parentId) {
+            try {
+                await projectService.updateBacklogItem(
+                    projectId || "",
+                    {
+                        ...task,
+                        status: newStatus
+                    },
+                    task.parentId // pasar parentId para que el service use la ruta correcta
+                );
+                // Opcional: invalidar queries si es necesario
+                queryClient.invalidateQueries({ queryKey: [QueryKeys.backlog, projectId] });
+            } catch (err) {
+                console.error("Error updating subitem status:", err);
+            }
+        } else {
+            // Use the new mutation hook para items normales
+            updateBacklogItemMutation.mutate({
+                projectId: projectId || "",
+                itemId: taskId,
+                itemType: task.type,
+                updateData: { status: newStatus }
+            });
+        }
     };
 
     const onTaskContentUpdate = async (
@@ -222,7 +240,9 @@ const WorkflowPage: React.FC = () => {
     const doneItemsPerDay = React.useMemo(() => {
         if (!data) return [];
         const counts: Record<string, number> = {};
-        data.forEach(item => {
+        // Aplana todos los items y subitems
+        const allItems = data.flatMap(getItemChildren);
+        allItems.forEach(item => {
             let updatedAt = item.updatedAt;
             if (typeof updatedAt === 'object' && updatedAt !== null) {
                 if ('seconds' in updatedAt && typeof (updatedAt as any).seconds === 'number') {
