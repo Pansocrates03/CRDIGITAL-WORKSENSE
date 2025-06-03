@@ -31,6 +31,8 @@ import {
   FiLayout, FiGrid, FiBarChart // Icons for tab navigation
 } from "react-icons/fi";
 
+// Add type for story point scale
+type StoryPointScale = "fibonacci" | "linear" | "tshirt";
 
 const DEFAULT_COLUMNS = [
   { id: 'sprint_backlog', title: 'Sprint Backlog' },
@@ -203,11 +205,18 @@ const WorkflowPage: React.FC = () => {
     const sprintStart = activeSprint ? toDate(activeSprint.startDate) : undefined;
     const sprintEnd = activeSprint ? toDate(activeSprint.endDate) : undefined;
 
+    // Ensure storyPointScale is one of the allowed values
+    const projectScale = project?.storyPointScale;
+    const storyPointScale: StoryPointScale = 
+        (projectScale === 'fibonacci' || projectScale === 'linear' || projectScale === 'tshirt')
+            ? projectScale
+            : 'tshirt';
+
     // Generate burndown chart data from tasks and sprint range
     const burndownChartData = React.useMemo(() => {
         if (!sprintStart || !sprintEnd) return [];
-        return createBurndownChartData(tasks, sprintStart, sprintEnd);
-    }, [tasks, sprintStart, sprintEnd]);
+        return createBurndownChartData(tasks, sprintStart, sprintEnd, storyPointScale);
+    }, [tasks, sprintStart, sprintEnd, storyPointScale]);
 
     // Prepare heatmap data: count of 'Done' items per day (use all items in data, not just tasks)
     const doneItemsPerDay = React.useMemo(() => {
@@ -258,6 +267,7 @@ const WorkflowPage: React.FC = () => {
                     tasks={tasks}
                     sprintStart={sprintStart}
                     sprintEnd={sprintEnd}
+                    storyPointScale={storyPointScale}
                 />;
             default:
                 return <BoardView tasks={tasks} onTaskUpdate={handleTaskUpdate} columns={columns} onTaskContentUpdate={onTaskContentUpdate} />;

@@ -33,12 +33,13 @@ function getDateRange(start: Date, end: Date): Date[] {
 export const createBurndownChartData = (
     tasks: BacklogItemType[],
     sprintStart: Date,
-    sprintEnd: Date
+    sprintEnd: Date,
+    storyPointScale: "fibonacci" | "linear" | "tshirt" = "tshirt"
 ): BurndownDataPoint[] => {
     if (!tasks || tasks.length === 0) return [];
 
     // Total story points in the sprint
-    const totalPoints = tasks.reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size) : 0), 0);
+    const totalPoints = tasks.reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size, storyPointScale) : 0), 0);
 
     // Generate all dates in the sprint
     const dateRange = getDateRange(sprintStart, sprintEnd);
@@ -56,7 +57,7 @@ export const createBurndownChartData = (
                 const doneDate = toDate(task.updatedAt) || toDate(task.createdAt);
                 return doneDate && !isAfter(doneDate, currentDate);
             })
-            .reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size) : 0), 0);
+            .reduce((sum, task) => sum + (task.size ? getStoryPoints(task.size, storyPointScale) : 0), 0);
 
         const remainingWork = Math.max(0, totalPoints - completedPoints);
         const idealBurndown = Math.max(0, totalPoints - pointsPerDay * idx);
@@ -70,13 +71,21 @@ export const createBurndownChartData = (
 };
 
 // Helper function to convert size to story points
-const getStoryPoints = (size: string): number => {
-    switch (size.toUpperCase()) {
-        case 'XS': return 1;
-        case 'S': return 2;
-        case 'M': return 3;
-        case 'L': return 5;
-        case 'XL': return 8;
-        default: return 0;
+const getStoryPoints = (size: string, scale: "fibonacci" | "linear" | "tshirt" = "tshirt"): number => {
+    if (scale === "fibonacci") {
+        const points = parseInt(size);
+        return isNaN(points) ? 0 : points;
+    } else if (scale === "linear") {
+        const points = parseInt(size);
+        return isNaN(points) ? 0 : points;
+    } else {
+        switch (size.toUpperCase()) {
+            case 'XS': return 1;
+            case 'S': return 2;
+            case 'M': return 3;
+            case 'L': return 5;
+            case 'XL': return 8;
+            default: return 0;
+        }
     }
 };
