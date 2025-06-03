@@ -29,7 +29,7 @@ export const useSprintTasks = ({ projectId, sprintId, enabled = true }: UseSprin
 
   if (query.data) {
     stats.totalTasks = query.data.length;
-    stats.completedTasks = query.data.filter(task => task.status === "done").length;
+    stats.completedTasks = query.data.filter(task => task.status === "Done").length;
     stats.completionPercentage = stats.totalTasks > 0 
       ? Math.round((stats.completedTasks / stats.totalTasks) * 100)
       : 0;
