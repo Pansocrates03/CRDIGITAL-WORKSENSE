@@ -55,8 +55,4 @@ export const forYouService = {
     const allAssignedItems = [...items, ...subitems];
     return allAssignedItems;
   },
-  getGamification: async (userId: string) => {
-    // Lógica futura
-    return {};
-  },
 }; 
