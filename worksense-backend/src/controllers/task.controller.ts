@@ -205,22 +205,12 @@ export const getSprintTasks: RequestHandler = async (req, res, next) => {
       .where("type", "==", "story")
       .get();
 
-    console.log('Query results:', {
-      empty: tasksSnap.empty,
-      size: tasksSnap.size,
-      docs: tasksSnap.docs.map(doc => ({
-        id: doc.id,
-        data: doc.data()
-      }))
-    });
 
     // Format Response
     const tasks = tasksSnap.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-
-    console.log('Formatted tasks:', tasks);
 
     res.status(200).json(tasks);
   } catch (error) {
