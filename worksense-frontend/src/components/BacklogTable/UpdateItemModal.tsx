@@ -2,6 +2,7 @@ import React, { FC, useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import ItemModalForm, { BacklogItemFormData } from "./ItemModalForm";
 import BacklogItemType from "@/types/BacklogItemType";
+import { useBacklogItemUpdate } from '@/hooks/useBacklogItemUpdate';
 
 interface UpdateItemModalProps {
   projectId: string;
@@ -17,10 +18,6 @@ interface UpdateItemModalProps {
 interface Epic {
   id: string;
   name: string;
-}
-
-function toSnakeCase(str: string) {
-  return str.toLowerCase().replace(/\s+/g, '_');
 }
 
 const UpdateItemModal: FC<UpdateItemModalProps> = ({
@@ -47,23 +44,17 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [epics, setEpics] = useState<Epic[]>([]);
   const [users, setUsers] = useState<{ userId: number; name?: string }[]>([]);
-  const [originalItem, setOriginalItem] = useState<BacklogItemType | null>(
-    null
-  );
+  const [originalItem, setOriginalItem] = useState<BacklogItemType | null>(null);
   const [sprints, setSprints] = useState<{ id: string; name: string }[]>([]);
+  const updateMutation = useBacklogItemUpdate();
 
-  // Initialize form data when modal opens with an item
   useEffect(() => {
     if (isOpen && item) {
-      // Create a copy of the item data for the form
       setFormData({
         ...item,
-        // Ensure these properties are correctly set in the form data
         isSubItem: !!item.isSubItem,
         parentId: item.parentId || undefined,
       });
-
-      // Store the original item for comparison
       setOriginalItem(item);
       fetchOptionsData();
       fetchSprints();
@@ -87,9 +78,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
 
   const fetchOptionsData = async () => {
     try {
-      const epicsRes = await apiClient.get(
-        `/projects/${projectId}/backlog/items`
-      );
+      const epicsRes = await apiClient.get(`/projects/${projectId}/backlog/items`);
       setEpics(
         Array.isArray(epicsRes.data)
           ? epicsRes.data
@@ -100,17 +89,10 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
               }))
           : []
       );
-
-      const usersRes = await apiClient.get(
-        `/projects/${projectId}/members/members-detail`
-      );
+      const usersRes = await apiClient.get(`/projects/${projectId}/members/members-detail`);
       setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
-
-      console.log("Epics for edit:", epicsRes.data);
-      console.log("Users for edit:", usersRes.data);
     } catch (err) {
       const msg = "Failed to load dropdown options";
-      console.error(msg, err);
       setError(msg);
       onError?.(msg);
     }
@@ -125,7 +107,6 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
           : []
       );
     } catch (err) {
-      console.error("Failed to fetch sprints", err);
       setSprints([]);
     }
   };
@@ -137,7 +118,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
     setIsSubmitting(true);
     setError(null);
 
-    // Create the payload with necessary type conversions
+    // Payload: status se guarda como texto normal
     const payload = {
       ...formData,
       epicId: formData.epicId || null,
@@ -145,49 +126,46 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
       isSubItem: item.isSubItem || formData.isSubItem || false,
     };
 
-    const statusToSave = toSnakeCase(payload.status || '');
-
-    try {
-      // Update item fields (except sprint)
-      if (item.parentId || formData.parentId) {
-        const parentId = item.parentId || formData.parentId;
-        await apiClient.put(
-          `/projects/${projectId}/backlog/items/${parentId}/subitems/${item.id}`,
-          payload
-        );
-        // Debug log for subitem sprint update
-        console.log("DEBUG subitem sprint update:", {
-          projectId,
-          parentId,
-          subItemId: item.id,
-          sprintId: formData.sprint,
-        });
-        if (formData.sprint !== item.sprint) {
+    // Helper para actualizar sprint después del update principal
+    const updateSprintIfNeeded = async () => {
+      if (formData.sprint !== item.sprint) {
+        if (item.parentId || formData.parentId) {
+          const parentId = item.parentId || formData.parentId;
           await apiClient.put(
             `/projects/${projectId}/backlog/items/${parentId}/subitems/${item.id}/sprints/${formData.sprint}`
           );
-        }
-      } else {
-        await apiClient.put(
-          `/projects/${projectId}/backlog/items/${item.id}?type=${item.type}`,
-          payload
-        );
-        // Sprint assignment for regular items/epics
-        if (formData.sprint !== item.sprint) {
+        } else {
           await apiClient.put(
             `/projects/${projectId}/backlog/items/${item.id}/sprints/${formData.sprint}`
           );
         }
       }
-      onItemUpdated();
-      onClose();
-    } catch (err: any) {
-      const msg = err.response?.data?.message || "Failed to update item";
-      setError(msg);
-      onError?.(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
+    };
+
+    updateMutation.mutate(
+      {
+        projectId,
+        itemId: item.id,
+        itemType: item.type || '',
+        updateData: payload,
+        parentId: item.parentId || formData.parentId || undefined,
+      },
+      {
+        onSuccess: async () => {
+          await updateSprintIfNeeded();
+          onItemUpdated();
+          onClose();
+        },
+        onError: (err: any) => {
+          const msg = err.response?.data?.message || 'Failed to update item';
+          setError(msg);
+          onError?.(msg);
+        },
+        onSettled: () => {
+          setIsSubmitting(false);
+        },
+      }
+    );
   };
 
   const handleReset = () => {

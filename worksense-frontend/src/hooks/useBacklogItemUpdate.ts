@@ -8,6 +8,7 @@ interface UpdateBacklogItemParams {
   itemId: string;
   itemType: string;
   updateData: any;
+  parentId?: string | null;
 }
 
 export const useBacklogItemUpdate = () => {
@@ -21,19 +22,31 @@ export const useBacklogItemUpdate = () => {
       itemId,
       itemType,
       updateData,
+      parentId,
     }: UpdateBacklogItemParams) => {
       console.log("Updating backlog item:", {
         projectId,
         itemId,
         itemType,
         updateData,
+        parentId,
         currentUser: user?.userId,
       });
 
-      const response = await apiClient.put(
-        `/projects/${projectId}/backlog/items/${itemId}/?type=${itemType}`,
-        updateData
-      );
+      let response;
+      if (parentId) {
+        // Subitem update
+        response = await apiClient.put(
+          `/projects/${projectId}/backlog/items/${parentId}/subitems/${itemId}`,
+          updateData
+        );
+      } else {
+        // Regular item update
+        response = await apiClient.put(
+          `/projects/${projectId}/backlog/items/${itemId}/?type=${itemType}`,
+          updateData
+        );
+      }
       return response.data;
     },
     onSuccess: (data, variables) => {
@@ -50,8 +63,8 @@ export const useBacklogItemUpdate = () => {
       // Show gamification toasts if user completed the task and got points
       if (
         data.toast &&
-        variables.updateData.status === "done" &&
-        data.toast.points > 0
+        typeof data.toast.points === 'number' &&
+        data.toast.points !== 0
       ) {
         // Convert both to numbers for comparison
         const assigneeId = Number(data.assigneeId);
@@ -72,7 +85,13 @@ export const useBacklogItemUpdate = () => {
             assigneeId,
             currentUserId,
           });
-          showGamificationToast(data.toast);
+          showGamificationToast({
+            ...data.toast,
+            type: 'success',
+            newBadges: data.toast.newBadges ?? [],
+            totalPoints: data.toast.totalPoints ?? 0,
+            level: data.toast.level ?? 1,
+          });
         } else {
           console.log("Toast not shown - user mismatch:", {
             assigneeId,

@@ -167,33 +167,56 @@ export const getProjectLeaderboard: RequestHandler = async (req, res, next) => {
       .doc("leaderboard")
       .get();
 
-    const leaderboardData = leaderboardSnap.data() || {};
-    console.log("🔍 Firebase leaderboard data:", leaderboardData);
-
+    const leaderboardData: Record<string, any> = leaderboardSnap.data() || {};
     if (Object.keys(leaderboardData).length === 0) {
       return res.json([]);
     }
 
-    // Build leaderboard from Firebase data (it already has names!)
+    // Get all userIds from the leaderboard
+    const userIds = Object.keys(leaderboardData).map(id => parseInt(id, 10));
+
+    // Fetch user profiles from SQL
+    const userProfiles: Record<number, string | null> = {};
+    try {
+      const pool = await sqlConnect();
+      if (pool && userIds.length > 0) {
+        const userIdsString = userIds.join(",");
+        const result = await pool
+          .request()
+          .input("UserIds", sql.NVarChar(sql.MAX), userIdsString)
+          .execute("spGetUsersByIds");
+        if (result.recordset && result.recordset.length > 0) {
+          result.recordset.forEach((user: any) => {
+            userProfiles[user.id] = user.pfp;
+          });
+        }
+      }
+    } catch (sqlError) {
+      console.error("Error fetching user avatars from SQL:", sqlError);
+    }
+
+    // Build leaderboard with avatarUrl
     const leaderboard = Object.entries(leaderboardData)
       .map(([userId, userData]: [string, any]) => ({
         userId: parseInt(userId),
         points: userData.points || 0,
         name: userData.name || "Unknown User",
-        avatarUrl: null, // You can fetch this from SQL if needed
+        avatarUrl:
+          userProfiles[parseInt(userId)] ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || "User")}&background=AC1754&color=FFFFFF`,
         role: userData.role || null,
         lastUpdate: userData.lastUpdate,
       }))
       .sort((a, b) => b.points - a.points)
       .map((user, index) => ({ ...user, rank: index + 1 }));
 
-    console.log("🔍 Final leaderboard:", leaderboard);
     res.json(leaderboard);
   } catch (error) {
     console.error("Error fetching project leaderboard:", error);
     next(error);
   }
 };
+
 /**
  * Get gamification stats for a project
  * @route GET /api/v1/projects/:projectId/gamification/stats
