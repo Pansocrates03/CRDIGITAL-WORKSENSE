@@ -334,7 +334,7 @@ const SprintsPage: React.FC = () => {
                                                             />
                                                             {!taskStatsLoading && (
                                                                 <div className="text-sm text-gray-600 mt-2">
-                                                                    {stats.completedTasks} of {stats.totalTasks} tasks completed
+                                                                    {stats.completedTasks} of {stats.totalTasks} User Stories Completed
                                                                 </div>
                                                             )}
                                                         </>
