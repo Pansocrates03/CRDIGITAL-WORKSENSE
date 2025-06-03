@@ -143,12 +143,14 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
 
     try {
       // Update item fields (except sprint)
+      console.log("Submitting update for item:", payload);
       if (item.parentId || formData.parentId) {
         const parentId = item.parentId || formData.parentId;
-        await apiClient.put(
+        const response = await apiClient.put(
           `/projects/${projectId}/backlog/items/${parentId}/subitems/${item.id}`,
           payload
         );
+        console.log("Update response:", response);
         // Debug log for subitem sprint update
         console.log("DEBUG subitem sprint update:", {
           projectId,
@@ -162,10 +164,11 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
           );
         }
       } else {
-        await apiClient.put(
+        const response = await apiClient.put(
           `/projects/${projectId}/backlog/items/${item.id}?type=${item.type}`,
           payload
         );
+        console.log("Update response:", response);
         // Sprint assignment for regular items/epics
         if (formData.sprint !== item.sprint) {
           await apiClient.put(

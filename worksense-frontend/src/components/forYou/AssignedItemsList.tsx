@@ -103,7 +103,9 @@ const AssignedItemsList: React.FC<AssignedItemsListProps> = ({ assignedItems, pr
         onClose={() => setEditItem(null)}
         onItemUpdated={() => {
           setEditItem(null);
+          console.log("AssignedItemsList: Invalidating both assigned and completed queries after update");
           queryClient.invalidateQueries({ queryKey: ['assignedItems'] });
+          queryClient.invalidateQueries({ queryKey: ['completedTasks'] });
         }}
         item={editItem as any}
       />
