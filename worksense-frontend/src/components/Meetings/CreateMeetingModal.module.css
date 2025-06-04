@@ -1,0 +1,314 @@
+/* src/components/Meetings/CreateMeetingModal.module.css */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modalEnter 0.2s ease-out;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--neutral-200, #e5e7eb);
+  background-color: var(--background-primary, #ffffff);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  color: var(--neutral-500, #6b7280);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: var(--neutral-100, #f5f5f5);
+  color: var(--neutral-700, #374151);
+}
+
+.form {
+  padding: 2rem;
+  max-height: calc(90vh - 120px);
+  overflow-y: auto;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary, #111827);
+  margin-bottom: 0.5rem;
+}
+
+.label svg {
+  color: var(--neutral-400, #9ca3af);
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--neutral-300, #d1d5db);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-primary, #111827);
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--accent-pink, #ac1754);
+  box-shadow: 0 0 0 3px rgba(172, 23, 84, 0.1);
+}
+
+.inputError {
+  border-color: var(--red-500, #ef4444);
+}
+
+.inputError:focus {
+  border-color: var(--red-500, #ef4444);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.charCount {
+  text-align: right;
+  font-size: 0.75rem;
+  color: var(--neutral-500, #6b7280);
+  margin-top: 0.25rem;
+}
+
+.error {
+  display: block;
+  color: var(--red-500, #ef4444);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.attendeesList {
+  border: 1px solid var(--neutral-300, #d1d5db);
+  border-radius: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.attendeeItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--neutral-200, #e5e7eb);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.attendeeItem:last-child {
+  border-bottom: none;
+}
+
+.attendeeItem:hover {
+  background-color: var(--neutral-50, #f9fafb);
+}
+
+.attendeeSelected {
+  background-color: var(--accent-pink-light, #fdf2f8);
+  border-color: var(--accent-pink-200, #fbcfe8);
+}
+
+.attendeeSelected:hover {
+  background-color: var(--accent-pink-100, #fce7f3);
+}
+
+.attendeeInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.attendeeName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary, #111827);
+  margin-bottom: 0.125rem;
+}
+
+.attendeeEmail {
+  font-size: 0.75rem;
+  color: var(--neutral-600, #6b7280);
+  margin-bottom: 0.125rem;
+}
+
+.attendeeRole {
+  font-size: 0.75rem;
+  color: var(--accent-pink, #ac1754);
+  font-weight: 500;
+}
+
+.attendeeCheckbox {
+  margin-left: 0.75rem;
+}
+
+.attendeeCheckbox input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--accent-pink, #ac1754);
+  cursor: pointer;
+}
+
+.noMembers {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--neutral-500, #6b7280);
+  font-size: 0.875rem;
+  font-style: italic;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--neutral-200, #e5e7eb);
+  margin-top: 1.5rem;
+}
+
+.cancelButton {
+  padding: 0.75rem 1.5rem;
+  background-color: white;
+  color: var(--neutral-700, #374151);
+  border: 1px solid var(--neutral-300, #d1d5db);
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background-color: var(--neutral-50, #f9fafb);
+  border-color: var(--neutral-400, #9ca3af);
+}
+
+.submitButton {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--accent-pink, #ac1754);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: var(--accent-pink-hover, #991347);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(172, 23, 84, 0.3);
+}
+
+.submitButton:disabled,
+.cancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .overlay {
+    padding: 0.5rem;
+  }
+
+  .modal {
+    max-height: 95vh;
+  }
+
+  .header {
+    padding: 1rem 1.5rem;
+  }
+
+  .form {
+    padding: 1.5rem;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .footer {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+  }
+
+  .cancelButton,
+  .submitButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .attendeesList {
+    max-height: 150px;
+  }
+}

@@ -81,12 +81,12 @@
 
 
 import { Router } from 'express';
-import { getAssignedItems, getCompletedTasks, getGamification } from '../controllers/forYou.controller.js';
+import { getAssignedItems, getCompletedTasks} from '../controllers/forYou.controller.js';
 
 const router = Router();
 
 router.get('/assigned-items', getAssignedItems);
 router.get('/completed-tasks', getCompletedTasks);
-router.get('/gamification', getGamification);
+
 
 export default router; 

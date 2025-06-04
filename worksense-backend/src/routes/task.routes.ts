@@ -124,6 +124,45 @@ const router = Router({ mergeParams: true });
  *               description: Nanoseconds part of the timestamp
  */
 
+/**
+ * @swagger
+ * /projects/{projectId}/sprints/{sprintId}/tasks:
+ *   get:
+ *     summary: Get all tasks for a specific sprint
+ *     tags: [Tasks]
+ *     security:
+ *       - authToken: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the project
+ *       - in: path
+ *         name: sprintId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the sprint
+ *     responses:
+ *       200:
+ *         description: List of tasks in the sprint
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Task'
+ *       401:
+ *         description: Unauthorized - User is not authenticated
+ *       403:
+ *         description: Forbidden - User is not a member of the project
+ *       404:
+ *         description: Sprint not found
+ */
+router.get("/sprints/:sprintId/tasks", memberAuth, getSprintTasks);
+
 router.get("/:taskId", memberAuth, getTaskById);
 
 /**

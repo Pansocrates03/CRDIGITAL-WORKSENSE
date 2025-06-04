@@ -127,7 +127,7 @@ const ProjectLeaderboard: React.FC<ProjectLeaderboardProps> = ({
                         <div
                             className={`${compact ? 'w-6 h-6' : 'w-8 h-8'} rounded-full flex items-center justify-center text-xs font-semibold`}
                             style={{
-                                backgroundColor: entry.avatarUrl ? 'transparent' : 'var(--accent-blue)',
+                                backgroundColor: '#AC1754',
                                 color: 'var(--accent-blue-text)'
                             }}
                         >
@@ -136,6 +136,7 @@ const ProjectLeaderboard: React.FC<ProjectLeaderboardProps> = ({
                                     src={entry.avatarUrl}
                                     alt={entry.name}
                                     className={`${compact ? 'w-6 h-6' : 'w-8 h-8'} rounded-full object-cover`}
+                                    style={{ backgroundColor: '#AC1754' }}
                                 />
                             ) : (
                                 entry.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()

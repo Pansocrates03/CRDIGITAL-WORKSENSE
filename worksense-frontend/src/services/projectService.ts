@@ -92,12 +92,16 @@ export const projectService = {
         }
     },
 
-    async updateBacklogItem(projectId: string, item: BacklogItemType) {
+    async updateBacklogItem(projectId: string, item: BacklogItemType, parentId?: string) {
         try {
             console.log("Item to be sent", item);
-            await apiClient.put(`/projects/${projectId}/backlog/items/${item.id}/?type=${item.type}`, item)
+            if (parentId) {
+                await apiClient.put(`/projects/${projectId}/backlog/items/${parentId}/subitems/${item.id}`, item);
+            } else {
+                await apiClient.put(`/projects/${projectId}/backlog/items/${item.id}/?type=${item.type}`, item);
+            }
         } catch (error) {
-            console.error("Error bla");
+            console.error("Error updating backlog item");
             throw error;
         }
     },

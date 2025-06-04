@@ -29,10 +29,10 @@ import BacklogItemType from "@/types/BacklogItemType.ts";
 import { SelectInput } from "@/components/SelectInput/SelectInput";
 
 const DEFAULT_COLUMNS = [
-  { id: 'sprint_backlog', title: 'Sprint Backlog' },
-  { id: 'in_progress', title: 'In Progress' },
-  { id: 'in_review', title: 'In Review' },
-  { id: 'done', title: 'Done' }
+  { id: 'Sprint Backlog', title: 'Sprint Backlog' },
+  { id: 'In Progress', title: 'In Progress' },
+  { id: 'In Review', title: 'In Review' },
+  { id: 'Done', title: 'Done' }
 ];
 
 const navigationTabs = [

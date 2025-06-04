@@ -8,13 +8,13 @@ export const forYouService = {
     const backlogRef = db.collection("projects").doc(projectId).collection("backlog");
     const snapshot = await backlogRef.where("assigneeId", "==", userId).get();
     let items = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
-    items = items.filter((item: any) => item.status !== "done");
+    items = items.filter((item: any) => item.status !== "done" && item.status !== "Done");
     // Query subitems assigned to the user (not done)
     let subitems = [];
     try {
       const subitemsSnapshot = await db.collectionGroup("subitems")
         .where("assigneeId", "==", userId)
-        .where("status", "!=", "done")
+        .where("status", "not-in", ["done", "Done"])
         .where("projectId", "==", projectId)
         .get();
       subitems = subitemsSnapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
@@ -36,7 +36,7 @@ export const forYouService = {
     const backlogRef = db.collection("projects").doc(projectId).collection("backlog");
     const snapshot = await backlogRef
       .where("assigneeId", "==", userId)
-      .where("status", "==", "done")
+      .where("status", "in", ["done", "Done"])
       .get();
     let items = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
 
@@ -44,7 +44,7 @@ export const forYouService = {
     try {
       const subitemsSnapshot = await db.collectionGroup("subitems")
         .where("assigneeId", "==", userId)
-        .where("status", "==", "done")
+        .where("status", "in", ["done", "Done"])
         .where("projectId", "==", projectId)
         .get();
       subitems = subitemsSnapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
@@ -54,9 +54,5 @@ export const forYouService = {
     // Combine top-level items and subitems
     const allAssignedItems = [...items, ...subitems];
     return allAssignedItems;
-  },
-  getGamification: async (userId: string) => {
-    // Lógica futura
-    return {};
   },
 }; 

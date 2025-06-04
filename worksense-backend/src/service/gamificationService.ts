@@ -10,6 +10,7 @@ interface AwardPointsParams {
   points: number;
   userName?: string;
   userRole?: string;
+  storyPoints?: number;
 }
 
 interface Badge {
@@ -34,7 +35,10 @@ export const awardPoints = async (params: AwardPointsParams) => {
       .input("Points", sql.Int, points).query(`
         UPDATE user_gamification 
         SET total_points = total_points + @Points,
-            level = (total_points + @Points) / 100 + 1,
+            level = CASE 
+              WHEN (total_points + @Points) < 0 THEN 1
+              ELSE (total_points + @Points) / 100 + 1
+            END,
             updated_at = GETDATE()
         WHERE user_id = @UserId;
         
@@ -64,10 +68,10 @@ export const awardPoints = async (params: AwardPointsParams) => {
     const projectPoints = leaderboardData[userId]?.points || 0;
     const projectBadges = leaderboardData[userId]?.badges || [];
 
-    // Check for new badges
-    const newBadges = await checkForNewBadges(userId, projectPoints, projectId);
+    // Check for new badges only if points are positive
+    const newBadges = points > 0 ? await checkForNewBadges(userId, projectPoints, projectId) : [];
 
-    console.log(`Awarded ${points} points to user ${userId} for ${action}`);
+    console.log(`${points > 0 ? 'Awarded' : 'Deducted'} ${Math.abs(points)} points to user ${userId} for ${action}`);
 
     return {
       success: true,
@@ -184,7 +188,6 @@ const checkForNewBadges = async (
 };
 
 // Helper function to calculate points based on task type
-// Updated function in gamificationService.ts
 export const calculateTaskPoints = (taskData: any): number => {
   const basePoints: { [key: string]: number } = {
     epic: 50,
@@ -215,4 +218,19 @@ const getFibonacciMultiplier = (storyPoints?: number): number => {
   };
 
   return multipliers[storyPoints || 3] || 1.0;
+};
+
+// New function to handle point deduction
+export const deductPoints = async (params: AwardPointsParams) => {
+  // Calculate points to deduct (negative of the original points)
+  const pointsToDeduct = -calculateTaskPoints({
+    type: params.taskType,
+    storyPoints: params.storyPoints
+  });
+
+  // Call awardPoints with negative points
+  return awardPoints({
+    ...params,
+    points: pointsToDeduct
+  });
 };

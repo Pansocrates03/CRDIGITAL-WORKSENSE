@@ -192,44 +192,30 @@ export const getTaskById: RequestHandler = async (req, res, next) => {
  */
 export const getSprintTasks: RequestHandler = async (req, res, next) => {
   try {
-    const { projectId, sprintId } = req.params; // Assumed present
+    const { projectId, sprintId } = req.params;
+    console.log('Getting tasks for:', { projectId, sprintId });
 
-    // --- Verification: Check if the sprint exists and belongs to the project ---
-    // Necessary because 'sprints' is top-level
-    const sprintRef = db.collection("sprints").doc(sprintId);
-    const sprintSnap = await sprintRef.get();
-    if (!sprintSnap.exists) {
-      return res.status(404).json({ message: "Sprint not found" });
-    }
-    if (sprintSnap.data()?.projectId !== projectId) {
-      return res.status(403).json({
-        message: "Forbidden: Sprint does not belong to the specified project",
-      });
-    }
-    // --- End Verification ---
-
-    // --- Fetch Tasks ---
-    // Query top-level 'tasks' collection, filtering by project and sprint
+    // Query tasks collection instead of backlog
     const tasksSnap = await db
-      .collection("tasks")
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
       .where("projectId", "==", projectId)
-      .where("sprintId", "==", sprintId)
-      .orderBy("order", "asc") // Order by intended sequence
-      // .orderBy("createdAt", "desc") // Secondary sort if needed
+      .where("sprint", "==", sprintId)
+      .where("type", "==", "story")
       .get();
-    // Note: Composite index likely required in Firestore for projectId+sprintId+order.
 
-    // --- Format Response ---
+
+    // Format Response
     const tasks = tasksSnap.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
-      // Timestamps are returned as Firestore Timestamp objects by default
     }));
 
     res.status(200).json(tasks);
   } catch (error) {
     console.error(
-      `Error getting tasks for sprint ${req.params.sprintId}:`,
+      `Error getting stories for sprint ${req.params.sprintId}:`,
       error
     );
     next(error);

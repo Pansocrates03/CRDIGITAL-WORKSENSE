@@ -416,6 +416,7 @@ const BacklogTablePage: FC = () => {
                     onClose={() => setShowGenerateStoriesModal(false)}
                     onStoriesAdded={() => handleStoriesAdded(selectedEpicId)}
                     onError={handleError}
+                    storyPointScale={project?.storyPointScale || 'tshirt'}
                 />
             )}
 

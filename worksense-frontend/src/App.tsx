@@ -14,13 +14,14 @@ import { ProjectPage } from "./pages/ProjectView/ProjectPage";
 import Settings from "./pages/Settings/Settings";
 import BacklogTablePage from "./pages/BacklogTable/BacklogTablePage";
 import MembersPage from "./pages/Members/MembersPage";
+import MeetingsPage from "./pages/Meetings/MeetingsPage"; // Add this import
 
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import SprintPage from "./pages/SprintsPage/SprintsPage";
 import WorkflowPage from "./pages/Workflow/WorkflowPage";
 import ProjectSettingsPage from "./pages/ProjectSettings/ProjectSettingsPage";
 import { Toaster } from "sonner";
-import ForYouPage from "./pages/ForYouPage.tsx";
+import ForYouPage from "./pages/forYouPage/ForYouPage.tsx";
 const queryClient = new QueryClient();
 
 console.log("Running");
@@ -144,6 +145,23 @@ function App() {
                 </PrivateRoute>
               }
             />
+            {/* Add the Meetings route */}
+            <Route
+              path="/project/:id/meetings"
+              element={
+                <PrivateRoute>
+                  <MeetingsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/project/:id/for-you"
+              element={
+                <PrivateRoute>
+                  <ForYouPage />
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/project/:id/bugs"
               element={
@@ -171,14 +189,6 @@ function App() {
                   {" "}
                   <ProjectPage />{" "}
                   {/* Replace with specific LeaderboardPage if you have one */}{" "}
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/project/:id/for-you"
-              element={
-                <PrivateRoute>
-                  <ForYouPage />
                 </PrivateRoute>
               }
             />
