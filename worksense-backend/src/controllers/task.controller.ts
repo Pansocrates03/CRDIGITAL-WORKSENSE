@@ -195,8 +195,8 @@ export const getSprintTasks: RequestHandler = async (req, res, next) => {
     const { projectId, sprintId } = req.params;
     console.log('Getting tasks for:', { projectId, sprintId });
 
-    // Query tasks collection instead of backlog
-    const tasksSnap = await db
+    // 1. Get stories directly from backlog
+    const backlogStoriesSnap = await db
       .collection("projects")
       .doc(projectId)
       .collection("backlog")
@@ -205,20 +205,69 @@ export const getSprintTasks: RequestHandler = async (req, res, next) => {
       .where("type", "==", "story")
       .get();
 
+    console.log('Found backlog stories:', backlogStoriesSnap.size);
 
-    // Format Response
-    const tasks = tasksSnap.docs.map((doc) => ({
+    // 2. Get epics to fetch their subitems
+    const epicsSnap = await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .where("projectId", "==", projectId)
+      .where("type", "==", "epic")
+      .get();
+
+    console.log('Found epics:', epicsSnap.size);
+    console.log('Epic IDs:', epicsSnap.docs.map(doc => doc.id));
+
+    // 3. Get stories from epic subitems
+    const epicSubitemsPromises = epicsSnap.docs.map(async (epicDoc) => {
+      console.log(`Fetching subitems for epic ${epicDoc.id}`);
+      try {
+        const subitemsSnap = await epicDoc.ref
+          .collection("subitems")
+          .where("projectId", "==", projectId)
+          .where("sprint", "==", sprintId)
+          .where("type", "==", "story")
+          .get();
+        
+        console.log(`Found ${subitemsSnap.size} stories in epic ${epicDoc.id}`);
+        console.log('Subitem IDs:', subitemsSnap.docs.map(doc => doc.id));
+        
+        return subitemsSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          epicId: epicDoc.id // Add reference to parent epic
+        }));
+      } catch (error) {
+        console.error(`Error fetching subitems for epic ${epicDoc.id}:`, error);
+        return [];
+      }
+    });
+
+    // Wait for all subitem queries to complete
+    console.log('Waiting for all subitem queries to complete...');
+    const epicSubitemsResults = await Promise.all(epicSubitemsPromises);
+    const epicStories = epicSubitemsResults.flat();
+    console.log('Total epic stories found:', epicStories.length);
+
+    // Combine both sets of stories
+    const backlogStories = backlogStoriesSnap.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
 
-    res.status(200).json(tasks);
+    const allStories = [...backlogStories, ...epicStories];
+    console.log('Total stories found:', allStories.length);
+    console.log('Backlog stories:', backlogStories.length);
+    console.log('Epic stories:', epicStories.length);
+
+    return res.status(200).json(allStories);
   } catch (error) {
     console.error(
       `Error getting stories for sprint ${req.params.sprintId}:`,
       error
     );
-    next(error);
+    return next(error);
   }
 };
 

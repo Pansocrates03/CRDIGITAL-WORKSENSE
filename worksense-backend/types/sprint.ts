@@ -1,5 +1,5 @@
 import { Timestamp } from "firebase-admin/firestore";
-import { BacklogItemType } from "./backlog.js";
+import { BacklogItemData } from "./backlog.js";
 
 // Estados posibles para items en el sprint board
 export type SprintItemStatus = "todo" | "in-progress" | "review" | "done";
@@ -102,6 +102,7 @@ export interface ApiResponseTask {
 // DTO para crear un item en el sprint
 export interface CreateSprintItemDTO {
   backlogId: string;
+  type: string;
   assigneeId?: number | null;
 }
 
@@ -111,9 +112,6 @@ export interface UpdateSprintItemDTO {
   sprintAssigneeId?: number | null;
   order?: number;
 }
-
-// Sprint status type
-export type SprintStatus = "Active" | "Planned" | "Completed";
 
 // DTO for updating sprint status
 export interface UpdateSprintStatusDTO {
