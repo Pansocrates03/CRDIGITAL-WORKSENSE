@@ -193,7 +193,6 @@ export const getTaskById: RequestHandler = async (req, res, next) => {
 export const getSprintTasks: RequestHandler = async (req, res, next) => {
   try {
     const { projectId, sprintId } = req.params;
-    console.log('Getting tasks for:', { projectId, sprintId });
 
     // 1. Get stories directly from backlog
     const backlogStoriesSnap = await db
@@ -205,7 +204,6 @@ export const getSprintTasks: RequestHandler = async (req, res, next) => {
       .where("type", "==", "story")
       .get();
 
-    console.log('Found backlog stories:', backlogStoriesSnap.size);
 
     // 2. Get epics to fetch their subitems
     const epicsSnap = await db
@@ -216,12 +214,9 @@ export const getSprintTasks: RequestHandler = async (req, res, next) => {
       .where("type", "==", "epic")
       .get();
 
-    console.log('Found epics:', epicsSnap.size);
-    console.log('Epic IDs:', epicsSnap.docs.map(doc => doc.id));
 
     // 3. Get stories from epic subitems
     const epicSubitemsPromises = epicsSnap.docs.map(async (epicDoc) => {
-      console.log(`Fetching subitems for epic ${epicDoc.id}`);
       try {
         const subitemsSnap = await epicDoc.ref
           .collection("subitems")
@@ -230,8 +225,6 @@ export const getSprintTasks: RequestHandler = async (req, res, next) => {
           .where("type", "==", "story")
           .get();
         
-        console.log(`Found ${subitemsSnap.size} stories in epic ${epicDoc.id}`);
-        console.log('Subitem IDs:', subitemsSnap.docs.map(doc => doc.id));
         
         return subitemsSnap.docs.map(doc => ({
           id: doc.id,
@@ -245,10 +238,8 @@ export const getSprintTasks: RequestHandler = async (req, res, next) => {
     });
 
     // Wait for all subitem queries to complete
-    console.log('Waiting for all subitem queries to complete...');
     const epicSubitemsResults = await Promise.all(epicSubitemsPromises);
     const epicStories = epicSubitemsResults.flat();
-    console.log('Total epic stories found:', epicStories.length);
 
     // Combine both sets of stories
     const backlogStories = backlogStoriesSnap.docs.map((doc) => ({
@@ -257,9 +248,6 @@ export const getSprintTasks: RequestHandler = async (req, res, next) => {
     }));
 
     const allStories = [...backlogStories, ...epicStories];
-    console.log('Total stories found:', allStories.length);
-    console.log('Backlog stories:', backlogStories.length);
-    console.log('Epic stories:', epicStories.length);
 
     return res.status(200).json(allStories);
   } catch (error) {
