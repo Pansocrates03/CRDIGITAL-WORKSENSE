@@ -37,8 +37,10 @@ const swaggerDocs = swaggerJsdoc(swaggerOptions);
 // APP USAGE
 const app = express();
 
-app.use(cors({ origin: "*" }));
-app.use(morgan("dev"));
+app.use(cors({
+  origin: '*',  // Allows all origins - DANGEROUS
+  credentials: true
+}));app.use(morgan("dev"));
 app.use(express.json({ limit: "10mb" })); // Aumentar el límite de tamaño del cuerpo a 10 MB para el audio
 app.use(API_PREFIX, sqlRoutes);
 app.use(`${API_PREFIX}/admin`, adminRoutes);
