@@ -16,7 +16,6 @@ interface TabsProps {
   TabItems: TabItem[]; // Array of navigation tabs (board, sprints, overview, etc.)
   activeTabId: string; // Currently selected tab
   onTabClick: (id: string) => void; // Callback to switch tabs
-  handleCreateColumn: (name: string) => void; // Callback to add column in board
   projectId: string; // Project identifier
   selectedSprintId?: string; // ID of the currently selected sprint
 }
@@ -25,25 +24,8 @@ interface TabsProps {
  * Tabs component for sprint management navigation
  * Handles tab switching, sprint creation, and column management
  */
-const Tabs: React.FC<TabsProps> = ({ TabItems, activeTabId, onTabClick, handleCreateColumn, projectId, selectedSprintId }) => {
+const Tabs: React.FC<TabsProps> = ({ TabItems, activeTabId, onTabClick, projectId, selectedSprintId }) => {
   const createSprintMutation = useCreateSprint(projectId); // Mutation hook to create a sprint
-
-  // --- State for column creation modal ---
-  const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
-  const [newColumnName, setNewColumnName] = useState("");
-
-  // Close modal and reset column input
-  const handleCloseColumnModal = () => {
-    setIsColumnModalOpen(false);
-    setNewColumnName("");
-  };
-
-  // Handle new column form submit
-  const handleColumnSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleCreateColumn(newColumnName); // Notify parent to create column
-    handleCloseColumnModal(); // Close modal after creation
-  };
 
   // --- State for create sprint modal ---
   const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] = useState(false);
@@ -115,47 +97,13 @@ const Tabs: React.FC<TabsProps> = ({ TabItems, activeTabId, onTabClick, handleCr
             );
           })}
         </div>
-
-        {/* Action Buttons for Specific Tabs */}
-        {activeTabId === "board" && (
-          <Button onClick={() => setIsColumnModalOpen(true)}>
-            + Columna
-          </Button>
-        )}
-
       </nav>
-
-      {/* --- Column Modal --- */}
-      <Modal
-        isOpen={isColumnModalOpen}
-        onClose={handleCloseColumnModal}
-        size="sm"
-        title="Nueva columna"
-      >
-        <form onSubmit={handleColumnSubmit}>
-          <Input
-            type="text"
-            placeholder="Nombre de la columna"
-            value={newColumnName}
-            onChange={(e) => setNewColumnName(e.target.value)}
-            autoFocus
-            required
-          />
-          <div style={{ marginTop: "1rem", display: "flex", gap: "0.5rem" }}>
-            <Button type="button" onClick={handleCloseColumnModal} variant="secondary">
-              Cancelar
-            </Button>
-            <Button type="submit">Crear</Button>
-          </div>
-        </form>
-      </Modal>
 
       {/* --- Sprint Creation Modal --- */}
       <Modal
         isOpen={isCreateSprintModalOpen}
         onClose={() => {
           setIsCreateSprintModalOpen(false);
-          // Reset all fields when closing
           setSprintName("");
           setSprintGoal("");
           setStartDate("");
