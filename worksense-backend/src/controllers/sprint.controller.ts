@@ -242,13 +242,41 @@ export const updateSprint: RequestHandler = async (req, res, next) => {
       if (endDate !== undefined) updates.endDate = Timestamp.fromDate(currentEnd);
     }
 
-
     if (status !== undefined) {
       const validStatuses = ["Active", "Planned", "Completed"];
       if (!validStatuses.includes(status)) {
         return res.status(400).json({ message: "Invalid status value" });
       }
       updates.status = status;
+
+      // If status is being updated to Completed, reset leaderboard points
+      if (status === "Completed") {
+        const leaderboardRef = db
+          .collection("projects")
+          .doc(projectId)
+          .collection("gamification")
+          .doc("leaderboard");
+
+        const leaderboardSnap = await leaderboardRef.get();
+        
+        if (leaderboardSnap.exists) {
+          const leaderboardData = leaderboardSnap.data();
+          if (leaderboardData) {
+            // Create an update object to set all points to 0
+            const pointsUpdate: { [key: string]: any } = {};
+            Object.keys(leaderboardData).forEach(userId => {
+              // Skip lastUpdate and badges fields
+              if (userId !== 'lastUpdate' && userId !== 'badges') {
+                pointsUpdate[`${userId}.points`] = 0;
+                pointsUpdate[`${userId}.lastUpdate`] = FieldValue.serverTimestamp();
+              }
+            });
+            
+            // Update the leaderboard document
+            await leaderboardRef.update(pointsUpdate);
+          }
+        }
+      }
     }
 
     // --- Apply updates ---
@@ -285,6 +313,28 @@ export const updateSprintStatus: RequestHandler = async (req, res, next) => {
         message: "Valid status (Active, Planned, or Completed) is required",
       });
     }
+    const leaderBoardRef = db
+      .collection("projects")
+      .doc(projectId)
+      .collection("gamification")
+      .doc("leaderboard");
+
+    const leaderBoardSnap = await leaderBoardRef.get();
+
+    if (!leaderBoardSnap.exists) {
+      return res.status(404).json({ message: "Leaderboard not found" });
+
+    }
+
+    leaderBoardRef.update({
+      points: 0,
+      lastUpdate: FieldValue.serverTimestamp(),
+    });
+
+   
+
+    const leaderBoardData = leaderBoardSnap.data();
+    
 
     const sprintRef = db
       .collection("projects")
