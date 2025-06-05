@@ -22,3 +22,4 @@ router.get('/stats', getProjectGamificationStats);     // GET /api/v1/gamificati
 router.get('/activity',memberAuth, getProjectActivity);
 
 export default router;
+

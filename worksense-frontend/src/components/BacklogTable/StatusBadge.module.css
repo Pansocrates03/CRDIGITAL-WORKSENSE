@@ -51,7 +51,7 @@
 .statusUnassigned {
   background-color: #f3f4f6;
   color: #6b7280;
-  border-color: #d1d5db;
+  border-color: var(--accent-blue-hover);
 }
 
 /* Keep backward compatibility */

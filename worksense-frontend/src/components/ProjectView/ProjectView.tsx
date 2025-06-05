@@ -5,8 +5,6 @@ import styles from "./ProjectView.module.css";
 import apiClient from "@/api/apiClient";
 import { useNavigate } from "react-router-dom";
 
-// Component Imports
-import EditTeamModal from "../EditTeamModal/EditTeamModal";
 import MemberInfoPopup from "../MemberInfoPopup/MemberInfoPopup";
 import ActivityFeed from "@/components/ActivityFeed";
 
@@ -54,8 +52,6 @@ export const ProjectView: React.FC<FullProjectData> = ({
   // Local state
   const [backlogItems, setBacklogItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
-  const [teamMembers, setTeamMembers] = useState<MemberDetailed[]>(members);
   const [selectedMember, setSelectedMember] = useState<MemberDetailed | null>(
     null
   );
@@ -81,14 +77,6 @@ export const ProjectView: React.FC<FullProjectData> = ({
       fetchData();
     }
   }, [projectId]);
-
-  useEffect(() => {
-    setTeamMembers(members);
-  }, [members]);
-
-  const handleTeamUpdate = (newTeam: MemberDetailed[]) => {
-    setTeamMembers(newTeam);
-  };
 
   const handleAvatarClick = (
     member: MemberDetailed,
@@ -514,15 +502,6 @@ export const ProjectView: React.FC<FullProjectData> = ({
           </div>
         </div>
       </div>
-
-      {/* Modals */}
-      <EditTeamModal
-        isOpen={isEditTeamModalOpen}
-        onClose={() => setIsEditTeamModalOpen(false)}
-        projectId={projectId || ""}
-        currentTeam={teamMembers}
-        onTeamUpdate={handleTeamUpdate}
-      />
 
       {selectedMember && (
         <MemberInfoPopup
