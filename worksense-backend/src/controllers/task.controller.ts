@@ -193,10 +193,9 @@ export const getTaskById: RequestHandler = async (req, res, next) => {
 export const getSprintTasks: RequestHandler = async (req, res, next) => {
   try {
     const { projectId, sprintId } = req.params;
-    console.log('Getting tasks for:', { projectId, sprintId });
 
-    // Query tasks collection instead of backlog
-    const tasksSnap = await db
+    // 1. Get stories directly from backlog
+    const backlogStoriesSnap = await db
       .collection("projects")
       .doc(projectId)
       .collection("backlog")
@@ -206,19 +205,57 @@ export const getSprintTasks: RequestHandler = async (req, res, next) => {
       .get();
 
 
-    // Format Response
-    const tasks = tasksSnap.docs.map((doc) => ({
+    // 2. Get epics to fetch their subitems
+    const epicsSnap = await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .where("projectId", "==", projectId)
+      .where("type", "==", "epic")
+      .get();
+
+
+    // 3. Get stories from epic subitems
+    const epicSubitemsPromises = epicsSnap.docs.map(async (epicDoc) => {
+      try {
+        const subitemsSnap = await epicDoc.ref
+          .collection("subitems")
+          .where("projectId", "==", projectId)
+          .where("sprint", "==", sprintId)
+          .where("type", "==", "story")
+          .get();
+        
+        
+        return subitemsSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          epicId: epicDoc.id // Add reference to parent epic
+        }));
+      } catch (error) {
+        console.error(`Error fetching subitems for epic ${epicDoc.id}:`, error);
+        return [];
+      }
+    });
+
+    // Wait for all subitem queries to complete
+    const epicSubitemsResults = await Promise.all(epicSubitemsPromises);
+    const epicStories = epicSubitemsResults.flat();
+
+    // Combine both sets of stories
+    const backlogStories = backlogStoriesSnap.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
 
-    res.status(200).json(tasks);
+    const allStories = [...backlogStories, ...epicStories];
+
+    return res.status(200).json(allStories);
   } catch (error) {
     console.error(
       `Error getting stories for sprint ${req.params.sprintId}:`,
       error
     );
-    next(error);
+    return next(error);
   }
 };
 

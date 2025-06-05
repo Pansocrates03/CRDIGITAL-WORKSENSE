@@ -6,47 +6,23 @@ import styles from './ForYouPage.module.css';
 import { forYouService, AssignedItem, CompletedTask, PersonalGamificationInfo } from '@/services/forYouService';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/Loading/LoadingSpinner';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Modal from '@/components/Modal/Modal';
 import UpdateItemModal from '@/components/BacklogTable/UpdateItemModal';
-import { MoreVertical, Award, Star, Rocket, Pencil } from 'lucide-react';
 import ForYouGamificationSummaryBar from '@/components/forYou/ForYouGamificationSummaryBar';
 import ForYouGamificationOnboarding from '@/components/forYou/ForYouGamificationOnboarding';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import ProjectLeaderboard from '@/components/ui/ProjectLeaderboard';
 import { useQuery as useReactQuery } from '@tanstack/react-query';
 import ForYouGamificationDetails from '@/components/forYou/ForYouGamificationDetails';
 import AssignedItemsList from '@/components/forYou/AssignedItemsList';
 import CompletedItemsList from '@/components/forYou/CompletedItemsList';
 import YourContributionsCard from '@/components/forYou/YourContributionsCard';
 
-const iconMap: Record<string, React.ElementType> = {
-  Award,
-  Star,
-  Rocket,
-};
-
-function getInitials(name: string) {
-  if (!name) return '?';
-  const parts = name.trim().split(' ');
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-}
 
 const ForYouPage = () => {
   const { id: projectId } = useParams<{ id: string }>();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { profile: userProfile } = useUserProfile();
-
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [showAllAssigned, setShowAllAssigned] = useState(false);
-  const [showAllCompleted, setShowAllCompleted] = useState(false);
   const [editItem, setEditItem] = useState<AssignedItem | null>(null);
-  const [popoverOpen, setPopoverOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -69,11 +45,10 @@ const ForYouPage = () => {
     isLoading: isLoadingCompleted,
     error: completedError
   } = useQuery<CompletedTask[]>({
-    queryKey: ['completedTasks', projectId, userIdString, showAllCompleted],
+    queryKey: ['completedTasks', projectId, userIdString],
     queryFn: () => forYouService.getCompletedTasks(
       userIdString,
-      projectId || '',
-      showAllCompleted ? 100 : 3
+      projectId || ''
     ),
     enabled: !!projectId && !!userIdString
   });
@@ -121,20 +96,6 @@ const ForYouPage = () => {
     onError: () => {
       toast.error('Failed to update profile.');
     },
-  });
-
-  // Update item status mutation
-  const updateStatusMutation = useMutation({
-    mutationFn: ({ itemId, newStatus }: { itemId: string; newStatus: string }) =>
-      forYouService.updateItemStatus(itemId, newStatus),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assignedItems'] });
-      toast.success('Status updated successfully');
-    },
-    onError: (error) => {
-      toast.error('Failed to update status');
-      console.error('Error updating status:', error);
-    }
   });
 
   if (isLoadingAssigned || isLoadingCompleted || isLoadingGamification) {

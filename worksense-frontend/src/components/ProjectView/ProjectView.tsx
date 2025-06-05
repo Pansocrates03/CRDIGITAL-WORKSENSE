@@ -130,15 +130,21 @@ export const ProjectView: React.FC<FullProjectData> = ({
 
   // Helper function to normalize status values and check for "in progress" variations
   const isInProgress = (status: string) => {
+    if (!status) return false;
+    const normalizedStatus = status.toLowerCase().replace(/[_\s-]/g, "");
     return (
-      status === "inProgress" ||
-      status === "in_progress" ||
-      status === "in-progress"
+      normalizedStatus === "inprogress" ||
+      normalizedStatus === "in_progress" ||
+      normalizedStatus === "in-progress" ||
+      normalizedStatus === "in progress" ||
+      normalizedStatus === "inprogress"
     );
   };
 
   const isDone = (status: string) => {
-    return status === "done";
+    if (!status) return false;
+    const normalizedStatus = status.toLowerCase().replace(/[_\s-]/g, "");
+    return normalizedStatus === "done";
   };
 
   // Debug logging (remove in production)
