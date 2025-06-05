@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { AvatarPicker } from '@/components/Account/AvatarPicker';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useAuth } from '@/contexts/AuthContext';
+import { authService } from '@/services/auth';
 
 
 interface ForYouGamificationOnboardingProps {
@@ -20,6 +22,7 @@ const ForYouGamificationOnboarding: React.FC<ForYouGamificationOnboardingProps> 
   const [personalPhrase, setPersonalPhrase] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { save } = useUserProfile();
+  const { setUser } = useAuth();
 
   // Reset fields when popup is opened
   React.useEffect(() => {
@@ -47,6 +50,13 @@ const ForYouGamificationOnboarding: React.FC<ForYouGamificationOnboardingProps> 
     try {
       await save({ pfp: selectedAvatar });
       onComplete({ profilePicture: selectedAvatar, personalPhrase });
+      setUser(user => {
+        const updatedUser = user ? { ...user, avatar: selectedAvatar } : user;
+        if (updatedUser) {
+          authService.updateUserInStorage(updatedUser);
+        }
+        return updatedUser;
+      });
       toast.success('Profile updated!');
     } catch (err) {
       toast.error('Failed to update profile.');
