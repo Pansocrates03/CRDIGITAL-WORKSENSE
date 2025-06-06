@@ -10,10 +10,8 @@ const router = Router();
 const authMiddleware = [verifyToken];
 router.use(authMiddleware);
 
-// Usar el middleware de memoria
 router.use(memoryEnhancementMiddleware);
 
-// Ruta para interactuar con el asistente - SIN autenticación para pruebas
 router.post("/ask", handleGeminiPrompt);
 
 

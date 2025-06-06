@@ -2,9 +2,7 @@
 import { Request, Response } from "express";
 import { projectCacheService } from "../service/projectCache.service.js";
 
-/**
- * Get cache statistics
- */
+// Obtener estadísticas del caché
 export const getCacheStats = async (
   req: Request,
   res: Response
@@ -30,9 +28,7 @@ export const getCacheStats = async (
   }
 };
 
-/**
- * Clear cache for a specific project or all projects
- */
+// Borrar el caché de un proyecto o de todos los proyectos
 export const clearCache = async (
   req: Request,
   res: Response
@@ -64,9 +60,7 @@ export const clearCache = async (
   }
 };
 
-/**
- * Force refresh cache for a specific project
- */
+// Forzar la actualización del caché de un proyecto
 export const refreshProjectCache = async (
   req: Request,
   res: Response
@@ -82,7 +76,6 @@ export const refreshProjectCache = async (
       return;
     }
     
-    // Force refresh by passing true as second parameter
     const data = await projectCacheService.getProjectData(projectId, true);
     
     if (!data) {

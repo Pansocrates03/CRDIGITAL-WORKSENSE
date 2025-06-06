@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/api/apiClient.ts";
 import * as LucideIcons from "lucide-react";
 import { LucideIcon } from "lucide-react";
+import { useSprints } from "@/hooks/useSprintData";
 
 // Badge icon mapping
 const getBadgeIcon = (badgeName: string, isLatest: boolean = false) => {
@@ -39,7 +40,14 @@ interface GamificationBadgeProps {
 const GamificationBadge: React.FC<GamificationBadgeProps> = ({ projectId }) => {
   const { user } = useAuth();
 
-  const { data: profileData, isLoading } = useQuery({
+  // Subscribe to sprints to detect status changes
+  const { data: sprints } = useSprints(projectId ?? "");
+
+  const {
+    data: profileData,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["user-profile-with-gamification", projectId],
     queryFn: async () => {
       const response = await apiClient.get("/me", {
@@ -50,6 +58,18 @@ const GamificationBadge: React.FC<GamificationBadgeProps> = ({ projectId }) => {
     enabled: !!user,
     refetchInterval: 30000,
   });
+
+  // Effect to refetch profile data when a sprint is completed
+  React.useEffect(() => {
+    if (sprints) {
+      const hasCompletedSprint = sprints.some(
+        (sprint) => sprint.status === "Completed"
+      );
+      if (hasCompletedSprint) {
+        refetch();
+      }
+    }
+  }, [sprints, refetch]);
 
   if (isLoading) {
     return (

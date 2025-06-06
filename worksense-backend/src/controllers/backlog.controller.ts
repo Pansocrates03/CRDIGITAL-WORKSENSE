@@ -253,8 +253,18 @@ export const updateBacklogItem = async (
     const newStatus = updateData.status;
 
     // Normalize status values for case-insensitive comparison
-    const oldStatusNorm = (oldStatus || '').toLowerCase().trim();
-    const newStatusNorm = (newStatus || '').toLowerCase().trim();
+    const normalizeStatus = (status: string | undefined | null): string => {
+      if (!status) return "";
+      const normalized = status.toLowerCase().trim();
+      // Handle different variations of "done"
+      if (["done", "done", "done", "done"].includes(normalized)) {
+        return "done";
+      }
+      return normalized;
+    };
+
+    const oldStatusNorm = normalizeStatus(oldStatus);
+    const newStatusNorm = normalizeStatus(newStatus);
 
     // Prepare update data
     let dataToUpdate = {
@@ -262,7 +272,7 @@ export const updateBacklogItem = async (
       updatedAt: FieldValue.serverTimestamp(),
     };
     // If status is being set to 'done', always update updatedAt
-    if (newStatusNorm === 'done') {
+    if (newStatusNorm === "done") {
       dataToUpdate.updatedAt = FieldValue.serverTimestamp();
     }
 
@@ -275,11 +285,15 @@ export const updateBacklogItem = async (
     await itemRef.update(dataToUpdate);
 
     // In your backlogController.ts, update the gamification section:
-    console.log('Backlog update:', { oldStatus, newStatus, assigneeId: currentItemData?.assigneeId });
+    console.log("Backlog update:", {
+      oldStatus,
+      newStatus,
+      assigneeId: currentItemData?.assigneeId,
+    });
 
     // *** GAMIFICATION LOGIC WITH TOAST DATA ***
     if (oldStatusNorm !== "done" && newStatusNorm === "done") {
-      console.log('AWARD block hit');
+      console.log("AWARD block hit");
       try {
         // Get the assignee's ID from the current item data
         const assigneeId = currentItemData?.assigneeId;
@@ -350,7 +364,6 @@ export const updateBacklogItem = async (
         );
       }
     } else if (oldStatusNorm === "done" && newStatusNorm !== "done") {
-     
       try {
         // Get the assignee's ID from the current item data
         const assigneeId = currentItemData?.assigneeId;
@@ -398,7 +411,7 @@ export const updateBacklogItem = async (
             ...updatedDoc.data(),
             // Toast notification data
             toast: {
-              type: "warning",
+              type: "success",
               points: -pointsToDeduct,
               totalPoints: gamificationResult.totalPoints,
               level: gamificationResult.level,
@@ -413,7 +426,7 @@ export const updateBacklogItem = async (
         );
       }
     } else {
-      console.log('NO block hit');
+      console.log("NO block hit");
     }
 
     // Regular response if no gamification
@@ -584,15 +597,25 @@ export const updateSubItem = async (
     const newStatus = updateData.status;
 
     // Normalize status values for case-insensitive comparison
-    const oldStatusNorm = (oldStatus || '').toLowerCase().trim();
-    const newStatusNorm = (newStatus || '').toLowerCase().trim();
+    const normalizeStatus = (status: string | undefined | null): string => {
+      if (!status) return "";
+      const normalized = status.toLowerCase().trim();
+      // Handle different variations of "done"
+      if (["done", "done", "done", "done"].includes(normalized)) {
+        return "done";
+      }
+      return normalized;
+    };
+
+    const oldStatusNorm = normalizeStatus(oldStatus);
+    const newStatusNorm = normalizeStatus(newStatus);
 
     // Prepare update data
     let dataToUpdate = {
       ...updateData,
       updatedAt: FieldValue.serverTimestamp(),
     };
-    if (newStatusNorm === 'done') {
+    if (newStatusNorm === "done") {
       dataToUpdate.updatedAt = FieldValue.serverTimestamp();
     }
 
@@ -605,10 +628,14 @@ export const updateSubItem = async (
     await itemRef.update(dataToUpdate);
 
     // Gamification logic for subitems
-    console.log('Subitem update:', { oldStatus, newStatus, assigneeId: currentItemData?.assigneeId });
+    console.log("Subitem update:", {
+      oldStatus,
+      newStatus,
+      assigneeId: currentItemData?.assigneeId,
+    });
 
     if (oldStatusNorm !== "done" && newStatusNorm === "done") {
-      console.log('SUBITEM AWARD block hit');
+      console.log("SUBITEM AWARD block hit");
       try {
         const assigneeId = currentItemData?.assigneeId;
         if (assigneeId) {
@@ -667,7 +694,7 @@ export const updateSubItem = async (
         );
       }
     } else if (oldStatusNorm === "done" && newStatusNorm !== "done") {
-      console.log('SUBITEM DEDUCT block hit');
+      console.log("SUBITEM DEDUCT block hit");
       try {
         const assigneeId = currentItemData?.assigneeId;
         if (assigneeId) {
@@ -705,7 +732,7 @@ export const updateSubItem = async (
             id: updatedDoc.id,
             ...updatedDoc.data(),
             toast: {
-              type: "warning",
+              type: "success",
               points: -pointsToDeduct,
               totalPoints: gamificationResult.totalPoints,
               level: gamificationResult.level,
@@ -720,7 +747,7 @@ export const updateSubItem = async (
         );
       }
     } else {
-      console.log('SUBITEM NO block hit');
+      console.log("SUBITEM NO block hit");
     }
 
     // Regular response if no gamification

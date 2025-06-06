@@ -86,7 +86,6 @@ export const ProjectPage: React.FC = () => {
         error: membersErrorMessage
     } = useMembers(id);
 
-    // Memoized navigation handlers
     const handleRetry = () => window.location.reload();
     const handleBackToProjects = () => navigate("/create");
 
@@ -109,7 +108,6 @@ export const ProjectPage: React.FC = () => {
         return <ErrorState message={membersErrorMessage.message} onRetry={handleRetry}/>;
     }
 
-    // Only render the ProjectView when we have both project and members
     if (project && members) {
         return <ProjectView project={project} members={members}/>;
     }

@@ -80,7 +80,7 @@
 .card {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   border: 1px solid #eee;
   padding: 1rem 1.5rem;
 }
@@ -102,7 +102,8 @@
   background: transparent;
 }
 
-.table th, .table td {
+.table th,
+.table td {
   padding: 0.75rem 1rem;
   text-align: left;
 }
@@ -160,7 +161,7 @@
 .calendarCard {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   border: 1px solid #eee;
   padding: 1.5rem 1rem 1rem 1rem;
 }
@@ -168,7 +169,7 @@
 .gamificationCard {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   border: 1px solid #eee;
   padding: 2.5rem 1.5rem;
   text-align: center;
@@ -182,7 +183,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,7 +195,7 @@
   padding: 2rem;
   border-radius: 10px;
   min-width: 320px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .bulkDialogTitle {
@@ -317,11 +318,6 @@
   color: var(--accent-pink);
 }
 
-.itemStatus.in-progress {
-  background: var(--neutral-600);
-  color: var(--accent-pink);
-}
-
 .itemStatus.done {
   background: var(--neutral-100);
   color: var(--accent-blue-hover);
@@ -363,4 +359,3 @@
   font-weight: 500;
   color: var(--text-primary);
 }
-

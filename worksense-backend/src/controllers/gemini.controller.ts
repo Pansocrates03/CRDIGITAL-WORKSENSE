@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { sqlConnect, sql } from "../models/sqlModel.js";
 import { Timestamp } from "firebase-admin/firestore";
 import { projectCacheService } from "../service/projectCache.service.js";
+import { calculateTaskPoints } from "../service/gamificationService.js";
+import { db } from "../models/firebase.js";
 import {
   getOrCreateConversation,
   addMessageToConversation,
@@ -9,15 +11,13 @@ import {
   extractUserPreferences,
 } from "../controllers/conversation.controller.js";
 
-// Keep track of active subscriptions
+// Estar al tanto de las suscripciones activas para evitar fugas de memoria
 const activeSubscriptions = new Map<string, () => void>();
 
-/**
- * Helper function to check if a question is project-related
- */
+// Enhanced function to check if question is project-related (now includes gamification)
 const isProjectRelatedQuestion = (prompt: string): boolean => {
   const projectKeywords = [
-    // Project management terms
+    // Original project keywords
     "project",
     "task",
     "sprint",
@@ -36,7 +36,23 @@ const isProjectRelatedQuestion = (prompt: string): boolean => {
     "requirement",
     "feature",
 
-    // Spanish equivalents
+    // Gamification keywords
+    "points",
+    "score",
+    "level",
+    "badge",
+    "leaderboard",
+    "ranking",
+    "achievement",
+    "gamification",
+    "activity",
+    "performance",
+    "top performer",
+    "completion rate",
+    "earned",
+    "reward",
+
+    // Equivalentes en español
     "proyecto",
     "tarea",
     "equipo",
@@ -47,8 +63,18 @@ const isProjectRelatedQuestion = (prompt: string): boolean => {
     "requisito",
     "funcionalidad",
     "historia",
+    "puntos",
+    "puntaje",
+    "nivel",
+    "insignia",
+    "clasificación",
+    "logro",
+    "gamificación",
+    "actividad",
+    "rendimiento",
+    "recompensa",
 
-    // Action words related to project management
+    // Palabras clave de acción
     "assign",
     "complete",
     "review",
@@ -62,25 +88,35 @@ const isProjectRelatedQuestion = (prompt: string): boolean => {
     "estimar",
     "desarrollar",
 
-    // Questions about work
+    // Preguntas comunes relacionadas con proyectos y gamificación
     "who is working",
     "what is pending",
     "when is due",
     "how many",
+    "who has the most",
+    "my points",
+    "my level",
+    "my badges",
+    "team ranking",
     "quién está trabajando",
     "qué está pendiente",
     "cuándo vence",
     "cuántos",
+    "quién tiene más",
+    "mis puntos",
+    "mi nivel",
+    "mis insignias",
+    "clasificación del equipo",
   ];
 
   const lowerPrompt = prompt.toLowerCase();
 
-  // Check if the prompt contains project-related keywords
+  // Checar si el prompt contiene palabras clave del proyecto
   const hasProjectKeywords = projectKeywords.some((keyword) =>
     lowerPrompt.includes(keyword.toLowerCase())
   );
 
-  // Check for obvious non-project questions
+  // Buscar indicadores claros de que no es un tema del proyecto
   const nonProjectIndicators = [
     "weather",
     "recipe",
@@ -107,26 +143,279 @@ const isProjectRelatedQuestion = (prompt: string): boolean => {
     lowerPrompt.includes(indicator.toLowerCase())
   );
 
-  // If it clearly has non-project indicators and no project keywords, it's off-topic
+  // Si tiene indicadores claros de no proyecto y no tiene palabras clave de proyecto, es probable que no sea relevante
   if (hasNonProjectIndicators && !hasProjectKeywords) {
     return false;
   }
 
-  // If it has project keywords, it's likely project-related
+  // Si tiene palabras clave de proyecto, es relevante
   if (hasProjectKeywords) {
     return true;
   }
 
-  // For ambiguous cases, allow them but the AI will be instructed to redirect
+  // Para casos ambiguos
   return true;
+};
+
+// Helper function to fetch gamification data for a user
+const getUserGamificationData = async (userId: number) => {
+  try {
+    const pool = await sqlConnect();
+    if (!pool) return null;
+
+    const result = await pool
+      .request()
+      .input("UserId", sql.Int, userId)
+      .query("SELECT * FROM user_gamification WHERE user_id = @UserId");
+
+    if (result.recordset.length === 0) {
+      return {
+        user_id: userId,
+        total_points: 0,
+        level: 1,
+        badges: [],
+      };
+    }
+
+    const userData = result.recordset[0];
+    return {
+      ...userData,
+      badges: JSON.parse(userData.badges || "[]"),
+    };
+  } catch (error) {
+    console.error("Error fetching user gamification data:", error);
+    return null;
+  }
+};
+
+// Helper function to fetch project leaderboard
+const getProjectLeaderboard = async (projectId: string) => {
+  try {
+    const leaderboardSnap = await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("gamification")
+      .doc("leaderboard")
+      .get();
+
+    const leaderboardData: Record<string, any> = leaderboardSnap.data() || {};
+    if (Object.keys(leaderboardData).length === 0) {
+      return [];
+    }
+
+    // Get all userIds from the leaderboard
+    const userIds = Object.keys(leaderboardData).map((id) => parseInt(id, 10));
+
+    // Fetch user profiles from SQL
+    const userProfiles: Record<number, string | null> = {};
+    try {
+      const pool = await sqlConnect();
+      if (pool && userIds.length > 0) {
+        const userIdsString = userIds.join(",");
+        const result = await pool
+          .request()
+          .input("UserIds", sql.NVarChar(sql.MAX), userIdsString)
+          .execute("spGetUsersByIds");
+        if (result.recordset && result.recordset.length > 0) {
+          result.recordset.forEach((user: any) => {
+            userProfiles[user.id] = user.pfp;
+          });
+        }
+      }
+    } catch (sqlError) {
+      console.error("Error fetching user avatars from SQL:", sqlError);
+    }
+
+    // Build leaderboard
+    const leaderboard = Object.entries(leaderboardData)
+      .map(([userId, userData]: [string, any]) => ({
+        userId: parseInt(userId),
+        points: userData.points || 0,
+        name: userData.name || "Unknown User",
+        avatarUrl:
+          userProfiles[parseInt(userId)] ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            userData.name || "User"
+          )}&background=AC1754&color=FFFFFF`,
+        role: userData.role || null,
+        lastUpdate: userData.lastUpdate,
+      }))
+      .sort((a, b) => b.points - a.points)
+      .map((user, index) => ({ ...user, rank: index + 1 }));
+
+    return leaderboard;
+  } catch (error) {
+    console.error("Error fetching project leaderboard:", error);
+    return [];
+  }
+};
+
+// Helper function to fetch recent project activity
+const getProjectActivity = async (projectId: string, limit: number = 5) => {
+  try {
+    const activities: Array<{
+      type: 'badge_earned' | 'task_completion';
+      timestamp: Date;
+      user: string;
+      userId: number;
+      data: {
+        badgeName?: string;
+        badgeIcon?: string;
+        itemTitle?: string;
+        itemId?: string;
+        itemType?: string;
+        points?: number;
+      };
+    }> = [];
+
+    // Get recent task completions from backlog items
+    const backlogSnap = await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .where("status", "==", "done")
+      .orderBy("updatedAt", "desc")
+      .limit(limit)
+      .get();
+
+    // Get recent badge earnings from SQL
+    const pool = await sqlConnect();
+    if (pool) {
+      const badgeQuery = await pool
+        .request()
+        .input("Limit", sql.Int, limit)
+        .input("ProjectId", sql.NVarChar, projectId).query(`
+          SELECT TOP (@Limit)
+            ug.user_id,
+            badge_data.badge_name,
+            badge_data.badge_icon,
+            badge_data.earned_at,
+            badge_data.project_id,
+            u.firstName + ' ' + u.lastName as user_name
+          FROM user_gamification ug
+          CROSS APPLY (
+            SELECT 
+              JSON_VALUE(badge.value, '$.name') as badge_name,
+              JSON_VALUE(badge.value, '$.icon') as badge_icon,
+              JSON_VALUE(badge.value, '$.earnedAt') as earned_at,
+              JSON_VALUE(badge.value, '$.projectId') as project_id
+            FROM OPENJSON(ug.badges) badge
+            WHERE JSON_VALUE(badge.value, '$.earnedAt') IS NOT NULL
+          ) badge_data
+          JOIN users u ON u.id = ug.user_id
+          WHERE badge_data.project_id = @ProjectId
+          ORDER BY badge_data.earned_at DESC
+        `);
+
+      // Add badge earnings to activities
+      badgeQuery.recordset.forEach((badge) => {
+        activities.push({
+          type: "badge_earned",
+          timestamp: new Date(badge.earned_at),
+          user: badge.user_name,
+          userId: badge.user_id,
+          data: {
+            badgeName: badge.badge_name,
+            badgeIcon: badge.badge_icon,
+          },
+        });
+      });
+    }
+
+    // Add task completions to activities
+    backlogSnap.docs.forEach((doc) => {
+      const item = doc.data();
+      activities.push({
+        type: "task_completion",
+        timestamp: item.updatedAt?.toDate() || new Date(),
+        user: item.assigneeName || "Someone",
+        userId: item.assigneeId,
+        data: {
+          itemTitle: item.name,
+          itemId: doc.id,
+          itemType: item.type,
+          points: calculateTaskPoints(item),
+        },
+      });
+    });
+
+    // Sort by timestamp and limit
+    activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    return activities.slice(0, limit);
+  } catch (error) {
+    console.error("Error fetching project activity:", error);
+    return [];
+  }
+};
+
+// Helper function to get project gamification stats
+const getProjectGamificationStats = async (projectId: string) => {
+  try {
+    // Get gamification leaderboard
+    const leaderboardSnap = await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("gamification")
+      .doc("leaderboard")
+      .get();
+
+    // Get project backlog items
+    const backlogSnap = await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("backlog")
+      .get();
+
+    const leaderboardData = leaderboardSnap.data() || {};
+    const users = Object.values(leaderboardData) as any[];
+    const backlogItems = backlogSnap.docs.map((doc) => doc.data());
+
+    return {
+      totalUsers: users.length,
+      totalPoints: users.reduce(
+        (sum: number, user: any) => sum + (user.points || 0),
+        0
+      ),
+      averagePoints:
+        users.length > 0
+          ? Math.round(
+              users.reduce(
+                (sum: number, user: any) => sum + (user.points || 0),
+                0
+              ) / users.length
+            )
+          : 0,
+      topPerformer:
+        users.length > 0
+          ? users.reduce(
+              (top: any, user: any) =>
+                (user.points || 0) > (top.points || 0) ? user : top,
+              users[0]
+            )
+          : null,
+      totalBacklogItems: backlogItems.length,
+      completedTasks: backlogItems.filter((item: any) => item.status === "done")
+        .length,
+      completionRate:
+        backlogItems.length > 0
+          ? Math.round(
+              (backlogItems.filter((item: any) => item.status === "done")
+                .length /
+                backlogItems.length) *
+                100
+            )
+          : 0,
+    };
+  } catch (error) {
+    console.error("Error fetching project gamification stats:", error);
+    return null;
+  }
 };
 
 export const handleGeminiPrompt = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  console.log("Solicitud recibida en handleGeminiPrompt");
-
   const { prompt, projectId } = req.body;
   const userId = req.user?.userId || 1;
 
@@ -136,7 +425,7 @@ export const handleGeminiPrompt = async (
   }
 
   try {
-    // Check if the question is project-related
+    // Checar si la pregunta está relacionada con el proyecto
     if (!isProjectRelatedQuestion(prompt)) {
       const userPreferences = await getOrCreateConversation(userId, projectId);
       const preferredLanguage =
@@ -144,8 +433,8 @@ export const handleGeminiPrompt = async (
 
       const offTopicResponse =
         preferredLanguage === "es"
-          ? "Lo siento, pero solo puedo ayudarte con preguntas relacionadas con tu proyecto. ¿Hay algo específico sobre el proyecto en lo que pueda asistirte?"
-          : "I'm sorry, but I can only help you with questions related to your project. Is there something specific about the project I can assist you with?";
+          ? "Lo siento, pero solo puedo ayudarte con preguntas relacionadas con tu proyecto y gamificación. ¿Hay algo específico sobre el proyecto o tu progreso en lo que pueda asistirte?"
+          : "I'm sorry, but I can only help you with questions related to your project and gamification. Is there something specific about the project or your progress I can assist you with?";
 
       res.json({
         reply: offTopicResponse,
@@ -155,28 +444,25 @@ export const handleGeminiPrompt = async (
       return;
     }
 
-    // Set up real-time subscription if not already active
+    // Configuración del caché
     if (!activeSubscriptions.has(projectId)) {
       const unsubscribe =
         projectCacheService.subscribeToProjectUpdates(projectId);
       activeSubscriptions.set(projectId, unsubscribe);
-      console.log(`📡 Set up real-time updates for project ${projectId}`);
     }
 
-    // Get or create conversation
+    // Obtener o crear la conversación para el usuario y proyecto
     const conversation = await getOrCreateConversation(userId, projectId);
-    console.log(`Conversación obtenida/creada con ID: ${conversation.id}`);
 
-    // Add user message to conversation
+    // Crear mensaje del usuario
     const userMessage = {
       role: "user" as const,
       content: prompt,
       timestamp: Timestamp.now(),
     };
 
-    // Extract user preferences
+    // Extraer preferencias del usuario del prompt
     const metadataUpdates = extractUserPreferences(prompt);
-    console.log("🧠 Preferencias detectadas:", metadataUpdates);
 
     await addMessageToConversation(
       conversation.id!,
@@ -184,11 +470,10 @@ export const handleGeminiPrompt = async (
       metadataUpdates ?? undefined
     );
 
-    // Get conversation history
-    const recentMessages = await getConversationHistory(conversation.id!, 8); // Reduced for more concise context
-    console.log(`📝 Recuperado historial: ${recentMessages.length} mensajes`);
+    // Obtener el historial reciente de la conversación
+    const recentMessages = await getConversationHistory(conversation.id!, 8);
 
-    // Get cached project data
+    // Obtener datos del proyecto desde el caché
     const cachedData = await projectCacheService.getProjectData(projectId);
 
     if (!cachedData) {
@@ -206,7 +491,13 @@ export const handleGeminiPrompt = async (
       tasks,
     } = cachedData;
 
-    // Extract AI configuration from project data
+    // Fetch gamification data
+    const userGamificationData = await getUserGamificationData(userId);
+    const projectLeaderboard = await getProjectLeaderboard(projectId);
+    const recentActivity = await getProjectActivity(projectId, 5);
+    const gamificationStats = await getProjectGamificationStats(projectId);
+
+    // Configuración de IA desde el proyecto
     const aiConfig = {
       aiContext: projectData.aiContext || projectData.context?.objectives || "",
       aiTechStack:
@@ -216,7 +507,7 @@ export const handleGeminiPrompt = async (
       enableAiSuggestions: projectData.enableAiSuggestions !== false,
     };
 
-    // Enrich members with SQL data if needed
+    // Enriquecer miembros con datos de SQL
     let enrichedMembers = members;
     const userIds = members.map((m) => m.userId);
 
@@ -260,7 +551,7 @@ export const handleGeminiPrompt = async (
       }
     }
 
-    // Group backlog items by type
+    // Agrupar elementos del backlog por tipo
     const stories = backlogItems.filter((item) => item.type === "story");
     const bugs = backlogItems.filter((item) => item.type === "bug");
     const techTasks = backlogItems.filter((item) => item.type === "techTask");
@@ -269,12 +560,12 @@ export const handleGeminiPrompt = async (
     );
     const epics = backlogItems.filter((item) => item.type === "epic");
 
-    // Process sprints
+    // Procesar sprints
     const activeSprint = sprints.find((s) => s.status === "Active");
     const plannedSprints = sprints.filter((s) => s.status === "Planned");
     const completedSprints = sprints.filter((s) => s.status === "Completed");
 
-    // Group tasks by status
+    // Agrupar tareas por estado
     const tasksByStatus = {
       todo: tasks.filter((t) => t.status === "todo"),
       inProgress: tasks.filter(
@@ -284,61 +575,45 @@ export const handleGeminiPrompt = async (
       done: tasks.filter((t) => t.status === "done"),
     };
 
-    // If there's an active sprint, get its tasks
+    // Si hay un sprint activo, filtrar las tareas asociadas
     const activeSprintTasks = activeSprint
       ? tasks.filter((t) => t.sprintId === activeSprint.id)
       : [];
 
-    // Create role permission descriptions
-    const rolePermissionDescriptions: Record<string, string[]> = {};
-    projectRoles.forEach((role) => {
-      const permDescriptions: string[] = [];
-
-      role.permissions.forEach((permKey) => {
-        const permission = availablePermissions.get(permKey);
-        if (permission) {
-          permDescriptions.push(
-            `${permission.description} (${permission.key})`
-          );
-        } else {
-          permDescriptions.push(permKey);
-        }
-      });
-
-      if (role.id) {
-        rolePermissionDescriptions[role.id] = permDescriptions;
-      }
-    });
-
-    // Get current member and preferences
+    // Obtener preferencias del usuario actual
     const currentMember = enrichedMembers.find((m) => m.userId === userId);
     const userPreferences = conversation.metadata?.userPreferences || {};
     const userNickname = userPreferences.nickname;
     const preferredLanguage = userPreferences.preferredLanguage || "en";
     const verbosityLevel =
-      conversation.metadata?.assistantSettings?.verbosityLevel || "concise"; // Changed default to concise
+      conversation.metadata?.assistantSettings?.verbosityLevel || "concise";
 
-    // Build conversation history
+    // Construir el historial de conversación reciente
     const conversationHistory = recentMessages
       .map(
         (msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`
       )
       .join("\n\n");
 
-    // Detect language
+    // Detectar el idioma del mensaje del usuario
     const messageLanguage = detectLanguage(prompt);
-    console.log(`Idioma detectado en el mensaje: ${messageLanguage}`);
 
-    // Build context prompt with improved instructions
+    // Build gamification context
+    const userRankInProject =
+      projectLeaderboard.find((user) => user.userId === userId)?.rank ||
+      "Not ranked";
+    const topThreeLeaders = projectLeaderboard.slice(0, 3);
+
+    // Construir el prompt de contexto para Gemini con gamificación
     const contextPrompt = `
-You are Frida, a concise and focused project management assistant. You ONLY answer questions related to project management, team members, tasks, sprints, and project-related activities.
+You are Sensai, a concise and focused project management assistant with gamification expertise. You answer questions about project management, team performance, gamification stats, and team motivation.
 
 ### STRICT GUIDELINES:
-- ONLY answer questions related to this project and its management
-- If asked about topics unrelated to project management (weather, cooking, general knowledge, etc.), politely redirect to project-related topics
-- Keep responses concise and to the point unless specifically asked for details
-- Use markdown formatting for better readability (lists, headers, bold text, etc.)
-- Focus on actionable information and current project status
+- Answer questions about projects, gamification, points, badges, leaderboards, and team performance
+- If asked about unrelated topics, politely redirect to project or gamification topics  
+- Keep responses concise and actionable unless specifically asked for details
+- Use markdown formatting and gamification emojis (🏆, 🥇, 🎯, ⭐, 🔥, 📊) for engagement
+- Celebrate achievements and encourage healthy competition
 
 ${
   aiConfig.enableAiSuggestions
@@ -359,6 +634,77 @@ ${
 }
 ${currentMember ? `- **Role**: ${currentMember.roleName || "Unknown"}` : ""}
 ${userNickname ? `- **Preferred Name**: "${userNickname}"` : ""}
+
+### Your Gamification Status 🎮
+${
+  userGamificationData
+    ? `
+- **🏆 Total Points**: ${userGamificationData.total_points}
+- **📊 Level**: ${userGamificationData.level}
+- **🥇 Project Rank**: #${userRankInProject} ${
+        typeof userRankInProject === 'number' && userRankInProject <= 3 ? "🔥" : ""
+      }
+- **🎖️ Badges Earned**: ${userGamificationData.badges.length}
+${
+  userGamificationData.badges.length > 0
+    ? `- **Recent Badges**: ${userGamificationData.badges
+        .slice(-3)
+        .map((b: any) => `${b.icon} ${b.name}`)
+        .join(", ")}`
+    : ""
+}
+`
+    : "- Gamification data not available"
+}
+
+### Project Leaderboard 🏆
+${
+  topThreeLeaders.length > 0
+    ? `**Top Performers:**
+${topThreeLeaders
+  .map((user, index) => {
+    const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉";
+    return `${medal} **${user.name}**: ${user.points} points`;
+  })
+  .join("\n")}
+${
+  projectLeaderboard.length > 3
+    ? `... and ${projectLeaderboard.length - 3} more team members`
+    : ""
+}`
+    : "No leaderboard data available"
+}
+
+### Recent Team Activity 🎯
+${
+  recentActivity.length > 0
+    ? recentActivity
+        .slice(0, 3)
+        .map((activity: any) => {
+          if (activity.type === "badge_earned") {
+            return `🎖️ **${activity.user}** earned "${activity.data.badgeName}" badge`;
+          } else {
+            return `✅ **${activity.user}** completed "${activity.data.itemTitle}" (+${activity.data.points} points)`;
+          }
+        })
+        .join("\n")
+    : "No recent activity"
+}
+
+### Project Gamification Stats 📊
+${
+  gamificationStats
+    ? `
+- **👥 Active Players**: ${gamificationStats.totalUsers}
+- **🎯 Total Points Earned**: ${gamificationStats.totalPoints}
+- **📈 Average Points**: ${gamificationStats.averagePoints} per person
+- **⚡ Top Performer**: ${gamificationStats.topPerformer?.name || "N/A"} (${
+        gamificationStats.topPerformer?.points || 0
+      } points)
+- **✅ Completion Rate**: ${gamificationStats.completionRate}%
+`
+    : ""
+}
 
 ### Recent Context
 ${conversationHistory || "First interaction in this session."}
@@ -392,7 +738,11 @@ ${enrichedMembers
   .map((m) => {
     const memberName = m.fullName || m.name || `User ${m.userId}`;
     const roleName = m.roleName || "Unknown Role";
-    return `- **${memberName}**: ${roleName}`;
+    const memberRank = projectLeaderboard.find(
+      (user) => user.userId === m.userId
+    )?.rank;
+    const rankDisplay = memberRank ? ` (Rank #${memberRank})` : "";
+    return `- **${memberName}**: ${roleName}${rankDisplay}`;
   })
   .join("\n")}
 ${
@@ -419,22 +769,22 @@ ${
 ${preferredLanguage === "es" ? "Responde en español." : "Respond in English."}
 ${userNickname ? `Address the user as "${userNickname}" occasionally.` : ""}
 
-**Keep your response concise and focused**. Use markdown formatting for clarity:
-- Use **bold** for important items
-- Use bullet points for lists
+**Keep your response concise, motivating, and gamification-focused**. Use markdown formatting and emojis:
+- Use **bold** for important stats and achievements
+- Use 🏆, 🥇, 🎯, ⭐, 🔥, 📊 emojis for gamification elements
+- Use bullet points for lists and rankings
 - Use headers (##) for sections when needed
-- Use \`code\` for technical terms
+- Celebrate achievements and progress
+- Encourage friendly competition
 
-If the question is not project-related, politely redirect: "${
+If the question is not project or gamification-related, politely redirect: "${
       preferredLanguage === "es"
-        ? "Solo puedo ayudarte con temas relacionados al proyecto. ¿Hay algo específico del proyecto que quieras saber?"
-        : "I can only help with project-related topics. Is there something specific about the project you'd like to know?"
+        ? "Solo puedo ayudarte con temas relacionados al proyecto y gamificación. ¿Quieres saber sobre tu progreso, puntos, o el ranking del equipo?"
+        : "I can only help with project and gamification topics. Would you like to know about your progress, points, or team rankings?"
     }"
 `.trim();
 
-    console.log("🧠 Prompt contextual construido con mejoras de concisión");
-
-    // Call Gemini API with updated configuration for conciseness
+    // Llamada a la API de Gemini
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
     const body = {
@@ -444,10 +794,10 @@ If the question is not project-related, politely redirect: "${
         },
       ],
       generationConfig: {
-        temperature: 0.2, // Lower temperature for more focused responses
-        topP: 0.7, // Reduced for more concise responses
-        topK: 30, // Reduced for more focused responses
-        maxOutputTokens: 1024, // Reduced from 2048 for more concise responses
+        temperature: 0.3, // Slightly higher for more engaging responses
+        topP: 0.8,
+        topK: 40,
+        maxOutputTokens: 1024,
       },
       safetySettings: [
         {
@@ -470,7 +820,6 @@ If the question is not project-related, politely redirect: "${
     };
 
     try {
-      console.log("🌐 Enviando solicitud a Gemini API");
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -481,7 +830,6 @@ If the question is not project-related, politely redirect: "${
 
       if (!response.ok) {
         const errJson = await response.json();
-        console.error("❌ Gemini API error:", errJson);
         throw new Error(
           `Gemini API error: ${errJson.error?.message || "Unknown error"}`
         );
@@ -489,13 +837,11 @@ If the question is not project-related, politely redirect: "${
 
       const data = await response.json();
       let reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      console.log("✅ Respuesta recibida de Gemini");
 
       if (reply) {
-        // Clean up the reply to ensure proper markdown formatting
         reply = reply.trim();
 
-        // Add assistant message to conversation
+        // Agregar el mensaje del asistente a la conversación
         const assistantMessage = {
           role: "assistant" as const,
           content: reply,
@@ -504,20 +850,19 @@ If the question is not project-related, politely redirect: "${
 
         await addMessageToConversation(conversation.id!, assistantMessage);
 
-        // Log cache stats
-        const cacheStats = projectCacheService.getCacheStats();
-        console.log(
-          `📊 Cache stats: ${cacheStats.size} projects cached, ~${(
-            cacheStats.memoryUsage / 1024
-          ).toFixed(2)}KB memory used`
-        );
-
         res.json({
           reply,
           timestamp: new Date().toISOString(),
           conversation: {
             id: conversation.id,
             metadata: conversation.metadata,
+          },
+          gamificationData: {
+            userStats: userGamificationData,
+            userRank: userRankInProject,
+            leaderboard: topThreeLeaders,
+            recentActivity: recentActivity.slice(0, 3),
+            projectStats: gamificationStats,
           },
           cacheHit: cachedData.lastUpdated > Date.now() - 300000,
           hasMarkdown:
@@ -527,9 +872,6 @@ If the question is not project-related, politely redirect: "${
             reply.includes("-"),
         });
       } else {
-        // Fallback response
-        console.warn("⚠️ No se recibió respuesta de Gemini");
-
         const fallbackReply =
           preferredLanguage === "es"
             ? `Lo siento${
@@ -557,8 +899,6 @@ If the question is not project-related, politely redirect: "${
         });
       }
     } catch (apiError) {
-      console.error("❌ Error llamando a la API de Gemini:", apiError);
-
       const fallbackReply =
         preferredLanguage === "es"
           ? `Lo siento${
@@ -584,7 +924,6 @@ If the question is not project-related, politely redirect: "${
       });
     }
   } catch (err) {
-    console.error("❌ Error general:", err);
     res.status(500).json({
       message: "Error interno del servidor",
       error:
@@ -595,19 +934,16 @@ If the question is not project-related, politely redirect: "${
   }
 };
 
-/**
- * Cleanup subscriptions when server shuts down
- */
+// Función de limpieza de suscripciones activas
 export const cleanupSubscriptions = () => {
   activeSubscriptions.forEach((unsubscribe, projectId) => {
     unsubscribe();
-    console.log(`🧹 Cleaned up subscription for project ${projectId}`);
   });
   activeSubscriptions.clear();
   projectCacheService.clearCache();
 };
 
-// Helper function remains the same
+// Detectar el idioma del texto
 function detectLanguage(text: string): string {
   const spanishWords = [
     "hola",
@@ -628,6 +964,10 @@ function detectLanguage(text: string): string {
     "tengo",
     "puedes",
     "podrías",
+    "puntos",
+    "nivel",
+    "insignias",
+    "clasificación",
   ];
 
   const lowerText = text.toLowerCase();

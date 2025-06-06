@@ -69,9 +69,16 @@ export const awardPoints = async (params: AwardPointsParams) => {
     const projectBadges = leaderboardData[userId]?.badges || [];
 
     // Check for new badges only if points are positive
-    const newBadges = points > 0 ? await checkForNewBadges(userId, projectPoints, projectId) : [];
+    const newBadges =
+      points > 0
+        ? await checkForNewBadges(userId, projectPoints, projectId)
+        : [];
 
-    console.log(`${points > 0 ? 'Awarded' : 'Deducted'} ${Math.abs(points)} points to user ${userId} for ${action}`);
+    console.log(
+      `${points > 0 ? "Awarded" : "Deducted"} ${Math.abs(
+        points
+      )} points to user ${userId} for ${action}`
+    );
 
     return {
       success: true,
@@ -225,12 +232,12 @@ export const deductPoints = async (params: AwardPointsParams) => {
   // Calculate points to deduct (negative of the original points)
   const pointsToDeduct = -calculateTaskPoints({
     type: params.taskType,
-    storyPoints: params.storyPoints
+    storyPoints: params.storyPoints,
   });
 
   // Call awardPoints with negative points
   return awardPoints({
     ...params,
-    points: pointsToDeduct
+    points: pointsToDeduct,
   });
 };

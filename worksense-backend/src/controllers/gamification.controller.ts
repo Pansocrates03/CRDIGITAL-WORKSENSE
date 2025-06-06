@@ -66,59 +66,63 @@ export const getProjectActivity: RequestHandler = async (req, res, next) => {
 
     const activities = [];
 
-    // Get recent task completions from backlog items (since you don't use tasks collection)
+    // Get recent task completions from backlog items
     const backlogSnap = await db
       .collection("projects")
       .doc(projectId)
       .collection("backlog")
-      .where("status", "==", "done")
+      .where("status", "in", ["done", "Done", "DONE", "done"])
       .orderBy("updatedAt", "desc")
       .limit(limit)
       .get();
 
-    // Get recent badge earnings from SQL
-    const pool = await sqlConnect();
-    if (pool) {
-      const badgeQuery = await pool
-        .request()
-        .input("Limit", sql.Int, limit)
-        .input("ProjectId", sql.NVarChar, projectId).query(`
-          SELECT TOP (@Limit)
-            ug.user_id,
-            badge_data.badge_name,
-            badge_data.badge_icon,
-            badge_data.earned_at,
-            badge_data.project_id,
-            u.firstName + ' ' + u.lastName as user_name
-          FROM user_gamification ug
-          CROSS APPLY (
-            SELECT 
-              JSON_VALUE(badge.value, '$.name') as badge_name,
-              JSON_VALUE(badge.value, '$.icon') as badge_icon,
-              JSON_VALUE(badge.value, '$.earnedAt') as earned_at,
-              JSON_VALUE(badge.value, '$.projectId') as project_id
-            FROM OPENJSON(ug.badges) badge
-            WHERE JSON_VALUE(badge.value, '$.earnedAt') IS NOT NULL
-          ) badge_data
-          JOIN users u ON u.id = ug.user_id
-          WHERE badge_data.project_id = @ProjectId
-          ORDER BY badge_data.earned_at DESC
-        `);
+    // Get recent badge earnings from Firebase
+    const leaderboardSnap = await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("gamification")
+      .doc("leaderboard")
+      .get();
 
-      // Add badge earnings to activities
-      badgeQuery.recordset.forEach((badge) => {
-        activities.push({
-          type: "badge_earned",
-          timestamp: new Date(badge.earned_at),
-          user: badge.user_name,
-          userId: badge.user_id,
-          data: {
-            badgeName: badge.badge_name,
-            badgeIcon: badge.badge_icon,
-          },
+    const leaderboardData = leaderboardSnap.data() || {};
+
+    // Get user names from SQL
+    const pool = await sqlConnect();
+    const userIds = Object.keys(leaderboardData).map((id) => parseInt(id));
+    const userNames: Record<number, string> = {};
+
+    if (pool && userIds.length > 0) {
+      const userIdsString = userIds.join(",");
+      const result = await pool
+        .request()
+        .input("UserIds", sql.NVarChar(sql.MAX), userIdsString)
+        .execute("spGetUsersByIds");
+
+      if (result.recordset && result.recordset.length > 0) {
+        result.recordset.forEach((user: any) => {
+          userNames[user.id] = `${user.firstName} ${user.lastName}`;
         });
-      });
+      }
     }
+
+    // Process badge earnings
+    Object.entries(leaderboardData).forEach(
+      ([userId, userData]: [string, any]) => {
+        const badges = userData.badges || [];
+        badges.forEach((badge: any) => {
+          activities.push({
+            type: "badge_earned",
+            timestamp: badge.earnedAt?.toDate() || new Date(),
+            user: userNames[parseInt(userId)] || "Unknown User",
+            userId: parseInt(userId),
+            data: {
+              badgeName: badge.name,
+              badgeIcon: badge.icon,
+            },
+          });
+        });
+      }
+    );
 
     // Add task completions to activities
     backlogSnap.docs.forEach((doc) => {
@@ -126,13 +130,13 @@ export const getProjectActivity: RequestHandler = async (req, res, next) => {
       activities.push({
         type: "task_completion",
         timestamp: item.updatedAt?.toDate() || new Date(),
-        user: item.assigneeName || "Someone", // You'll need to store this
+        user: item.assigneeName || "Someone",
         userId: item.assigneeId,
         data: {
           itemTitle: item.name,
           itemId: doc.id,
           itemType: item.type,
-          points: calculateTaskPoints(item), // Use your existing function
+          points: calculateTaskPoints(item),
         },
       });
     });
@@ -173,7 +177,7 @@ export const getProjectLeaderboard: RequestHandler = async (req, res, next) => {
     }
 
     // Get all userIds from the leaderboard
-    const userIds = Object.keys(leaderboardData).map(id => parseInt(id, 10));
+    const userIds = Object.keys(leaderboardData).map((id) => parseInt(id, 10));
 
     // Fetch user profiles from SQL
     const userProfiles: Record<number, string | null> = {};
@@ -203,7 +207,9 @@ export const getProjectLeaderboard: RequestHandler = async (req, res, next) => {
         name: userData.name || "Unknown User",
         avatarUrl:
           userProfiles[parseInt(userId)] ||
-          `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || "User")}&background=AC1754&color=FFFFFF`,
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            userData.name || "User"
+          )}&background=AC1754&color=FFFFFF`,
         role: userData.role || null,
         lastUpdate: userData.lastUpdate,
       }))

@@ -2,6 +2,8 @@
 import { Router } from "express";
 import {
   createMeeting,
+  createRecurringMeetings,
+  cancelRecurringSeries,
   getProjectMeetings,
   getMeeting,
   updateMeetingStatus,
@@ -18,6 +20,11 @@ router.use(verifyToken);
 
 // Project-specific meeting routes (mounted under /projects)
 router.post("/:projectId/meetings", createMeeting); // Create a new meeting
+router.post("/:projectId/meetings/recurring", createRecurringMeetings); // Create recurring meetings
+router.patch(
+  "/:projectId/meetings/recurring/:recurringGroupId/cancel",
+  cancelRecurringSeries
+); // Cancel recurring series
 router.get("/:projectId/meetings", getProjectMeetings); // Get all meetings for a project
 router.get("/:projectId/meetings/:meetingId", getMeeting); // Get specific meeting
 

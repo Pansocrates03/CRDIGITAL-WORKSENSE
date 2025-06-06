@@ -12,13 +12,30 @@ export const getPersonalGamification = async (req: Request, res: Response) => {
       .collection("gamification")
       .doc("leaderboard");
     const docSnap = await docRef.get();
+    
+    // If no leaderboard exists, return default state
     if (!docSnap.exists) {
-      return res.status(404).json({ message: "Leaderboard not found" });
+      return res.json({
+        points: 0,
+        name: "",
+        personalPhrase: null,
+        profilePicture: null,
+        badges: [],
+      });
     }
+
     const data = docSnap.data();
+    // If user not found in leaderboard, return default state
     if (!data || !data[userId]) {
-      return res.status(404).json({ message: "User not found in leaderboard" });
+      return res.json({
+        points: 0,
+        name: "",
+        personalPhrase: null,
+        profilePicture: null,
+        badges: [],
+      });
     }
+
     const entry: LeaderboardEntry = data[userId];
     return res.json({
       points: entry.points,

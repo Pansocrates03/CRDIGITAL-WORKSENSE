@@ -148,18 +148,19 @@
 }
 
 .status-badge--active {
-    background-color: #D1FAE5;
-    color: #065F46;
+    background-color: var(--accent-blue);
+    color: white;
 }
 
 .status-badge--completed {
-    background-color: #F3F4F6;
-    color: #4B5563;
+    background-color: var(--success);
+    color: white;
 }
 
 .status-badge--planned {
-    background-color: #FEF3C7;
-    color: #92400E;
+    background-color: #ac175415;
+    color: var(--accent-pink);
+    border: solid 1px var(--accent-pink)
 }
 
 /* Form styles */

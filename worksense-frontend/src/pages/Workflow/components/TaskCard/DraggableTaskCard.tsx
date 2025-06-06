@@ -15,15 +15,6 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ BacklogItem, inde
   const [currentItem, setCurrentItem] = useState<BacklogItemType>(BacklogItem);
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Mapeo de colores para los stages
-  const stageColors: Record<string, string> = {
-    'To Do': '#FBE8F0',
-    'In Progress': '#F3A8C7',
-    'In Review': '#E74C8B',
-    'Testing': '#DD1E6C',
-    'Done': '#ac1754',
-  };
-
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('taskId', currentItem.id);
     e.dataTransfer.setData('sourceIndex', index.toString());
@@ -35,18 +26,21 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ BacklogItem, inde
   };
 
   const getStatusClass = (status: string) => {
-    switch (status) {
-      case 'sprint_backlog':
-        return 'task-card__status--backlog';
-      case 'in_progress':
-        return 'task-card__status--progress';
-      case 'in_review':
-        return 'task-card__status--review';
-      case 'done':
-        return 'task-card__status--done';
-      default:
-        return '';
-    }
+    if (!status) return 'task-card__status--unassigned';
+    
+    const statusMap: Record<string, string> = {
+      'sprint_backlog': 'task-card__status--backlog',
+      'todo': 'task-card__status--todo',
+      'to do': 'task-card__status--to-do',
+      'in_progress': 'task-card__status--in-progress',
+      'in progress': 'task-card__status--in-progress',
+      'in_review': 'task-card__status--in-review',
+      'in review': 'task-card__status--in-review',
+      'done': 'task-card__status--done',
+      'blocked': 'task-card__status--blocked'
+    };
+
+    return statusMap[status.toLowerCase()] || 'task-card__status--unassigned';
   };
 
   const getPriorityClass = (priority: string | null) => {
@@ -115,10 +109,7 @@ const DraggableTaskCard: React.FC<DraggableTaskCardProps> = ({ BacklogItem, inde
       <h3 className="task-card__title">{currentItem.name}</h3>
       
       <div className="task-card__meta">
-        <span
-          className="task-card__status"
-          style={{ backgroundColor: stageColors[currentItem.status || ''] || '#F3F4F6', color: currentItem.status === 'Done' ? '#fff' : '#22223b' }}
-        >
+        <span className={`task-card__status ${getStatusClass(currentItem.status || '')}`}>
           {currentItem.status}
         </span>
         {currentItem.priority && (

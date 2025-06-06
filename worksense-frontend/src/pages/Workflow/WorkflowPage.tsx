@@ -9,6 +9,8 @@ import { useDeleteSprint, useSprints } from '@/hooks/useSprintData';
 
 import { useBacklogItemUpdate } from '@/hooks/useBacklogItemUpdate';
 import { format } from 'date-fns';
+import { Calendar, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Views
 import Tabs from './components/Tabs/Tabs';
@@ -120,11 +122,83 @@ const WorkflowPage: React.FC = () => {
 
     // get active sprint
     if(!sprints && !sprintsLoading) {
-      return <div>No sprints found</div>
+      return (
+        <div className="sprint-page" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
+          <div className="sprint-page__header">
+            <div className="sprint-page__header-content">
+              <h1 className="sprint-page__title">Workflow</h1>
+            </div>
+          </div>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            padding: '4rem 2rem',
+            backgroundColor: 'var(--neutral-100, #f8f9fa)',
+            borderRadius: 'var(--border-radius-lg, 12px)',
+            margin: '2rem auto',
+            maxWidth: '600px',
+            textAlign: 'center',
+            boxShadow: 'var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05))'
+          }}>
+            <Calendar color="var(--accent-pink)" size={100} style={{ marginBottom: '1.5rem' }}/>
+            <h3 style={{ 
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              color: 'var(--text-primary)',
+              marginBottom: '1rem'
+            }}>No Active Sprint</h3>
+            <p style={{ 
+              fontSize: '1.05rem',
+              color: 'var(--neutral-700, #52525b)',
+              lineHeight: '1.6'
+            }}>
+              There are no active sprints in this project. Please create or activate a sprint to start managing your workflow.
+            </p>
+          </div>
+        </div>
+      );
     }
     let activeSprint = sprints?.find(s => s.status == "Active")
     if(!activeSprint){
-      return <div>No sprints found</div>
+      return (
+        <div className="sprint-page" style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
+          <div className="sprint-page__header">
+            <div className="sprint-page__header-content">
+              <h1 className="sprint-page__title">Workflow</h1>
+            </div>
+          </div>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            padding: '4rem 2rem',
+            backgroundColor: 'var(--neutral-100, #f8f9fa)',
+            borderRadius: 'var(--border-radius-lg, 12px)',
+            margin: '2rem auto',
+            maxWidth: '600px',
+            textAlign: 'center',
+            boxShadow: 'var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05))'
+          }}>
+            <Calendar color="var(--accent-pink)" size={100} style={{ marginBottom: '1.5rem' }}/>
+            <h3 style={{ 
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              color: 'var(--text-primary)',
+              marginBottom: '1rem'
+            }}>No Active Sprint</h3>
+            <p style={{ 
+              fontSize: '1.05rem',
+              color: 'var(--neutral-700, #52525b)',
+              lineHeight: '1.6'
+            }}>
+              There are no active sprints in this project. Please create or activate a sprint to start managing your workflow.
+            </p>
+          </div>
+        </div>
+      );
     }
 
     let filteredStories = data?.filter(item => {

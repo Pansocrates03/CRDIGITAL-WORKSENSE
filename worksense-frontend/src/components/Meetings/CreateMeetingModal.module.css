@@ -16,13 +16,15 @@
 
 .modal {
   background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  border-radius: var(--radius, 0.625rem);
+  box-shadow: var(--shadow-lg, 0 10px 15px rgba(43, 41, 46, 0.1));
   width: 100%;
   max-width: 600px;
   max-height: 90vh;
   overflow: hidden;
   animation: modalEnter 0.2s ease-out;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
@@ -30,36 +32,55 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem 2rem;
-  border-bottom: 1px solid var(--neutral-200, #e5e7eb);
-  background-color: var(--background-primary, #ffffff);
+  border-bottom: 1px solid var(--neutral-200, #f7f6f8);
+  background-color: white;
+  flex-shrink: 0;
 }
 
 .title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, #2b292e);
   margin: 0;
+  font-family: var(--font-main);
+}
+
+.quickHeaderTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.quickIcon {
+  color: var(--color-accent, #176aac);
 }
 
 .closeButton {
   background: none;
   border: none;
   padding: 0.5rem;
-  border-radius: 0.375rem;
-  color: var(--neutral-500, #6b7280);
+  border-radius: var(--radius, 0.625rem);
+  color: var(--neutral-500, #8e8c92);
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .closeButton:hover {
-  background-color: var(--neutral-100, #f5f5f5);
-  color: var(--neutral-700, #374151);
+  background-color: var(--neutral-100, #fdfcfd);
+  color: var(--neutral-700, #4d4b51);
+}
+
+.scrollableContent {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .form {
   padding: 2rem;
-  max-height: calc(90vh - 120px);
-  overflow-y: auto;
 }
 
 .formGroup {
@@ -78,12 +99,13 @@
   gap: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, #2b292e);
   margin-bottom: 0.5rem;
+  font-family: var(--font-main);
 }
 
 .label svg {
-  color: var(--neutral-400, #9ca3af);
+  color: var(--neutral-400, #c9c7cc);
 }
 
 .input,
@@ -91,29 +113,39 @@
 .select {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid var(--neutral-300, #d1d5db);
-  border-radius: 0.5rem;
+  border: 1px solid var(--neutral-300, #e6e4e8);
+  border-radius: var(--radius, 0.625rem);
   font-size: 0.875rem;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, #2b292e);
   background-color: white;
   transition: all 0.2s ease;
+  font-family: var(--font-main);
 }
 
 .input:focus,
 .textarea:focus,
 .select:focus {
   outline: none;
-  border-color: var(--accent-pink, #ac1754);
-  box-shadow: 0 0 0 3px rgba(172, 23, 84, 0.1);
+  border-color: var(--color-purple, #ac1754);
+  box-shadow: 0 0 0 3px var(--accent-pink-light, rgba(255, 181, 213, 0.13));
 }
 
 .inputError {
-  border-color: var(--red-500, #ef4444);
+  border-color: var(--error, #d32f2f);
 }
 
 .inputError:focus {
-  border-color: var(--red-500, #ef4444);
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  border-color: var(--error, #d32f2f);
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+}
+
+.keyboardHint {
+  font-size: 0.75rem;
+  color: var(--neutral-500, #8e8c92);
+  margin-top: 0.25rem;
+  text-align: center;
+  opacity: 0.8;
+  font-style: italic;
 }
 
 .textarea {
@@ -124,20 +156,83 @@
 .charCount {
   text-align: right;
   font-size: 0.75rem;
-  color: var(--neutral-500, #6b7280);
+  color: var(--neutral-500, #8e8c92);
   margin-top: 0.25rem;
+  font-family: var(--font-main);
 }
 
 .error {
   display: block;
-  color: var(--red-500, #ef4444);
+  color: var(--error, #d32f2f);
   font-size: 0.75rem;
   margin-top: 0.25rem;
+  font-family: var(--font-main);
+}
+
+/* Duration display */
+.durationDisplay {
+  padding: 0.75rem 1rem;
+  background-color: var(--neutral-100, #fdfcfd);
+  border: 1px solid var(--neutral-200, #f7f6f8);
+  border-radius: var(--radius, 0.625rem);
+  font-size: 0.875rem;
+  color: var(--neutral-600, #6c6a70);
+  font-family: var(--font-main);
+}
+
+.durationHighlight {
+  font-weight: 600;
+  color: var(--color-purple, #ac1754);
+}
+
+.attendeesHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.attendeesActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.selectAllButton,
+.clearAllButton {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--neutral-300, #e6e4e8);
+  border-radius: var(--radius, 0.625rem);
+  background-color: white;
+  color: var(--neutral-700, #4d4b51);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+}
+
+.selectAllButton:hover:not(:disabled) {
+  background-color: var(--accent-pink-light, rgba(255, 181, 213, 0.13));
+  border-color: var(--color-purple, #ac1754);
+  color: var(--color-purple, #ac1754);
+}
+
+.clearAllButton:hover:not(:disabled) {
+  background-color: var(--neutral-100, #fdfcfd);
+  border-color: var(--neutral-400, #c9c7cc);
+}
+
+.selectAllButton:disabled,
+.clearAllButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .attendeesList {
-  border: 1px solid var(--neutral-300, #d1d5db);
-  border-radius: 0.5rem;
+  border: 1px solid var(--neutral-300, #e6e4e8);
+  border-radius: var(--radius, 0.625rem);
   max-height: 200px;
   overflow-y: auto;
 }
@@ -147,7 +242,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--neutral-200, #e5e7eb);
+  border-bottom: 1px solid var(--neutral-200, #f7f6f8);
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
@@ -157,16 +252,16 @@
 }
 
 .attendeeItem:hover {
-  background-color: var(--neutral-50, #f9fafb);
+  background-color: var(--neutral-100, #fdfcfd);
 }
 
 .attendeeSelected {
-  background-color: var(--accent-pink-light, #fdf2f8);
-  border-color: var(--accent-pink-200, #fbcfe8);
+  background-color: var(--accent-pink-light, rgba(255, 181, 213, 0.13));
+  border-color: var(--surface-light-border, #e2e8f0);
 }
 
 .attendeeSelected:hover {
-  background-color: var(--accent-pink-100, #fce7f3);
+  background-color: var(--surface-light-hover, rgba(239, 239, 239, 0.44));
 }
 
 .attendeeInfo {
@@ -177,22 +272,28 @@
 .attendeeName {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, #2b292e);
   margin-bottom: 0.125rem;
+  font-family: var(--font-main);
+  display: flex;
+  align-items: center;
 }
 
 .attendeeEmail {
   font-size: 0.75rem;
-  color: var(--neutral-600, #6b7280);
+  color: var(--neutral-600, #6c6a70);
   margin-bottom: 0.125rem;
+  font-family: var(--font-main);
 }
 
 .attendeeRole {
   font-size: 0.75rem;
-  color: var(--accent-pink, #ac1754);
+  color: var(--color-purple, #ac1754);
   font-weight: 500;
+  font-family: var(--font-main);
 }
 
+/* HTML checkbox styling */
 .attendeeCheckbox {
   margin-left: 0.75rem;
 }
@@ -200,62 +301,231 @@
 .attendeeCheckbox input[type="checkbox"] {
   width: 1rem;
   height: 1rem;
-  accent-color: var(--accent-pink, #ac1754);
+  accent-color: var(--color-purple, #ac1754);
   cursor: pointer;
+}
+
+.loadingMembers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem 1rem;
+  color: var(--neutral-500, #8e8c92);
+  font-size: 0.875rem;
+  font-family: var(--font-main);
+}
+
+.memberLoadingSpinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--neutral-300, #e6e4e8);
+  border-top-color: var(--color-purple, #ac1754);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.errorMembers {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--error, #d32f2f);
+  font-size: 0.875rem;
+  font-family: var(--font-main);
 }
 
 .noMembers {
   padding: 2rem 1rem;
   text-align: center;
-  color: var(--neutral-500, #6b7280);
+  color: var(--neutral-500, #8e8c92);
   font-size: 0.875rem;
+  font-style: italic;
+  font-family: var(--font-main);
+}
+
+.quickMeetingNotice {
+  background-color: var(--surface-light, #f4f7fa);
+  border: 1px solid var(--surface-light-border, #e2e8f0);
+  border-radius: var(--radius, 0.625rem);
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: var(--color-accent, #176aac);
+  font-family: var(--font-main);
+}
+
+/* Recurring meeting notice */
+.recurringNotice {
+  background-color: var(--surface-light, #f4f7fa);
+  border: 1px solid var(--surface-light-border, #e2e8f0);
+  border-radius: var(--radius, 0.625rem);
+  padding: 0.75rem;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--color-accent, #176aac);
+  font-family: var(--font-main);
+}
+
+.recurringNotice strong {
+  color: var(--color-purple, #ac1754);
+}
+
+/* Meeting card improvements for recurring meetings */
+.recurringBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--surface-light, #f4f7fa);
+  color: var(--color-accent, #176aac);
+  border-radius: var(--radius, 0.625rem);
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid var(--surface-light-border, #e2e8f0);
+  margin-left: 0.5rem;
+}
+
+.recurringBadge svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Auto-completed badge */
+.autoCompleted {
+  background-color: var(--neutral-200, #f7f6f8);
+  color: var(--neutral-600, #6c6a70);
+  border: 1px solid var(--neutral-300, #e6e4e8);
+}
+
+/* Loading state for recurring meetings */
+.creatingRecurring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: var(--surface-light, #f4f7fa);
+  border-radius: var(--radius, 0.625rem);
+  border: 1px solid var(--surface-light-border, #e2e8f0);
+  margin-top: 1rem;
+}
+
+.recurringSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--neutral-300, #e6e4e8);
+  border-top-color: var(--color-purple, #ac1754);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.creatingRecurring span {
+  font-size: 0.875rem;
+  color: var(--color-purple, #ac1754);
+  font-weight: 500;
+}
+
+/* Status transitions */
+.statusTransition {
+  transition: all 0.3s ease;
+}
+
+/* Meeting card auto-completion notice */
+.autoCompletionNotice {
+  background-color: var(--neutral-100, #fdfcfd);
+  border: 1px solid var(--neutral-200, #f7f6f8);
+  border-radius: var(--radius, 0.625rem);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--neutral-600, #6c6a70);
+  text-align: center;
+  margin-top: 0.5rem;
   font-style: italic;
 }
 
+/* Fixed footer */
 .footer {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--neutral-200, #e5e7eb);
-  margin-top: 1.5rem;
+  gap: 0.75rem;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--neutral-200, #f7f6f8);
+  background-color: white;
+  flex-shrink: 0;
 }
 
+/* Button styles */
 .cancelButton {
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   background-color: white;
-  color: var(--neutral-700, #374151);
-  border: 1px solid var(--neutral-300, #d1d5db);
-  border-radius: 0.5rem;
+  color: var(--neutral-700, #4d4b51);
+  border: 1px solid var(--neutral-300, #e6e4e8);
+  border-radius: var(--radius, 0.625rem);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-family: var(--font-main);
+  font-size: 0.875rem;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cancelButton:hover:not(:disabled) {
-  background-color: var(--neutral-50, #f9fafb);
-  border-color: var(--neutral-400, #9ca3af);
+  background-color: var(--neutral-100, #fdfcfd);
+  border-color: var(--neutral-400, #c9c7cc);
 }
 
 .submitButton {
-  padding: 0.75rem 1.5rem;
-  background-color: var(--accent-pink, #ac1754);
+  padding: 0.5rem 1rem;
+  background-color: var(--color-purple, #ac1754);
   color: white;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: var(--radius, 0.625rem);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 140px;
+  font-family: var(--font-main);
+  font-size: 0.875rem;
+  min-height: 36px;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .submitButton:hover:not(:disabled) {
-  background-color: var(--accent-pink-hover, #991347);
+  background-color: var(--color-purple-dark, #8e0e3d);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(172, 23, 84, 0.3);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(43, 41, 46, 0.1));
+}
+
+.quickSubmitButton {
+  padding: 0.5rem 1rem;
+  background-color: var(--color-accent, #176aac);
+  color: white;
+  border: none;
+  border-radius: var(--radius, 0.625rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+  font-size: 0.875rem;
+  min-height: 36px;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quickSubmitButton:hover:not(:disabled) {
+  background-color: var(--accent-blue-hover, #1d7cc7);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(43, 41, 46, 0.1));
 }
 
 .submitButton:disabled,
+.quickSubmitButton:disabled,
 .cancelButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -263,6 +533,7 @@
   box-shadow: none;
 }
 
+/* Animation keyframes */
 @keyframes modalEnter {
   from {
     opacity: 0;
@@ -271,6 +542,12 @@
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -292,23 +569,40 @@
     padding: 1.5rem;
   }
 
+  .footer {
+    padding: 1rem 1.5rem;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
   .formRow {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
 
-  .footer {
-    flex-direction: column-reverse;
-    gap: 0.75rem;
+  .attendeesHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .attendeesActions {
+    justify-content: center;
   }
 
   .cancelButton,
-  .submitButton {
+  .submitButton,
+  .quickSubmitButton {
     width: 100%;
     justify-content: center;
   }
 
   .attendeesList {
     max-height: 150px;
+  }
+
+  .selectAllButton {
+    min-width: 40px;
+    padding: 0.375rem 0.5rem;
+    font-size: 0.75rem;
   }
 }

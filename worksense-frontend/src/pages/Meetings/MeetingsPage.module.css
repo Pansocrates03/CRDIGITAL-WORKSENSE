@@ -3,16 +3,16 @@
 .container {
   padding: 1.5rem;
   min-height: 100vh;
-  background-color: var(--background-secondary, #f8f9fa);
+  background-color: var(--background-primary, #fdfcfd);
 }
 
 .header {
   background-color: white;
-  border-radius: 0.75rem;
+  border-radius: var(--radius, 0.625rem);
   padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--neutral-200, #e5e7eb);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(43, 41, 46, 0.05));
+  border: 1px solid var(--neutral-200, #f7f6f8);
 }
 
 .headerContent {
@@ -30,76 +30,121 @@
 }
 
 .titleIcon {
-  color: var(--accent-pink, #ac1754);
+  color: var(--color-purple, #ac1754);
   padding: 0.75rem;
-  background-color: var(--accent-pink-light, #fdf2f8);
-  border-radius: 0.5rem;
+  background-color: var(--accent-pink-light, rgba(255, 181, 213, 0.13));
+  border-radius: var(--radius, 0.625rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .title {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, #2b292e);
   margin: 0;
+  font-family: var(--font-main);
 }
 
 .subtitle {
   font-size: 1rem;
-  color: var(--neutral-600, #6b7280);
+  color: var(--neutral-600, #6c6a70);
   margin: 0.25rem 0 0 0;
+}
+
+.buttonGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.deleteAllButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--error, #d32f2f);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius, 0.625rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+  font-size: 0.875rem;
+}
+
+.deleteAllButton:hover {
+  background-color: #b71c1c;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(43, 41, 46, 0.1));
+}
+
+.quickMeetingButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--color-accent, #176aac);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius, 0.625rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+  font-size: 0.875rem;
+}
+
+.quickMeetingButton:hover {
+  background-color: var(--accent-blue-hover, #1d7cc7);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(43, 41, 46, 0.1));
+}
+
+.startNowButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--color-accent, #176aac);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius, 0.625rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+  font-size: 0.875rem;
+}
+
+.startNowButton:hover {
+  background-color: var(--accent-blue-hover, #1d7cc7);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(43, 41, 46, 0.1));
 }
 
 .createButton {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: var(--accent-pink, #ac1754);
+  background-color: var(--color-purple, #ac1754);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius, 0.625rem);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-family: var(--font-main);
+  font-size: 0.875rem;
 }
 
 .createButton:hover {
-  background-color: var(--accent-pink-hover, #991347);
+  background-color: var(--color-purple-dark, #8e0e3d);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(172, 23, 84, 0.3);
-}
-
-.filtersSection {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.filterGroup {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--neutral-600, #6b7280);
-}
-
-.filterSelect {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--neutral-300, #d1d5db);
-  border-radius: 0.375rem;
-  background-color: white;
-  color: var(--text-primary, #111827);
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: border-color 0.2s ease;
-}
-
-.filterSelect:focus {
-  outline: none;
-  border-color: var(--accent-pink, #ac1754);
-  box-shadow: 0 0 0 3px rgba(172, 23, 84, 0.1);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(43, 41, 46, 0.1));
 }
 
 .content {
@@ -110,10 +155,10 @@
 
 .section {
   background-color: white;
-  border-radius: 0.75rem;
+  border-radius: var(--radius, 0.625rem);
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--neutral-200, #e5e7eb);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(43, 41, 46, 0.05));
+  border: 1px solid var(--neutral-200, #f7f6f8);
 }
 
 .sectionTitle {
@@ -122,10 +167,11 @@
   gap: 0.75rem;
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, #2b292e);
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--neutral-200, #e5e7eb);
+  border-bottom: 1px solid var(--neutral-200, #f7f6f8);
+  font-family: var(--font-main);
 }
 
 .meetingsGrid {
@@ -142,43 +188,76 @@
   padding: 4rem 2rem;
   text-align: center;
   background-color: white;
-  border-radius: 0.75rem;
-  border: 2px dashed var(--neutral-300, #d1d5db);
+  border-radius: var(--radius, 0.625rem);
+  border: 2px dashed var(--neutral-300, #e6e4e8);
 }
 
 .emptyIcon {
-  color: var(--neutral-400, #9ca3af);
+  color: var(--neutral-400, #c9c7cc);
   margin-bottom: 1rem;
 }
 
 .emptyState h3 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, #2b292e);
   margin-bottom: 0.5rem;
+  font-family: var(--font-main);
 }
 
 .emptyState p {
-  color: var(--neutral-600, #6b7280);
+  color: var(--neutral-600, #6c6a70);
   margin-bottom: 2rem;
   max-width: 400px;
 }
 
+.emptyStateButtons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .emptyStateButton {
-  background-color: var(--accent-pink, #ac1754);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--color-accent, #176aac);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius, 0.625rem);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-family: var(--font-main);
 }
 
 .emptyStateButton:hover {
-  background-color: var(--accent-pink-hover, #991347);
+  background-color: var(--accent-blue-hover, #1d7cc7);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(172, 23, 84, 0.3);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(43, 41, 46, 0.1));
+}
+
+.emptyStateButtonSecondary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--color-purple, #ac1754);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius, 0.625rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+}
+
+.emptyStateButtonSecondary:hover {
+  background-color: var(--color-purple-dark, #8e0e3d);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(43, 41, 46, 0.1));
 }
 
 .loadingContainer {
@@ -193,8 +272,8 @@
 .loadingSpinner {
   width: 40px;
   height: 40px;
-  border: 3px solid var(--neutral-300, #d1d5db);
-  border-top-color: var(--accent-pink, #ac1754);
+  border: 3px solid var(--neutral-300, #e6e4e8);
+  border-top-color: var(--color-purple, #ac1754);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -204,8 +283,9 @@
   align-items: center;
   justify-content: center;
   min-height: 400px;
-  color: var(--red-500, #ef4444);
+  color: var(--error, #d32f2f);
   text-align: center;
+  font-family: var(--font-main);
 }
 
 @keyframes spin {
@@ -235,23 +315,47 @@
     gap: 0.75rem;
   }
 
+  .buttonGroup {
+    width: 100%;
+    justify-content: stretch;
+    flex-wrap: wrap;
+  }
+
+  .deleteAllButton,
+  .quickMeetingButton,
+  .createButton,
+  .startNowButton {
+    flex: 1;
+    justify-content: center;
+    min-width: 120px;
+  }
+
   .meetingsGrid {
     grid-template-columns: 1fr;
   }
 
-  .createButton {
+  .emptyStateButtons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .emptyStateButton,
+  .emptyStateButtonSecondary {
     width: 100%;
     justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
-  .filtersSection {
+  .buttonGroup {
     flex-direction: column;
-    align-items: stretch;
+    gap: 0.5rem;
   }
 
-  .filterGroup {
-    justify-content: center;
+  .deleteAllButton,
+  .quickMeetingButton,
+  .createButton,
+  .startNowButton {
+    width: 100%;
   }
 }
