@@ -3,6 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import ProjectLeaderboard from '@/components/ui/ProjectLeaderboard';
 import { Pencil, Award, Star, Rocket } from 'lucide-react';
 import { getInitials } from '@/utils/forYouUtils';
+import BadgesModal from './BadgesModal';
 
 const iconMap: Record<string, React.ElementType> = {
   Award,
@@ -25,7 +26,12 @@ interface ForYouGamificationDetailsProps {
 
 const ForYouGamificationDetails: React.FC<ForYouGamificationDetailsProps> = ({ gamification, userProfile, onEdit, projectId }) => {
   return (
-    <div className="w-full bg-white border-b border-neutral-200 px-8 py-8 flex flex-row items-center gap-8 shadow-sm rounded-b-xl flex-wrap md:flex-nowrap">
+    <div className="relative w-full bg-white border-b border-neutral-200 px-8 py-8 flex flex-row items-center gap-8 shadow-sm rounded-b-xl flex-wrap md:flex-nowrap">
+      {/* Badges Modal Button */}
+      <div className="absolute top-4 right-4">
+        <BadgesModal badges={gamification.badges} />
+      </div>
+      
       {/* Avatar with edit button on hover */}
       <div className="flex-shrink-0 flex justify-center w-full md:w-auto mb-4 md:mb-0 relative group">
         <Avatar className="h-24 w-24">
