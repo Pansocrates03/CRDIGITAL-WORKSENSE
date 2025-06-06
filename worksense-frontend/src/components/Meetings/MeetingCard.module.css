@@ -52,35 +52,34 @@
 .status {
   display: inline-block;
   padding: 0.25rem 0.75rem;
-  border-radius: var(--radius, 0.625rem);
+  border-radius: 9999px;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.025em;
   font-family: var(--font-main);
 }
 
-/* Status colors matching backlog table design */
+/* Status colors matching TaskCard.css exactly */
 .statusScheduled {
-  background-color: var(--surface-light, #f4f7fa);
-  color: var(--color-accent, #176aac);
-  border: 1px solid var(--surface-light-border, #e2e8f0);
+  background-color: #fef3c7;
+  color: #92400e;
 }
 
 .statusInProgress {
-  background-color: var(--success, #2e8b57);
-  color: white;
+  background-color: #dbeafe;
+  color: #1e40af;
   animation: pulse 2s infinite;
 }
 
 .statusCompleted {
-  background-color: var(--neutral-300, #e6e4e8);
-  color: var(--neutral-700, #4d4b51);
+  background-color: #d1fae5;
+  color: #065f46;
 }
 
 .statusCancelled {
-  background-color: var(--error, #d32f2f);
-  color: white;
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
 .actionsContainer {

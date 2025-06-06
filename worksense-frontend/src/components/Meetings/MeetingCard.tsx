@@ -9,6 +9,7 @@ import {
   MoreVertical,
   Trash2,
   Edit2,
+  Check,
 } from "lucide-react";
 import styles from "./MeetingCard.module.css";
 
@@ -73,9 +74,26 @@ const MeetingCard: FC<MeetingCardProps> = ({
   );
   const isPastEndTime = now > meetingEndTime;
   const canJoin =
-    minutesUntilMeeting <= 15 &&
-    minutesUntilMeeting >= -30 &&
-    currentStatus !== "cancelled";
+    (minutesUntilMeeting <= 15 &&
+      minutesUntilMeeting >= -30 &&
+      currentStatus !== "cancelled") ||
+    currentStatus === "in-progress";
+
+  // Check user role from localStorage - using projectRole like other components
+  const getUserRole = (): string | null => {
+    try {
+      const projectRole = localStorage.getItem("projectRole");
+      return projectRole;
+    } catch (error) {
+      console.error("Error reading project role from localStorage:", error);
+      return null;
+    }
+  };
+
+  const canManageMeetings = (): boolean => {
+    const role = getUserRole();
+    return role === "product-owner" || role === "scrum-master";
+  };
 
   // Auto-update meeting status based on time
   useEffect(() => {
@@ -94,15 +112,15 @@ const MeetingCard: FC<MeetingCardProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "scheduled":
-        return styles.statusBacklog; // Yellow colors like backlog
+        return styles.statusScheduled; // Yellow like backlog
       case "in-progress":
-        return styles.statusProgress; // Blue colors like progress
+        return styles.statusInProgress; // Blue like progress
       case "completed":
-        return styles.statusDone; // Green colors like done
+        return styles.statusCompleted; // Green like done
       case "cancelled":
-        return styles.statusReview; // Purple colors like review
+        return styles.statusCancelled; // Red like error
       default:
-        return styles.statusBacklog;
+        return styles.statusScheduled;
     }
   };
 
@@ -167,10 +185,24 @@ const MeetingCard: FC<MeetingCardProps> = ({
     onJoin(meeting.id);
   };
 
-  const handleStatusChange = (newStatus: "scheduled" | "in-progress" | "completed" | "cancelled") => {
+  const handleStatusChange = (
+    newStatus: "scheduled" | "in-progress" | "completed" | "cancelled"
+  ) => {
     setCurrentStatus(newStatus);
     onStatusUpdate(meeting.id, newStatus);
     setShowActions(false);
+  };
+
+  const handleStartMeeting = () => {
+    // Update status to in-progress
+    setCurrentStatus("in-progress");
+    onStatusUpdate(meeting.id, "in-progress");
+    setShowActions(false);
+
+    // Open the meeting immediately if Zoom URL is available
+    if (meeting.zoomJoinUrl) {
+      window.open(meeting.zoomJoinUrl, "_blank");
+    }
   };
 
   const handleCancelClick = () => {
@@ -203,37 +235,40 @@ const MeetingCard: FC<MeetingCardProps> = ({
           </button>
           {showActions && (
             <div className={styles.actionsDropdown}>
-              {currentStatus === "scheduled" && !isPastEndTime && (
-                <>
-                  <button
-                    onClick={() => handleStatusChange("in-progress")}
-                    className={styles.actionItem}
-                  >
-                    <Play size={14} />
-                    Start Meeting
-                  </button>
-                  <button
-                    onClick={handleEditClick}
-                    className={styles.actionItem}
-                  >
-                    <Edit2 size={14} />
-                    Edit Meeting
-                  </button>
-                  <button
-                    onClick={handleCancelClick}
-                    className={`${styles.actionItem} ${styles.deleteAction}`}
-                  >
-                    <Trash2 size={14} />
-                    Cancel Meeting
-                  </button>
-                </>
-              )}
-              {currentStatus === "in-progress" && (
+              {canManageMeetings() &&
+                currentStatus === "scheduled" &&
+                !isPastEndTime && (
+                  <>
+                    <button
+                      onClick={handleEditClick}
+                      className={styles.actionItem}
+                    >
+                      <Edit2 size={14} />
+                      Edit Meeting
+                    </button>
+                    <button
+                      onClick={handleStartMeeting}
+                      className={styles.actionItem}
+                    >
+                      <Play size={14} />
+                      Start Meeting
+                    </button>
+                    <button
+                      onClick={handleCancelClick}
+                      className={`${styles.actionItem} ${styles.deleteAction}`}
+                    >
+                      <Trash2 size={14} />
+                      Cancel Meeting
+                    </button>
+                  </>
+                )}
+              {canManageMeetings() && currentStatus === "in-progress" && (
                 <>
                   <button
                     onClick={() => handleStatusChange("completed")}
                     className={styles.actionItem}
                   >
+                    <Check size={14} />
                     End Meeting
                   </button>
                   <button
@@ -241,18 +276,26 @@ const MeetingCard: FC<MeetingCardProps> = ({
                     className={`${styles.actionItem} ${styles.deleteAction}`}
                   >
                     <Trash2 size={14} />
-                    Cancel Meeting
+                    Delete Meeting
                   </button>
                 </>
               )}
-              {(currentStatus === "completed" ||
-                currentStatus === "cancelled") && (
-                <button
-                  onClick={handleCancelClick}
-                  className={`${styles.actionItem} ${styles.deleteAction}`}
-                >
-                  <Trash2 size={14} />
-                  Delete Meeting
+              {canManageMeetings() &&
+                (currentStatus === "completed" ||
+                  currentStatus === "cancelled") && (
+                  <button
+                    onClick={handleCancelClick}
+                    className={`${styles.actionItem} ${styles.deleteAction}`}
+                  >
+                    <Trash2 size={14} />
+                    Delete Meeting
+                  </button>
+                )}
+              {/* Show join option for all users if meeting is available */}
+              {!canManageMeetings() && canJoin && meeting.zoomJoinUrl && (
+                <button onClick={handleJoinClick} className={styles.actionItem}>
+                  <Video size={14} />
+                  Join Meeting
                 </button>
               )}
             </div>
@@ -281,7 +324,7 @@ const MeetingCard: FC<MeetingCardProps> = ({
         )}
       </div>
 
-      {(isToday || currentStatus === "in-progress") && !isPastEndTime && (
+      {isToday && currentStatus === "scheduled" && !isPastEndTime && (
         <div className={styles.timeInfo}>
           <span className={styles.timeUntil}>{getTimeUntilMeeting()}</span>
         </div>

@@ -139,6 +139,15 @@
   box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
 }
 
+.keyboardHint {
+  font-size: 0.75rem;
+  color: var(--neutral-500, #8e8c92);
+  margin-top: 0.25rem;
+  text-align: center;
+  opacity: 0.8;
+  font-style: italic;
+}
+
 .textarea {
   resize: vertical;
   min-height: 80px;
