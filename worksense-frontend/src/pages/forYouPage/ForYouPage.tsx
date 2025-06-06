@@ -187,6 +187,8 @@ const ForYouPage = () => {
           setEditItem(null);
           queryClient.invalidateQueries({ queryKey: ['assignedItems'] });
           queryClient.invalidateQueries({ queryKey: ['completedTasks'] });
+          queryClient.invalidateQueries({ queryKey: ['project-leaderboard'] });
+          queryClient.invalidateQueries({ queryKey: ['personalGamification', projectId, userIdString] });        
         }}
         item={editItem as any}
       />

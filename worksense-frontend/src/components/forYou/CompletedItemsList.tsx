@@ -128,6 +128,7 @@ const CompletedItemsList: React.FC<CompletedItemsListProps> = ({ completedTasks,
           console.log("CompletedItemsList: Invalidating both assigned and completed queries after update");
           queryClient.invalidateQueries({ queryKey: ['assignedItems'] });
           queryClient.invalidateQueries({ queryKey: ['completedTasks'] });
+          queryClient.invalidateQueries({ queryKey: ['personalGamification'] });
           
           // Check if we have toast data from the response
           if (response?.toast) {
