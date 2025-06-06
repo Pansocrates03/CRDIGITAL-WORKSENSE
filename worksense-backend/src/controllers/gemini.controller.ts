@@ -35,6 +35,16 @@ const isProjectRelatedQuestion = (prompt: string): boolean => {
     "deliverable",
     "requirement",
     "feature",
+    "assigned",
+    "working on",
+    "responsible",
+    "tech task",
+    "knowledge",
+    "item",
+    "todo",
+    "in progress",
+    "review",
+    "done",
 
     // Gamification keywords
     "points",
@@ -73,6 +83,8 @@ const isProjectRelatedQuestion = (prompt: string): boolean => {
     "actividad",
     "rendimiento",
     "recompensa",
+    "asignado",
+    "trabajando",
 
     // Palabras clave de acción
     "assign",
@@ -107,6 +119,10 @@ const isProjectRelatedQuestion = (prompt: string): boolean => {
     "mi nivel",
     "mis insignias",
     "clasificación del equipo",
+    "what needs to be done",
+    "qué necesita hacerse",
+    "pending items",
+    "elementos pendientes",
   ];
 
   const lowerPrompt = prompt.toLowerCase();
@@ -153,7 +169,7 @@ const isProjectRelatedQuestion = (prompt: string): boolean => {
     return true;
   }
 
-  // Para casos ambiguos
+  // Para casos ambiguos - ser más permisivo con preguntas del backlog
   return true;
 };
 
@@ -254,7 +270,7 @@ const getProjectLeaderboard = async (projectId: string) => {
 const getProjectActivity = async (projectId: string, limit: number = 5) => {
   try {
     const activities: Array<{
-      type: 'badge_earned' | 'task_completion';
+      type: "badge_earned" | "task_completion";
       timestamp: Date;
       user: string;
       userId: number;
@@ -412,6 +428,33 @@ const getProjectGamificationStats = async (projectId: string) => {
   }
 };
 
+// Helper function to create role permission descriptions
+const createRolePermissionDescriptions = (
+  projectRoles: Map<string, any>,
+  availablePermissions: Map<string, any>
+): Record<string, string[]> => {
+  const rolePermissionDescriptions: Record<string, string[]> = {};
+
+  projectRoles.forEach((role) => {
+    const permDescriptions: string[] = [];
+
+    role.permissions.forEach((permKey: string) => {
+      const permission = availablePermissions.get(permKey);
+      if (permission) {
+        permDescriptions.push(`${permission.description} (${permission.key})`);
+      } else {
+        permDescriptions.push(permKey);
+      }
+    });
+
+    if (role.id) {
+      rolePermissionDescriptions[role.id] = permDescriptions;
+    }
+  });
+
+  return rolePermissionDescriptions;
+};
+
 export const handleGeminiPrompt = async (
   req: Request,
   res: Response
@@ -433,8 +476,8 @@ export const handleGeminiPrompt = async (
 
       const offTopicResponse =
         preferredLanguage === "es"
-          ? "Lo siento, pero solo puedo ayudarte con preguntas relacionadas con tu proyecto y gamificación. ¿Hay algo específico sobre el proyecto o tu progreso en lo que pueda asistirte?"
-          : "I'm sorry, but I can only help you with questions related to your project and gamification. Is there something specific about the project or your progress I can assist you with?";
+          ? "Lo siento, pero solo puedo ayudarte con preguntas relacionadas con tu proyecto, backlog, tareas y gamificación. ¿Hay algo específico sobre el proyecto o tu progreso en lo que pueda asistirte?"
+          : "I'm sorry, but I can only help you with questions related to your project, backlog, tasks, and gamification. Is there something specific about the project or your progress I can assist you with?";
 
       res.json({
         reply: offTopicResponse,
@@ -471,7 +514,7 @@ export const handleGeminiPrompt = async (
     );
 
     // Obtener el historial reciente de la conversación
-    const recentMessages = await getConversationHistory(conversation.id!, 8);
+    const recentMessages = await getConversationHistory(conversation.id!, 10);
 
     // Obtener datos del proyecto desde el caché
     const cachedData = await projectCacheService.getProjectData(projectId);
@@ -580,13 +623,19 @@ export const handleGeminiPrompt = async (
       ? tasks.filter((t) => t.sprintId === activeSprint.id)
       : [];
 
+    // Create role permission descriptions
+    const rolePermissionDescriptions = createRolePermissionDescriptions(
+      projectRoles,
+      availablePermissions
+    );
+
     // Obtener preferencias del usuario actual
     const currentMember = enrichedMembers.find((m) => m.userId === userId);
     const userPreferences = conversation.metadata?.userPreferences || {};
     const userNickname = userPreferences.nickname;
     const preferredLanguage = userPreferences.preferredLanguage || "en";
     const verbosityLevel =
-      conversation.metadata?.assistantSettings?.verbosityLevel || "concise";
+      conversation.metadata?.assistantSettings?.verbosityLevel || "normal";
 
     // Construir el historial de conversación reciente
     const conversationHistory = recentMessages
@@ -604,16 +653,16 @@ export const handleGeminiPrompt = async (
       "Not ranked";
     const topThreeLeaders = projectLeaderboard.slice(0, 3);
 
-    // Construir el prompt de contexto para Gemini con gamificación
+    // Construir el prompt de contexto para Gemini con gamificación Y backlog detallado
     const contextPrompt = `
-You are Sensai, a concise and focused project management assistant with gamification expertise. You answer questions about project management, team performance, gamification stats, and team motivation.
+You are Sensai, a comprehensive project management assistant with expertise in both traditional project management (backlog, sprints, tasks) and gamification features. You help teams manage their work and stay motivated.
 
-### STRICT GUIDELINES:
-- Answer questions about projects, gamification, points, badges, leaderboards, and team performance
-- If asked about unrelated topics, politely redirect to project or gamification topics  
-- Keep responses concise and actionable unless specifically asked for details
-- Use markdown formatting and gamification emojis (🏆, 🥇, 🎯, ⭐, 🔥, 📊) for engagement
-- Celebrate achievements and encourage healthy competition
+### GUIDELINES:
+- Answer ALL questions about project management, backlog items, sprints, tasks, team members, AND gamification
+- Provide detailed information about backlog items, including who they're assigned to
+- Include gamification context when relevant (points, badges, leaderboards)
+- Keep responses informative yet engaging
+- Use markdown formatting and appropriate emojis for clarity
 
 ${
   aiConfig.enableAiSuggestions
@@ -633,6 +682,22 @@ ${
     : "- **User**: Unknown"
 }
 ${currentMember ? `- **Role**: ${currentMember.roleName || "Unknown"}` : ""}
+${
+  currentMember?.projectRoleId &&
+  rolePermissionDescriptions[currentMember.projectRoleId]
+    ? `- **Permissions**: ${rolePermissionDescriptions[
+        currentMember.projectRoleId
+      ]
+        .slice(0, 3)
+        .join(", ")}${
+        rolePermissionDescriptions[currentMember.projectRoleId].length > 3
+          ? ` and ${
+              rolePermissionDescriptions[currentMember.projectRoleId].length - 3
+            } more`
+          : ""
+      }`
+    : ""
+}
 ${userNickname ? `- **Preferred Name**: "${userNickname}"` : ""}
 
 ### Your Gamification Status 🎮
@@ -642,7 +707,9 @@ ${
 - **🏆 Total Points**: ${userGamificationData.total_points}
 - **📊 Level**: ${userGamificationData.level}
 - **🥇 Project Rank**: #${userRankInProject} ${
-        typeof userRankInProject === 'number' && userRankInProject <= 3 ? "🔥" : ""
+        typeof userRankInProject === "number" && userRankInProject <= 3
+          ? "🔥"
+          : ""
       }
 - **🎖️ Badges Earned**: ${userGamificationData.badges.length}
 ${
@@ -657,61 +724,57 @@ ${
     : "- Gamification data not available"
 }
 
-### Project Leaderboard 🏆
-${
-  topThreeLeaders.length > 0
-    ? `**Top Performers:**
-${topThreeLeaders
-  .map((user, index) => {
-    const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉";
-    return `${medal} **${user.name}**: ${user.points} points`;
-  })
-  .join("\n")}
-${
-  projectLeaderboard.length > 3
-    ? `... and ${projectLeaderboard.length - 3} more team members`
-    : ""
-}`
-    : "No leaderboard data available"
-}
-
-### Recent Team Activity 🎯
-${
-  recentActivity.length > 0
-    ? recentActivity
-        .slice(0, 3)
-        .map((activity: any) => {
-          if (activity.type === "badge_earned") {
-            return `🎖️ **${activity.user}** earned "${activity.data.badgeName}" badge`;
-          } else {
-            return `✅ **${activity.user}** completed "${activity.data.itemTitle}" (+${activity.data.points} points)`;
-          }
-        })
-        .join("\n")
-    : "No recent activity"
-}
-
-### Project Gamification Stats 📊
-${
-  gamificationStats
-    ? `
-- **👥 Active Players**: ${gamificationStats.totalUsers}
-- **🎯 Total Points Earned**: ${gamificationStats.totalPoints}
-- **📈 Average Points**: ${gamificationStats.averagePoints} per person
-- **⚡ Top Performer**: ${gamificationStats.topPerformer?.name || "N/A"} (${
-        gamificationStats.topPerformer?.points || 0
-      } points)
-- **✅ Completion Rate**: ${gamificationStats.completionRate}%
-`
-    : ""
-}
-
 ### Recent Context
 ${conversationHistory || "First interaction in this session."}
 
 ### Project Overview
 **${projectData.name || "Project"}** | Status: ${projectData.status || "active"}
 ${projectData.description ? `${projectData.description}` : ""}
+${
+  projectData.context?.techStack
+    ? `**Tech Stack**: ${projectData.context.techStack.join(", ")}`
+    : ""
+}
+${
+  projectData.context?.objectives
+    ? `**Objectives**: ${projectData.context.objectives}`
+    : ""
+}
+
+### Team Members and Roles (${enrichedMembers.length} members)
+${
+  enrichedMembers.length > 0
+    ? enrichedMembers
+        .map((m) => {
+          const memberName = m.fullName || m.name || `User ${m.userId}`;
+          const roleName = m.roleName || m.projectRoleId || "Unknown Role";
+          const email = m.email ? ` (${m.email})` : "";
+          const memberRank = projectLeaderboard.find(
+            (user) => user.userId === m.userId
+          )?.rank;
+          const rankDisplay = memberRank ? ` - Rank #${memberRank}` : "";
+
+          let memberInfo = `- **${memberName}**: ${roleName}${email}${rankDisplay}`;
+
+          // Add permissions if available
+          if (m.projectRoleId && rolePermissionDescriptions[m.projectRoleId]) {
+            const permissions = rolePermissionDescriptions[m.projectRoleId];
+            if (permissions.length > 0) {
+              memberInfo += `\n  Permissions: ${permissions
+                .slice(0, 3)
+                .join(", ")}${
+                permissions.length > 3
+                  ? ` and ${permissions.length - 3} more`
+                  : ""
+              }`;
+            }
+          }
+
+          return memberInfo;
+        })
+        .join("\n")
+    : "No team members found."
+}
 
 ### Current Sprint Status
 ${
@@ -721,46 +784,200 @@ ${
 - **Timeline**: ${
         activeSprint.startDate?.toDate?.()?.toLocaleDateString() || "N/A"
       } → ${activeSprint.endDate?.toDate?.()?.toLocaleDateString() || "N/A"}
-- **Tasks**: ${activeSprintTasks.length} total (${
-        activeSprintTasks.filter((t) => t.status === "done").length
-      } done, ${
-        activeSprintTasks.filter(
-          (t) => t.status === "in-progress" || t.status === "inProgress"
-        ).length
-      } in progress)`
-    : "**No active sprint currently running**"
-}
+- **Tasks**: ${activeSprintTasks.length} total
+  - Todo: ${activeSprintTasks.filter((t) => t.status === "todo").length}
+  - In Progress: ${
+    activeSprintTasks.filter(
+      (t) => t.status === "in-progress" || t.status === "inProgress"
+    ).length
+  }
+  - Review: ${activeSprintTasks.filter((t) => t.status === "review").length}
+  - Done: ${activeSprintTasks.filter((t) => t.status === "done").length}
 
-### Team Summary
-${enrichedMembers.length} team members:
-${enrichedMembers
-  .slice(0, 5)
-  .map((m) => {
-    const memberName = m.fullName || m.name || `User ${m.userId}`;
-    const roleName = m.roleName || "Unknown Role";
-    const memberRank = projectLeaderboard.find(
-      (user) => user.userId === m.userId
-    )?.rank;
-    const rankDisplay = memberRank ? ` (Rank #${memberRank})` : "";
-    return `- **${memberName}**: ${roleName}${rankDisplay}`;
+### Active Sprint Tasks
+${activeSprintTasks
+  .slice(0, 10)
+  .map((t) => {
+    const assigneeNames =
+      t.assignees
+        ?.map(
+          (a: any) =>
+            enrichedMembers.find((m) => m.userId === a.id)?.fullName ||
+            a.name ||
+            `User ${a.id}`
+        )
+        .join(", ") || "Unassigned";
+
+    return `- [${t.status}] **${t.title}** (${t.type})${
+      assigneeNames !== "Unassigned" ? ` - Assigned to: ${assigneeNames}` : ""
+    }`;
   })
   .join("\n")}
 ${
-  enrichedMembers.length > 5
-    ? `... and ${enrichedMembers.length - 5} more members`
+  activeSprintTasks.length > 10
+    ? `... and ${activeSprintTasks.length - 10} more tasks in the sprint`
+    : ""
+}`
+    : "**No active sprint currently running**"
+}
+
+${
+  plannedSprints.length > 0
+    ? `\n**Planned Sprints**: ${plannedSprints.map((s) => s.name).join(", ")}`
+    : ""
+}
+${
+  completedSprints.length > 0
+    ? `\n**Recent Completed Sprints**: ${completedSprints
+        .slice(0, 3)
+        .map((s) => s.name)
+        .join(", ")}`
     : ""
 }
 
-### Quick Stats
-- **📋 Backlog**: ${stories.length} stories, ${bugs.length} bugs, ${
-      techTasks.length
-    } tech tasks
-- **🎯 Epics**: ${epics.length} total
-- **📊 All Tasks**: ${tasksByStatus.todo.length} todo, ${
-      tasksByStatus.inProgress.length
-    } in progress, ${tasksByStatus.review.length} in review, ${
-      tasksByStatus.done.length
-    } done
+### Backlog Summary
+- **📋 Total Items**: ${backlogItems.length}
+- **📑 Epics**: ${epics.length}
+- **📖 Stories**: ${stories.length} 
+- **🐛 Bugs**: ${bugs.length}
+- **🔧 Tech Tasks**: ${techTasks.length}
+- **📚 Knowledge Items**: ${knowledgeItems.length}
+
+${
+  epics.length > 0
+    ? `### Epics
+${epics
+  .map(
+    (e) =>
+      `- **${e.name}** (${e.status || "unknown"})${
+        e.assigneeId
+          ? ` [Assigned to: ${
+              enrichedMembers.find((m) => m.userId === e.assigneeId)
+                ?.fullName || `User ${e.assigneeId}`
+            }]`
+          : " [Unassigned]"
+      }`
+  )
+  .join("\n")}`
+    : ""
+}
+
+${
+  stories.length > 0
+    ? `### User Stories
+${stories
+  .slice(0, 15)
+  .map(
+    (s) =>
+      `- **${s.name}** (${s.size || "?"} pts, ${s.status || "todo"})${
+        s.assigneeId
+          ? ` [Assigned to: ${
+              enrichedMembers.find((m) => m.userId === s.assigneeId)
+                ?.fullName || `User ${s.assigneeId}`
+            }]`
+          : " [Unassigned]"
+      }`
+  )
+  .join("\n")}${
+        stories.length > 15
+          ? `\n... and ${stories.length - 15} more stories`
+          : ""
+      }`
+    : ""
+}
+
+${
+  bugs.length > 0
+    ? `### Bugs
+${bugs
+  .slice(0, 10)
+  .map(
+    (b) =>
+      `- **${b.name}** [Priority: ${b.size || "medium"}, Status: ${
+        b.status || "todo"
+      }]${
+        b.assigneeId
+          ? ` [Assigned to: ${
+              enrichedMembers.find((m) => m.userId === b.assigneeId)
+                ?.fullName || `User ${b.assigneeId}`
+            }]`
+          : " [Unassigned]"
+      }`
+  )
+  .join("\n")}${
+        bugs.length > 10 ? `\n... and ${bugs.length - 10} more bugs` : ""
+      }`
+    : ""
+}
+
+${
+  techTasks.length > 0
+    ? `### Technical Tasks
+${techTasks
+  .slice(0, 10)
+  .map(
+    (t) =>
+      `- **${t.name}** (${t.status || "todo"})${
+        t.assigneeId
+          ? ` [Assigned to: ${
+              enrichedMembers.find((m) => m.userId === t.assigneeId)
+                ?.fullName || `User ${t.assigneeId}`
+            }]`
+          : " [Unassigned]"
+      }`
+  )
+  .join("\n")}${
+        techTasks.length > 10
+          ? `\n... and ${techTasks.length - 10} more tech tasks`
+          : ""
+      }`
+    : ""
+}
+
+### Current Tasks Overview
+- **Total Tasks**: ${tasks.length}
+- **📝 To Do**: ${tasksByStatus.todo.length}
+- **🔄 In Progress**: ${tasksByStatus.inProgress.length}
+- **👀 In Review**: ${tasksByStatus.review.length}
+- **✅ Done**: ${tasksByStatus.done.length}
+
+### Gamification Overview
+${
+  topThreeLeaders.length > 0
+    ? `**🏆 Top Performers:**
+${topThreeLeaders
+  .map((user, index) => {
+    const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉";
+    return `${medal} **${user.name}**: ${user.points} points`;
+  })
+  .join("\n")}`
+    : ""
+}
+
+${
+  recentActivity.length > 0
+    ? `**🎯 Recent Activity:**
+${recentActivity
+  .slice(0, 3)
+  .map((activity: any) => {
+    if (activity.type === "badge_earned") {
+      return `- 🎖️ **${activity.user}** earned "${activity.data.badgeName}" badge`;
+    } else {
+      return `- ✅ **${activity.user}** completed "${activity.data.itemTitle}" (+${activity.data.points} points)`;
+    }
+  })
+  .join("\n")}`
+    : ""
+}
+
+${
+  gamificationStats
+    ? `**📊 Project Stats:**
+- **Completion Rate**: ${gamificationStats.completionRate}%
+- **Total Points Earned**: ${gamificationStats.totalPoints}
+- **Average Points per Person**: ${gamificationStats.averagePoints}`
+    : ""
+}
 
 ### User Question
 "${prompt}"
@@ -769,18 +986,31 @@ ${
 ${preferredLanguage === "es" ? "Responde en español." : "Respond in English."}
 ${userNickname ? `Address the user as "${userNickname}" occasionally.` : ""}
 
-**Keep your response concise, motivating, and gamification-focused**. Use markdown formatting and emojis:
-- Use **bold** for important stats and achievements
-- Use 🏆, 🥇, 🎯, ⭐, 🔥, 📊 emojis for gamification elements
-- Use bullet points for lists and rankings
-- Use headers (##) for sections when needed
-- Celebrate achievements and progress
-- Encourage friendly competition
+When discussing:
+- **Backlog items**: Always mention who they're assigned to, their status, and any relevant details
+- **Team members**: Include their roles, permissions, and gamification rank when relevant
+- **Sprints**: Provide detailed information about progress, dates, and task distribution
+- **Tasks**: Include status, assignees, sprint association, and points when applicable
+- **Gamification**: Integrate points, badges, and leaderboard info naturally when it adds value
 
-If the question is not project or gamification-related, politely redirect: "${
+${
+  verbosityLevel === "concise"
+    ? "Keep your response concise and focused on key information."
+    : verbosityLevel === "detailed"
+    ? "Provide comprehensive responses with all available details."
+    : "Provide balanced responses with relevant information."
+}
+
+Use markdown formatting for clarity:
+- **Bold** for important items and names
+- Bullet points for lists
+- Emojis sparingly for visual appeal (🎯, 📋, ✅, etc.)
+- Headers (##) for major sections when needed
+
+If the question is not project-related, politely redirect: "${
       preferredLanguage === "es"
-        ? "Solo puedo ayudarte con temas relacionados al proyecto y gamificación. ¿Quieres saber sobre tu progreso, puntos, o el ranking del equipo?"
-        : "I can only help with project and gamification topics. Would you like to know about your progress, points, or team rankings?"
+        ? "Solo puedo ayudarte con temas del proyecto, backlog, tareas y gamificación. ¿En qué aspecto específico del proyecto puedo asistirte?"
+        : "I can only help with project, backlog, tasks, and gamification topics. What specific aspect of the project can I assist you with?"
     }"
 `.trim();
 
@@ -794,10 +1024,10 @@ If the question is not project or gamification-related, politely redirect: "${
         },
       ],
       generationConfig: {
-        temperature: 0.3, // Slightly higher for more engaging responses
+        temperature: 0.3,
         topP: 0.8,
         topK: 40,
-        maxOutputTokens: 1024,
+        maxOutputTokens: 2048,
       },
       safetySettings: [
         {
