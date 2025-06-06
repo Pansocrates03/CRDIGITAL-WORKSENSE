@@ -19,12 +19,10 @@ interface CachedProjectData {
 
 class ProjectCacheService {
   private cache: Map<string, CachedProjectData> = new Map();
-  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache TTL
-  private readonly STALE_WHILE_REVALIDATE = 10 * 60 * 1000; // 10 minutes stale-while-revalidate
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutos cache TTL
+  private readonly STALE_WHILE_REVALIDATE = 10 * 60 * 1000; // 10 minutos stale-while-revalidate
 
-  /**
-   * Get project data with caching and change detection
-   */
+  // Obtener datos de un proyecto con caché
   async getProjectData(
     projectId: string,
     forceRefresh: boolean = false
@@ -32,108 +30,86 @@ class ProjectCacheService {
     const now = Date.now();
     const cached = this.cache.get(projectId);
 
-    // Check if we have valid cached data
     if (cached && !forceRefresh) {
       const age = now - cached.lastUpdated;
 
-      // If cache is fresh, return immediately
+      // Si el caché es reciente y está dentro del TTL, se devuelve directamente
       if (age < this.CACHE_TTL) {
         console.log(
-          `✅ Returning fresh cached data for project ${projectId} (age: ${age}ms)`
+          `Returning fresh cached data for project ${projectId} (age: ${age}ms)`
         );
         return cached;
       }
 
-      // If cache is stale but within revalidation window, return stale data
-      // and trigger background refresh
+      // Si el caché es más antiguo que el TTL, pero aún dentro del período de revalidación
+      // se devuelve el caché y se actualiza en segundo plano
       if (age < this.STALE_WHILE_REVALIDATE) {
         console.log(
-          `🔄 Returning stale data and refreshing in background for project ${projectId}`
+          `Returning stale data and refreshing in background for project ${projectId}`
         );
         this.refreshProjectDataInBackground(projectId);
         return cached;
       }
     }
 
-    // Fetch fresh data
-    console.log(`🔍 Fetching fresh data for project ${projectId}`);
+    console.log(`Fetching fresh data for project ${projectId}`);
     return await this.fetchAndCacheProjectData(projectId);
   }
 
-  /**
-   * Listen for real-time updates on project data
-   */
+  // Escucha actualizaciones en tiempo real de un proyecto
   subscribeToProjectUpdates(projectId: string): () => void {
-    console.log(`👂 Subscribing to updates for project ${projectId}`);
+    console.log(`Subscribing to updates for project ${projectId}`);
 
     const unsubscribers: (() => void)[] = [];
 
-    // Subscribe to project document changes
+    // Abandonar suscripción a cambios en el proyecto
     const projectUnsubscribe = db
       .collection("projects")
       .doc(projectId)
       .onSnapshot((snapshot) => {
         if (snapshot.exists) {
-          console.log(`📢 Project ${projectId} updated, invalidating cache`);
           this.invalidateCache(projectId);
         }
       });
     unsubscribers.push(projectUnsubscribe);
 
-    // Subscribe to backlog changes
+
     const backlogUnsubscribe = db
       .collection(`projects/${projectId}/backlog`)
       .onSnapshot(() => {
-        console.log(
-          `📢 Backlog for project ${projectId} updated, invalidating cache`
-        );
         this.invalidateCache(projectId);
       });
     unsubscribers.push(backlogUnsubscribe);
 
-    // Subscribe to sprints changes
     const sprintsUnsubscribe = db
       .collection(`projects/${projectId}/sprints`)
       .onSnapshot(() => {
-        console.log(
-          `📢 Sprints for project ${projectId} updated, invalidating cache`
-        );
         this.invalidateCache(projectId);
       });
     unsubscribers.push(sprintsUnsubscribe);
 
-    // Subscribe to tasks changes (tasks are top-level but filtered by projectId)
     const tasksUnsubscribe = db
       .collection("tasks")
       .where("projectId", "==", projectId)
       .onSnapshot(() => {
-        console.log(
-          `📢 Tasks for project ${projectId} updated, invalidating cache`
-        );
         this.invalidateCache(projectId);
       });
     unsubscribers.push(tasksUnsubscribe);
 
-    // Return unsubscribe function
     return () => {
       unsubscribers.forEach((unsub) => unsub());
     };
   }
 
-  /**
-   * Invalidate cache for a specific project
-   */
+  // Invalidar cache de un proyecto en especifico
   private invalidateCache(projectId: string): void {
     const cached = this.cache.get(projectId);
     if (cached) {
-      // Mark as stale by setting lastUpdated to 0
-      cached.lastUpdated = 0;
+      cached.lastUpdated = 0; // Marcar como stale 
     }
   }
 
-  /**
-   * Refresh project data in the background
-   */
+  // Refrescar datos de un proyecto en segundo plano
   private async refreshProjectDataInBackground(
     projectId: string
   ): Promise<void> {
@@ -141,20 +117,18 @@ class ProjectCacheService {
       await this.fetchAndCacheProjectData(projectId);
     } catch (error) {
       console.error(
-        `❌ Error refreshing project ${projectId} in background:`,
+        `Error refreshing project ${projectId} in background:`,
         error
       );
     }
   }
 
-  /**
-   * Fetch and cache all project data
-   */
+  // Fetch cache datos del proyecto desde Firestore
   private async fetchAndCacheProjectData(
     projectId: string
   ): Promise<CachedProjectData | null> {
     try {
-      // Start all fetches in parallel
+      // Empezar los fetchs en paralelo
       const [
         projectSnap,
         backlogSnap,
@@ -179,14 +153,12 @@ class ProjectCacheService {
 
       const projectData = projectSnap.data() || {};
 
-      // Process permissions
       const availablePermissions: Map<string, AvailablePermission> = new Map();
       permissionsSnap.forEach((doc) => {
         const permission = doc.data() as AvailablePermission;
         availablePermissions.set(permission.key, permission);
       });
 
-      // Process roles
       const projectRoles: Map<string, ProjectRole> = new Map();
       rolesSnap.forEach((doc) => {
         const role = {
@@ -196,7 +168,6 @@ class ProjectCacheService {
         projectRoles.set(doc.id, role);
       });
 
-      // Process members
       const members: any[] = [];
       membersSnap.forEach((doc) => {
         const memberData = doc.data();
@@ -208,7 +179,6 @@ class ProjectCacheService {
         });
       });
 
-      // Process backlog items and fetch epic subitems in parallel
       const backlogItems: BacklogItemType[] = [];
       const epicPromises: Promise<void>[] = [];
 
@@ -219,7 +189,6 @@ class ProjectCacheService {
         };
         backlogItems.push(item);
 
-        // If it's an epic, fetch subitems
         if (item.type === "epic") {
           const epicPromise = db
             .collection(`projects/${projectId}/backlog/${item.id}/subitems`)
@@ -240,10 +209,8 @@ class ProjectCacheService {
         }
       });
 
-      // Wait for all epic subitems to be fetched
       await Promise.all(epicPromises);
 
-      // Process sprints
       const sprints: any[] = [];
       sprintsSnap.docs.forEach((doc) => {
         sprints.push({
@@ -252,7 +219,6 @@ class ProjectCacheService {
         });
       });
 
-      // Process tasks
       const tasks: any[] = [];
       tasksSnap.docs.forEach((doc) => {
         tasks.push({
@@ -261,7 +227,7 @@ class ProjectCacheService {
         });
       });
 
-      // Generate etag based on data
+      // Generar un etag
       const etag = this.generateEtag(
         projectData,
         members,
@@ -282,20 +248,16 @@ class ProjectCacheService {
         etag,
       };
 
-      // Cache the data
+
       this.cache.set(projectId, cachedData);
-      console.log(`✅ Cached project data for ${projectId}`);
 
       return cachedData;
     } catch (error) {
-      console.error(`❌ Error fetching project data for ${projectId}:`, error);
       return null;
     }
   }
 
-  /**
-   * Generate an etag for change detection
-   */
+  // Generar un etag para determinar si los datos han cambiado
   private generateEtag(
     projectData: any,
     members: any[],
@@ -316,39 +278,33 @@ class ProjectCacheService {
       activeSprintId: sprints.find((s) => s.status === "Active")?.id || "none",
     });
 
-    // Simple hash function
+    // funcion de hash
     let hash = 0;
     for (let i = 0; i < dataString.length; i++) {
       const char = dataString.charCodeAt(i);
       hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32bit integer
+      hash = hash & hash; 
     }
 
     return hash.toString(36);
   }
 
-  /**
-   * Clear cache for a specific project or all projects
-   */
+  // Borrar el caché de un proyecto o de todos los proyectos
   clearCache(projectId?: string): void {
     if (projectId) {
       this.cache.delete(projectId);
-      console.log(`🗑️ Cleared cache for project ${projectId}`);
     } else {
       this.cache.clear();
-      console.log(`🗑️ Cleared all project cache`);
     }
   }
 
-  /**
-   * Get cache statistics
-   */
+  // Obtener estadísticas del caché
   getCacheStats(): { size: number; projects: string[]; memoryUsage: number } {
     const projects = Array.from(this.cache.keys());
     const memoryUsage = projects.reduce((total, projectId) => {
       const cached = this.cache.get(projectId);
       if (cached) {
-        // Rough estimate of memory usage
+        // Calcular el tamaño de los datos en caché
         return total + JSON.stringify(cached).length;
       }
       return total;
@@ -362,5 +318,4 @@ class ProjectCacheService {
   }
 }
 
-// Export singleton instance
 export const projectCacheService = new ProjectCacheService();

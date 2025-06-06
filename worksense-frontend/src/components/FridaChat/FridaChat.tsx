@@ -133,7 +133,6 @@ const renderMarkdown = (text: string): React.ReactNode => {
 };
 
 const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
-  // --- All hooks must be declared here, unconditionally ---
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -180,14 +179,14 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
         ]);
       }
     }
-  }, [projectId, localStorageKey]); // Added localStorageKey to dependency array
+  }, [projectId, localStorageKey]); 
 
   // Guardar en localStorage cada vez que los mensajes cambian
   useEffect(() => {
-    if (projectId) { // Keep the conditional logic inside the effect
+    if (projectId) { 
       localStorage.setItem(localStorageKey, JSON.stringify(messages));
     }
-  }, [messages, projectId, localStorageKey]); // Added localStorageKey to dependency array
+  }, [messages, projectId, localStorageKey]); 
 
   // Scroll down automatico
   useEffect(() => {
@@ -196,16 +195,14 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
     }
   }, [messages, isOpen]);
 
-  // --- NOW, you can conditionally return, after all hooks are declared ---
   if (!projectId || isHidden) {
     return null;
   }
 
-  // Rest of your component logic and functions
   const handleCancelVoice = () => {
-    setInput(""); // clear input
-    setIsRecording(false); // stop showing confirm/cancel
-    setIsManualStop(true); // Mark as manual stop
+    setInput(""); 
+    setIsRecording(false); 
+    setIsManualStop(true);
     if (recognizer) {
       recognizer.stopContinuousRecognitionAsync(() => {
         recognizer.close();
@@ -217,7 +214,7 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
 
   const handleVoiceConfirm = () => {
     setIsRecording(false);
-    setIsManualStop(true); // Mark as manual stop
+    setIsManualStop(true); 
     if (recognizer) {
       recognizer.stopContinuousRecognitionAsync(() => {
         recognizer.close();
@@ -228,9 +225,8 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
   };
 
 
-  // Para azure - Modified to get token from backend
+  // Para azure 
   const handleVoiceInputAzure = async () => {
-    // If already recording, stop
     if (isRecording && recognizer) {
       setIsManualStop(true);
       recognizer.stopContinuousRecognitionAsync(() => {
@@ -243,7 +239,6 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
     }
 
     try {
-      // Get token from backend
       const tokenResponse = await apiClient.get("/speech/token");
       const { token, region, language } = tokenResponse.data;
 
@@ -252,7 +247,6 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
         return;
       }
 
-      // Create speech config with token from backend
       const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(
           token,
           region
@@ -272,33 +266,28 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
 
       newRecognizer.recognizeOnceAsync(
           (result) => {
-            // Check if this was a manual stop
             if (isManualStop) {
-              return; // Don't process if manually stopped
+              return; 
             }
 
             if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
               setInput(result.text);
             } else if (result.reason === SpeechSDK.ResultReason.NoMatch) {
-              // Only show alert if it wasn't manually stopped
               if (!isManualStop) {
                 alert("Speech not recognized. Please try again.");
               }
             }
 
-            // Clean up
             newRecognizer.close();
             setRecognizer(null);
             setIsRecording(false);
           },
           (error) => {
-            // Only show error if it wasn't manually stopped
             if (!isManualStop) {
               console.error("Speech recognition error:", error);
               alert("Error recognizing speech. Please try again.");
             }
 
-            // Clean up
             if (newRecognizer) {
               newRecognizer.close();
             }
@@ -333,12 +322,12 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
       });
 
       const reply = response.data.reply || "No response from Gemini";
-      const hasMarkdown = response.data.hasMarkdown || false; // Get markdown flag from response
+      const hasMarkdown = response.data.hasMarkdown || false; 
       
       const assistantMessage: Message = {
         sender: "assistant",
         text: reply,
-        hasMarkdown, // Store markdown flag
+        hasMarkdown,
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch {
@@ -361,7 +350,7 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
         {isOpen ? (
             <div className={styles.chatContainer}>
               <div className={styles.chatHeader}>
-                <span>Frida</span>
+                <span>Sensai</span> 
                 <button
                     onClick={() => setIsOpen(false)}
                     className={styles.closeButton}
@@ -380,7 +369,6 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
                                 : styles.assistantMessage
                         }`}
                     >
-                      {/* Render markdown only for assistant messages that have markdown */}
                       {msg.sender === "assistant" && msg.hasMarkdown ? 
                         renderMarkdown(msg.text) : 
                         msg.text
@@ -460,7 +448,7 @@ const FridaChat: React.FC<FridaChatProps> = ({ projectId }) => {
             <button
                 className={styles.floatingButton}
                 onClick={() => setIsOpen(true)}
-                aria-label="Open Frida Chat"
+                aria-label="Open Sensai"
             >
               <Sparkles size={20} />
             </button>

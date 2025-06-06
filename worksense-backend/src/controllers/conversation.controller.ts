@@ -8,9 +8,7 @@ import {
   ConversationMetadata,
 } from "../../types/conversation.js";
 
-/**
- * Get or create a conversation for a user in a project
- */
+// Consigue o crea una conversación para un usuario y proyecto específicos
 export const getOrCreateConversation = async (
   userId: number,
   projectId: string
@@ -20,10 +18,9 @@ export const getOrCreateConversation = async (
   );
 
   try {
-    // Look for existing conversation
+    // Buscar la colección de conversaciones
     const conversationsRef = db.collection("conversations");
 
-    // Using try/catch to handle potential missing index
     try {
       const querySnapshot = await conversationsRef
         .where("userId", "==", userId)
@@ -32,31 +29,26 @@ export const getOrCreateConversation = async (
         .limit(1)
         .get();
 
-      // If conversation exists, return it
+      // Si la comversación existe, devolverla
       if (!querySnapshot.empty) {
         const doc = querySnapshot.docs[0];
-        console.log(`✅ Existing conversation found: ${doc.id}`);
         return {
           id: doc.id,
           ...doc.data(),
         } as Conversation;
       }
     } catch (indexError: any) {
-      // If it's specifically an index error, try a simpler query
       if (
         indexError.message &&
         indexError.message.includes("FAILED_PRECONDITION")
       ) {
-        console.log("⚠️ Firestore index error. Trying alternative query...");
-
-        // Try simpler query without sorting
         const simpleQuerySnapshot = await conversationsRef
           .where("userId", "==", userId)
           .where("projectId", "==", projectId)
           .get();
 
         if (!simpleQuerySnapshot.empty) {
-          // Find the most recently updated document manually
+          // Busca el documento más reciente
           let mostRecentDoc = simpleQuerySnapshot.docs[0];
           let mostRecentTime = mostRecentDoc.data().updatedAt?.toMillis() || 0;
 
@@ -67,32 +59,23 @@ export const getOrCreateConversation = async (
               mostRecentTime = updateTime;
             }
           });
-
-          console.log(
-            `✅ Existing conversation found (alternative query): ${mostRecentDoc.id}`
-          );
           return {
             id: mostRecentDoc.id,
             ...mostRecentDoc.data(),
           } as Conversation;
         }
       } else {
-        // If it's not an index error, rethrow
         throw indexError;
       }
     }
 
-    // If we reach here, we need to create a new conversation
-    console.log("🆕 Creating new conversation...");
-
-    // Set default language to English ('en')
     const newConversation: Omit<Conversation, "id"> = {
       projectId,
       userId,
       messages: [],
       metadata: {
         userPreferences: {
-          preferredLanguage: "en", // Default to English
+          preferredLanguage: "en",
         },
         context: {
           recentTopics: [],
@@ -108,16 +91,13 @@ export const getOrCreateConversation = async (
     };
 
     const docRef = await conversationsRef.add(newConversation);
-    console.log(`✅ New conversation created with ID: ${docRef.id}`);
 
     return {
       id: docRef.id,
       ...newConversation,
     };
   } catch (error) {
-    console.error("❌ Error in getOrCreateConversation:", error);
 
-    // Create a temporary conversation object with English as default
     return {
       id: `temp-${Date.now()}`,
       projectId,
@@ -125,7 +105,7 @@ export const getOrCreateConversation = async (
       messages: [],
       metadata: {
         userPreferences: {
-          preferredLanguage: "en", // Default to English
+          preferredLanguage: "en", 
         },
         context: {
           recentTopics: [],
@@ -142,19 +122,13 @@ export const getOrCreateConversation = async (
   }
 };
 
-/**
- * Add a message to conversation and update metadata if needed
- */
+// Agrega un mensaje a la conversación y actualizar la metadata si es necesario
 export const addMessageToConversation = async (
   conversationId: string,
   message: ConversationMessage,
   metadataUpdates?: Partial<ConversationMetadata>
 ): Promise<void> => {
-  // Skip for temporary conversations
   if (conversationId.startsWith("temp-")) {
-    console.log(
-      "⚠️ Using temporary conversation. Will not be saved to Firestore."
-    );
     return;
   }
 
@@ -165,15 +139,13 @@ export const addMessageToConversation = async (
     updatedAt: Timestamp.now(),
   };
 
-  // If there are metadata updates, merge them with existing metadata
+  // Si hay actualizaciones de metadata, se mezclan con la metadata actual
   if (metadataUpdates) {
-    // We need to get the current metadata first to merge properly
     const doc = await conversationRef.get();
     if (doc.exists) {
       const currentData = doc.data() as Conversation;
       const currentMetadata = currentData.metadata || {};
 
-      // Deep merge the metadata
       const updatedMetadata = {
         userPreferences: {
           ...currentMetadata.userPreferences,
@@ -182,11 +154,10 @@ export const addMessageToConversation = async (
         context: {
           ...currentMetadata.context,
           ...metadataUpdates.context,
-          // Special handling for arrays and objects in context
           recentTopics: [
             ...(metadataUpdates.context?.recentTopics || []),
             ...(currentMetadata.context?.recentTopics || []).slice(0, 5),
-          ].slice(0, 10), // Keep only 10 most recent topics
+          ].slice(0, 10), // Mantener un máximo de 10 temas recientes
           knownFacts: {
             ...(currentMetadata.context?.knownFacts || {}),
             ...(metadataUpdates.context?.knownFacts || {}),
@@ -200,7 +171,6 @@ export const addMessageToConversation = async (
 
       updateData.metadata = updatedMetadata;
     } else {
-      // Make sure we set English as default language if creating new metadata
       if (!metadataUpdates.userPreferences?.preferredLanguage) {
         if (!metadataUpdates.userPreferences) {
           metadataUpdates.userPreferences = {};
@@ -214,20 +184,15 @@ export const addMessageToConversation = async (
 
   try {
     await conversationRef.update(updateData);
-    console.log(`✅ Message added to conversation ${conversationId}`);
   } catch (error) {
-    console.error(`❌ Error updating conversation ${conversationId}:`, error);
   }
 };
 
-/**
- * Get conversation history
- */
+
 export const getConversationHistory = async (
   conversationId: string,
   limit: number = 10
 ): Promise<ConversationMessage[]> => {
-  // For temporary conversations, return empty array
   if (conversationId.startsWith("temp-")) {
     return [];
   }
@@ -237,25 +202,17 @@ export const getConversationHistory = async (
     const doc = await conversationRef.get();
 
     if (!doc.exists) {
-      console.log(`⚠️ Conversation ${conversationId} not found`);
       return [];
     }
 
     const conversation = doc.data() as Conversation;
-    // Return most recent messages up to the limit
     return (conversation.messages || []).slice(-limit);
   } catch (error) {
-    console.error(
-      `❌ Error getting conversation history for ${conversationId}:`,
-      error
-    );
     return [];
   }
 };
 
-/**
- * Extract and update user preferences from message
- */
+// Extrae las preferencias del usuario de un mensaje y actualiza la metadata de la conversación
 export const extractUserPreferences = (
   message: string
 ): Partial<ConversationMetadata> | null => {
@@ -263,17 +220,14 @@ export const extractUserPreferences = (
     userPreferences: {},
   };
 
-  // Check for nickname preferences
   const nicknameMatch = message.match(
     /(?:call me|my name is) ["|']?([A-Za-z0-9À-ÿ\s]+)["|']?/i
   );
   if (nicknameMatch && nicknameMatch[1]) {
     metadata.userPreferences!.nickname = nicknameMatch[1].trim();
-    console.log(`🔤 Nickname detected: "${nicknameMatch[1].trim()}"`);
     return metadata;
   }
 
-  // Check for language preferences
   const languageMatch = message.match(
     /(?:speak|write|respond|answer) (?:in|using) ([A-Za-z]+)/i
   );
@@ -282,26 +236,19 @@ export const extractUserPreferences = (
     if (["spanish", "español", "english"].includes(language)) {
       metadata.userPreferences!.preferredLanguage =
         language === "spanish" || language === "español" ? "es" : "en";
-      console.log(
-        `🌐 Language detected: ${metadata.userPreferences!.preferredLanguage}`
-      );
       return metadata;
     }
   }
 
-  // Check for verbosity preferences
   if (message.match(/(?:be) (concise|brief|direct)/i)) {
     metadata.assistantSettings = { verbosityLevel: "concise" };
-    console.log(`📏 Verbosity level detected: concise`);
     return metadata;
   } else if (
     message.match(/(?:give me|provide|i want) (details|detailed information)/i)
   ) {
     metadata.assistantSettings = { verbosityLevel: "detailed" };
-    console.log(`📏 Verbosity level detected: detailed`);
     return metadata;
   }
 
-  // If no preferences detected
   return null;
 };

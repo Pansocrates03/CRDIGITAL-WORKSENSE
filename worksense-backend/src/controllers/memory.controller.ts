@@ -3,10 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { db } from "../models/firebase.js";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
-/**
- * Extractor de preferencias avanzado para Frida
- * Este extractor identifica diferentes tipos de instrucciones de memoria
- */
+// Extrae preferencias del usuario, detección de entidades y solicitudes de acción del mensaje del usuario
 export const analyzeUserMessage = async (message: string): Promise<{
   userPreference?: any;
   entityDetection?: any;
@@ -112,9 +109,7 @@ export const analyzeUserMessage = async (message: string): Promise<{
   return result;
 };
 
-/**
- * Extraer hechos importantes del mensaje del asistente para recordarlos
- */
+// Extrae hechos de un mensaje del asistente, como responsabilidades y fechas importantes
 export const extractFactsFromAssistantMessage = (message: string): Record<string, any> => {
   const facts: Record<string, any> = {};
   
@@ -144,9 +139,7 @@ export const extractFactsFromAssistantMessage = (message: string): Record<string
   return facts;
 };
 
-/**
- * Middleware para añadir los componentes de memoria a la respuesta del asistente
- */
+// Middleware para enriquecer las respuestas con información de memoria
 export const memoryEnhancementMiddleware = async (
   req: Request, 
   res: Response, 
@@ -160,10 +153,7 @@ export const memoryEnhancementMiddleware = async (
   
   // Sobrescribir el método send para procesar la respuesta
   res.send = function(body: any): Response {
-    // Aquí se podría agregar lógica para enriquecer la respuesta
-    // con información de memoria cuando sea necesario
     
-    // Ejemplo: añadir un indicador de que esta respuesta ha sido mejorada con memoria
     if (typeof body === 'string') {
       try {
         const jsonBody = JSON.parse(body);

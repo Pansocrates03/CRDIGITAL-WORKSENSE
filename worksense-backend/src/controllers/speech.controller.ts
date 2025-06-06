@@ -1,7 +1,6 @@
 // controllers/speech.controller.ts
 import { Request, Response } from "express";
 
-// Get speech token for client-side SDK
 export const getSpeechToken = async (
   req: Request,
   res: Response
@@ -16,7 +15,7 @@ export const getSpeechToken = async (
       return;
     }
 
-    // Get auth token from Azure
+    // Obtener el token de autenticación para el servicio de voz de Azure
     const tokenEndpoint = `https://${region}.api.cognitive.microsoft.com/sts/v1.0/issueToken`;
     
     const tokenResponse = await fetch(tokenEndpoint, {
@@ -33,7 +32,7 @@ export const getSpeechToken = async (
 
     const token = await tokenResponse.text();
     
-    // Return token and region for client-side SDK
+    // Regresar el token 
     res.json({
       token: token,
       region: region,
