@@ -2,23 +2,28 @@
 
 .card {
   background-color: white;
-  border: 1px solid var(--neutral-200, #e5e7eb);
-  border-radius: 0.75rem;
+  border: 1px solid var(--neutral-200, #f7f6f8);
+  border-radius: var(--radius, 0.625rem);
   padding: 1.5rem;
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(43, 41, 46, 0.05));
 }
 
 .card:hover {
-  border-color: var(--accent-pink, #ac1754);
-  box-shadow: 0 4px 12px rgba(172, 23, 84, 0.1);
+  border-color: var(--color-purple, #ac1754);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(43, 41, 46, 0.1));
   transform: translateY(-2px);
 }
 
 .todayCard {
-  border-left: 4px solid var(--accent-pink, #ac1754);
-  background: linear-gradient(to right, rgba(172, 23, 84, 0.02), white);
+  border-left: 4px solid var(--color-purple, #ac1754);
+  background: linear-gradient(
+    to right,
+    var(--accent-pink-light, rgba(255, 181, 213, 0.13)),
+    white
+  );
 }
 
 .cardHeader {
@@ -37,41 +42,45 @@
 .title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, #2b292e);
   margin: 0 0 0.5rem 0;
   line-height: 1.4;
   word-wrap: break-word;
+  font-family: var(--font-main);
 }
 
 .status {
   display: inline-block;
   padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
+  border-radius: var(--radius, 0.625rem);
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.025em;
+  font-family: var(--font-main);
 }
 
+/* Status colors matching backlog table design */
 .statusScheduled {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: var(--surface-light, #f4f7fa);
+  color: var(--color-accent, #176aac);
+  border: 1px solid var(--surface-light-border, #e2e8f0);
 }
 
 .statusInProgress {
-  background-color: #d1fae5;
-  color: #065f46;
+  background-color: var(--success, #2e8b57);
+  color: white;
   animation: pulse 2s infinite;
 }
 
 .statusCompleted {
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: var(--neutral-300, #e6e4e8);
+  color: var(--neutral-700, #4d4b51);
 }
 
 .statusCancelled {
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: var(--error, #d32f2f);
+  color: white;
 }
 
 .actionsContainer {
@@ -82,15 +91,15 @@
   background: none;
   border: none;
   padding: 0.5rem;
-  border-radius: 0.375rem;
-  color: var(--neutral-500, #6b7280);
+  border-radius: var(--radius, 0.625rem);
+  color: var(--neutral-500, #8e8c92);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .actionsButton:hover {
-  background-color: var(--neutral-100, #f5f5f5);
-  color: var(--neutral-700, #374151);
+  background-color: var(--neutral-100, #fdfcfd);
+  color: var(--neutral-700, #4d4b51);
 }
 
 .actionsDropdown {
@@ -98,9 +107,9 @@
   top: 100%;
   right: 0;
   background: white;
-  border: 1px solid var(--neutral-200, #e5e7eb);
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--neutral-200, #f7f6f8);
+  border-radius: var(--radius, 0.625rem);
+  box-shadow: var(--shadow-lg, 0 10px 15px rgba(43, 41, 46, 0.1));
   z-index: 10;
   min-width: 150px;
   overflow: hidden;
@@ -116,17 +125,18 @@
   border: none;
   text-align: left;
   font-size: 0.875rem;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, #2b292e);
   cursor: pointer;
   transition: background-color 0.2s ease;
+  font-family: var(--font-main);
 }
 
 .actionItem:hover {
-  background-color: var(--neutral-50, #f9fafb);
+  background-color: var(--neutral-100, #fdfcfd);
 }
 
 .deleteAction {
-  color: var(--red-600, #dc2626);
+  color: var(--error, #d32f2f);
 }
 
 .deleteAction:hover {
@@ -134,7 +144,7 @@
 }
 
 .description {
-  color: var(--neutral-600, #6b7280);
+  color: var(--neutral-600, #6c6a70);
   font-size: 0.875rem;
   line-height: 1.5;
   margin-bottom: 1rem;
@@ -155,19 +165,19 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--neutral-600, #6b7280);
+  color: var(--neutral-600, #6c6a70);
   font-size: 0.875rem;
 }
 
 .infoItem svg {
-  color: var(--neutral-400, #9ca3af);
+  color: var(--neutral-400, #c9c7cc);
   flex-shrink: 0;
 }
 
 .timeInfo {
-  background-color: var(--accent-pink-light, #fdf2f8);
-  border: 1px solid var(--accent-pink-200, #fbcfe8);
-  border-radius: 0.5rem;
+  background-color: var(--accent-pink-light, rgba(255, 181, 213, 0.13));
+  border: 1px solid var(--surface-light-border, #e2e8f0);
+  border-radius: var(--radius, 0.625rem);
   padding: 0.75rem;
   margin-bottom: 1rem;
   text-align: center;
@@ -176,7 +186,8 @@
 .timeUntil {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--accent-pink, #ac1754);
+  color: var(--color-purple, #ac1754);
+  font-family: var(--font-main);
 }
 
 .cardFooter {
@@ -190,21 +201,22 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: var(--accent-pink, #ac1754);
+  background-color: var(--color-purple, #ac1754);
   color: white;
   border: none;
   padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius, 0.625rem);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   width: 100%;
+  font-family: var(--font-main);
 }
 
 .joinButton:hover {
-  background-color: var(--accent-pink-hover, #991347);
+  background-color: var(--color-purple-dark, #8e0e3d);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(172, 23, 84, 0.3);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(43, 41, 46, 0.1));
 }
 
 .summaryButton,
@@ -212,32 +224,34 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--neutral-100, #f5f5f5);
-  color: var(--neutral-700, #374151);
-  border: 1px solid var(--neutral-300, #d1d5db);
+  background-color: var(--neutral-100, #fdfcfd);
+  color: var(--neutral-700, #4d4b51);
+  border: 1px solid var(--neutral-300, #e6e4e8);
   padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
+  border-radius: var(--radius, 0.625rem);
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-family: var(--font-main);
 }
 
 .summaryButton:hover,
 .transcriptButton:hover {
-  background-color: var(--neutral-200, #e5e7eb);
-  border-color: var(--neutral-400, #9ca3af);
+  background-color: var(--neutral-200, #f7f6f8);
+  border-color: var(--neutral-400, #c9c7cc);
 }
 
 .waitingInfo {
   text-align: center;
   padding: 0.75rem;
-  background-color: var(--neutral-50, #f9fafb);
-  border-radius: 0.375rem;
+  background-color: var(--neutral-100, #fdfcfd);
+  border-radius: var(--radius, 0.625rem);
 }
 
 .waitingInfo span {
   font-size: 0.875rem;
-  color: var(--neutral-500, #6b7280);
+  color: var(--neutral-500, #8e8c92);
+  font-family: var(--font-main);
 }
 
 @keyframes pulse {
