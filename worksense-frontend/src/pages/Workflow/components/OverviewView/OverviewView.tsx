@@ -1,5 +1,7 @@
 import React from "react";
 import BacklogItemType from "@/types/BacklogItemType";
+import { useParams } from "react-router-dom";
+import { useSprints } from "@/hooks/useSprintData";
 import {
   BarChart,
   Bar,
@@ -19,7 +21,24 @@ interface OverviewViewProps {
   tasks: BacklogItemType[];
 }
 
+// Helper function to convert Firestore timestamp to Date
+const toDate = (timestamp: any): Date | undefined => {
+  if (!timestamp) return undefined;
+  if (typeof timestamp === 'object' && (timestamp.seconds || timestamp._seconds)) {
+    const seconds = timestamp.seconds ?? timestamp._seconds;
+    return new Date(seconds * 1000);
+  }
+  const date = new Date(timestamp);
+  return isNaN(date.getTime()) ? undefined : date;
+};
+
 const OverviewView: React.FC<OverviewViewProps> = ({ tasks }) => {
+  const { id: projectId } = useParams<{ id: string }>();
+  const { data: sprints } = useSprints(projectId ?? "");
+  
+  // Get active sprint
+  const activeSprint = sprints?.find(sprint => sprint.status === "Active");
+
   // Calculate task statistics
   const taskStats = {
     total: tasks.length,
@@ -34,6 +53,18 @@ const OverviewView: React.FC<OverviewViewProps> = ({ tasks }) => {
       return acc;
     }, {} as Record<string, number>)
   };
+
+  // Calculate sprint progress
+  const completedTasks = taskStats.byStatus['Done'] || 0;
+  const progressPercentage = taskStats.total > 0 ? (completedTasks / taskStats.total) * 100 : 0;
+
+  // Convert Firestore timestamps to Date objects
+  const startDate = activeSprint ? toDate(activeSprint.startDate) : undefined;
+  const endDate = activeSprint ? toDate(activeSprint.endDate) : undefined;
+
+  // Calculate remaining days
+  const today = new Date();
+  const remainingDays = endDate ? Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
   // Prepare data for charts
   const statusData = Object.entries(taskStats.byStatus).map(([name, value]) => ({
@@ -68,9 +99,76 @@ const OverviewView: React.FC<OverviewViewProps> = ({ tasks }) => {
     }
   };
 
+  if (!activeSprint) {
+    return (
+      <div className="overview-view">
+        <div className="bg-white rounded-lg shadow p-6 text-center">
+          <h3 className="text-lg font-semibold mb-4">No Active Sprint</h3>
+          <p className="text-gray-600">There is no active sprint at the moment.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="overview-view">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      {/* Sprint Information Tables */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Progress Table */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">Sprint Progress</h3>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-600">Completion Rate</p>
+              <p className="text-2xl font-bold text-pink-600">{progressPercentage.toFixed(1)}%</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Completed Tasks</p>
+              <p className="text-2xl font-bold text-blue-600">{completedTasks} / {taskStats.total}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Dates Table */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">Sprint Dates</h3>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-600">Start Date</p>
+              <p className="text-lg font-medium">
+                {startDate ? startDate.toLocaleDateString() : 'Not set'}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">End Date</p>
+              <p className="text-lg font-medium">
+                {endDate ? endDate.toLocaleDateString() : 'Not set'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Remaining Days Table */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">Time Remaining</h3>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-600">Days Left</p>
+              <p className="text-2xl font-bold text-pink-600">
+                {remainingDays > 0 ? remainingDays : 'Sprint ended'}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Status</p>
+              <p className="text-lg font-medium">
+                {remainingDays > 0 ? activeSprint.status : 'Completed'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Status Distribution Chart */}
         <div className="chart-container">
           <h3 className="chart-title">Tasks by Status</h3>
