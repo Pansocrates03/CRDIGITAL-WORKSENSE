@@ -77,6 +77,40 @@ export const useGamificationToasts = () => {
           }
         );
       }
+      // Show points deducted toast
+      if (points < 0) {
+        toast.custom(
+          (t) => (
+            <div
+              className="flex items-center gap-3 p-4 rounded-xl shadow-lg border max-w-sm"
+              style={{
+                background: "var(--background-primary)",
+                borderColor: "var(--accent-blue)",
+                color: "var(--text-primary)",
+              }}
+            >
+              <div
+                className="flex items-center justify-center w-10 h-10 rounded-full"
+                style={{ backgroundColor: "var(--accent-blue)" }}
+              >
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-sm" style={{ color: "var(--accent-blue)" }}>
+                  -{points * -1} Points Deducted!
+                </p>
+                <p className="text-xs" style={{ color: "var(--neutral-600)" }}>
+                  Total: {totalPoints} points
+                </p>
+              </div>
+            </div>
+          ),
+          {
+            duration: 3000,
+            position: "bottom-right",
+          }
+        );
+      }
 
       // Show badge earned toasts
       if (newBadges?.length > 0) {

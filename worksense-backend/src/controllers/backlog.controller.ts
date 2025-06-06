@@ -411,7 +411,7 @@ export const updateBacklogItem = async (
             ...updatedDoc.data(),
             // Toast notification data
             toast: {
-              type: "warning",
+              type: "success",
               points: -pointsToDeduct,
               totalPoints: gamificationResult.totalPoints,
               level: gamificationResult.level,
@@ -732,7 +732,7 @@ export const updateSubItem = async (
             id: updatedDoc.id,
             ...updatedDoc.data(),
             toast: {
-              type: "warning",
+              type: "success",
               points: -pointsToDeduct,
               totalPoints: gamificationResult.totalPoints,
               level: gamificationResult.level,

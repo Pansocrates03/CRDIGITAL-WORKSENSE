@@ -121,7 +121,7 @@ const ForYouPage = () => {
     <div className={styles.forYouContainer}>
       {/* Page Title and Description */}
       <h1 className={styles.pageTitle}>For <span className="text-[var(--accent-pink)]/80">You</span></h1>
-      <p className={styles.pageDescription}>A personalized dashboard with your assigned items, completed tasks, and gamification features.</p>
+      <p className={styles.pageDescription}>Your personalized workspace to track your progress, manage assigned tasks, and celebrate your achievements.</p>
       {/* Gamification summary bar */}
       {gamification && (
         <ForYouGamificationSummaryBar
@@ -187,6 +187,8 @@ const ForYouPage = () => {
           setEditItem(null);
           queryClient.invalidateQueries({ queryKey: ['assignedItems'] });
           queryClient.invalidateQueries({ queryKey: ['completedTasks'] });
+          queryClient.invalidateQueries({ queryKey: ['project-leaderboard'] });
+          queryClient.invalidateQueries({ queryKey: ['personalGamification', projectId, userIdString] });        
         }}
         item={editItem as any}
       />
