@@ -15,6 +15,10 @@ import geminiRoutes from "./routes/gemini.routes.js";
 import forYouRoutes from "./routes/forYou.routes.js";
 import speechRoutes from "./routes/speech.routes.js";
 import cacheRoutes from "./routes/cache.routes.js";
+
+// Frumen Routes Import
+import frumenRoutes from "./routes/frumen.routes.js";
+
 import meetingsRoutes, {
   globalMeetingRoutes,
 } from "./routes/meetings.routes.js";
@@ -50,6 +54,9 @@ app.use(`${API_PREFIX}/cache`, cacheRoutes);
 app.use(`${API_PREFIX}/projects`, meetingsRoutes); // Project-specific meeting routes
 app.use(`${API_PREFIX}/meetings`, globalMeetingRoutes); // Global meeting routes
 app.use(`${API_PREFIX}/for-you-gamification`, forYouGamificationRoutes);
+
+// FRUMEN ROUTES
+app.use(`${API_PREFIX}/frumen`, frumenRoutes);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get("/", (req: any, res: any) => {
