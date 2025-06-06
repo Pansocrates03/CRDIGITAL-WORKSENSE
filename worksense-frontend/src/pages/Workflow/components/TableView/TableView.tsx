@@ -1,5 +1,4 @@
 import React from 'react';
-import { Task } from '../../data';
 import BacklogItemType from '@/types/BacklogItemType';
 import { AvatarDisplay } from '@/components/ui/AvatarDisplay';
 import { projectService } from '@/services/projectService';
@@ -7,6 +6,7 @@ import MemberDetailed from '@/types/MemberDetailedType';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { QueryKeys } from '@/lib/constants/queryKeys';
+import { format, isValid } from 'date-fns';
 
 interface TableViewProps {
   tasks: BacklogItemType[];
@@ -36,6 +36,29 @@ const renderAsignee = (memmberId:number|null|undefined) => {
   )
 }
 
+// Helper function to safely format date
+const formatDate = (dateValue: any): string => {
+  if (!dateValue) return '-';
+  try {
+    // Firestore timestamp con _seconds
+    if (typeof dateValue === 'object' && ('_seconds' in dateValue)) {
+      const date = new Date(dateValue._seconds * 1000);
+      return isValid(date) ? format(date, 'yyyy-MM-dd') : '-';
+    }
+    // Firestore timestamp con seconds (por si acaso)
+    if (typeof dateValue === 'object' && ('seconds' in dateValue)) {
+      const date = new Date(dateValue.seconds * 1000);
+      return isValid(date) ? format(date, 'yyyy-MM-dd') : '-';
+    }
+    // ISO string o timestamp
+    const date = new Date(dateValue);
+    return isValid(date) ? format(date, 'yyyy-MM-dd') : '-';
+  } catch (error) {
+    console.error('Error formatting date:', error, dateValue);
+    return '-';
+  }
+};
+
 const TableView: React.FC<TableViewProps> = ({ tasks }) => {
   return (
     <div className="bg-white rounded-lg shadow overflow-x-auto">
@@ -55,85 +78,49 @@ const TableView: React.FC<TableViewProps> = ({ tasks }) => {
               Assignees
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Progress
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Start Date
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Due Date
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Comments
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Links
+              Last Update
             </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {tasks.map(task => (
-            <tr key={task.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">{task.name}</div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                  task.status === 'sprint_backlog' ? 'bg-yellow-100 text-yellow-800' :
-                  task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                  task.status === 'in_review' ? 'bg-purple-100 text-purple-800' :
-                  'bg-green-100 text-green-800'
-                }`}>
-                  {task.status?.replace('_', ' ')}
-                </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                {task.priority && (
+          {tasks.map(task => {
+            return (
+              <tr key={task.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">{task.name}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                    task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                    task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    task.status === 'sprint_backlog' ? 'bg-yellow-100 text-yellow-800' :
+                    task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                    task.status === 'in_review' ? 'bg-purple-100 text-purple-800' :
                     'bg-green-100 text-green-800'
                   }`}>
-                    {task.priority}
+                    {task.status?.replace('_', ' ')}
                   </span>
-                )}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex -space-x-2">
-                  {task.assigneeId && renderAsignee(task.assigneeId)}
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                {30 > 0 && ( // {task.subtasksTotal > 0 && (
-                  <div className="w-32">
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full"
-                        style={{ width: `${(10 / 30) * 100}%` }} // style={{ width: `${(task.subtasksCompleted / task.subtasksTotal) * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-gray-500 mt-1">
-                      {10}/{30} {/*  {task.subtasksCompleted}/{task.subtasksTotal} */}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {task.priority && (
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      task.priority === 'high' ? 'bg-red-100 text-red-800' :
+                      task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {task.priority}
                     </span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex -space-x-2">
+                    {task.assigneeId && renderAsignee(task.assigneeId)}
                   </div>
-                )}
-              </td>
-              {/* 
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {task.startDate ? new Date(task.startDate).toLocaleDateString() : '-'}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {task.endDate ? new Date(task.endDate).toLocaleDateString() : '-'}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {task.commentsCount}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {task.linksCount}
-              </td>
-              */}
-            </tr>
-          ))}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {formatDate(task.updatedAt)}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
