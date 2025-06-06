@@ -473,7 +473,8 @@ const CreateMeetingModal: FC<CreateMeetingModalProps> = ({
                   }
                 />
                 <div className={styles.keyboardHint}>
-                  Use ↑↓ arrows to adjust values, ←→ arrows to switch day/month/year
+                  Use ↑↓ arrows to adjust values, ←→ arrows to switch
+                  day/month/year
                 </div>
                 {errors.scheduledDate && (
                   <span className={styles.error}>{errors.scheduledDate}</span>
@@ -616,7 +617,8 @@ const CreateMeetingModal: FC<CreateMeetingModalProps> = ({
                           min={formData.scheduledDate}
                         />
                         <div className={styles.keyboardHint}>
-                          Use ↑↓ arrows to adjust values, ←→ arrows to switch day/month/year
+                          Use ↑↓ arrows to adjust values, ←→ arrows to switch
+                          day/month/year
                         </div>
                         {errors.endDate && (
                           <span className={styles.error}>{errors.endDate}</span>

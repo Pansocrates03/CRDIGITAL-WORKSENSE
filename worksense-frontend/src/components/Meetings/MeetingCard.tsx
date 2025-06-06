@@ -9,6 +9,7 @@ import {
   MoreVertical,
   Trash2,
   Edit2,
+  Check,
 } from "lucide-react";
 import styles from "./MeetingCard.module.css";
 
@@ -267,6 +268,7 @@ const MeetingCard: FC<MeetingCardProps> = ({
                     onClick={() => handleStatusChange("completed")}
                     className={styles.actionItem}
                   >
+                    <Check size={14} />
                     End Meeting
                   </button>
                   <button
@@ -274,7 +276,7 @@ const MeetingCard: FC<MeetingCardProps> = ({
                     className={`${styles.actionItem} ${styles.deleteAction}`}
                   >
                     <Trash2 size={14} />
-                    Cancel Meeting
+                    Delete Meeting
                   </button>
                 </>
               )}
