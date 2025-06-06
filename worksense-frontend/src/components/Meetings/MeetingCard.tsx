@@ -74,10 +74,11 @@ const MeetingCard: FC<MeetingCardProps> = ({
   );
   const isPastEndTime = now > meetingEndTime;
   const canJoin =
-    (minutesUntilMeeting <= 15 &&
+    ((minutesUntilMeeting <= 15 &&
       minutesUntilMeeting >= -30 &&
-      currentStatus !== "cancelled") ||
-    currentStatus === "in-progress";
+      currentStatus !== "cancelled" &&
+      currentStatus !== "completed") ||
+    currentStatus === "in-progress");
 
   // Check user role from localStorage - using projectRole like other components
   const getUserRole = (): string | null => {
