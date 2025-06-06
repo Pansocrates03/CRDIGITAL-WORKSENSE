@@ -103,6 +103,28 @@
   box-shadow: var(--shadow-md, 0 4px 6px rgba(43, 41, 46, 0.1));
 }
 
+.startNowButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--color-accent, #176aac);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius, 0.625rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+  font-size: 0.875rem;
+}
+
+.startNowButton:hover {
+  background-color: var(--accent-blue-hover, #1d7cc7);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(43, 41, 46, 0.1));
+}
+
 .createButton {
   display: flex;
   align-items: center;
@@ -301,7 +323,8 @@
 
   .deleteAllButton,
   .quickMeetingButton,
-  .createButton {
+  .createButton,
+  .startNowButton {
     flex: 1;
     justify-content: center;
     min-width: 120px;
@@ -331,7 +354,8 @@
 
   .deleteAllButton,
   .quickMeetingButton,
-  .createButton {
+  .createButton,
+  .startNowButton {
     width: 100%;
   }
 }

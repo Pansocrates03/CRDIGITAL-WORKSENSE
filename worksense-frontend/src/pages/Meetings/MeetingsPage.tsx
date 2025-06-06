@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/api/apiClient";
 import styles from "./MeetingsPage.module.css";
 import { toast } from "sonner";
-import { Calendar, Clock, Users, Video, Plus, Trash2 } from "lucide-react";
+import { Calendar, Clock, Users, Video, Plus, Trash2, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import CreateMeetingModal from "@/components/Meetings/CreateMeetingModal";
 import QuickMeetingModal from "@/components/Meetings/QuickMeetingModal";
 import MeetingCard from "@/components/Meetings/MeetingCard";
@@ -51,7 +52,25 @@ const MeetingsPage: FC = () => {
     status: string;
   } | null>(null);
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [editingMeeting, setEditingMeeting] = useState<Meeting | null>(null);
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const { setPosition } = useFridaChatPosition();
+
+  // Check user role from localStorage - using projectRole like other components
+  const getUserRole = (): string | null => {
+    try {
+      const projectRole = localStorage.getItem("projectRole");
+      return projectRole;
+    } catch (error) {
+      console.error("Error reading project role from localStorage:", error);
+      return null;
+    }
+  };
+
+  const canManageMeetings = (): boolean => {
+    const role = getUserRole();
+    return role === "product-owner" || role === "scrum-master";
+  };
 
   React.useEffect(() => {
     if (isCreateModalOpen || isQuickMeetingModalOpen) {
@@ -78,13 +97,26 @@ const MeetingsPage: FC = () => {
   });
 
   const handleMeetingCreated = () => {
-    toast.success("Meeting created successfully!");
+    toast.success(
+      modalMode === "edit"
+        ? "Meeting updated successfully!"
+        : "Meeting created successfully!"
+    );
     refetch();
     setIsCreateModalOpen(false);
     setIsQuickMeetingModalOpen(false);
+    setEditingMeeting(null);
+    setModalMode("create");
   };
 
   const handleQuickMeeting = async () => {
+    if (!canManageMeetings()) {
+      toast.error(
+        "You don't have permission to create meetings. Only Product Owners and Scrum Masters can create meetings."
+      );
+      return;
+    }
+
     try {
       // Create an immediate meeting with default settings
       const now = new Date();
@@ -102,7 +134,10 @@ const MeetingsPage: FC = () => {
       );
       const meeting = response.data.meeting;
 
-      toast.success("Quick meeting created!");
+      // Update the meeting status to "in-progress" immediately for quick meetings
+      await handleMeetingStatusUpdate(meeting.id, "in-progress");
+
+      toast.success("Quick meeting created and started!");
       refetch();
 
       // Automatically join the meeting
@@ -113,6 +148,18 @@ const MeetingsPage: FC = () => {
       console.error("Error creating quick meeting:", error);
       toast.error("Failed to create quick meeting");
     }
+  };
+
+  const handleCreateMeetingClick = () => {
+    if (!canManageMeetings()) {
+      toast.error(
+        "You don't have permission to create meetings. Only Product Owners and Scrum Masters can create meetings."
+      );
+      return;
+    }
+    setModalMode("create");
+    setEditingMeeting(null);
+    setIsCreateModalOpen(true);
   };
 
   const handleMeetingJoin = async (meetingId: string) => {
@@ -159,6 +206,13 @@ const MeetingsPage: FC = () => {
   };
 
   const handleDeleteAllMeetings = async () => {
+    if (!canManageMeetings()) {
+      toast.error(
+        "You don't have permission to delete meetings. Only Product Owners and Scrum Masters can delete meetings."
+      );
+      return;
+    }
+
     try {
       // Delete all meetings for this project
       const deletePromises = meetings.map((meeting: Meeting) =>
@@ -185,10 +239,18 @@ const MeetingsPage: FC = () => {
   };
 
   const handleMeetingEdit = async (meetingId: string) => {
-    // TODO: Implement edit modal
-    // For now, just show a toast message
-    toast.info("Edit meeting feature coming soon!");
-    console.log("Edit meeting:", meetingId);
+    try {
+      // Fetch the full meeting details for editing
+      const res = await apiClient.get(`/meetings/${meetingId}`);
+      const meeting = res.data;
+
+      setEditingMeeting(meeting);
+      setModalMode("edit");
+      setIsCreateModalOpen(true);
+    } catch (error) {
+      console.error("Error fetching meeting details:", error);
+      toast.error("Failed to load meeting details for editing");
+    }
   };
 
   // Helper function to convert Firestore timestamp to Date
@@ -247,34 +309,59 @@ const MeetingsPage: FC = () => {
             start quick sessions.
           </p>
         </div>
-        <div className={styles.buttonGroup}>
-          {meetings.length > 0 && (
-            <button
-              className={styles.deleteAllButton}
+        <div className="flex gap-2">
+          {canManageMeetings() && meetings.length > 0 && (
+            <Button
+              variant="destructive"
+              size="default"
               onClick={() => setShowDeleteAllModal(true)}
             >
-              <Trash2 size={20} />
+              <Trash2 className="mr-1 h-4 w-4" />
               Delete All
-            </button>
+            </Button>
           )}
-          <button
-            className={styles.quickMeetingButton}
-            onClick={handleQuickMeeting}
-          >
-            <Plus size={20} />
-            Start Now
-          </button>
-          <button
-            className={styles.createButton}
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            <Plus size={20} />
-            Schedule Meeting
-          </button>
+          {canManageMeetings() && (
+            <Button
+              variant="secondary"
+              size="default"
+              onClick={handleQuickMeeting}
+              className={styles.startNowButton}
+            >
+              <Zap className="mr-1 h-4 w-4" />
+              Start Now
+            </Button>
+          )}
+          {canManageMeetings() && (
+            <Button
+              variant="default"
+              size="default"
+              onClick={handleCreateMeetingClick}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              Schedule Meeting
+            </Button>
+          )}
         </div>
       </div>
 
       <div className="border-b-2 border-b-gray-200 my-4"></div>
+
+      {!canManageMeetings() && (
+        <div
+          style={{
+            backgroundColor: "#FEF3C7",
+            color: "#92400E",
+            padding: "0.75rem 1rem",
+            borderRadius: "var(--radius, 0.625rem)",
+            marginBottom: "1.5rem",
+            fontSize: "0.875rem",
+            border: "1px solid #F59E0B",
+          }}
+        >
+          <strong>Note:</strong> You have view-only access to meetings. Only
+          Product Owners and Scrum Masters can create and manage meetings.
+        </div>
+      )}
 
       <div className="space-y-8">
         {/* Today's Meetings */}
@@ -367,7 +454,7 @@ const MeetingsPage: FC = () => {
         {/* Completed Meetings */}
         {groupedMeetings.completed.length > 0 && (
           <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Recent Completed</h2>
+            <h2 className={styles.sectionTitle}>Recently Completed</h2>
             <div className={styles.meetingsGrid}>
               {groupedMeetings.completed.slice(0, 6).map((meeting: Meeting) => (
                 <MeetingCard
@@ -422,35 +509,44 @@ const MeetingsPage: FC = () => {
             <Video size={64} className={styles.emptyIcon} />
             <h3>No meetings scheduled</h3>
             <p>
-              Create your first meeting to get started with team collaboration.
+              {canManageMeetings()
+                ? "Create your first meeting to get started with team collaboration."
+                : "No meetings have been scheduled for this project yet."}
             </p>
-            <div className={styles.emptyStateButtons}>
-              <button
-                className={styles.emptyStateButton}
-                onClick={handleQuickMeeting}
-              >
-                <Plus size={20} />
-                Start Quick Meeting
-              </button>
-              <button
-                className={styles.emptyStateButtonSecondary}
-                onClick={() => setIsCreateModalOpen(true)}
-              >
-                <Plus size={20} />
-                Schedule Meeting
-              </button>
-            </div>
+            {canManageMeetings() && (
+              <div className={styles.emptyStateButtons}>
+                <button
+                  className={styles.emptyStateButton}
+                  onClick={handleQuickMeeting}
+                >
+                  <Zap size={20} />
+                  Start Quick Meeting
+                </button>
+                <button
+                  className={styles.emptyStateButtonSecondary}
+                  onClick={handleCreateMeetingClick}
+                >
+                  <Plus size={20} />
+                  Schedule Meeting
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {projectId && (
+      {projectId && canManageMeetings() && (
         <>
           <CreateMeetingModal
             projectId={projectId}
             isOpen={isCreateModalOpen}
-            onClose={() => setIsCreateModalOpen(false)}
+            onClose={() => {
+              setIsCreateModalOpen(false);
+              setEditingMeeting(null);
+              setModalMode("create");
+            }}
             onMeetingCreated={handleMeetingCreated}
+            editMeeting={editingMeeting}
           />
           <QuickMeetingModal
             projectId={projectId}
@@ -462,37 +558,41 @@ const MeetingsPage: FC = () => {
       )}
 
       {/* Centralized Delete Meeting Modal */}
-      <DeleteConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setMeetingToDelete(null);
-        }}
-        onConfirm={() =>
-          meetingToDelete && handleMeetingDelete(meetingToDelete.id)
-        }
-        title={
-          meetingToDelete?.status === "scheduled" ||
-          meetingToDelete?.status === "in-progress"
-            ? "Cancel Meeting"
-            : "Delete Meeting"
-        }
-        message={
-          meetingToDelete?.status === "scheduled" ||
-          meetingToDelete?.status === "in-progress"
-            ? `Are you sure you want to cancel "${meetingToDelete?.title}"? This will delete the meeting and cancel the Zoom session.`
-            : `Are you sure you want to permanently delete "${meetingToDelete?.title}"? This action cannot be undone.`
-        }
-      />
+      {canManageMeetings() && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteModal}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setMeetingToDelete(null);
+          }}
+          onConfirm={() =>
+            meetingToDelete && handleMeetingDelete(meetingToDelete.id)
+          }
+          title={
+            meetingToDelete?.status === "scheduled" ||
+            meetingToDelete?.status === "in-progress"
+              ? "Cancel Meeting"
+              : "Delete Meeting"
+          }
+          message={
+            meetingToDelete?.status === "scheduled" ||
+            meetingToDelete?.status === "in-progress"
+              ? `Are you sure you want to cancel "${meetingToDelete?.title}"? This will delete the meeting and cancel the Zoom session.`
+              : `Are you sure you want to permanently delete "${meetingToDelete?.title}"? This action cannot be undone.`
+          }
+        />
+      )}
 
       {/* Delete All Meetings Modal */}
-      <DeleteConfirmationModal
-        isOpen={showDeleteAllModal}
-        onClose={() => setShowDeleteAllModal(false)}
-        onConfirm={handleDeleteAllMeetings}
-        title="Delete All Meetings"
-        message={`Are you sure you want to delete all ${meetings.length} meetings? This action cannot be undone and will cancel all associated Zoom sessions.`}
-      />
+      {canManageMeetings() && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteAllModal}
+          onClose={() => setShowDeleteAllModal(false)}
+          onConfirm={handleDeleteAllMeetings}
+          title="Delete All Meetings"
+          message={`Are you sure you want to delete all ${meetings.length} meetings? This action cannot be undone and will cancel all associated Zoom sessions.`}
+        />
+      )}
     </div>
   );
 };

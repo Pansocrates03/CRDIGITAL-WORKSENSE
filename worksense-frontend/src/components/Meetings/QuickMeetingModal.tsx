@@ -79,9 +79,14 @@ const QuickMeetingModal: FC<QuickMeetingModalProps> = ({
       );
       const meeting = response.data.meeting;
 
+      // Update the meeting status to "in-progress" immediately for quick meetings
+      await apiClient.patch(`/meetings/${meeting.id}/status`, {
+        status: "in-progress",
+      });
+
       onMeetingCreated();
       onClose();
-      toast.success("Quick meeting created!");
+      toast.success("Quick meeting created and started!");
 
       // Automatically open the meeting
       if (meeting.zoomJoinUrl) {
