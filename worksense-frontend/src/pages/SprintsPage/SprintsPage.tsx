@@ -6,7 +6,6 @@ import { useParams } from "react-router-dom";
 import { useSprints, useCreateSprint, useDeleteSprint, useUpdateSprint } from "@/hooks/useSprintData";
 import { useAuth } from "@/hooks/useAuth";
 import { useMembers } from "@/hooks/useMembers";
-import { useSprintTasks } from "@/hooks/useSprintTasks";
 
 /* Types */
 import { Sprint } from "@/types/SprintType";
@@ -17,6 +16,7 @@ import Modal from "@/components/Modal/Modal";
 import DeleteConfirmationModal from "@/components/ui/deleteConfirmationModal/deleteConfirmationModal";
 import { toast } from "sonner";
 import SprintProgress from './components/SprintProgress';
+import FrumenItemsCount from './components/FrumenItemsCount';
 
 /* Icons */
 import { PlusIcon, Pencil, Trash2 } from "lucide-react";
@@ -323,6 +323,10 @@ const SprintsPage: React.FC = () => {
                                                     sprintId={sprint.id} 
                                                 />
                                             </div>
+                                            <FrumenItemsCount 
+                                                projectId={projectId ?? ""} 
+                                                sprintId={sprint.id} 
+                                            />
                                         </div>
                                         {canManageSprints && (
                                             <div className="sprint-details__actions">

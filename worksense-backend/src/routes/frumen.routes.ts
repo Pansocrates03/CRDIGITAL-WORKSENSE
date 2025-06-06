@@ -6,6 +6,6 @@ import { getFrumen } from "../controllers/frumen.controller.js";
 
 const router = express.Router();
 
-router.get("/projects/:projectId/sprints/:sprintId", memberAuth, getFrumen);
+router.get("/projects/:projectId/sprints/:sprintId", getFrumen);
 
 export default router;
