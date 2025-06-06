@@ -7,6 +7,7 @@ import { MoreVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import StatusBadge from '@/components/BacklogTable/StatusBadge';
 
+
 interface CompletedTask {
   id: string;
   type: string;
@@ -14,6 +15,20 @@ interface CompletedTask {
   status: string;
   description?: string;
   priority?: string;
+}
+
+interface UpdateItemResponse {
+  id: string;
+  status: string;
+  toast?: {
+    type: string;
+    points: number;
+    newBadges?: any[];
+    totalPoints?: number;
+    level?: number;
+    assigneeId?: string | number;
+  };
+  [key: string]: any;
 }
 
 interface CompletedItemsListProps {
@@ -107,14 +122,31 @@ const CompletedItemsList: React.FC<CompletedItemsListProps> = ({ completedTasks,
         projectId={projectId}
         isOpen={!!editItem}
         onClose={() => setEditItem(null)}
-        onItemUpdated={() => {
+        onItemUpdated={(response?: UpdateItemResponse) => {
+          console.log("UpdateItemModal response:", response);
           setEditItem(null);
           console.log("CompletedItemsList: Invalidating both assigned and completed queries after update");
           queryClient.invalidateQueries({ queryKey: ['assignedItems'] });
           queryClient.invalidateQueries({ queryKey: ['completedTasks'] });
-          toast.success('Item updated successfully!');
+          queryClient.invalidateQueries({ queryKey: ['personalGamification'] });
+          
+          // Check if we have toast data from the response
+          if (response?.toast) {
+            console.log("Showing gamification toast with data:", response.toast);
+            showGamificationToast({
+              type: "success",
+              points: response.toast.points,
+              newBadges: response.toast.newBadges || [],
+              totalPoints: response.toast.totalPoints || 0,
+              level: response.toast.level || 1
+            });
+          } else {
+            console.log("No toast data in response, showing default success toast");
+            toast.success('Item updated successfully!');
+          }
         }}
         onError={(msg) => {
+          console.error("UpdateItemModal error:", msg);
           toast.error(msg || 'Failed to update item.');
         }}
         item={editItem as any}
