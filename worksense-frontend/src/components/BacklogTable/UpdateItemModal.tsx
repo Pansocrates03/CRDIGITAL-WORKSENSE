@@ -8,7 +8,7 @@ interface UpdateItemModalProps {
   projectId: string;
   isOpen: boolean;
   onClose: () => void;
-  onItemUpdated: () => void;
+  onItemUpdated: (response?: any) => void;
   onError?: (message: string) => void;
   item: BacklogItemType | null;
   storyPointScale?: "fibonacci" | "linear" | "tshirt";
@@ -151,12 +151,14 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
         parentId: item.parentId || formData.parentId || undefined,
       },
       {
-        onSuccess: async () => {
+        onSuccess: async (response) => {
+          console.log("Update mutation success response:", response);
           await updateSprintIfNeeded();
-          onItemUpdated();
+          onItemUpdated(response);
           onClose();
         },
         onError: (err: any) => {
+          console.error("Update mutation error:", err);
           const msg = err.response?.data?.message || 'Failed to update item';
           setError(msg);
           onError?.(msg);
