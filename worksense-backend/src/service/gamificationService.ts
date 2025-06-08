@@ -235,6 +235,32 @@ export const deductPoints = async (params: AwardPointsParams) => {
     storyPoints: params.storyPoints,
   });
 
+  // Get current points from Firestore
+  const leaderboardSnap = await db
+    .collection("projects")
+    .doc(params.projectId)
+    .collection("gamification")
+    .doc("leaderboard")
+    .get();
+
+  const leaderboardData = leaderboardSnap.data() || {};
+  const currentPoints = leaderboardData[params.userId]?.points || 0;
+
+  // If user has 0 points, return a special response indicating no deduction
+  if (currentPoints === 0) {
+    return {
+      success: true,
+      pointsAwarded: 0,
+      totalPoints: 0,
+      globalPoints: 0,
+      projectPoints: 0,
+      level: 1,
+      badges: [],
+      newBadges: [],
+      skipDeduction: true
+    };
+  }
+
   // Call awardPoints with negative points
   return awardPoints({
     ...params,

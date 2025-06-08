@@ -14,6 +14,7 @@ interface ToastData {
   }>;
   totalPoints: number;
   level: number;
+  skipDeduction?: boolean;
 }
 
 export const useGamificationToasts = () => {
@@ -27,6 +28,7 @@ export const useGamificationToasts = () => {
         newBadges: toastData?.newBadges?.length,
         totalPoints: toastData?.totalPoints,
         level: toastData?.level,
+        skipDeduction: toastData?.skipDeduction,
       });
 
       if (!toastData || !user) {
@@ -37,7 +39,13 @@ export const useGamificationToasts = () => {
         return;
       }
 
-      const { points, newBadges, totalPoints, level } = toastData;
+      const { points, newBadges, totalPoints, level, skipDeduction } = toastData;
+
+      // If skipDeduction is true, show a simple success toast
+      if (skipDeduction) {
+        toast.success('Item updated successfully!');
+        return;
+      }
 
       // Show points earned toast
       if (points > 0) {
