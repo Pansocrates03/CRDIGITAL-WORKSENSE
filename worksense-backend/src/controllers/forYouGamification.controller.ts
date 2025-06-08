@@ -42,6 +42,7 @@ export const getPersonalGamification = async (req: Request, res: Response) => {
       name: entry.name,
       personalPhrase: entry.personalPhrase || null,
       profilePicture: entry.profilePicture || null,
+      projectId: entry.projectId,
       badges: entry.badges || [],
     });
   } catch (error) {

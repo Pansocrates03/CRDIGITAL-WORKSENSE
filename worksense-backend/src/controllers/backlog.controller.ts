@@ -410,7 +410,14 @@ export const updateBacklogItem = async (
             id: updatedDoc.id,
             ...updatedDoc.data(),
             // Toast notification data
-            toast: {
+            toast: gamificationResult.skipDeduction ? {
+              type: "success",
+              points: 0,
+              totalPoints: 0,
+              level: 1,
+              assigneeId: assigneeId,
+              skipDeduction: true
+            } : {
               type: "success",
               points: -pointsToDeduct,
               totalPoints: gamificationResult.totalPoints,

@@ -13,4 +13,5 @@ export interface LeaderboardEntry {
   lastUpdate?: string | null;
   personalPhrase?: string | null;
   profilePicture?: string | null;
+  projectId?: string;
 } 
