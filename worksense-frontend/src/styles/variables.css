@@ -5,10 +5,23 @@
   --color-charcoal: #253c4f;
   --color-charcoal-dark: #3b465b;
   --color-gray: #d0d1d2;
-  --color-light-gray: #f8f8f8;
+  --color-light-gray: #f3f4f6;
   --color-pink-light: #f8eaf0;
   --color-accent: #176aac; /* New accent color */
   --color-accent-light: #1e7fc0; /* Lighter version for hover states */
+
+  /* New Priority Colors */
+  --color-red-light: #fef2f2; /* Very light red for background */
+  --color-red: #ef4444; /* Standard red for border */
+  --color-red-dark: #b91c1c; /* Darker red for text */
+  --color-red-light-tint: #fbe6e6; /* Slightly more visible tint for high priority background */
+
+  --color-yellow-light: #fffbeb; /* Very light yellow for background */
+  --color-yellow: #f59e0b; /* Standard yellow for border */
+  --color-yellow-dark: #b45309; /* Darker yellow for text */
+
+  /* New Status Colors */
+  --color-blue-review: #4b8cbf;
 
   /* Definición de la fuente principal - Inter es más moderna */
   --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,

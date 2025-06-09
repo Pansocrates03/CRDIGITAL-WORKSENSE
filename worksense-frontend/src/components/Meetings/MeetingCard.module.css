@@ -62,19 +62,22 @@
 
 /* Status colors matching TaskCard.css exactly */
 .statusScheduled {
-  background-color: #fef3c7;
-  color: #92400e;
+  background-color: var(--color-pink-light);
+  color: var(--color-purple);
+  border-color: var(--color-purple-dark);
 }
 
 .statusInProgress {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: var(--color-accent);
+  color: var(--color-white);
+  border-color: var(--color-accent-light);
   animation: pulse 2s infinite;
 }
 
 .statusCompleted {
-  background-color: #d1fae5;
-  color: #065f46;
+  background-color: var(--color-purple);
+  color: var(--color-white);
+  border-color: var(--color-purple-dark);
 }
 
 .statusCancelled {
