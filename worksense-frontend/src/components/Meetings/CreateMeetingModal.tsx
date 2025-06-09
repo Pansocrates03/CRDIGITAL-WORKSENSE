@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useMembers } from "@/hooks/useMembers";
 import { Button } from "@/components/ui/button";
+import LoadingSpinner from "@/components/Loading/LoadingSpinner";
 import apiClient from "@/api/apiClient";
 import styles from "./CreateMeetingModal.module.css";
 import { toast } from "sonner";
@@ -88,6 +89,7 @@ const CreateMeetingModal: FC<CreateMeetingModalProps> = ({
     },
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreatingRecurring, setIsCreatingRecurring] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Use the existing useMembers hook
@@ -131,18 +133,32 @@ const CreateMeetingModal: FC<CreateMeetingModalProps> = ({
         // Set default data for creation
         const now = new Date();
 
-        // Set default end date to 1 month from now
-        const defaultEndDate = new Date(now);
+        // Calculate suggested meeting time (1 hour from now)
+        const suggestedMeetingTime = new Date(now.getTime() + 60 * 60 * 1000); // Add 1 hour
+
+        // Determine if we should use the current date or next day
+        let meetingDate = new Date(now);
+        let meetingTime = suggestedMeetingTime;
+
+        // If adding 1 hour changes the day, use the next day and suggest 9:00 AM
+        if (suggestedMeetingTime.getDate() !== now.getDate()) {
+          meetingDate = new Date(suggestedMeetingTime);
+          meetingTime = new Date(meetingDate);
+          meetingTime.setHours(9, 0, 0, 0); // Set to 9:00 AM
+        }
+
+        // Format meeting time to HH:MM
+        const suggestedTimeStr = meetingTime.toTimeString().slice(0, 5);
+
+        // Format meeting date to YYYY-MM-DD in local timezone
+        const year = meetingDate.getFullYear();
+        const month = String(meetingDate.getMonth() + 1).padStart(2, "0");
+        const day = String(meetingDate.getDate()).padStart(2, "0");
+        const meetingDateStr = `${year}-${month}-${day}`;
+
+        // Set default end date to 1 month from meeting date
+        const defaultEndDate = new Date(meetingDate);
         defaultEndDate.setMonth(defaultEndDate.getMonth() + 1);
-
-        // Format current time to HH:MM
-        const currentTimeStr = now.toTimeString().slice(0, 5);
-
-        // Format current date to YYYY-MM-DD in local timezone
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const day = String(now.getDate()).padStart(2, "0");
-        const currentDateStr = `${year}-${month}-${day}`;
 
         // Format end date to YYYY-MM-DD in local timezone
         const endYear = defaultEndDate.getFullYear();
@@ -153,8 +169,8 @@ const CreateMeetingModal: FC<CreateMeetingModalProps> = ({
         setFormData({
           title: "",
           description: "",
-          scheduledDate: currentDateStr,
-          scheduledTime: currentTimeStr,
+          scheduledDate: meetingDateStr,
+          scheduledTime: suggestedTimeStr,
           attendees: [],
           isRecurring: false,
           recurrencePattern: {
@@ -165,6 +181,9 @@ const CreateMeetingModal: FC<CreateMeetingModalProps> = ({
         });
       }
       setErrors({});
+    } else {
+      // Reset loading states when modal is closed
+      setIsCreatingRecurring(false);
     }
   }, [isOpen, editMeeting, mode]);
 
@@ -244,6 +263,11 @@ const CreateMeetingModal: FC<CreateMeetingModalProps> = ({
 
     setIsSubmitting(true);
 
+    // Set loading state for recurring meetings
+    if (mode === "create" && formData.isRecurring) {
+      setIsCreatingRecurring(true);
+    }
+
     try {
       const scheduledDateTime = new Date(
         `${formData.scheduledDate}T${formData.scheduledTime}`
@@ -294,6 +318,7 @@ const CreateMeetingModal: FC<CreateMeetingModalProps> = ({
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
+      setIsCreatingRecurring(false);
     }
   };
 
@@ -390,6 +415,50 @@ const CreateMeetingModal: FC<CreateMeetingModalProps> = ({
 
   if (!isOpen) return null;
 
+  // Show loading spinner instead of modal when creating recurring meetings
+  if (isCreatingRecurring) {
+    return (
+      <div className={styles.overlay}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "white",
+            borderRadius: "var(--radius, 0.625rem)",
+            padding: "3rem",
+            boxShadow: "var(--shadow-lg, 0 10px 15px rgba(43, 41, 46, 0.1))",
+            gap: "1.5rem",
+          }}
+        >
+          <LoadingSpinner size="large" />
+          <div
+            style={{
+              textAlign: "center",
+              color: "var(--neutral-700, #4d4b51)",
+              fontFamily: "var(--font-main)",
+            }}
+          >
+            <h3
+              style={{
+                margin: "0 0 0.5rem 0",
+                fontSize: "1.25rem",
+                fontWeight: "600",
+                color: "var(--color-purple, #ac1754)",
+              }}
+            >
+              Creating Recurring Meetings
+            </h3>
+            <p style={{ margin: 0, fontSize: "0.875rem" }}>
+              Please wait while we schedule your recurring meetings...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
@@ -404,7 +473,12 @@ const CreateMeetingModal: FC<CreateMeetingModalProps> = ({
               "Schedule New Meeting"
             )}
           </h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
             <X size={24} />
           </Button>
         </div>

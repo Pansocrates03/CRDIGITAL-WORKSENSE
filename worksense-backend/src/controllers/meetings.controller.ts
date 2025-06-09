@@ -72,6 +72,10 @@ const generateRecurringDates = (
   const end =
     endDate || new Date(startDate.getTime() + 90 * 24 * 60 * 60 * 1000); // Default 3 months
 
+  // Always include the initial scheduled date, regardless of recurrence pattern
+  const initialMeeting = new Date(startDate);
+  dates.push(initialMeeting);
+
   // Start from the beginning of the week containing startDate
   const startOfWeek = new Date(current);
   startOfWeek.setDate(current.getDate() - current.getDay());
@@ -82,8 +86,25 @@ const generateRecurringDates = (
       meetingDate.setDate(startOfWeek.getDate() + dayOfWeek);
       meetingDate.setHours(startDate.getHours(), startDate.getMinutes(), 0, 0);
 
-      // Only include dates that are after the start date and before end date
-      if (meetingDate >= startDate && meetingDate <= end) {
+      // Create date-only comparison (no time) for end date check
+      const meetingDateOnly = new Date(
+        meetingDate.getFullYear(),
+        meetingDate.getMonth(),
+        meetingDate.getDate()
+      );
+      const endDateOnly = new Date(
+        end.getFullYear(),
+        end.getMonth(),
+        end.getDate()
+      );
+
+      // Only include dates that are after the start date and on or before end date
+      // Also check that we don't duplicate the initial meeting
+      if (
+        meetingDate >= startDate &&
+        meetingDateOnly <= endDateOnly &&
+        meetingDate.getTime() !== startDate.getTime()
+      ) {
         dates.push(new Date(meetingDate));
       }
     }
@@ -507,10 +528,14 @@ export const getProjectMeetings = async (
           // Auto-complete past meetings
           meeting.status = "completed";
           updatePromises.push(
-            db.collection("meetings").doc(meeting.id!).update({
-              status: "completed",
-              updatedAt: Timestamp.now(),
-            }).then(() => void 0)
+            db
+              .collection("meetings")
+              .doc(meeting.id!)
+              .update({
+                status: "completed",
+                updatedAt: Timestamp.now(),
+              })
+              .then(() => void 0)
           );
         }
       }
@@ -525,7 +550,7 @@ export const getProjectMeetings = async (
     meetings.sort((a, b) => {
       const dateA = a.scheduledDate.toDate();
       const dateB = b.scheduledDate.toDate();
-      return dateB.getTime() - dateA.getTime(); // Descending order
+      return dateA.getTime() - dateB.getTime(); // Ascending order - closest meetings first
     });
 
     res.json(meetings);

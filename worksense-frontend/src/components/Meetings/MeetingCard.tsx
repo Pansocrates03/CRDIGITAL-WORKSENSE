@@ -241,13 +241,6 @@ const MeetingCard: FC<MeetingCardProps> = ({
                 !isPastEndTime && (
                   <>
                     <button
-                      onClick={handleEditClick}
-                      className={styles.actionItem}
-                    >
-                      <Edit2 size={14} />
-                      Edit Meeting
-                    </button>
-                    <button
                       onClick={handleStartMeeting}
                       className={styles.actionItem}
                     >

@@ -699,12 +699,13 @@ export const handleGeminiPrompt = async (
     [...backlogItems, ...storiesFromEpics].forEach((item: any) => {
       if (item.assigneeId) {
         // Convert to number if it's a string, ensure it's a valid number
-        const assigneeIdNum = typeof item.assigneeId === "string" 
-          ? parseInt(item.assigneeId, 10) 
-          : typeof item.assigneeId === "number" 
-          ? item.assigneeId 
-          : null;
-        
+        const assigneeIdNum =
+          typeof item.assigneeId === "string"
+            ? parseInt(item.assigneeId, 10)
+            : typeof item.assigneeId === "number"
+            ? item.assigneeId
+            : null;
+
         if (assigneeIdNum && !isNaN(assigneeIdNum)) {
           allAssigneeIds.add(assigneeIdNum);
         }
@@ -824,8 +825,8 @@ ${
             epic.assigneeId
               ? ` [Assigned to: ${
                   assigneeNames.get(
-                    typeof epic.assigneeId === "string" 
-                      ? parseInt(epic.assigneeId, 10) 
+                    typeof epic.assigneeId === "string"
+                      ? parseInt(epic.assigneeId, 10)
                       : epic.assigneeId
                   ) ||
                   enrichedMembers.find((m) => m.userId === epic.assigneeId)
@@ -845,8 +846,8 @@ ${
                 story.assigneeId
                   ? ` [Assigned to: ${
                       assigneeNames.get(
-                        typeof story.assigneeId === "string" 
-                          ? parseInt(story.assigneeId, 10) 
+                        typeof story.assigneeId === "string"
+                          ? parseInt(story.assigneeId, 10)
                           : story.assigneeId
                       ) ||
                       enrichedMembers.find((m) => m.userId === story.assigneeId)
@@ -882,8 +883,8 @@ ${
               s.assigneeId
                 ? ` [Assigned to: ${
                     assigneeNames.get(
-                      typeof s.assigneeId === "string" 
-                        ? parseInt(s.assigneeId, 10) 
+                      typeof s.assigneeId === "string"
+                        ? parseInt(s.assigneeId, 10)
                         : s.assigneeId
                     ) ||
                     enrichedMembers.find((m) => m.userId === s.assigneeId)
@@ -910,8 +911,8 @@ ${
               b.assigneeId
                 ? ` [Assigned to: ${
                     assigneeNames.get(
-                      typeof b.assigneeId === "string" 
-                        ? parseInt(b.assigneeId, 10) 
+                      typeof b.assigneeId === "string"
+                        ? parseInt(b.assigneeId, 10)
                         : b.assigneeId
                     ) ||
                     enrichedMembers.find((m) => m.userId === b.assigneeId)
@@ -936,8 +937,8 @@ ${
               t.assigneeId
                 ? ` [Assigned to: ${
                     assigneeNames.get(
-                      typeof t.assigneeId === "string" 
-                        ? parseInt(t.assigneeId, 10) 
+                      typeof t.assigneeId === "string"
+                        ? parseInt(t.assigneeId, 10)
                         : t.assigneeId
                     ) ||
                     enrichedMembers.find((m) => m.userId === t.assigneeId)
@@ -951,12 +952,45 @@ ${
     : "No tech tasks found."
 }
 
-### Current Sprint
+### Knowledge Items (${knowledgeItems.length})
+${
+  knowledgeItems.length > 0
+    ? knowledgeItems
+        .slice(0, 15)
+        .map(
+          (k) =>
+            `- **${k.name}** [Type: ${k.type || "general"}, Status: ${
+              k.status || "todo"
+            }]${
+              k.assigneeId
+                ? ` [Assigned to: ${
+                    assigneeNames.get(
+                      typeof k.assigneeId === "string"
+                        ? parseInt(k.assigneeId, 10)
+                        : k.assigneeId
+                    ) ||
+                    enrichedMembers.find((m) => m.userId === k.assigneeId)
+                      ?.fullName ||
+                    `User ${k.assigneeId}`
+                  }]`
+                : " [Unassigned]"
+            }${k.description ? ` - ${k.description}` : ""}`
+        )
+        .join("\n")
+    : "No knowledge items found."
+}
+
+### Sprints Overview
+${
+  sprints.length > 0
+    ? `**Total Sprints**: ${sprints.length}
+
+**Active Sprint**:
 ${
   activeSprint
-    ? `**Active Sprint**: ${activeSprint.name}
-- **Goal**: ${activeSprint.goal || "No goal set"}
-- **Tasks**: ${activeSprintTasks.length} total (${
+    ? `- **${activeSprint.name}** 
+  - **Goal**: ${activeSprint.goal || "No goal set"}
+  - **Tasks**: ${activeSprintTasks.length} total (${
         activeSprintTasks.filter((t) => t.status === "todo").length
       } todo, ${
         activeSprintTasks.filter(
@@ -968,6 +1002,50 @@ ${
         activeSprintTasks.filter((t) => t.status === "done").length
       } done)`
     : "No active sprint"
+}
+
+**Planned Sprints** (${plannedSprints.length}):
+${
+  plannedSprints.length > 0
+    ? plannedSprints
+        .slice(0, 5)
+        .map(
+          (s) =>
+            `- **${s.name}**: ${s.goal || "No goal set"} (${
+              s.startDate
+                ? new Date(s.startDate.toDate()).toLocaleDateString()
+                : "No start date"
+            } - ${
+              s.endDate
+                ? new Date(s.endDate.toDate()).toLocaleDateString()
+                : "No end date"
+            })`
+        )
+        .join("\n")
+    : "No planned sprints"
+}
+
+**Completed Sprints** (${completedSprints.length}):
+${
+  completedSprints.length > 0
+    ? completedSprints
+        .slice(0, 3)
+        .map(
+          (s) =>
+            `- **${s.name}**: ${s.goal || "No goal set"} (${
+              s.startDate
+                ? new Date(s.startDate.toDate()).toLocaleDateString()
+                : "No start date"
+            } - ${
+              s.endDate
+                ? new Date(s.endDate.toDate()).toLocaleDateString()
+                : "No end date"
+            })`
+        )
+        .join("\n")
+    : "No completed sprints"
+}`
+    : "No sprints found."
 }
 
 ### Tasks Overview
@@ -1048,7 +1126,7 @@ ${userNickname ? `- Address the user as "${userNickname}" occasionally` : ""}`;
         },
       ],
       generationConfig: {
-        temperature: 0.1,
+        temperature: 0.2,
         topP: 0.8,
         topK: 40,
         maxOutputTokens: 1024,
