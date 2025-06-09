@@ -84,18 +84,21 @@ const ForYouGamificationDetails: React.FC<ForYouGamificationDetailsProps> = ({ g
             {gamification.badges.length === 0 ? (
               <span className="text-muted-foreground">No badges yet.</span>
             ) : (
-              gamification.badges.map((badge, idx) => {
-                const LucideIcon = iconMap[badge.icon] || Award;
-                return (
-                  <div key={idx} className="flex flex-col items-center">
-                    <span className="bg-[var(--accent-pink-light)] rounded-full p-2 mb-1">
-                      <LucideIcon className="w-7 h-7 text-[var(--accent-pink)]" />
-                    </span>
-                    <span className="text-xs font-medium">{badge.name}</span>
-                    <span className="text-[10px] text-muted-foreground">+{badge.points}</span>
-                  </div>
-                );
-              })
+              [...gamification.badges]
+                .sort((a, b) => b.points - a.points)
+                .slice(0, 3)
+                .map((badge, idx) => {
+                  const LucideIcon = iconMap[badge.icon] || Award;
+                  return (
+                    <div key={idx} className="flex flex-col items-center">
+                      <span className="bg-[var(--accent-pink-light)] rounded-full p-2 mb-1">
+                        <LucideIcon className="w-7 h-7 text-[var(--accent-pink)]" />
+                      </span>
+                      <span className="text-xs font-medium">{badge.name}</span>
+                      <span className="text-[10px] text-muted-foreground">+{badge.points}</span>
+                    </div>
+                  );
+                })
             )}
           </div>
         </div>

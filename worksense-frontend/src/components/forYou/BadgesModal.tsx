@@ -14,7 +14,6 @@ interface Badge {
   icon: string;
   name: string;
   points: number;
-  projectId: string;
 }
 
 interface BadgesModalProps {
@@ -73,9 +72,6 @@ const BadgesModal: React.FC<BadgesModalProps> = ({ badges }) => {
               </div>
               <div className="text-center space-y-2">
                 <h3 className="font-semibold text-lg">{selectedBadge.name}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {selectedBadge.projectId || "No id available"}
-                </p>
                 <p className="text-sm font-medium text-[var(--accent-pink)]">
                   +{selectedBadge.points} points
                 </p>
