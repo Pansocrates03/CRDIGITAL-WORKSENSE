@@ -356,14 +356,6 @@ const getProjectTasks = async (projectId: string, filters: TaskFilters) => {
         description: "Task management and tracking",
       },
       {
-        name: "Backlog",
-        description: "Product backlog management",
-      },
-      {
-        name: "AI Features",
-        description: "AI-powered features and insights",
-      },
-      {
         name: "Gamification",
         description: "User engagement and reward system",
       },
