@@ -8,68 +8,376 @@ const HOST = process.env.HOST || "localhost";
 const URL = process.env.URL || `http://${HOST}:${PORT}`;
 const API_BASE_PATH = "/api/v1"; // Your API base path
 
-// --- Simplified Swagger Definition ---
+// --- Swagger Definition ---
 export const swaggerOptions: Options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Worksense API (Simple)", // Indicate simplicity if helpful
+      title: "Worksense API Documentation",
       version: "1.0.0",
-      description:
-        "Basic API Documentation for the Worksense Project Management Platform\n\n" +
-        "**Note:** All API routes have the following prefixes:\n" +
-        "- New API routes: `/api/v1/...`\n" +
-        "- Legacy routes: `/...` (root path)\n\n" +
-        "Please use the new API routes when possible as legacy routes may be deprecated in future versions.",
+      description: `
+# Worksense API Documentation
+
+## Overview
+Worksense is a comprehensive project management platform that combines traditional project management tools with AI-powered features and gamification elements.
+
+## Environment Setup
+
+### Prerequisites
+- Node.js (v16 or higher)
+- TypeScript
+- Microsoft SQL Server
+- Firebase Account
+- Azure Cognitive Services (for speech features)
+
+### Installation
+1. Clone the repository
+2. Install dependencies:
+   \`\`\`bash
+   npm install
+   \`\`\`
+3. Set up environment variables:
+   \`\`\`bash
+   cp .env.example .env
+   \`\`\`
+4. Configure the following environment variables:
+   \`\`\`env
+   # Server Configuration
+   PORT=5050
+   HOST=localhost
+   
+   # Database Configuration
+   DB_HOST=your_db_host
+   DB_USER=your_db_user
+   DB_PASSWORD=your_db_password
+   DB_NAME=your_db_name
+   
+   # Firebase Configuration
+   FIREBASE_PROJECT_ID=your_project_id
+   FIREBASE_PRIVATE_KEY=your_private_key
+   FIREBASE_CLIENT_EMAIL=your_client_email
+   
+   # JWT Configuration
+   JWT_SECRET=your_jwt_secret
+   JWT_EXPIRATION=24h
+   
+   # Azure Speech Services
+   AZURE_SPEECH_KEY=your_speech_key
+   AZURE_SPEECH_REGION=your_region
+   \`\`\`
+
+### Development
+Start the development server:
+\`\`\`bash
+npm run dev
+\`\`\`
+
+## Technical Architecture
+
+### Database Schema
+
+#### Users Table
+\`\`\`sql
+CREATE TABLE users (
+  id VARCHAR(36) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(50) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+\`\`\`
+
+#### Projects Table
+\`\`\`sql
+CREATE TABLE projects (
+  id VARCHAR(36) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  status VARCHAR(50) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+\`\`\`
+
+#### Tasks Table
+\`\`\`sql
+CREATE TABLE tasks (
+  id VARCHAR(36) PRIMARY KEY,
+  project_id VARCHAR(36) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  status VARCHAR(50) NOT NULL,
+  priority VARCHAR(50) NOT NULL,
+  assignee_id VARCHAR(36),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (project_id) REFERENCES projects(id),
+  FOREIGN KEY (assignee_id) REFERENCES users(id)
+);
+\`\`\`
+
+### Module Configuration
+
+#### Authentication Module
+- Uses Firebase Authentication for user management
+- JWT tokens for session management
+- Role-based access control
+
+#### Project Management Module
+- Hierarchical project structure
+- Team member management
+- Role-based permissions
+
+#### AI Integration Module
+- Azure Cognitive Services for speech features
+- Gemini AI for content generation
+- Natural language processing capabilities
+
+#### Gamification Module
+- Point system
+- Achievement tracking
+- Leaderboard functionality
+
+## Code Examples
+
+### Authentication Flow
+\`\`\`typescript
+// Login example
+const login = async (email: string, password: string) => {
+  const response = await axios.post('/api/v1/auth/login', {
+    email,
+    password
+  });
+  return response.data;
+};
+
+// Token verification middleware
+const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
+  const token = req.headers['auth-token'];
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+};
+\`\`\`
+
+### Project Management
+\`\`\`typescript
+// Create project
+const createProject = async (projectData: ProjectCreate) => {
+  const response = await axios.post('/api/v1/projects', projectData, {
+    headers: { 'auth-token': token }
+  });
+  return response.data;
+};
+
+// Get project tasks
+const getProjectTasks = async (projectId: string, filters: TaskFilters) => {
+  const response = await axios.get(\`/api/v1/projects/\${projectId}/tasks\`, {
+    params: filters,
+    headers: { 'auth-token': token }
+  });
+  return response.data;
+};
+\`\`\`
+
+## Troubleshooting Guide
+
+### Common Issues
+
+#### Authentication Issues
+1. **Invalid Token**
+   - Check if token is expired
+   - Verify token format
+   - Ensure correct secret key
+
+2. **Firebase Connection**
+   - Verify Firebase credentials
+   - Check network connectivity
+   - Validate project configuration
+
+#### Database Connection
+1. **Connection Timeout**
+   - Verify database credentials
+   - Check network connectivity
+   - Validate connection string
+
+2. **Query Performance**
+   - Check indexes
+   - Optimize query structure
+   - Monitor connection pool
+
+#### AI Services
+1. **Speech Recognition**
+   - Verify Azure credentials
+   - Check audio format
+   - Validate region settings
+
+2. **Content Generation**
+   - Check API limits
+   - Verify prompt format
+   - Monitor response times
+
+## API Endpoint Details
+
+### Authentication Controller
+- POST /api/v1/auth/login
+- POST /api/v1/auth/register
+- GET /api/v1/auth/me
+- POST /api/v1/auth/refresh-token
+
+### Project Controller
+- GET /api/v1/projects
+- POST /api/v1/projects
+- GET /api/v1/projects/:id
+- PUT /api/v1/projects/:id
+- DELETE /api/v1/projects/:id
+
+### Task Controller
+- GET /api/v1/projects/:projectId/tasks
+- POST /api/v1/projects/:projectId/tasks
+- GET /api/v1/tasks/:id
+- PUT /api/v1/tasks/:id
+- DELETE /api/v1/tasks/:id
+
+### Sprint Controller
+- GET /api/v1/projects/:projectId/sprints
+- POST /api/v1/projects/:projectId/sprints
+- GET /api/v1/sprints/:id
+- PUT /api/v1/sprints/:id
+- DELETE /api/v1/sprints/:id
+
+### AI Controller
+- POST /api/v1/ai/generate-epic
+- POST /api/v1/ai/generate-story
+- POST /api/v1/ai/analyze-sentiment
+
+### Gamification Controller
+- GET /api/v1/gamification/leaderboard
+- GET /api/v1/gamification/achievements
+- POST /api/v1/gamification/rewards
+
+## Performance Considerations
+
+### Caching Strategy
+- Implement Redis for session storage
+- Cache frequently accessed data
+- Use ETags for resource validation
+
+### Database Optimization
+- Use appropriate indexes
+- Implement connection pooling
+- Optimize query patterns
+
+### API Rate Limiting
+- Implement rate limiting per user
+- Set appropriate limits for AI endpoints
+- Monitor usage patterns
+
+## Security Best Practices
+
+### Authentication
+- Use secure password hashing
+- Implement token rotation
+- Enable 2FA where possible
+
+### Data Protection
+- Encrypt sensitive data
+- Implement input validation
+- Use HTTPS only
+
+### API Security
+- Implement CORS policies
+- Use rate limiting
+- Validate all inputs
+
+## Monitoring and Logging
+
+### Application Logs
+- Use Morgan for HTTP logging
+- Implement error tracking
+- Monitor performance metrics
+
+### Database Monitoring
+- Track query performance
+- Monitor connection pool
+- Set up alerts for issues
+
+### API Monitoring
+- Track response times
+- Monitor error rates
+- Set up uptime monitoring
+      `,
     },
     servers: [
       {
         // Essential: Where Swagger UI should send requests
         url: `${URL}${API_BASE_PATH}`,
-        description: "Development Server (New API)",
+        description: "Development Server",
       },
       {
         // Legacy server
         url: URL,
-        description: "Legacy Server (Root Path)",
+        description: "Legacy Server (Deprecated)",
       },
     ],
     // --- Tags for Grouping (Keep these refined tags) ---
     tags: [
       {
         name: "Authentication",
-        description:
-          "User authentication operations (Login, Register, Get Self)",
+        description: "User authentication and authorization operations",
       },
       {
         name: "Platform Admin",
-        description:
-          "Platform-level administration (Managing roles/permissions)",
+        description: "Platform-level administration and configuration",
       },
       {
         name: "Projects",
-        description:
-          "Project management operations including creation, updates, and member management",
+        description: "Project management and configuration",
       },
       {
         name: "Project Members",
-        description: "Operations for managing project members and their roles",
+        description: "Project team member management",
       },
       {
         name: "Sprints",
-        description: "Sprint management operations within projects",
+        description: "Sprint planning and management",
       },
       {
         name: "Tasks",
-        description: "Task management operations within projects",
+        description: "Task management and tracking",
       },
       {
         name: "Backlog",
-        description: "Backlog management operations within projects",
+        description: "Product backlog management",
       },
       {
-        name: "AI Module",
-        description: "AI-powered content generation features",
+        name: "AI Features",
+        description: "AI-powered features and insights",
+      },
+      {
+        name: "Gamification",
+        description: "User engagement and reward system",
+      },
+      {
+        name: "Meetings",
+        description: "Meeting management and scheduling",
+      },
+      {
+        name: "ForYou",
+        description: "Personalized recommendations and insights",
+      },
+      {
+        name: "Speech",
+        description: "Speech-to-text and voice features",
       },
     ],
     components: {
@@ -79,6 +387,7 @@ export const swaggerOptions: Options = {
           type: "apiKey",
           in: "header",
           name: "auth-token", // *** IMPORTANT: Matches the header your verifyToken expects ***
+          description: "JWT token for authentication",
         },
       },
       schemas: {
@@ -204,70 +513,32 @@ export const swaggerOptions: Options = {
             id: {
               type: "string",
               description: "Unique identifier for the project",
-              example: "proj_abc123",
+              example: "proj123",
             },
             name: {
               type: "string",
               description: "Name of the project",
-              example: "changedName Platform Enhancements",
+              example: "Worksense Platform",
             },
             description: {
               type: "string",
-              description: "Description of the project",
-              example: "There is none because i changed it",
+              description: "Project description",
+              example: "A comprehensive project management platform",
             },
-            ownerId: {
-              type: "integer",
-              description: "ID of the project owner",
-              example: 16,
-            },
-            context: {
-              type: "object",
-              properties: {
-                techStack: {
-                  type: "array",
-                  items: {
-                    type: "string",
-                  },
-                  description: "List of technologies used in the project",
-                  example: ["React"],
-                },
-                objectives: {
-                  type: "string",
-                  description: "Project objectives",
-                  example: "",
-                },
-              },
+            status: {
+              type: "string",
+              enum: ["active", "completed", "archived"],
+              description: "Current status of the project",
             },
             createdAt: {
-              type: "object",
-              properties: {
-                _seconds: {
-                  type: "integer",
-                  description: "Unix timestamp in seconds",
-                  example: 1745715508,
-                },
-                _nanoseconds: {
-                  type: "integer",
-                  description: "Nanoseconds part of the timestamp",
-                  example: 392000000,
-                },
-              },
+              type: "string",
+              format: "date-time",
+              description: "Project creation timestamp",
             },
             updatedAt: {
-              type: "object",
-              properties: {
-                _seconds: {
-                  type: "integer",
-                  description: "Unix timestamp in seconds",
-                  example: 1745788678,
-                },
-                _nanoseconds: {
-                  type: "integer",
-                  description: "Nanoseconds part of the timestamp",
-                  example: 523000000,
-                },
-              },
+              type: "string",
+              format: "date-time",
+              description: "Last update timestamp",
             },
           },
         },
@@ -627,15 +898,19 @@ export const swaggerOptions: Options = {
         Error: {
           type: "object",
           properties: {
-            message: {
-              type: "string",
-              description: "Error message",
-              example: "User not found",
-            },
             code: {
               type: "string",
               description: "Error code",
-              example: "NOT_FOUND",
+              example: "AUTH_ERROR",
+            },
+            message: {
+              type: "string",
+              description: "Error message",
+              example: "Invalid authentication token",
+            },
+            details: {
+              type: "object",
+              description: "Additional error details",
             },
           },
         },
@@ -1119,6 +1394,72 @@ export const swaggerOptions: Options = {
               nullable: true,
               description: "Items linked to this knowledge item",
               example: null,
+            },
+          },
+        },
+
+        // Sprint schemas
+        Sprint: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              description: "Unique identifier for the sprint",
+              example: "sprint123",
+            },
+            name: {
+              type: "string",
+              description: "Name of the sprint",
+              example: "Sprint 1",
+            },
+            startDate: {
+              type: "string",
+              format: "date",
+              description: "Sprint start date",
+            },
+            endDate: {
+              type: "string",
+              format: "date",
+              description: "Sprint end date",
+            },
+            status: {
+              type: "string",
+              enum: ["planned", "active", "completed"],
+              description: "Current status of the sprint",
+            },
+          },
+        },
+
+        // Task schemas
+        Task: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string",
+              description: "Unique identifier for the task",
+              example: "task123",
+            },
+            title: {
+              type: "string",
+              description: "Task title",
+              example: "Implement user authentication",
+            },
+            description: {
+              type: "string",
+              description: "Task description",
+            },
+            status: {
+              type: "string",
+              enum: ["todo", "in_progress", "done"],
+              description: "Current status of the task",
+            },
+            priority: {
+              type: "string",
+              enum: ["low", "medium", "high"],
+              description: "Task priority level",
+            },
+            assignee: {
+              $ref: "#/components/schemas/User",
             },
           },
         },
