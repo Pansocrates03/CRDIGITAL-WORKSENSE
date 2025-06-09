@@ -17,7 +17,7 @@ const router = Router({ mergeParams: true });
  *   post:
  *     tags:
  *       - AI Module
- *     summary: Genera sugerencias de épicas basadas en la descripción del proyecto
+ *     summary: Generate epic suggestions based on project description
  *     security:
  *       - authToken: []
  *     parameters:
@@ -26,10 +26,10 @@ const router = Router({ mergeParams: true });
  *         required: true
  *         schema:
  *           type: string
- *         description: ID del proyecto
+ *         description: Project ID
  *     responses:
  *       200:
- *         description: Lista de épicas sugeridas
+ *         description: List of suggested epics
  *         content:
  *           application/json:
  *             schema:
@@ -42,20 +42,20 @@ const router = Router({ mergeParams: true });
  *                     properties:
  *                       name:
  *                         type: string
- *                         description: Nombre de la épica
+ *                         description: Epic name
  *                       description:
  *                         type: string
- *                         description: Descripción detallada de la épica
+ *                         description: Detailed description of the epic
  *                       priority:
  *                         type: string
  *                         enum: [lowest, low, medium, high, highest]
- *                         description: Prioridad de la épica
+ *                         description: Epic priority
  *       401:
- *         description: No autorizado - Token inválido o expirado
+ *         description: Unauthorized - Invalid or expired token
  *       404:
- *         description: Proyecto no encontrado
+ *         description: Project not found
  *       502:
- *         description: Error al comunicarse con el servicio de IA
+ *         description: Error communicating with AI service
  */
 router.post(
   "/generate-epics",
@@ -70,7 +70,7 @@ router.post(
  *   post:
  *     tags:
  *       - AI Module
- *     summary: Confirma y persiste las épicas sugeridas en el proyecto
+ *     summary: Confirm and persist suggested epics in the project
  *     security:
  *       - authToken: []
  *     parameters:
@@ -79,7 +79,7 @@ router.post(
  *         required: true
  *         schema:
  *           type: string
- *         description: ID del proyecto
+ *         description: Project ID
  *     requestBody:
  *       required: true
  *       content:
@@ -99,18 +99,18 @@ router.post(
  *                   properties:
  *                     name:
  *                       type: string
- *                       description: Nombre de la épica
+ *                       description: Epic name
  *                     description:
  *                       type: string
  *                       nullable: true
- *                       description: Descripción detallada de la épica
+ *                       description: Detailed description of the epic
  *                     priority:
  *                       type: string
  *                       enum: [lowest, low, medium, high, highest]
- *                       description: Prioridad de la épica
+ *                       description: Epic priority
  *     responses:
  *       201:
- *         description: Épicas guardadas exitosamente
+ *         description: Epics saved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -120,13 +120,13 @@ router.post(
  *                   type: string
  *                   example: "Epics saved"
  *       400:
- *         description: Datos de entrada inválidos
+ *         description: Invalid input data
  *       401:
- *         description: No autorizado - Token inválido o expirado
+ *         description: Unauthorized - Invalid or expired token
  *       404:
- *         description: Proyecto no encontrado
+ *         description: Project not found
  *       409:
- *         description: Conflicto - Las épicas ya existen en el proyecto
+ *         description: Conflict - Epics already exist in the project
  */
 router.post(
   "/confirm-epics",
@@ -141,7 +141,7 @@ router.post(
  *   post:
  *     tags:
  *       - AI Module
- *     summary: Genera sugerencias de historias de usuario para una épica
+ *     summary: Generate user story suggestions for an epic
  *     security:
  *       - authToken: []
  *     parameters:
@@ -150,9 +150,9 @@ router.post(
  *         required: true
  *         schema:
  *           type: string
- *         description: ID del proyecto
+ *         description: Project ID
  *     requestBody:
- *       description: ID de la épica para la cual generar historias
+ *       description: Epic ID for which to generate stories
  *       required: true
  *       content:
  *         application/json:
@@ -166,7 +166,7 @@ router.post(
  *                 example: "6wqDIVRt1UdvG61OyU08"
  *     responses:
  *       200:
- *         description: Lista de historias sugeridas
+ *         description: List of suggested stories
  *         content:
  *           application/json:
  *             schema:
@@ -179,28 +179,28 @@ router.post(
  *                     properties:
  *                       name:
  *                         type: string
- *                         description: Título de la historia de usuario
+ *                         description: User story title
  *                       description:
  *                         type: string
  *                         nullable: true
- *                         description: Descripción de la historia
+ *                         description: Story description
  *                       priority:
  *                         type: string
  *                         enum: [low, medium, high]
- *                         description: Prioridad de la historia
+ *                         description: Story priority
  *                       assignees:
  *                         type: array
  *                         items:
  *                           type: integer
- *                         description: IDs de usuarios asignados (puede estar vacío)
+ *                         description: Assigned user IDs (can be empty)
  *       400:
- *         description: epicId faltante o inválido
+ *         description: Missing or invalid epicId
  *       401:
- *         description: No autorizado – token inválido o expirado
+ *         description: Unauthorized - Invalid or expired token
  *       404:
- *         description: Proyecto o épica no encontrada
+ *         description: Project or epic not found
  *       502:
- *         description: Error al comunicarse con el servicio de IA
+ *         description: Error communicating with AI service
  */
 router.post(
   "/stories/generate-stories",
@@ -215,7 +215,7 @@ router.post(
  *   post:
  *     tags:
  *       - AI Module
- *     summary: Confirma y persiste las historias sugeridas en el backlog
+ *     summary: Confirm and persist suggested stories in the backlog
  *     security:
  *       - authToken: []
  *     parameters:
@@ -224,9 +224,9 @@ router.post(
  *         required: true
  *         schema:
  *           type: string
- *         description: ID del proyecto
+ *         description: Project ID
  *     requestBody:
- *       description: Épica padre y lista de historias a guardar
+ *       description: Parent epic and list of stories to save
  *       required: true
  *       content:
  *         application/json:
@@ -238,11 +238,11 @@ router.post(
  *             properties:
  *               epicId:
  *                 type: string
- *                 description: ID de la épica bajo la cual se guardan las historias
+ *                 description: ID of the epic under which to save the stories
  *                 example: "6wqDIVRt1UdvG61OyU08"
  *               stories:
  *                 type: array
- *                 description: Historias de usuario a persistir
+ *                 description: User stories to persist
  *                 items:
  *                   type: object
  *                   required:
