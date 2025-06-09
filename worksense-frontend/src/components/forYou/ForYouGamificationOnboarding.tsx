@@ -57,9 +57,9 @@ const ForYouGamificationOnboarding: React.FC<ForYouGamificationOnboardingProps> 
         }
         return updatedUser;
       });
-      toast.success('Profile updated!');
+     
     } catch (err) {
-      toast.error('Failed to update profile.');
+      console.error(err);
     } finally {
       setSubmitting(false);
     }
