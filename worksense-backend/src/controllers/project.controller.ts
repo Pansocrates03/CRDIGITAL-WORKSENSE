@@ -3,6 +3,7 @@ import {NextFunction, Request, Response} from "express";
 import {FieldValue} from "firebase-admin/firestore";
 import {db} from "../models/firebase.js";
 import {Project} from "../../types/project.js";
+import { sqlConnect, sql } from "../models/sqlModel.js";
 
 /**
  * List all projects that the current user is a member of
@@ -145,6 +146,40 @@ export const createProject = async (
                 joinedAt: FieldValue.serverTimestamp(),
             });
         }
+
+        // --- Add leaderboard document with owner entry ---
+        let ownerName = "Unknown User";
+        let ownerProfilePicture = null;
+        try {
+            const pool = await sqlConnect();
+            if (pool && ownerId) {
+                const userResult = await pool
+                    .request()
+                    .input("UserId", sql.Int, ownerId)
+                    .execute("spGetUserById");
+                if (userResult.recordset.length > 0) {
+                    const user = userResult.recordset[0];
+                    ownerName = `${user.firstName} ${user.lastName}`;
+                    ownerProfilePicture = user.pfp || null;
+                }
+            }
+        } catch (err) {
+            // fallback to Unknown User
+        }
+        const leaderboardRef = projectRef.collection("gamification").doc("leaderboard");
+        batch.set(leaderboardRef, {
+            [ownerId]: {
+                badges: [],
+                points: 0,
+                name: ownerName,
+                lastUpdate: FieldValue.serverTimestamp(),
+                personalPhrase: null,
+                profilePicture: ownerProfilePicture,
+                projectId: projectRef.id,
+            },
+        });
+        // --- End leaderboard setup ---
+
         // Commit the batch to perform all operations
         await batch.commit();
 
@@ -152,8 +187,9 @@ export const createProject = async (
         const createdProjectSnap = await projectRef.get();
         res.status(201).json({
             id: createdProjectSnap.id,
-            ...createdProjectSnap.data(),
+            ...Object.fromEntries(Object.entries(createdProjectSnap.data() || {}).filter(([key]) => key !== 'id')),
         });
+        return;
     } catch (error) {
         next(error);
     }
@@ -198,6 +234,7 @@ export const getProjectDetails = async (
             ...doc.data(),
             members,
         });
+        return;
     } catch (error) {
         next(error);
     }
@@ -362,6 +399,7 @@ export const updateProject = async (
             id: updatedDoc.id,
             ...updatedDoc.data(),
         });
+        return;
     } catch (error) {
         next(error);
     }
