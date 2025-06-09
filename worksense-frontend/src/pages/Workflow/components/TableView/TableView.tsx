@@ -1,61 +1,66 @@
-import React from 'react';
-import BacklogItemType from '@/types/BacklogItemType';
-import { AvatarDisplay } from '@/components/ui/AvatarDisplay';
-import { projectService } from '@/services/projectService';
-import MemberDetailed from '@/types/MemberDetailedType';
-import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
-import { QueryKeys } from '@/lib/constants/queryKeys';
-import { format, isValid } from 'date-fns';
+import React from "react";
+import BacklogItemType from "@/types/BacklogItemType";
+import { AvatarDisplay } from "@/components/ui/AvatarDisplay";
+import { projectService } from "@/services/projectService";
+import MemberDetailed from "@/types/MemberDetailedType";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { QueryKeys } from "@/lib/constants/queryKeys";
+import { format, isValid } from "date-fns";
+import StatusBadge from "@/components/BacklogTable/StatusBadge";
 
 interface TableViewProps {
   tasks: BacklogItemType[];
 }
 
-const renderAsignee = (memmberId:number|null|undefined) => {
+const renderAsignee = (memmberId: number | null | undefined) => {
   const { id: projectId } = useParams<{ id: string }>();
-  if(!projectId) throw new Error("There is no project ID");
+  if (!projectId) throw new Error("There is no project ID");
   // Find member
   const { isLoading, data, error } = useQuery<MemberDetailed[]>({
     queryKey: [QueryKeys.members, projectId],
-    queryFn: () => projectService.fetchProjectMembersDetailed(projectId)
-  })
+    queryFn: () => projectService.fetchProjectMembersDetailed(projectId),
+  });
 
-  if(isLoading){ return <div>Loading...</div> }
-  if(error){ return <div>An error ocurred</div> }
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    return <div>An error ocurred</div>;
+  }
 
-  console.log("Members Data", data)
-  let assignee = data?.find(member => member.userId == memmberId)
-  if(!assignee) throw new Error("Asignee not found")
+  console.log("Members Data", data);
+  let assignee = data?.find((member) => member.userId == memmberId);
+  if (!assignee) throw new Error("Asignee not found");
 
   return (
     <AvatarDisplay
       user={assignee}
       className="h-6 w-6 rounded-full ring-2 ring-white"
     />
-  )
-}
+  );
+};
 
 // Helper function to safely format date
 const formatDate = (dateValue: any): string => {
-  if (!dateValue) return '-';
+  if (!dateValue) return "-";
   try {
     // Firestore timestamp con _seconds
-    if (typeof dateValue === 'object' && ('_seconds' in dateValue)) {
+    if (typeof dateValue === "object" && "_seconds" in dateValue) {
       const date = new Date(dateValue._seconds * 1000);
-      return isValid(date) ? format(date, 'yyyy-MM-dd') : '-';
+      return isValid(date) ? format(date, "yyyy-MM-dd") : "-";
     }
     // Firestore timestamp con seconds (por si acaso)
-    if (typeof dateValue === 'object' && ('seconds' in dateValue)) {
+    if (typeof dateValue === "object" && "seconds" in dateValue) {
       const date = new Date(dateValue.seconds * 1000);
-      return isValid(date) ? format(date, 'yyyy-MM-dd') : '-';
+      return isValid(date) ? format(date, "yyyy-MM-dd") : "-";
     }
     // ISO string o timestamp
     const date = new Date(dateValue);
-    return isValid(date) ? format(date, 'yyyy-MM-dd') : '-';
+    return isValid(date) ? format(date, "yyyy-MM-dd") : "-";
   } catch (error) {
-    console.error('Error formatting date:', error, dateValue);
-    return '-';
+    console.error("Error formatting date:", error, dateValue);
+    return "-";
   }
 };
 
@@ -83,31 +88,23 @@ const TableView: React.FC<TableViewProps> = ({ tasks }) => {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {tasks.map(task => {
+          {tasks.map((task) => {
             return (
               <tr key={task.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{task.name}</div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {task.name}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                    task.status === 'sprint_backlog' ? 'bg-yellow-100 text-yellow-800' :
-                    task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                    task.status === 'in_review' ? 'bg-purple-100 text-purple-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {task.status?.replace('_', ' ')}
-                  </span>
+                  <StatusBadge
+                    type="status"
+                    value={task.status || "Unassigned"}
+                  />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {task.priority && (
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                      task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                      {task.priority}
-                    </span>
+                    <StatusBadge type="priority" value={task.priority} />
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -127,4 +124,4 @@ const TableView: React.FC<TableViewProps> = ({ tasks }) => {
   );
 };
 
-export default TableView; 
+export default TableView;

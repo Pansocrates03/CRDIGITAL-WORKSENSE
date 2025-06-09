@@ -2,7 +2,7 @@ import React, { FC, useState, useEffect } from "react";
 import apiClient from "@/api/apiClient";
 import ItemModalForm, { BacklogItemFormData } from "./ItemModalForm";
 import BacklogItemType from "@/types/BacklogItemType";
-import { useBacklogItemUpdate } from '@/hooks/useBacklogItemUpdate';
+import { useBacklogItemUpdate } from "@/hooks/useBacklogItemUpdate";
 
 interface UpdateItemModalProps {
   projectId: string;
@@ -44,7 +44,9 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [epics, setEpics] = useState<Epic[]>([]);
   const [users, setUsers] = useState<{ userId: number; name?: string }[]>([]);
-  const [originalItem, setOriginalItem] = useState<BacklogItemType | null>(null);
+  const [originalItem, setOriginalItem] = useState<BacklogItemType | null>(
+    null
+  );
   const [sprints, setSprints] = useState<{ id: string; name: string }[]>([]);
   const updateMutation = useBacklogItemUpdate();
 
@@ -78,7 +80,9 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
 
   const fetchOptionsData = async () => {
     try {
-      const epicsRes = await apiClient.get(`/projects/${projectId}/backlog/items`);
+      const epicsRes = await apiClient.get(
+        `/projects/${projectId}/backlog/items`
+      );
       setEpics(
         Array.isArray(epicsRes.data)
           ? epicsRes.data
@@ -89,7 +93,9 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
               }))
           : []
       );
-      const usersRes = await apiClient.get(`/projects/${projectId}/members/members-detail`);
+      const usersRes = await apiClient.get(
+        `/projects/${projectId}/members/members-detail`
+      );
       setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
     } catch (err) {
       const msg = "Failed to load dropdown options";
@@ -146,7 +152,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
       {
         projectId,
         itemId: item.id,
-        itemType: item.type || '',
+        itemType: item.type || "",
         updateData: payload,
         parentId: item.parentId || formData.parentId || undefined,
       },
@@ -159,7 +165,7 @@ const UpdateItemModal: FC<UpdateItemModalProps> = ({
         },
         onError: (err: any) => {
           console.error("Update mutation error:", err);
-          const msg = err.response?.data?.message || 'Failed to update item';
+          const msg = err.response?.data?.message || "Failed to update item";
           setError(msg);
           onError?.(msg);
         },

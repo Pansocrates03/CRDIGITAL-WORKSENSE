@@ -296,36 +296,42 @@
 }
 
 .taskStatus {
+  display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  margin-top: 0.4rem;
-  background: #c9c7cc; /* Default color */
+  margin-right: 4px;
+  flex-shrink: 0;
 }
 
 .taskStatusNew {
-  composes: taskStatus;
-  background: #c9c7cc;
+  background-color: #f8f8f8;
+  border: 1px solid var(--color-charcoal);
 }
 
-.taskStatusTodo {
-  composes: taskStatus;
-  background: #c9c7cc;
+.taskStatusToDo {
+  background-color: var(--color-pink-light);
+  border: 1px solid var(--accent-pink);
 }
 
 .taskStatusInProgress {
-  composes: taskStatus;
-  background: #f0ad4e;
+  background-color: var(--color-accent);
 }
 
 .taskStatusInReview {
-  composes: taskStatus;
-  background: #f0ad4e;
+  background-color: var(--color-blue-review);
 }
 
 .taskStatusDone {
-  composes: taskStatus;
-  background: #2e8b57;
+  background-color: var(--color-purple);
+}
+
+.taskStatusSprintBacklog {
+  background-color: #ac175415;
+}
+
+.taskStatusBlocked {
+  background-color: #fee2e2;
 }
 
 .taskTitle {
